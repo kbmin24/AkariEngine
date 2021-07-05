@@ -86,9 +86,9 @@ app.get('/edit/:name', (req, res) =>
     {
         var content = target.content
         if (content == undefined) content = ""
-        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content}, (err, html) => 
+        const username = req.session.username
+        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username,}, (err, html) => 
         {
-            const username = req.session.username
             res.render('outline',
             {
                 title: 'Edit ' + req.params.name,
