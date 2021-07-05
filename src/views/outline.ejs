@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- include('head') %>
+        <title><%= title %></title>
+    </head>
+    <body>
+        <%- include('nav') %>
+        <section>
+            <!-- Notifications-->
+            <% if (locals.notification) { %>
+                <div class="alert alert-primary" role="alert">
+                        <%= notification %>
+                </div>
+            <% } %>
+
+            <div class='container article-wrapper mt-5 h-75 p-4 border rounded-top'>
+                <div>
+                    <div class='row'>
+                        <div class='col p-2'>
+                            <h1><%= title %></h1>
+                        </div>
+                        <div class='col p-2'>
+                            <% if (locals.isPage) { %>
+                                <%- include('pageTools') %>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <%- content %>
+                </div>
+            </div>
+        </section>
+    </body>
+</html>

@@ -1,0 +1,18 @@
+<div class='w-25 p-3'>
+    <form action='/signup' method='POST'>
+        <div class='form-group'>
+            <label for='idInputbox'>ID</label>
+            <input type='text' name='id' class='form-control' id='idInputbox'placeholder='Enter ID'>
+        </div>
+        <div class='form-group'>
+            <label for='passwordInputbox'>Password</label>
+            <input type='password' name='password' class='form-control' id='passwordInputbox'placeholder='Enter Password'>
+        </div>
+        <div class='form-group'>
+            <label for='passwordConfirmInputbox'>Confirm Password</label>
+            <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='Re-enter password'>
+            <small id='passwordConfirmDesc' class='form-text text-muted'>In order to ensure that you have entered your password correctly, please type it one more time.</small>
+        </div>
+        <button type='submit' class='btn btn-primary'>Sign up</button>
+    </form>
+</div>

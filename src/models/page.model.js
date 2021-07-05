@@ -1,0 +1,17 @@
+const {DataTypes} = require('sequelize')
+module.exports = (sequelize) =>
+{
+    return sequelize.define('page',
+    {
+        title:
+        {
+            allowNull: false,
+            type: DataTypes.STRING,
+            unique: true,
+        },
+        content:
+        {
+            type: DataTypes.TEXT
+        }
+    })
+}

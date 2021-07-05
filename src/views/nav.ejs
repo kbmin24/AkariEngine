@@ -1,0 +1,9 @@
+<nav class='navbar navbar-dark bg-primary container-fluid' role='navigation'>
+    <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+            <a class='navbar-brand' href='/'><%= wikiname %></a>
+            <% if (locals.username) { %>
+            <%= username %>
+            <% } %>
+    </ul>
+</nav>
