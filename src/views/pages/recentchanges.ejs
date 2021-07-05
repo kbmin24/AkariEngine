@@ -1,0 +1,20 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th scope='col'>Page name</th>
+            <th scope='col'>Username</th>
+            <th scope='col'>Change made</th>
+            <th scope='col'>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% changes.forEach( change => { %>
+            <tr>
+                <th scope='row'><a href='/w/<%= change.page %>'><%= change.page %></a> (r<%= change.rev %>)</th>
+                <td><%= change.doneBy %></td>
+                <td><%= change.type %></td>
+                <td><%= change.createdAt %> </td>
+            </tr>
+        <% }) %>
+    </tbody>
+</table>

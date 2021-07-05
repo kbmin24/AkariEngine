@@ -1,6 +1,5 @@
 module.exports = (req, res, sequelize, users) =>
 {
-    //todo: already logged in?
     const crypto = require('crypto')
     //retrieve salt
 

@@ -1,13 +1,10 @@
 <link rel='stylesheet' href='/css/edit.css'>
 <form action='/edit/<%= title %>' method='POST' class='editForm'>
     <div class='form-group'>
-        <textarea class='form-control' id='editAreaBox' name='content'></textarea>
+        <textarea class='form-control' id='editAreaBox' name='content'><%= content %></textarea>
     </div>
-    <!-- TODO: external JS to:
-    1) notify that IP address will be logged if the users do not log in.
-    2) get the latest RAW and print it (if it is not a new thingie)
-    3) prehaps preview (use post?)-->
-    You are now editing <%= title %>.
+    <!-- TODO:
+    1) prehaps preview (use post?)-->
     <% if (locals.username === undefined) { %>
     <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and visible to everyone.</p>
     <% } %>

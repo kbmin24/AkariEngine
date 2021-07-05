@@ -12,6 +12,10 @@ module.exports = (sequelize) =>
         content:
         {
             type: DataTypes.TEXT
+        },
+        currentRev:
+        {
+            type: DataTypes.INTEGER
         }
     })
 }

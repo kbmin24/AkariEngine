@@ -35,6 +35,7 @@ const sequelize = new Sequelize({
 //db
 const users = require(__dirname + '/models/user.model.js')(sequelize)
 const pages = require(__dirname + '/models/page.model.js')(sequelize)
+const recentchanges = require(__dirname + '/models/recentchanges.model.js')(sequelize)
 sequelize.sync()
 
 //views
@@ -81,22 +82,27 @@ app.get('/whoami', (req, res) =>
 app.get('/edit/:name', (req, res) =>
 {
     //TODO: error if the name is too long (>255)s
-    ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name}, (err, html) => 
+    pages.findOne({where: {title: req.params.name}}).then(target =>
     {
-        const username = req.session.username
-        res.render('outline',
+        var content = target.content
+        if (content == undefined) content = ""
+        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content}, (err, html) => 
         {
-            title: 'Edit ' + req.params.name,
-            content: html,
-            username: username,
-            wikiname: global.appname
+            const username = req.session.username
+            res.render('outline',
+            {
+                title: 'Edit ' + req.params.name,
+                content: html,
+                username: username,
+                wikiname: global.appname
+            })
         })
     })
 })
 
 app.post('/edit/:name', (req, res) =>
 {
-    require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages) //actually no need to separately pass on username (in req)
+    require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges) //actually no need to separately pass on username (in req)
 })
 
 app.get('/w/:name', (req, res) =>
@@ -108,6 +114,11 @@ app.get('/raw/:name', (req, res) =>
 {
     res.setHeader('content-type', 'text/plain')
     require(global.path + '/pages/raw.js')(req, res, pages)
+})
+
+app.get('/RecentChanges', (req, res) =>
+{
+    require(global.path + '/pages/recentchanges.js')(req, res, recentchanges)
 })
 
 var server = app.listen(port, () =>
