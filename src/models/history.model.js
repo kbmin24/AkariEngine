@@ -1,40 +1,48 @@
 const {DataTypes} = require('sequelize')
 module.exports = (sequelize) =>
 {
-    return sequelize.define('recentchanges',
+    return sequelize.define('history',
     {
-        id:
-        {
-            allowNull: false,
-            autoIncrement: true,
-            primaryKey: true,
-            type: DataTypes.INTEGER
-        },
         page:
         {
             allowNull: false,
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
         },
         rev:
         {
+            //r?
+            allowNull: false,
             type: DataTypes.INTEGER
+        },
+        content:
+        {
+            type: DataTypes.TEXT
         },
         bytechange:
         {
             type: DataTypes.INTEGER
         },
-        doneBy:
+        editedby:
         {
-            allowNull: false,
+            type: DataTypes.STRING //VARCHAR(255)
+        },
+        comment:
+        {
             type: DataTypes.STRING
         },
         type:
         {
             type: DataTypes.STRING
         },
-        comment:
+        movedFrom:
         {
-            type: DataTypes.STRING
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        movedTo:
+        {
+            type: DataTypes.STRING,
+            allowNull: true
         },
         createdAt:
         {

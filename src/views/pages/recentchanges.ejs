@@ -1,20 +1,34 @@
+<div class="dropstart">
+    <button class="btn btn-secondary dropdown-toggle float-end" type="button" id="rcshowNDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      Show...
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="rcshowNDropdown">
+      <li><a class="dropdown-item" href="/RecentChanges?show=5">Show 5</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=10">Show 10</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=30">Show 30</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=100">Show 100</a></li>
+    </ul>
+</div>
+
 <table class="table">
     <thead>
         <tr>
             <th scope='col'>Page name</th>
             <th scope='col'>Username</th>
             <th scope='col'>Change made</th>
+            <th scope='col'>Comment</th>
             <th scope='col'>Timestamp</th>
         </tr>
     </thead>
     <tbody>
-        <% changes.forEach( change => { %>
+        <% for(let i = 0; i < show; i++) { %>
             <tr>
-                <th scope='row'><a href='/w/<%= change.page %>'><%= change.page %></a> (r<%= change.rev %>)</th>
-                <td><%= change.doneBy %></td>
-                <td><%= change.type %></td>
-                <td><%= change.createdAt %> </td>
+                <th scope='row'><a href='/w/<%= changes[i].page %>'><%= changes[i].page %></a> (r<%= changes[i].rev %>)</th>
+                <td><%= changes[i].doneBy %></td>
+                <td><%= changes[i].type %></td>
+                <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
+                <td><%= changes[i].createdAt %> </td>
             </tr>
-        <% }) %>
+        <% } %>
     </tbody>
 </table>

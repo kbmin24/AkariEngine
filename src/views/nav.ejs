@@ -1,9 +1,45 @@
-<nav class='navbar navbar-dark bg-primary container-fluid' role='navigation'>
-    <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-            <a class='navbar-brand' href='/'><%= wikiname %></a>
-            <% if (locals.username) { %>
-            <%= username %>
-            <% } %>
-    </ul>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container-fluid">
+        <!-- logo -->
+        <a class="navbar-brand" href="/"><%= wikiname %></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <!-- rc -->
+                <li class="nav-item">
+                    <a class="nav-link active" href="/RecentChanges?show=30">RecentChanges</a>
+                </li>
+                <!-- pagelist-->
+                <li class="nav-item">
+                    <a class="nav-link active" href="/PageList">PageList</a>
+                </li>
+            </ul>
+            <!-- search box -->
+            <form class="d-flex mx-3" action='/w' method='POST'>
+                <input class="form-control me-2" name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
+                <button class="btn btn-outline-light" type="submit">Open</button>
+            </form>
+            <!-- user-->
+            <div class="dropdown">
+                <button class="btn btn-secondary btn-sm dropdown-toggle" id="navUserDropDown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <% if (locals.username) { %>
+                        <%= username %>
+                    <% } else { %>
+                        IP User
+                    <% } %>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navUserDropDown">
+                    <li>
+                        <% if (locals.username) { %>
+                            <a class="dropdown-item" href='/logout'>Logout</a>
+                        <% } else { %>
+                            <a class="dropdown-item" href='/login'>Login</a>
+                        <% } %>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </nav>

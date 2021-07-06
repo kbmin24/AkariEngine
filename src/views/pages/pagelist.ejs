@@ -1,0 +1,6 @@
+There are <%= count %> pages.
+<ul>
+    <% for(let i = 0; i < count; i++) { %>
+        <li><a href='/w/<%= pages[i].title %>'><%= pages[i].title %></a></li>
+    <% } %>
+</ul>

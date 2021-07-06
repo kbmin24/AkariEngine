@@ -36,6 +36,7 @@ const sequelize = new Sequelize({
 const users = require(__dirname + '/models/user.model.js')(sequelize)
 const pages = require(__dirname + '/models/page.model.js')(sequelize)
 const recentchanges = require(__dirname + '/models/recentchanges.model.js')(sequelize)
+const history = require(__dirname + '/models/history.model.js')(sequelize)
 sequelize.sync()
 
 //views
@@ -84,8 +85,8 @@ app.get('/edit/:name', (req, res) =>
     //TODO: error if the name is too long (>255)s
     pages.findOne({where: {title: req.params.name}}).then(target =>
     {
-        var content = target.content
-        if (content == undefined) content = ""
+        var content = ''
+        if (target) content = target.content
         const username = req.session.username
         ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username,}, (err, html) => 
         {
@@ -102,12 +103,38 @@ app.get('/edit/:name', (req, res) =>
 
 app.post('/edit/:name', (req, res) =>
 {
-    require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges) //actually no need to separately pass on username (in req)
+    require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history) //actually no need to separately pass on username (in req)
 })
 
+app.get('/move/:name', (req, res) =>
+{
+    pages.findOne({where: {title: req.params.name}}).then(target =>
+        {
+            if (target) content = target.content
+            const username = req.session.username
+            ejs.renderFile(global.path + '/views/pages/move.ejs',{originalName: req.params.name, username: username,}, (err, html) => 
+            {
+                res.render('outline',
+                {
+                    title: 'Move ' + req.params.name,
+                    content: html,
+                    username: username,
+                    wikiname: global.appname
+                })
+            })
+        })
+})
+app.post('/move/:name', (req, res) =>
+{
+    require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history)
+})
 app.get('/w/:name', (req, res) =>
 {
-    require(global.path + '/pages/view.js')(req, res, pages)
+    require(global.path + '/pages/view.js')(req, res, pages, history)
+})
+app.post('/w', (req,res) =>
+{
+    res.redirect('/w/' + req.body.pagename)
 })
 
 app.get('/raw/:name', (req, res) =>
@@ -115,13 +142,20 @@ app.get('/raw/:name', (req, res) =>
     res.setHeader('content-type', 'text/plain')
     require(global.path + '/pages/raw.js')(req, res, pages)
 })
-
+app.get('/history/:name', (req, res) =>
+{
+    require(global.path + '/pages/history.js')(req, res, history)
+})
 app.get('/RecentChanges', (req, res) =>
 {
     require(global.path + '/pages/recentchanges.js')(req, res, recentchanges)
 })
+app.get('/PageList', (req, res) =>
+{
+    require(global.path + '/pages/pagelist.js')(req, res, pages)
+})
 
-var server = app.listen(port, () =>
+var server = app.listen(port, '0.0.0.0', () =>
 {
     const host = server.address().address
     const port = server.address().port

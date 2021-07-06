@@ -1,0 +1,68 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th scope='col'>Revision Name</th>
+            <th scope='col'>Username</th>
+            <th scope='col'>Change made</th>
+            <th scope='col'>Comment</th>
+            <th scope='col'>Timestamp</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% for(let i = from - 1; i < to; i++) { %>
+            <tr>
+                <th scope='row'>
+                    <a href='/w/<%= changes[i].page %>?rev=<%= changes[i].rev %>'>r<%= changes[i].rev %></a> (
+                    <% if (changes[i].bytechange > 0) { %>
+                        <span class='text-success fw-bold'>
+                            +<%= changes[i].bytechange %>
+                        </span>
+                    <% } else if (changes[i].bytechange == 0) { %>
+                        <span class='text-secondary fw-bold'>
+                            <%= changes[i].bytechange %>
+                        </span>
+                    <% } else { %>
+                        <span class='text-danger fw-bold'>
+                            <%= changes[i].bytechange %>
+                        </span>
+                    <% } %>
+                    )
+                </th> <!-- todo: enable viewing specific r-->
+                <td><%= changes[i].editedby %></td>
+                <td><%= changes[i].type %></td>
+                <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
+                <td><%= changes[i].createdAt %> </td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+<div>
+    <ul class="pagination">
+        <% if (from > 1) { %>
+            <% var prevlink = '/history/' + title + '?from=' + (from - pgSize).toString() + '&to=' + (from - 1).toString() %>
+            <li class="page-item">
+                <a class="page-link" href=<%= prevlink %> aria-label="Previous">
+                    &laquo;
+                </a>
+            </li>
+        <% } %>
+        <% for (var i = 1; i <= Math.ceil(historycount / pgSize); i++) { %>
+        <% var str = '/history/' + title + '?from=' + (pgSize * (i - 1) + 1).toString() + '&to=' + (pgSize * i).toString() %>
+            <li class="page-item">
+                <a class="page-link" href=<%= str %>>
+                    <%= i %>
+                </a>
+            </li>
+        <% } %>
+
+        <% if (to < historycount) { %>
+            <% var nextlink = '/history/' + title + '?from=' + (to + 1).toString() + '&to=' + (to + pgSize).toString() %>
+            <li class="page-item">
+                <a class="page-link" href=<%= nextlink %> aria-label="Next">
+                    &raquo;
+                </a>
+            </li>
+        <% } %>
+    </ul>
+</div>
+Page <%= Math.ceil(from / pgSize) %> of <%= Math.ceil(historycount / pgSize) %>

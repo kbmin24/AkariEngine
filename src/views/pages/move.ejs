@@ -1,0 +1,16 @@
+<form action='/move/<%= originalName %>' method='POST' class='editForm'>
+    <div class="form-group mt-2 mb-2 row">
+        <label for='comment' class='col-sm-1 col-form-label sr-only'>Move</label>
+        <div class="col-sm-11">
+            <input class="form-control" id='originalName' maxlength=255 name='originalName' type="text" placeholder="Max 255 characters" value='<%= originalName %>' disabled readonly>
+        </div>
+        <label for='comment' class='col-sm-1 col-form-label sr-only'>To</label>
+        <div class="col-sm-11">
+            <input class="form-control" id='newName' maxlength=255 name='newName' type="text" placeholder="Max 255 characters">
+        </div>
+    </div>
+    <% if (locals.username === undefined) { %>
+    <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone.</p>
+    <% } %>
+    <button type='submit' type='button' class='btn btn-primary mt-3'>Move</button>
+</form>
