@@ -44,6 +44,11 @@ module.exports = (sequelize) =>
             type: DataTypes.STRING,
             allowNull: true
         },
+        revertTo:
+        {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
         createdAt:
         {
             allowNull: true,

@@ -6,6 +6,7 @@
             <th scope='col'>Change made</th>
             <th scope='col'>Comment</th>
             <th scope='col'>Timestamp</th>
+            <th scope='col'></th>
         </tr>
     </thead>
     <tbody>
@@ -32,6 +33,14 @@
                 <td><%= changes[i].type %></td>
                 <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
                 <td><%= changes[i].createdAt %> </td>
+                <td>
+                    <% let lnk = '/raw/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
+                    <a href=<%= lnk %>><button type="button" class="btn btn-secondary">RAW</button></a>
+                    <%if (changes[i].type == 'edit' || changes[i].type == 'create' || changes[i].type == 'revert') { %>
+                        <% let lnk = '/revert/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
+                        <a href=<%= lnk %>><button type="button" class="btn btn-danger">Revert</button></a>
+                    <% } %>
+                </td>
             </tr>
         <% } %>
     </tbody>

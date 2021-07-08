@@ -12,7 +12,7 @@ module.exports = (req, res, pages, history) =>
                 res.render('outline',
                 {
                     title: page.title,
-                    content: page.content,
+                    content: require(global.path + '/pages/render.js')(page.content, true, pages),
                     isPage: true,
                     pagename: page.title,
                     username: req.session.username,
@@ -45,7 +45,7 @@ module.exports = (req, res, pages, history) =>
                 res.render('outline',
                 {
                     title: page.page + ' (r' + rev +')',
-                    content: page.content,
+                    content: require(global.path + '/pages/render.js')(page.content, true, pages),
                     isPage: true,
                     pagename: page.page,
                     username: req.session.username,

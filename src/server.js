@@ -109,24 +109,49 @@ app.post('/edit/:name', (req, res) =>
 app.get('/move/:name', (req, res) =>
 {
     pages.findOne({where: {title: req.params.name}}).then(target =>
+    {
+        if (target) content = target.content
+        const username = req.session.username
+        ejs.renderFile(global.path + '/views/pages/move.ejs',{originalName: req.params.name, username: username,}, (err, html) => 
         {
-            if (target) content = target.content
-            const username = req.session.username
-            ejs.renderFile(global.path + '/views/pages/move.ejs',{originalName: req.params.name, username: username,}, (err, html) => 
+            res.render('outline',
             {
-                res.render('outline',
-                {
-                    title: 'Move ' + req.params.name,
-                    content: html,
-                    username: username,
-                    wikiname: global.appname
-                })
+                title: 'Move ' + req.params.name,
+                content: html,
+                username: username,
+                wikiname: global.appname
             })
         })
+    })
 })
 app.post('/move/:name', (req, res) =>
 {
     require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history)
+})
+app.get('/delete/:name', (req, res) =>
+{
+    pages.findOne({where: {title: req.params.name}}).then(target =>
+    {
+        const username = req.session.username
+        ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username}, (err, html) => 
+        {
+            res.render('outline',
+            {
+                title: 'Delete ' + req.params.name,
+                content: html,
+                username: username,
+                wikiname: global.appname
+            })
+        })
+    })
+})
+app.post('/delete/:name', (req, res) =>
+{
+    require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history)
+})
+app.get('/revert/:name', (req, res) =>
+{
+    require(global.path + '/pages/revert.js')(req, res, req.session.username, users, pages, recentchanges, history)
 })
 app.get('/w/:name', (req, res) =>
 {
@@ -140,7 +165,7 @@ app.post('/w', (req,res) =>
 app.get('/raw/:name', (req, res) =>
 {
     res.setHeader('content-type', 'text/plain')
-    require(global.path + '/pages/raw.js')(req, res, pages)
+    require(global.path + '/pages/raw.js')(req, res, pages, history)
 })
 app.get('/history/:name', (req, res) =>
 {
