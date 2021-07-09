@@ -23,11 +23,17 @@
     <tbody>
         <% for(let i = 0; i < show; i++) { %>
             <tr>
-                <th scope='row'><a href='/w/<%= changes[i].page %>'><%= changes[i].page %></a> (r<%= changes[i].rev %>)</th>
+                <th scope='row'>
+                    <% if (changes[i].type == 'upload') { %>
+                        <a href='/file/<%= changes[i].page %>'><%= changes[i].page %></a> <em>(file)</em>
+                    <% } else { %>
+                        <a href='/w/<%= changes[i].page %>'><%= changes[i].page %></a> (r<%= changes[i].rev %>)
+                    <% } %>
+                </th>
                 <td><%= changes[i].doneBy %></td>
                 <td><%= changes[i].type %></td>
                 <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
-                <td><%= changes[i].createdAt %> </td>
+                <td><%= date.format(changes[i].createdAt, global.dtFormat) %> </td>
             </tr>
         <% } %>
     </tbody>

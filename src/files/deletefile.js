@@ -1,16 +1,16 @@
-module.exports = (req, res, username, users, pages, recentchanges, history) =>
+const fs = require('fs')
+module.exports = (req, res, files, history, recentchanges) =>
 {
     //username parameter: reserved for history
     //todo: ACL
-    pages.findOne({where: {title: req.params.name}}).then(page =>
+    files.findOne({where: {filename: req.params.name}}).then(file =>
     {
         var doneby = req.session.username
         if (doneby === undefined) doneby = req.connection.remoteAddress
-        if (page) //if page exists
+        if (file) //if page exists
         {
-            const oldLength = page.content.length
-            pages.destroy({where: {title: req.params.name}})
-            history.destroy({where: {page: req.params.name}})
+            const oldLength = file.explanation.length
+            files.destroy({where: {filename: req.params.name}})
             recentchanges.create(
             {
                 page: req.params.name,
@@ -22,18 +22,19 @@ module.exports = (req, res, username, users, pages, recentchanges, history) =>
             history.create(
             {
                 page: req.params.name,
-                rev: 0,
                 bytechange: -oldLength,
                 editedby: doneby,
                 comment: req.body.comment,
+                rev: 0,
                 type: 'delete'
             })
+            fs.unlinkSync(global.path + '/public/uploads/' + req.params.name)
             res.redirect('/')
         }
         else
         {
             //error!
-            require(global.path + '/error.js')(req, res, null, 'No such page.', '/', 'the main page')
+            require(global.path + '/error.js')(req, res, null, 'No such file.', '/', 'the main page')
         }
     })
 }

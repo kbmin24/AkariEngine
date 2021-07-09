@@ -1,0 +1,14 @@
+<!-- pageTools.ejs: edit, delete, move...-->
+<div class='container w-auto bg-light justify-content-center border rounded mb-3' id='pageTools'>
+    <div class='row'>
+        <div class='col border-end p-2 pageToolItem'>
+            <a href='/file/<%= title %>'>View</a>
+        </div>
+        <div class='col border-start border-end p-2 pageToolItem'>
+            <a href='#'>Move(not done)</a>
+        </div>
+        <div class='col border-start p-2 pageToolItem'>
+            <a href='/deletefile/<%= title %>'>Delete</a>
+        </div>
+    </div>
+</div>

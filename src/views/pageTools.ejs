@@ -1,6 +1,9 @@
 <!-- pageTools.ejs: edit, delete, move...-->
-<div class='container w-auto bg-light justify-content-center border rounded' id='pageTools'>
+<div class='container w-auto bg-light justify-content-center border rounded mb-3' id='pageTools'>
     <div class='row'>
+        <div class='col border-end p-2 pageToolItem'>
+            <a href='/w/<%= pagename %>'>View</a>
+        </div>
         <div class='col border-end p-2 pageToolItem'>
             <a href='/edit/<%= pagename %>'>Edit</a>
         </div>

@@ -1,0 +1,23 @@
+/*Renderer*/
+.ren-center
+{
+    text-align: center;
+}
+.ren-left
+{
+    text-align: left;
+}
+.ren-right
+{
+    text-align: right;
+}
+
+.ren-toc
+{
+    display:inline-block;
+}
+
+a
+{
+    text-decoration: none;
+}

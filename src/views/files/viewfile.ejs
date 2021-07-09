@@ -1,0 +1,17 @@
+<img class='m-3 img-fluid' src='/uploads/<%= filename %>'>
+<table class='table m-3'>
+    <tbody>
+        <tr>
+            <th scope='row'>Uploaded by</th>
+            <td><%= creator %></td>
+        </tr>
+        <tr>
+            <th scope='row'>Uploaded at</th>
+            <td><%= date.format(uploadTime, global.dtFormat) %></td>
+        </tr>
+    </tbody>
+</table>
+ <br>
+<div>
+    <%= explanation %>
+</div>

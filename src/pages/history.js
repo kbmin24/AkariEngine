@@ -1,4 +1,5 @@
 const ejs = require('ejs')
+const date = require('date-and-time')
 const pgSize = 30
 module.exports = (req, res, histories) =>
 {
@@ -29,7 +30,8 @@ module.exports = (req, res, histories) =>
             to: to,
             historycount: changes.count,
             title: req.params.name,
-            pgSize: pgSize //# of entries in a page
+            pgSize: pgSize, //# of entries in a page
+            date: date
         }, (err, html) => 
         {
             const username = req.session.username

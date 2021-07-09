@@ -1,0 +1,30 @@
+<% if (locals.username !== undefined) { %>
+<form action='/Upload' enctype='multipart/form-data' method='POST'>
+    <div class='form-group mb-2'>
+        <label for='filenameInputBox'>Filename</label>
+        <input type='text' name='filename' maxlength=255 class='form-control' id='filenameInputBox' placeholder='Enter Filename'>
+    </div>
+    <div class='form-group mb-2'>
+        <label for='editAreaBox'>Explanation</label>
+        <textarea class='form-control' id='editAreaBox' name='explanation'></textarea>
+    </div>   
+    <div class='form-group mb-2'>
+        <label for='inputFile' class='form-label'>Select File (MAX 20MB)</label> <!-- client side JS to autofill file name? -->
+        <input class='form-control' type='file' name='inputFile' id='inputFile'>
+    </div>
+    <div class='form-group mb-2'>
+        <figure class='figure'>
+            <img class='figure-img rounded w-25' id='uploadImagePreview'>
+            <figcaption class='figure-caption'>Image preview</figcaption>
+        </figure>
+    </div> 
+    <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission. <%= global.copyrightNotice %></p>
+    <p>You can only upload JPEG, JPG, PNG, GIF and WebP.</p>
+    </div>
+    <button type='submit' class='btn btn-primary'>Upload</button>
+</form>
+
+<script type='text/javascript' src='/js/upload.js'></script>
+<% } else { %>
+    <p>Sorry. You need to be logged in to upload a file. <a href='/login'>Login</a></p>
+<% } %>

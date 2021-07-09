@@ -1,4 +1,5 @@
 const ejs = require('ejs')
+const date = require('date-and-time')
 const updRecentChanges = require('./updRecentChanges')
 module.exports = (req, res, recentchanges) =>
 {
@@ -16,7 +17,7 @@ module.exports = (req, res, recentchanges) =>
             show = 999999 //we can treat this as INF
         }
         show = (show > changes.count ? changes.count : show)
-        ejs.renderFile(global.path + '/views/pages/recentchanges.ejs',{changes: changes.rows, show: show}, (err, html) => 
+        ejs.renderFile(global.path + '/views/pages/recentchanges.ejs',{changes: changes.rows, show: show, date: date}, (err, html) => 
         {
             updRecentChanges(req, res, recentchanges)
             const username = req.session.username

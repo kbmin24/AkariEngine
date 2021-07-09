@@ -2,6 +2,7 @@
 {
     /*I don't know what to put here*/
     margin-top: 100px;
+    margin-bottom: 100px;
     min-height: 600px;
 }
 #pageTools
@@ -13,4 +14,8 @@
 {
     text-decoration: none;
     color: black;
+}
+#article
+{
+    word-wrap: break-word;
 }

@@ -1,3 +1,20 @@
+<form action='/diff/<%= changes[0].page%>' method='GET' style='width:270px'>
+    <div class="mb-3 row">
+        <label for="staticEmail" class="col-sm-2 col-form-label" style='width: 200px'>Compare version no.</label>
+        <div class="col-sm-10" style='width: 92px'>
+            <input type="number" class="form-control" name='rev1'>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <label for="inputPassword" class="col-sm-2 col-form-label" style='width: 200px'>and version no.</label>
+        <div class="col-sm-10" style='width: 92px'>
+            <input type="number" class="form-control" name='rev2'>
+        </div>
+    </div>
+    <div class="mb-3 row">
+        <button type='submit' class='btn btn-primary' style='width: 100px;margin: auto'>Compare</button>
+    </div>
+</form>
 <table class="table">
     <thead>
         <tr>
@@ -32,7 +49,7 @@
                 <td><%= changes[i].editedby %></td>
                 <td><%= changes[i].type %></td>
                 <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
-                <td><%= changes[i].createdAt %> </td>
+                <td><%= date.format(changes[i].createdAt, global.dtFormat) %> </td>
                 <td>
                     <% let lnk = '/raw/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
                     <a href=<%= lnk %>><button type="button" class="btn btn-secondary">RAW</button></a>
@@ -48,7 +65,7 @@
 <div>
     <ul class="pagination">
         <% if (from > 1) { %>
-            <% var prevlink = '/history/' + title + '?from=' + (from - pgSize).toString() + '&to=' + (from - 1).toString() %>
+            <% var prevlink = '/history/' + encodeURI(title) + '?from=' + (from * 1 - pgSize * 1).toString() + '&to=' + (from * 1 - 1).toString() %>
             <li class="page-item">
                 <a class="page-link" href=<%= prevlink %> aria-label="Previous">
                     &laquo;
@@ -56,7 +73,7 @@
             </li>
         <% } %>
         <% for (var i = 1; i <= Math.ceil(historycount / pgSize); i++) { %>
-        <% var str = '/history/' + title + '?from=' + (pgSize * (i - 1) + 1).toString() + '&to=' + (pgSize * i).toString() %>
+        <% var str = '/history/' + encodeURI(title) + '?from=' + (pgSize * (i - 1) + 1).toString() + '&to=' + (pgSize * i).toString() %>
             <li class="page-item">
                 <a class="page-link" href=<%= str %>>
                     <%= i %>
@@ -65,7 +82,7 @@
         <% } %>
 
         <% if (to < historycount) { %>
-            <% var nextlink = '/history/' + title + '?from=' + (to + 1).toString() + '&to=' + (to + pgSize).toString() %>
+            <% var nextlink = '/history/' + encodeURI(title) + '?from=' + (to * 1 + 1) + '&to=' + (to * 1+ pgSize * 1)%>
             <li class="page-item">
                 <a class="page-link" href=<%= nextlink %> aria-label="Next">
                     &raquo;
