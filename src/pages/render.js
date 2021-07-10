@@ -1,6 +1,7 @@
 //This function:
 //gets markup and returns HTML.
 //todo: redirect loop (?redirect=true?)
+const { response } = require('express')
 var sanitiseHtml = require('sanitize-html')
 function renderMacro(macro, args, pages = undefined)
 {
@@ -13,13 +14,42 @@ function renderMacro(macro, args, pages = undefined)
             return '<br>'
         case 'toc':
             return buildTOC()
+        case 'file':
+            var options = args.split(',')
+            var res = ''
+            var filename = ''
+            const properties = [
+                new RegExp('^(.*?\.(?:png|jpg|jpeg|gif|webp))$', 'gi'),
+                new RegExp('^width\ ?=\ ?(.*?)$', 'ig'),
+                new RegExp('^height\ ?=\ ?(.*?)$', 'ig')
+            ]
+            options.forEach((val, i, arr) =>
+            {
+                properties.forEach((reg, j, props) =>
+                {
+                    if (reg.test(val.trim()))
+                    {
+                        if (j == 0)
+                        {
+                            filename = val
+                            res += 'src=\'/uploads/'//src
+                        }
+                        res += val
+                        if (j == 0) res += '\''
+                        res += ' ' 
+                    }
+                })
+            })
+            return `<a href='/file/${filename}'><img ${res} class='ren-img img-fluid'></a>`
         case 'color':
             const lastComma = args.lastIndexOf(',')
             const color = args.substring(lastComma + 1, args.length)
             const text = args.substring(0, lastComma)
             return '<span style="color: ' + color + '">' + text + '</span>'
         case 'youtube':
-            return '<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/' + args + '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'
+            const ifr = `<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            //console.log(ifr)
+            return ifr
         case 'footnote':
             return generateFootnote()
         default:
@@ -84,6 +114,19 @@ function generateFootnote()
     }
     return footnote
 }
+function fredirect(pagename, paragraph, text, res, redirect)
+{
+    pagename = sanitiseHtml(pagename,{allowedTags: [], allowedAttributes: {}})
+    if (res !== undefined)
+    {
+        if (!redirect)
+        {
+            return `<p>${text}</p>`
+        }
+        res.redirect(`/w/${pagename}?redirect=true${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
+    }
+    else return '<p><span class="fw-bold text-danger">REDIRECT ERROR</span>: redirect can only be done on a normal page.</p>'
+}
 var currentTOC = undefined
 var latestHeading = 7
 var toc
@@ -92,22 +135,21 @@ var footnote
 var footnotecount
 
 
-module.exports = (data, renderInclude, pages = undefined) => //todo: remove pages requirement
+module.exports = (data, renderInclude, pages = undefined, res = undefined, redirect = true) => //todo: remove pages requirement
 {
     //initialise
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
     toc = 'Table of Contents<hr>'
 
+    //Redirect
+    data = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (match, p1, p2, offset, string, groups) => fredirect(p1, p2, string, res, redirect))
     //centred text
     data = data.replace(/<:>{{(.*)}}/igm, '<div class="ren-center">$1</div>')
     //left aligned text
     data = data.replace(/<<>{{(.*)}}/igm, '<div class="ren-left">$1</div>')
     //right aligned text
     data = data.replace(/<>>{{(.*)}}/igm, '<div class="ren-right">$1</div>')
-
-    //sanitising things
-    data = sanitiseHtml(data, global.sanitiseOptions)
 
     //headings
     data = data.replace(/^(=+)\ (.*)\ =+\r?\n/igm, (match, p1, p2, offset, string, groups) => renderHeading(p2, p1.length))
@@ -151,6 +193,9 @@ module.exports = (data, renderInclude, pages = undefined) => //todo: remove page
 
     //replace \n
     data = data.replace(/\r?\n/igm, '<br>')
+
+    //sanitising things
+    data = sanitiseHtml(data, global.sanitiseOptions)
 
     return data
 }

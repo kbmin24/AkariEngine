@@ -9,10 +9,11 @@ module.exports = (req, res, pages, history) =>
             if (page) //if page exists
             {
                 //show the page
+                const redirect = req.query.redirect === undefined ? true : (req.query.redirect == 'true')
                 res.render('outline',
                 {
                     title: page.title,
-                    content: require(global.path + '/pages/render.js')(page.content, true, pages),
+                    content: require(global.path + '/pages/render.js')(page.content, true, pages, res, redirect),
                     isPage: true,
                     pagename: page.title,
                     username: req.session.username,
@@ -45,7 +46,7 @@ module.exports = (req, res, pages, history) =>
                 res.render('outline',
                 {
                     title: page.page + ' (r' + rev +')',
-                    content: require(global.path + '/pages/render.js')(page.content, true, pages),
+                    content: require(global.path + '/pages/render.js')(page.content, true, pages, res),
                     isPage: true,
                     pagename: page.page,
                     username: req.session.username,

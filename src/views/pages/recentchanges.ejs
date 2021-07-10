@@ -27,7 +27,7 @@
                     <% if (changes[i].type == 'upload') { %>
                         <a href='/file/<%= changes[i].page %>'><%= changes[i].page %></a> <em>(file)</em>
                     <% } else { %>
-                        <a href='/w/<%= changes[i].page %>'><%= changes[i].page %></a> (r<%= changes[i].rev %>)
+                        <a href='/w/<%= changes[i].page %>?redirect=false'><%= changes[i].page %></a> (r<%= changes[i].rev %>)
                     <% } %>
                 </th>
                 <td><%= changes[i].doneBy %></td>

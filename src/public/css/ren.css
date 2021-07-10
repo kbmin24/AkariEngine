@@ -16,7 +16,10 @@
 {
     display:inline-block;
 }
-
+.ren-img
+{
+    display: inline-block;
+}
 a
 {
     text-decoration: none;

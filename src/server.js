@@ -83,7 +83,7 @@ global.sanitiseOptions =
         img: ['class', 'id', 'style', 'height', 'width', 'src']
     },
     disallowedTagsMode: 'escape',
-    allowedIframeHostnames: ['www.youtube.com', 'www.nocookie.youtube.com']
+    allowedIframeHostnames: ['www.youtube.com', 'www.youtube-nocookie.com']
 }
 
 const path = require('path')
@@ -287,13 +287,14 @@ var storage = multer.diskStorage({
         }
         try
         {
+            //todo: refuse comma
             if (fs.existsSync(__dirname + '/public/uploads/' + req.body.filename))
             {
                 cb('File already exists.')
             }
             else
             {
-                cb(null, req.body.filename) //req.body.filename
+                cb(null, req.body.filename.trim()) //req.body.filename
             }
         }
         catch(err)
