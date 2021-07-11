@@ -47,13 +47,14 @@ function renderMacro(macro, args, pages = undefined)
             const text = args.substring(0, lastComma)
             return '<span style="color: ' + color + '">' + text + '</span>'
         case 'youtube':
-            const ifr = `<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
             //console.log(ifr)
             return ifr
         case 'footnote':
             return generateFootnote()
         default:
-            return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
+            return `[${macro}(${args})]`
+            //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
     }
 }
 function list(line, type)
@@ -87,7 +88,7 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    var res = `<h${depth+1} class='border-bottom' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h2>`
+    var res = `<h${depth+1} class='border-bottom' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>`
 
     //update TOC
     for (var i = 1; i < depth; i++) toc += '&ensp;'
@@ -124,6 +125,7 @@ function fredirect(pagename, paragraph, text, res, redirect)
             return `<p>${text}</p>`
         }
         res.redirect(`/w/${pagename}?redirect=true${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
+        return true
     }
     else return '<p><span class="fw-bold text-danger">REDIRECT ERROR</span>: redirect can only be done on a normal page.</p>'
 }
@@ -143,7 +145,17 @@ module.exports = (data, renderInclude, pages = undefined, res = undefined, redir
     toc = 'Table of Contents<hr>'
 
     //Redirect
-    data = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (match, p1, p2, offset, string, groups) => fredirect(p1, p2, string, res, redirect))
+    const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (match, p1, p2, offset, string, groups) =>
+    {
+        if (fredirect(p1, p2, string, res, redirect))
+        {
+            return '';
+        }
+    })
+    if (redr == '')
+    {
+        return undefined
+    } //escape
     //centred text
     data = data.replace(/<:>{{(.*)}}/igm, '<div class="ren-center">$1</div>')
     //left aligned text
@@ -168,32 +180,34 @@ module.exports = (data, renderInclude, pages = undefined, res = undefined, redir
     //ol
     data = data.replace(/^((?:1\. .+\r?\n)+)/igm, (match, p1, p2, offset, string, groups) => (list(p1,'ol')))
     //big text
-    data = data.replace(/"""(.*)"""/gim, '<span style="font-size: 24px">$1</span>')
+    data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
     //bold
-    data = data.replace(/'''(.*)'''/gim, '<b>$1</b>')
+    data = data.replace(/'''(.*?)'''/gim, '<b>$1</b>')
     //italic
-    data = data.replace(/''(.*)''/igm, '<i>$1</i>')
+    data = data.replace(/''(.*?)''/igm, '<i>$1</i>')
     //underline
-    data = data.replace(/__(.*)__/igm, '<u>$1</u>')
+    data = data.replace(/__(.*?)__/igm, '<u>$1</u>')
     //strike
-    data = data.replace(/--(.*)--/igm, '<del class="text-secondary">$1</del>')
+    data = data.replace(/--(.*?)--/igm, '<del class="text-secondary">$1</del>')
     //superscript
-    data = data.replace(/\^\^(.*)\^\^/igm, '<sup>$1</sup>')
+    data = data.replace(/\^\^(.*?)\^\^/igm, '<sup>$1</sup>')
     //subscript
-    data = data.replace(/,,(.*),,/igm, '<sub>$1</sub>')
+    data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
     
     //external link with different text
-    data = data.replace(/\[\[(https?\:.*)\|(.*)\]\]/igm, '<a href="$1">$2</a>')
+    data = data.replace(/\[\[(https?\:.*?)\|(.*?)\]\]/igm, '<a href="$1">$2</a>')
     //external link
-    data = data.replace(/\[\[(https?\:.*)\]\]/igm, '<a href="$1">$1</a>')
+    data = data.replace(/\[\[(https?\:.*?)\]\]/igm, '<a href="$1">$1</a>')
     //Internal Link with different text
-    data = data.replace(/\[\[(.*)\|(.*)\]\]/igm, '<a href="/w/$1">$2</a>')
+    data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, '<a href="/w/$1">$2</a>')
     //Internal Link
-    data = data.replace(/\[\[(.*)\]\]/igm, '<a href="/w/$1">$1</a>')
+    data = data.replace(/\[\[(.*?)\]\]/igm, '<a href="/w/$1">$1</a>')
 
     //replace \n
     data = data.replace(/\r?\n/igm, '<br>')
 
+    //escape things
+    data = data.replace(/((\\\\|\\))/igm, (match, p1, offset, string, groups) => {return p1 == '\\' ? '' : '\\\\'})
     //sanitising things
     data = sanitiseHtml(data, global.sanitiseOptions)
 

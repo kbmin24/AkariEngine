@@ -8,6 +8,7 @@ global.path = __dirname
 //global.loopbackAddress = 'http://127.0.0.1:' + port.toString() //change if running behind a load balancer
 global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under CC BY-SA 3.0. This cannot be undone.`
 global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
+global.perms = ['developer', 'grant', 'admin', 'deletePage']
 //session
 const secret = '6YOhz+9FXUDnTCl1OcqUTDbE0yy39a37JDUYvuhdhQ/PNXopXu7iLKFdnIEFKlQv5WcwHD4hDn8Gg8Pb4DgEIg=='
 const session = require('express-session')
@@ -43,6 +44,7 @@ const pages = require(__dirname + '/models/page.model.js')(sequelize)
 const recentchanges = require(__dirname + '/models/recentchanges.model.js')(sequelize)
 const history = require(__dirname + '/models/history.model.js')(sequelize)
 const mfile = require(__dirname + '/models/file.model.js')(sequelize)
+const perm = require(__dirname + '/models/perm.model.js')(sequelize)
 sequelize.sync()
 
 
@@ -60,7 +62,7 @@ global.sanitiseOptions =
                   'ruby', 'rp', 'rt'],
     allowedAttributes:
     {
-        a: ['href', 'name', 'target'],
+        a: ['href', 'name', 'target', 'id', 'class'],
         font: ['class', 'id', 'style', 'size', 'color', 'face'],
         div: ['class', 'id', 'style'],
         span: ['class', 'id', 'style'],
@@ -79,7 +81,7 @@ global.sanitiseOptions =
         tr: ['class', 'id', 'style', 'colspan', 'rowspan'],
         thead: ['class', 'id', 'style', 'colspan', 'rowspan'],
         tbody: ['class', 'id', 'style', 'colspan', 'rowspan'],
-        iframe: ['width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'],
+        iframe: ['class', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'],
         img: ['class', 'id', 'style', 'height', 'width', 'src']
     },
     disallowedTagsMode: 'escape',
@@ -183,31 +185,49 @@ app.post('/move/:name', (req, res) =>
 })
 app.get('/delete/:name', (req, res) =>
 {
-    pages.findOne({where: {title: req.params.name}}).then(target =>
+    const username = req.session.username
+    if (username === undefined)
     {
-        if (target)
+        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+        return
+    }
+    perm.findOne({where: {username: username, perm: 'grant'}}).then(p =>
+    {
+        if (p)
         {
-            const username = req.session.username
-            ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username}, (err, html) => 
+            pages.findOne({where: {title: req.params.name}}).then(target =>
             {
-                res.render('outline',
+                if (target)
                 {
-                    title: 'Delete ' + req.params.name,
-                    content: html,
-                    username: username,
-                    wikiname: global.appname
-                })
+                    const username = req.session.username
+                    ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username}, (err, html) => 
+                    {
+                        res.render('outline',
+                        {
+                            title: 'Delete ' + req.params.name,
+                            isPage: true,
+                            pagename: target.title,
+                            content: html,
+                            username: username,
+                            wikiname: global.appname
+                        })
+                    })
+                }
+                else
+                {
+                    require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page')
+                }
             })
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page')
+            require(global.path + '/error.js')(req, res, null, 'You do not have permission to delete page.', '/login', 'the login page')
         }
     })
 })
 app.post('/delete/:name', (req, res) =>
 {
-    require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history)
+    require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm)
 })
 app.get('/revert/:name', (req, res) =>
 {
@@ -262,6 +282,7 @@ app.get('/diff/:name', (req, res) =>
 })
 const multer = require('multer')
 const fs = require('fs')
+const { applyPatch } = require('diff')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
@@ -373,7 +394,20 @@ app.get('/FileList', (req, res) =>
     require(global.path + '/files/filelist.js')(req, res, mfile)
 })
 
-
+app.get('/admin', (req, res) =>
+{
+    //todo: check admin perm
+    require(__dirname + '/sendfile.js')(req, res, 'Admin tools', '/views/admin/index.html')
+})
+app.get('/admin/:name', (req, res) =>
+{
+    //handler
+    require(global.path + '/admin/adminGetHandler.js')(req, res, users, perm)
+})
+app.post('/admin/:name', (req, res) =>
+{
+    require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm)
+})
 var server = app.listen(port, '0.0.0.0', () =>
 {
     const host = server.address().address

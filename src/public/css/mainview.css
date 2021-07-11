@@ -7,7 +7,7 @@
 }
 #pageTools
 {
-    display: grid;
+    /*display: grid;*/
     float: right;
 }
 .pageToolItem > a
@@ -18,4 +18,59 @@
 #article
 {
     word-wrap: break-word;
+    overflow-x: hidden;
+}
+
+.nav-icon
+{
+    margin-right: 5px;
+}
+.nav-item
+{
+    margin-right: 15px;
+}
+@media (max-width: 768px)
+{
+    .nav-icon
+    {
+        display: none;
+    }
+}
+@media (max-width: 992px)
+{
+    .nav-icon
+    {
+        display: none;
+    }
+}
+
+#userIcon
+{
+    position: absolute;
+    right: 10px;
+    float: right !important;
+}
+#searchBox
+{
+    max-width: 300px;
+    margin-right: 100px;
+    float: right;
+}
+@media (max-width: 648px)
+{
+    #userIcon
+    {
+        top: 5px;
+    }
+    #searchBox
+    {
+        max-width: 648px;
+        margin-right: 0px;
+        width: 100%;
+    }
+}
+.nav-contents
+{
+    max-width: 1320px;
+    position: relative;
 }

@@ -1,20 +1,8 @@
 <!-- pageTools.ejs: edit, delete, move...-->
-<div class='container w-auto bg-light justify-content-center border rounded mb-3' id='pageTools'>
-    <div class='row'>
-        <div class='col border-end p-2 pageToolItem'>
-            <a href='/w/<%= pagename %>'>View</a>
-        </div>
-        <div class='col border-end p-2 pageToolItem'>
-            <a href='/edit/<%= pagename %>'>Edit</a>
-        </div>
-        <div class='col border-start border-end p-2 pageToolItem'>
-            <a href='/move/<%= pagename %>'>Move</a>
-        </div>
-        <div class='col border-start border-end p-2 pageToolItem'>
-            <a href='/history/<%= pagename %>'>History</a>
-        </div>
-        <div class='col border-start p-2 pageToolItem'>
-            <a href='/delete/<%= pagename %>'>Delete</a>
-        </div>
-    </div>
+<div class="container w-auto btn-group mb-3" id='pageTools' role="group" aria-label="Basic outlined example">
+  <a href="/w/<%= pagename %>" class="btn btn-outline-primary">View</a>
+  <a href='/edit/<%= pagename %>' class="btn btn-outline-primary">Edit</a>
+  <a href='/move/<%= pagename %>' class="btn btn-outline-primary">Move</a>
+  <a href='/history/<%= pagename %>' class="btn btn-outline-primary">History</a>
+  <a href='/delete/<%= pagename %>' class="btn btn-outline-primary">Delete</a>
 </div>

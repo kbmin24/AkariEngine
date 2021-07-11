@@ -108,3 +108,6 @@ dist
 
 #DB file (because it includes my PW (even if it's hashed)
 db.sqlite
+
+#image files
+src/public/uploads/*

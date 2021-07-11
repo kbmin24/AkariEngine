@@ -2,7 +2,7 @@
 <form action='/Upload' enctype='multipart/form-data' method='POST'>
     <div class='form-group mb-2'>
         <label for='filenameInputBox'>Filename</label>
-        <input type='text' name='filename' maxlength=255 class='form-control' id='filenameInputBox' placeholder='Enter Filename'>
+        <input type='text' name='filename' maxlength='255' class='form-control' id='filenameInputBox' placeholder='Enter Filename'>
     </div>
     <div class='form-group mb-2'>
         <label for='editAreaBox'>Explanation</label>
@@ -21,7 +21,7 @@
     <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission. <%= global.copyrightNotice %></p>
     <p>You can only upload JPEG, JPG, PNG, GIF and WebP.</p>
     </div>
-    <button type='submit' class='btn btn-primary'>Upload</button>
+    <button type='submit' id='uploadButton' class='btn btn-primary' d  isabled>Upload</button>
 </form>
 
 <script type='text/javascript' src='/js/upload.js'></script>

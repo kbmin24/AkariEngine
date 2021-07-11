@@ -15,53 +15,59 @@
         <button type='submit' class='btn btn-primary' style='width: 100px;margin: auto'>Compare</button>
     </div>
 </form>
-<table class="table">
-    <thead>
-        <tr>
-            <th scope='col'>Revision Name</th>
-            <th scope='col'>Username</th>
-            <th scope='col'>Change made</th>
-            <th scope='col'>Comment</th>
-            <th scope='col'>Timestamp</th>
-            <th scope='col'></th>
-        </tr>
-    </thead>
-    <tbody>
-        <% for(let i = from - 1; i < to; i++) { %>
+
+<div style='overflow-x: auto'> <!-- wrpper -->
+    <table class="table">
+        <thead>
             <tr>
-                <th scope='row'>
-                    <a href='/w/<%= changes[i].page %>?rev=<%= changes[i].rev %>'>r<%= changes[i].rev %></a> (
-                    <% if (changes[i].bytechange > 0) { %>
-                        <span class='text-success fw-bold'>
-                            +<%= changes[i].bytechange %>
-                        </span>
-                    <% } else if (changes[i].bytechange == 0) { %>
-                        <span class='text-secondary fw-bold'>
-                            <%= changes[i].bytechange %>
-                        </span>
-                    <% } else { %>
-                        <span class='text-danger fw-bold'>
-                            <%= changes[i].bytechange %>
-                        </span>
-                    <% } %>
-                    )
-                </th> <!-- todo: enable viewing specific r-->
-                <td><%= changes[i].editedby %></td>
-                <td><%= changes[i].type %></td>
-                <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
-                <td><%= date.format(changes[i].createdAt, global.dtFormat) %> </td>
-                <td>
-                    <% let lnk = '/raw/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
-                    <a href=<%= lnk %>><button type="button" class="btn btn-secondary">RAW</button></a>
-                    <%if (changes[i].type == 'edit' || changes[i].type == 'create' || changes[i].type == 'revert') { %>
-                        <% let lnk = '/revert/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
-                        <a href=<%= lnk %>><button type="button" class="btn btn-danger">Revert</button></a>
-                    <% } %>
-                </td>
+                <th scope='col'>Revision Name</th>
+                <th scope='col'>Username</th>
+                <th scope='col'>Change made</th>
+                <th scope='col'>Comment</th>
+                <th scope='col'>Timestamp</th>
+                <th scope='col'></th>
             </tr>
-        <% } %>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            <% for(let i = from - 1; i < to; i++) { %>
+                <tr>
+                    <th scope='row'>
+                        <a href='/w/<%= changes[i].page %>?rev=<%= changes[i].rev %>'>r<%= changes[i].rev %></a> (<% if (changes[i].bytechange > 0) { %><span class='text-success fw-bold'>+<%= changes[i].bytechange %></span><% } else if (changes[i].bytechange == 0) { %><span class='text-secondary fw-bold'><%= changes[i].bytechange %></span><% } else { %><span class='text-danger fw-bold'><%= changes[i].bytechange %></span><% } %>)
+                        <!--
+                        <a href='/w/<%= changes[i].page %>?rev=<%= changes[i].rev %>'>r<%= changes[i].rev %></a> (
+                        <% if (changes[i].bytechange > 0) { %>
+                            <span class='text-success fw-bold'>
+                                +<%= changes[i].bytechange %>
+                            </span>
+                        <% } else if (changes[i].bytechange == 0) { %>
+                            <span class='text-secondary fw-bold'>
+                                <%= changes[i].bytechange %>
+                            </span>
+                        <% } else { %>
+                            <span class='text-danger fw-bold'>
+                                <%= changes[i].bytechange %>
+                            </span>
+                        <% } %>
+                        )
+                        -->
+                    </th>
+                    <td><%= changes[i].editedby %></td>
+                    <td><%= changes[i].type %></td>
+                    <td><%= changes[i].comment %></td>
+                    <td><%= date.format(changes[i].createdAt, global.dtFormat) %> </td>
+                    <td>
+                        <% let lnk = '/raw/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
+                        <a href=<%= lnk %>><button type="button" class="btn btn-secondary">RAW</button></a>
+                        <%if (changes[i].type == 'edit' || changes[i].type == 'create' || changes[i].type == 'revert') { %>
+                            <% let lnk = '/revert/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
+                            <a href=<%= lnk %>><button type="button" class="btn btn-danger">Revert</button></a>
+                        <% } %>
+                    </td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
 <div>
     <ul class="pagination">
         <% if (from > 1) { %>

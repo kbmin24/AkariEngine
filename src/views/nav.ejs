@@ -1,34 +1,38 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-    <div class="container-fluid">
+<nav class="navbar navbar-dark bg-primary fixed-top">
+    <div class="container-fluid nav-contents">
         <!-- logo -->
         <a class="navbar-brand" href="/"><%= wikiname %></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <!-- rc -->
-                <li class="nav-item">
-                    <a class="nav-link active" href="/RecentChanges?show=30">RecentChanges</a>
-                </li>
-                <!-- pagelist-->
-                <li class="nav-item">
-                    <a class="nav-link active" href="/PageList">PageList</a>
-                </li>
-                <!-- filelist -->
-                <li class="nav-item">
-                    <a class="nav-link active" href="/FileList">FileList</a>
-                </li>
-                <!-- upload -->
-                <li class="nav-item">
-                    <a class="nav-link active" href="/Upload">Upload</a>
-                </li>
-            </ul>
-            <!-- search box -->
-            <form class="d-flex mx-3" action='/w' method='POST'>
-                <input class="form-control me-2" name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
-                <button class="btn btn-outline-light" type="submit">Open</button>
-            </form>
+        <ul class="navbar-nav me-auto mb-lg-0" style='flex-direction: row;'>
+            <!-- rc -->
+            <li class="nav-item">
+                <a class="nav-link active" href="/RecentChanges?show=30">
+                    <i class="fa fa-refresh nav-icon" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>RecentChanges</span>
+                </a>
+            </li>
+            <!-- pagelist-->
+            <li class="nav-item">
+                <a class="nav-link active" href="/PageList">
+                    <i class="fa fa-list-ul nav-icon" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>PageList</span>
+                </a>
+            </li>
+            <!-- filelist -->
+            <li class="nav-item">
+                <a class="nav-link active" href="/FileList">
+                    <i class="fa fa-picture-o nav-icon" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>FileList</span>
+                </a>
+            </li>
+            <!-- upload -->
+            <li class="nav-item">
+                <a class="nav-link active" href="/Upload">
+                    <i class="fa fa-upload nav-icon" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>Upload</span>
+                </a>
+            </li>
+        </ul>
+        <div class='navbar-nav' id='userIcon'>
             <!-- user-->
             <div class="dropdown">
                 <button class="btn btn-secondary btn-sm dropdown-toggle" id="navUserDropDown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -38,7 +42,7 @@
                         IP User
                     <% } %>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navUserDropDown">
+                <ul class="dropdown-menu dropdown-menu-end position-absolute" aria-labelledby="navUserDropDown">
                     <li>
                         <% if (locals.username) { %>
                             <a class="dropdown-item" href='/logout'>Logout</a>
@@ -49,5 +53,11 @@
                 </ul>
             </div>
         </div>
+        <!-- search box -->
+        <form class="input-group d-flex" action='/w' method='POST' id='searchBox'>
+            <input class="form-control" name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
+            <button class="btn btn-outline-light bg-primary" type="subimt"><i class="fa fa-arrow-right text-light" aria-hidden="true"></i></button>
+            <!-- <button class="btn btn-outline-light" type="submit">Open</button> -->
+        </form>
     </div>
 </nav>

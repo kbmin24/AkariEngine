@@ -31,7 +31,7 @@
                     <% } %>
                 </th>
                 <td><%= changes[i].doneBy %></td>
-                <td><%= changes[i].type %></td>
+                <td><%= changes[i].type %> (<% if (changes[i].bytechange > 0) { %><span class='text-success fw-bold'>+<%= changes[i].bytechange %></span><% } else if (changes[i].bytechange == 0) { %><span class='text-secondary fw-bold'><%= changes[i].bytechange %></span><% } else { %><span class='text-danger fw-bold'><%= changes[i].bytechange %></span><% } %>)</td>
                 <td><%= changes[i].comment %></td> <!-- todo: separate row? -->
                 <td><%= date.format(changes[i].createdAt, global.dtFormat) %> </td>
             </tr>
