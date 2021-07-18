@@ -14,7 +14,7 @@ module.exports = (req, res, username, users, pages, recentchanges, history, perm
             pages.findOne({where: {title: req.params.name}}).then(page =>
             {
                 var doneby = req.session.username
-                if (doneby === undefined) doneby = req.connection.remoteAddress
+                if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
                 if (page) //if page exists
                 {
                     const oldLength = page.content.length

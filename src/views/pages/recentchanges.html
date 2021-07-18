@@ -1,0 +1,29 @@
+<div class="dropstart">
+    <button class="btn btn-secondary dropdown-toggle float-end" type="button" id="rcshowNDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      Show...
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="rcshowNDropdown">
+      <li><a class="dropdown-item" href="/RecentChanges?show=5">Show 5</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=10">Show 10</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=30">Show 30</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=100">Show 100</a></li>
+    </ul>
+</div>
+<div style='clear:both'></div>
+<div style='overflow-x: auto'>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope='col'>Page name</th>
+                <th scope='col'>Username</th>
+                <th scope='col'>Change made</th>
+                <th scope='col'>Comment</th>
+                <th scope='col'>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody id = 'rclist'>
+        </tbody>
+    </table>
+</div>
+<script src='/lib/moment.js'></script>
+<script src='/js/readRC.js'></script>

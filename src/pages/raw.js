@@ -1,5 +1,24 @@
-module.exports = (req, res, pages, history) =>
+module.exports = async (req, res, pages, history, protect, perm) =>
 {
+    //check read ACL
+    const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
+    var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
+    var username = req.session.username
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm)
+    if (r)
+    {
+        //do nothing
+    }
+    else if (r === undefined)
+    {
+        return //error message already given out
+    }
+    else
+    {
+        require(global.path + '/error.js')(req, res, username, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        return
+    }
+
     var rev = req.query.rev
     if (rev === undefined)
     {
@@ -7,6 +26,7 @@ module.exports = (req, res, pages, history) =>
         {
             if (page) //if page exists
             {
+                res.setHeader('content-type', 'text/plain')
                 res.send(page.content)
             }
             else
@@ -31,6 +51,7 @@ module.exports = (req, res, pages, history) =>
             {
                 if (page)
                 {
+                    res.setHeader('content-type', 'text/plain')
                     res.send(page.content)
                 }
                 else

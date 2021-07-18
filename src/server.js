@@ -6,9 +6,10 @@ const port = 8080
 global.appname = 'testwiki'
 global.path = __dirname
 //global.loopbackAddress = 'http://127.0.0.1:' + port.toString() //change if running behind a load balancer
-global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under CC BY-SA 3.0. This cannot be undone.`
+global.license = 'CC BY-SA 3.0'
+global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This cannot be undone.`
 global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
-global.perms = ['developer', 'grant', 'admin', 'deletePage']
+global.perms = ['developer', 'grant', 'admin', 'deletepage', 'acl', 'globalacl']
 //session
 const secret = '6YOhz+9FXUDnTCl1OcqUTDbE0yy39a37JDUYvuhdhQ/PNXopXu7iLKFdnIEFKlQv5WcwHD4hDn8Gg8Pb4DgEIg=='
 const session = require('express-session')
@@ -45,6 +46,8 @@ const recentchanges = require(__dirname + '/models/recentchanges.model.js')(sequ
 const history = require(__dirname + '/models/history.model.js')(sequelize)
 const mfile = require(__dirname + '/models/file.model.js')(sequelize)
 const perm = require(__dirname + '/models/perm.model.js')(sequelize)
+const protect = require(__dirname + '/models/protect.model.js')(sequelize)
+const adminlog = require(__dirname + '/models/adminlog.model.js')(sequelize)
 sequelize.sync()
 
 
@@ -62,11 +65,13 @@ global.sanitiseOptions =
                   'ruby', 'rp', 'rt'],
     allowedAttributes:
     {
-        a: ['href', 'name', 'target', 'id', 'class'],
+        a: ['href', 'name', 'id', 'target', 'rel', 'class', 'title'],
+        i: ['class', 'id', 'aria-hidden'],
         font: ['class', 'id', 'style', 'size', 'color', 'face'],
         div: ['class', 'id', 'style'],
         span: ['class', 'id', 'style'],
         p: ['class', 'id', 'style'],
+        del: ['class', 'id', 'style'],
         pre: ['class', 'id', 'style'],
         h1: ['class', 'id', 'style'],
         h2: ['class', 'id', 'style'],
@@ -104,6 +109,10 @@ app.get('/License', (req, res) =>
 {
     require(__dirname + '/sendfile.js')(req, res, 'License', '/license.html')
 })
+app.get('/noEmail', (req, res) =>
+{
+    require(__dirname + '/sendfile.js')(req, res, '이메일 주소 무단 수집 거부', '/views/etc/noEmail.html')
+})
 app.get('/signup', (req, res) =>
 {
     require(__dirname + '/sendfile.js')(req, res, 'Sign up', '/views/user/signup.html')
@@ -135,30 +144,60 @@ app.get('/whoami', (req, res) =>
     })
 })
 
-app.get('/edit/:name', (req, res) =>
+app.get('/edit/:name', async (req, res) =>
 {
     //TODO: error if the name is too long (>255)s
-    pages.findOne({where: {title: req.params.name}}).then(target =>
+    if (req.params.name.length > 255)
     {
-        var content = ''
-        if (target) content = target.content
-        const username = req.session.username
-        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username,}, (err, html) => 
+        require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 256 characters long at most.', '/', 'the main page')
+        return
+    }
+    const target = await pages.findOne({where: {title: req.params.name}})
+    var username = req.session.username
+    if (username === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+
+    //check for protection 
+    const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
+    var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm)
+    if (r)
+    {
+        //do nothing
+    }
+    else if (r === undefined)
+    {
+        return //error message already given out
+    }
+    else
+    {
+        require(global.path + '/error.js')(req, res, username, 'You cannot edit because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        return
+    }
+
+    var content = ''
+    if (target) content = target.content
+    ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username}, (err, html) => 
+    {
+        res.render('outline',
         {
-            res.render('outline',
-            {
-                title: 'Edit ' + req.params.name,
-                content: html,
-                username: username,
-                wikiname: global.appname
-            })
+            title: 'Edit ' + req.params.name,
+            content: html,
+            isPage: true,
+            pagename: req.params.name,
+            username: username,
+            wikiname: global.appname
         })
     })
 })
 
-app.post('/edit/:name', (req, res) =>
+app.post('/edit/:name', async (req, res) =>
 {
-    require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history) //actually no need to separately pass on username (in req)
+    if (req.params.name.length > 255)
+    {
+        require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 256 characters long at most.', '/', 'the main page')
+        return
+    }
+    await require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm) //actually no need to separately pass on username (in req)
 })
 
 app.get('/move/:name', (req, res) =>
@@ -191,7 +230,7 @@ app.get('/delete/:name', (req, res) =>
         require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
         return
     }
-    perm.findOne({where: {username: username, perm: 'grant'}}).then(p =>
+    perm.findOne({where: {username: username, perm: 'deletepage'}}).then(p =>
     {
         if (p)
         {
@@ -229,23 +268,37 @@ app.post('/delete/:name', (req, res) =>
 {
     require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm)
 })
-app.get('/revert/:name', (req, res) =>
+app.get('/revert/:name', async (req, res) =>
 {
-    require(global.path + '/pages/revert.js')(req, res, req.session.username, users, pages, recentchanges, history)
+    await require(global.path + '/pages/revert.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm)
 })
-app.get('/w/:name', (req, res) =>
+app.get('/w/:name', async (req, res) =>
 {
-    require(global.path + '/pages/view.js')(req, res, pages, history)
+    await require(global.path + '/pages/view.js')(req, res, pages, history, protect, perm)
 })
-app.post('/w', (req,res) =>
+app.post('/w', async (req,res) =>
 {
-    res.redirect('/w/' + req.body.pagename)
+    await res.redirect('/w/' + req.body.pagename)
 })
-
-app.get('/raw/:name', (req, res) =>
+app.get('/search', async (req, res) =>
 {
-    res.setHeader('content-type', 'text/plain')
-    require(global.path + '/pages/raw.js')(req, res, pages, history)
+    await require(global.path + '/pages/search.js')(req, res, pages)
+})
+app.post('/search', async (req, res) =>
+{
+    await require(global.path + '/pages/navSearch.js')(req, res, pages)
+})
+app.get('/protect/:name', async (req, res) =>
+{
+    await require(global.path + '/admin/protectGet.js')(req, res, perm, protect)
+})
+app.post('/protect/:name', async (req, res) =>
+{
+    await require(global.path + '/admin/protectPost.js')(req, res, perm, protect, pages, history, recentchanges)
+})
+app.get('/raw/:name', async (req, res) =>
+{
+    await require(global.path + '/pages/raw.js')(req, res, pages, history, protect, perm)
 })
 app.get('/history/:name', (req, res) =>
 {
@@ -253,7 +306,7 @@ app.get('/history/:name', (req, res) =>
 })
 app.get('/RecentChanges', (req, res) =>
 {
-    require(global.path + '/pages/recentchanges.js')(req, res, recentchanges)
+    require(global.path + '/sendfile.js')(req, res, 'RecentChanges', '/views/pages/recentchanges.html')
 })
 app.get('/PageList', (req, res) =>
 {
@@ -274,15 +327,13 @@ app.get('/Upload', (req, res) =>
         })
     })
 })
-app.get('/diff/:name', (req, res) =>
+app.get('/diff/:name', async (req, res) =>
 {
     //usage example: /diff/FrontPage?rev1=20&rev2=30 (compare r20 and r30)
-    //TODO: SANITIZE before displaying any informations (INCLUDING title and source)
-    require(global.path + '/pages/diff.js')(req, res, history)
+    await require(global.path + '/pages/diff.js')(req, res, history, protect, perm)
 })
 const multer = require('multer')
 const fs = require('fs')
-const { applyPatch } = require('diff')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
@@ -357,9 +408,9 @@ app.post('/Upload', upload.single('inputFile'), (req, res, ) =>
     })
 })
 
-app.get('/file/:name', (req, res) => 
+app.get('/file/:name', async (req, res) => 
 {
-    require(global.path + '/files/viewfile.js')(req, res, mfile)
+    await require(global.path + '/files/viewfile.js')(req, res, mfile)
 })
 app.get('/deletefile/:name', (req, res) =>
 {
@@ -393,11 +444,29 @@ app.get('/FileList', (req, res) =>
 {
     require(global.path + '/files/filelist.js')(req, res, mfile)
 })
-
-app.get('/admin', (req, res) =>
+app.get('/RandomPage', async (req, res) =>
+{
+    const randomPage = await pages.findOne({ 
+        order: sequelize.random() 
+    })
+    res.redirect(`/w/${randomPage.title}`)
+})
+app.get('/admin', async (req, res) =>
 {
     //todo: check admin perm
-    require(__dirname + '/sendfile.js')(req, res, 'Admin tools', '/views/admin/index.html')
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, 'admin', perm)
+    if (r)
+    {
+        require(__dirname + '/sendfile.js')(req, res, 'Admin tools', '/views/admin/index.html')
+    }
+    else if (r === undefined)
+    {
+        return //error message already given out
+    }
+    else
+    {
+        require(global.path + '/error.js')(req, res, null, 'You need admin permission.', '/', 'the main page')
+    }
 })
 app.get('/admin/:name', (req, res) =>
 {
@@ -406,8 +475,28 @@ app.get('/admin/:name', (req, res) =>
 })
 app.post('/admin/:name', (req, res) =>
 {
-    require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm)
+    require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, adminlog)
 })
+app.get('/adminlog', async (req, res) =>
+{
+    await require(global.path + '/admin/adminlog.js')(req, res, adminlog)
+})
+app.get('/ajax/autocomplete', async (req, res) =>
+{
+    await require(global.path + '/pages/autocompleteAJAX.js')(req, res, pages)
+})
+
+app.get('/ajax/recentchanges', async (req, res) =>
+{
+    await require(global.path + '/pages/recentchanges.js')(req, res, recentchanges)
+})
+
+app.get('/lovelive', (req, res) =>
+{
+    res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')
+    return
+})
+
 var server = app.listen(port, '0.0.0.0', () =>
 {
     const host = server.address().address

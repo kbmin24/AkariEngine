@@ -6,29 +6,34 @@
     </head>
     <body>
         <%- include('nav') %>
-        <section>
-            <!-- Notifications-->
-            <% if (locals.notification) { %>
-                <div class="alert alert-primary" role="alert">
-                        <%= notification %>
-                </div>
-            <% } %>
+        <div class='container container-fluid'>
+            <%- include('rc') %>
+            <section>
+                <!-- Notifications-->
+                <% if (locals.notification) { %>
+                    <div class="alert alert-primary" role="alert">
+                            <%= notification %>
+                    </div>
+                <% } %>
 
-            <div class='container article-wrapper h-75 p-4 border rounded-top'>
-                <div>
-                    <h1><%= title %></h1>
-                    <% if (locals.isPage) { %>
-                        <%- include('pageTools') %>
-                    <% } %>
-                    <% if (locals.isFile) { %>
-                        <%- include('fileTools') %>
-                    <% } %>
+                <div class='article-wrapper h-75 p-4 border rounded-top row'>
+                    <div class='pb-2 mt-2 mb-3 border-bottom'>
+                        <h1 style='display:inline-block'><%= title %></h1>
+                        <% if (locals.isPage) { %>
+                            <%- include('pageTools') %>
+                        <% } %>
+                        <% if (locals.isFile) { %>
+                            <%- include('fileTools') %>
+                        <% } %>
+                    </div>
+                    <div style='clear: both'></div>
+                    <div id='article'>
+                        <%- content %>
+                    </div>
                 </div>
-                <div style='clear: both'></div>
-                <div id='article'>
-                    <%- content %>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
+        <%- include('footer') %>
+        <%- include('floatingToolbox') %>
     </body>
 </html>

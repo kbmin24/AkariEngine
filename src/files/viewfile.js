@@ -1,18 +1,19 @@
 const ejs = require('ejs')
 const date = require('date-and-time')
-module.exports = (req, res, files) =>
+module.exports = async (req, res, files) =>
 {
-    files.findOne({where: {filename: req.params.name}}).then(file =>
+    files.findOne({where: {filename: req.params.name}}).then(async file =>
     {
         if (file)
         {
+            const content = await require(global.path + '/pages/render.js')('',file.explanation, true)
             ejs.renderFile(global.path + '/views/files/viewfile.ejs',
             {
                 filename: req.params.name,
                 creator: file.uploader,
                 uploadTime: file.createdAt,
                 date: date,
-                explanation: require(global.path + '/pages/render.js')(file.explanation, true)
+                explanation: content
             }, (err, html) => 
             {
                 res.render('outline',

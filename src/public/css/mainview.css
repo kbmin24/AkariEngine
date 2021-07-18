@@ -3,7 +3,6 @@
     /*I don't know what to put here*/
     margin-top: 100px;
     margin-bottom: 100px;
-    min-height: 600px;
 }
 #pageTools
 {
@@ -29,20 +28,7 @@
 {
     margin-right: 15px;
 }
-@media (max-width: 768px)
-{
-    .nav-icon
-    {
-        display: none;
-    }
-}
-@media (max-width: 992px)
-{
-    .nav-icon
-    {
-        display: none;
-    }
-}
+
 
 #userIcon
 {
@@ -69,8 +55,24 @@
         width: 100%;
     }
 }
+.ui-front
+{
+    z-index: 99999;
+}
+.ui-autocomplete
+{
+    border: 1px solid rgba(0,0,0,.15);
+    border-bottom-right-radius: .25rem;
+    border-bottom-left-radius: .25rem;
+}
 .nav-contents
 {
     max-width: 1320px;
     position: relative;
+}
+
+#footer
+{
+    width: 100%;
+    clear: both;
 }

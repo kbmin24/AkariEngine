@@ -5,7 +5,7 @@ module.exports = (req, res, pages) =>
     {
         order:
         [
-            ['id', 'DESC']
+            ['title', 'ASC']
         ]
     }).then( pagelist =>
     {

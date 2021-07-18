@@ -28,3 +28,20 @@ a
 {
     text-decoration: none;
 }
+.ren > a
+{
+    color: inherit;
+}
+
+.ren-extlink
+{
+    color: green;
+}
+.ren-extlink-icon
+{
+    color: green;
+}
+.ren-extlink:hover
+{
+    color: darkgreen;
+}

@@ -3,7 +3,7 @@
 //todo: redirect loop (?redirect=true?)
 const { response } = require('express')
 var sanitiseHtml = require('sanitize-html')
-function renderMacro(macro, args, pages = undefined)
+async function renderMacro(macro, args, pages = undefined, incl=true)
 {
     //switch?
     switch (macro)
@@ -15,7 +15,8 @@ function renderMacro(macro, args, pages = undefined)
         case 'toc':
             return buildTOC()
         case 'file':
-            var options = args.split(',')
+            //todo: change to random file name
+            var options = args.split('|')
             var res = ''
             var filename = ''
             const properties = [
@@ -41,32 +42,68 @@ function renderMacro(macro, args, pages = undefined)
                 })
             })
             return `<a href='/file/${filename}'><img ${res} class='ren-img img-fluid'></a>`
+        case 'include':
+            //let's fetch the data
+            args = args.split('|')
+            const p = await pages.findOne({where: {title: args[0]}})
+            if (!p)
+            {
+                return `[${macro}(${args})]`
+            }
+            else
+            {
+                var temArgs = {}
+                for (var i = 1; i < args.length; i++)
+                {
+                    const eqSign = args[i].indexOf('=')
+                    if (eqSign === undefined)
+                    {
+                        return `<p class="fw-bold text-danger">INCLUDE MACRO ERROR: no value given for argument ${args[i]}</p>`
+                    }
+                    const k = args[i].substring(0,eqSign).trim()
+                    const v = args[i].substring(eqSign + 1).trim()
+                    temArgs[k] = v
+                }
+                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, undefined, undefined, redirect=false, incl=false, args=temArgs)
+                return res
+            }
         case 'color':
-            const lastComma = args.lastIndexOf(',')
+            const lastComma = args.lastIndexOf('|')
             const color = args.substring(lastComma + 1, args.length)
             const text = args.substring(0, lastComma)
-            return '<span style="color: ' + color + '">' + text + '</span>'
+            return '<span style="color: ' + color + '" class="renColor">' + text + '</span>'
         case 'youtube':
-            const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
             //console.log(ifr)
             return ifr
-        case 'footnote':
-            return generateFootnote()
         default:
             return `[${macro}(${args})]`
             //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
     }
 }
+async function asyncMacro(str, regex, fn, pages, incl=true)
+{
+    //https://stackoverflow.com/questions/33631041/javascript-async-await-in-replace
+    const promises = []
+    str.replace(regex, (match, p1, p2, offset, string, groups) =>
+    {
+        const promise = fn(p1, p2, pages, incl=incl)
+        promises.push(promise)
+    })
+    const data = await Promise.all(promises)
+    return str.replace(regex, () => data.shift())
+}
 function list(line, type)
 {
     //type: ul, ol
     line = line.trim()
-    var lines = line.split('\n')
+    var lines = line.split(/\r?\n/)
     var res = '<' + type + '>'
     lines.forEach((item, index, a) =>
     {
         res += '<li>'
-        res += item.substr(2,item.length)
+        item = item.substr(2,item.length)
+        res += item
         res += '</li>'
     })
     res += '</' + type + '>'
@@ -88,7 +125,7 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    var res = `<h${depth+1} class='border-bottom' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>`
+    var res = `<h${depth+1} class='border-bottom' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
     for (var i = 1; i < depth; i++) toc += '&ensp;'
@@ -115,7 +152,7 @@ function generateFootnote()
     }
     return footnote
 }
-function fredirect(pagename, paragraph, text, res, redirect)
+function fredirect(orgname, pagename, paragraph, text, res, redirect)
 {
     pagename = sanitiseHtml(pagename,{allowedTags: [], allowedAttributes: {}})
     if (res !== undefined)
@@ -124,8 +161,8 @@ function fredirect(pagename, paragraph, text, res, redirect)
         {
             return `<p>${text}</p>`
         }
-        res.redirect(`/w/${pagename}?redirect=true${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
-        return true
+        res.redirect(`/w/${pagename}?from=${orgname}${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
+        return undefined
     }
     else return '<p><span class="fw-bold text-danger">REDIRECT ERROR</span>: redirect can only be done on a normal page.</p>'
 }
@@ -136,26 +173,49 @@ var footnotes = []
 var footnote
 var footnotecount
 
+const ulRegex = /^(?:\* (.+(?:\r?\n|$)))+/igm
+const olRegex = /^(?:1\.+ (.+(?:\r?\n|$)))+/igm
 
-module.exports = (data, renderInclude, pages = undefined, res = undefined, redirect = true) => //todo: remove pages requirement
+module.exports = async (pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}) => //todo: remove pages requirement
 {
     //initialise
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
     toc = 'Table of Contents<hr>'
 
+    const redrFrom = req === undefined ? undefined : req.query.from
+    if (redrFrom !== undefined)
+    {
+        redirect = false;
+        data = `<i>Redirected from <a href="/w/${redrFrom}?redirect=false">${redrFrom}</a></i><br>` + data
+    }
     //Redirect
     const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (match, p1, p2, offset, string, groups) =>
     {
-        if (fredirect(p1, p2, string, res, redirect))
+        if (undefined === fredirect(pagename, p1, p2, string, res, redirect))
         {
-            return '';
+            return undefined;
         }
     })
-    if (redr == '')
+    if (redr === undefined)
     {
         return undefined
     } //escape
+    
+    //args
+    data = data.replace(/{{{(.+?)}}}/igm, (match, p1, offset, string, groups) =>
+    {
+        const res = args[p1.trim()]
+        if (res === undefined)
+        {
+            return `{{{${p1}}}}` //no change
+        }
+        else
+        {
+            return res
+        }
+    })
+
     //centred text
     data = data.replace(/<:>{{(.*)}}/igm, '<div class="ren-center">$1</div>')
     //left aligned text
@@ -167,18 +227,14 @@ module.exports = (data, renderInclude, pages = undefined, res = undefined, redir
     data = data.replace(/^(=+)\ (.*)\ =+\r?\n/igm, (match, p1, p2, offset, string, groups) => renderHeading(p2, p1.length))
 
     //macro
-    data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => renderMacro(p1, p2, pages))
-
-    //footnote
-    footnotes = []
-    footnote = 'Footnotes<hr>'
-    footnotecount = 0
-    data = data.replace(/\[\*\ (.*?)\]/igm, (match, p1, offset, string, groups) => regFootnote(p1))
+    //asyncMacro(str, regex, fn, pages)
+    data = await asyncMacro(data, /\[(.*?)\((.*?)\)\]/igm, renderMacro, pages, incl=incl)
+    //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
-    data = data.replace(/^((?:\* .+\r?\n)+)/igm, (match, p1, p2, offset, string, groups) => (list(p1,'ul'))) //NOTE: must have /n at the end
+    data = data.replace(ulRegex, (match, p1, offset, string, groups) => list(match,'ul')) //NOTE: must have /n at the end
     //ol
-    data = data.replace(/^((?:1\. .+\r?\n)+)/igm, (match, p1, p2, offset, string, groups) => (list(p1,'ol')))
+    data = data.replace(olRegex, (match, p1, offset, string, groups) => (list(match,'ol')))
     //big text
     data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
     //bold
@@ -194,17 +250,37 @@ module.exports = (data, renderInclude, pages = undefined, res = undefined, redir
     //subscript
     data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
     
-    //external link with different text
-    data = data.replace(/\[\[(https?\:.*?)\|(.*?)\]\]/igm, '<a href="$1">$2</a>')
     //external link
-    data = data.replace(/\[\[(https?\:.*?)\]\]/igm, '<a href="$1">$1</a>')
+    data = data.replace(/\[\[(https?\:([^|\r\n]*?))\]\]/igm, (match, p1, offset, string, groups) =>
+    {
+        return `<i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i><a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'>${p1}</a>`
+    })
+    //external link with different text
+    data = data.replace(/\[\[(https?\:.*?)\|(.*?)\]\]/igm, (match, p1, p2, offset, string, groups) =>
+    {
+        return `<i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i><a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'>${p2}</a>`
+    })
+    //Internal Link
+    data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, '<a href="/w/$1">$1</a>')
     //Internal Link with different text
     data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, '<a href="/w/$1">$2</a>')
-    //Internal Link
-    data = data.replace(/\[\[(.*?)\]\]/igm, '<a href="/w/$1">$1</a>')
 
+    //footnote
+    footnotes = []
+    footnote = '<hr><b>Footnotes</b><br>'
+    footnotecount = 0
+    data = data.replace(/\[\*\ (.*?)\]/igm, (match, p1, offset, string, groups) => regFootnote(p1))
+
+    //build footnote
+    data += footnotes.length == 0 ? '' : generateFootnote()
+
+    /*
     //replace \n
     data = data.replace(/\r?\n/igm, '<br>')
+    */
+   
+    //make into paragraphs
+    data = data.replace(/(.+?)(\r?\n|$)+/igm, '<p>$1</p>')
 
     //escape things
     data = data.replace(/((\\\\|\\))/igm, (match, p1, offset, string, groups) => {return p1 == '\\' ? '' : '\\\\'})

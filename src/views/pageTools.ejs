@@ -1,8 +1,14 @@
 <!-- pageTools.ejs: edit, delete, move...-->
-<div class="container w-auto btn-group mb-3" id='pageTools' role="group" aria-label="Basic outlined example">
+<div class="w-auto btn-group mt-3" id='pageTools' role="group" aria-label="Basic outlined example">
   <a href="/w/<%= pagename %>" class="btn btn-outline-primary">View</a>
   <a href='/edit/<%= pagename %>' class="btn btn-outline-primary">Edit</a>
-  <a href='/move/<%= pagename %>' class="btn btn-outline-primary">Move</a>
-  <a href='/history/<%= pagename %>' class="btn btn-outline-primary">History</a>
-  <a href='/delete/<%= pagename %>' class="btn btn-outline-primary">Delete</a>
+  <a href='/history/<%= pagename %>' class='btn btn-outline-primary'>History</a>
+  <a class='btn btn-outline-primary dropdown-toggle rounded-end' type='button' id="pageToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+    More
+  </a>
+  <ul class='dropdown-menu dropdown-menu-end ' aria-labelledby="pageToolsDropdown">
+    <li><a href='/move/<%= pagename %>' class='dropdown-item'>Move</a></li>
+    <li><a href='/delete/<%= pagename %>' class='dropdown-item'>Delete</a></li>
+    <li><a href='/protect/<%= pagename %>' class='dropdown-item'>Protection</a></li>
+  </ul>
 </div>

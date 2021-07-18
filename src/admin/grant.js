@@ -1,4 +1,4 @@
-module.exports = (req, res, users, perm) =>
+module.exports = (req, res, users, perm, adminlog) =>
 {
     const username = req.session.username
     const grantTo = req.body.grantTo
@@ -37,6 +37,10 @@ module.exports = (req, res, users, perm) =>
                             })
                         }
                     //print DONE message
+                    adminlog.create({
+                        username: username,
+                        job: `granted: ${JSON.stringify(req.body)}`
+                    })
                     console.log(`[ADMIN] ${username} granted: ${JSON.stringify(req.body)}`)
                     //res.write('<script>alert("Successfully finished granting. Returning to the admin page.");window.location.href = "/admin";</script>')
                     })

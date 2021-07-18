@@ -2,17 +2,38 @@
     <form action='/signup' method='POST'>
         <div class='form-group mb-2'>
             <label for='idInputbox'>ID</label>
-            <input type='text' name='id' maxlength=255 class='form-control' id='idInputbox'placeholder='Enter ID'>
+            <input type='text' name='id' maxlength=255 class='form-control' id='idInputbox'placeholder='Enter ID' required minlength='3' maxlength='255'>
         </div>
         <div class='form-group mb-2'>
             <label for='passwordInputbox'>Password</label>
-            <input type='password' name='password' class='form-control' id='passwordInputbox'placeholder='Enter Password'>
+            <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='Enter Password' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'
+            pattern='^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&^#_\-+=<>,.?/|])[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$'>
+            <small class='form-text text-muted'>
+                Passwords must:
+                <ul>
+                    <ol>be at least 9 characters long,</ol>
+                    <ol>be at most 255 characters long,</ol>
+                    <ol>have at least one lowercase letter,</ol>
+                    <ol>have at least one uppercase letter,</ol>
+                    <ol>have at least one number,</ol>
+                    <ol>
+                        and have at least one special character.
+                        <p><i>Special characters are: ! @ # $ % ^ & * &lt; &gt; - _ + = / | . , ? </i></p>
+                    </ol>
+                </ul>
+            </small>
         </div>
         <div class='form-group mb-2'>
             <label for='passwordConfirmInputbox'>Confirm Password</label>
-            <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='Re-enter password'>
+            <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='Re-enter password' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
+            <p>
+                <small id='passwordmatch' class='text-success fw-bold' style='display: none'>Passwords match.</small>
+                <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>Passwords do not match.</small>
+            </p>
             <small id='passwordConfirmDesc' class='form-text text-muted'>In order to ensure that you have entered your password correctly, please type it one more time.</small>
         </div>
+        <p><span class='text-danger fw-bold'>WARNING!</span>    YOU CANNOT find or reset your password once you forget it. Make sure you make your password memorable.</p>
         <button type='submit' class='btn btn-primary'>Sign up</button>
     </form>
+    <script src='/js/signupPasswordCheck.js'></script>
 </div>

@@ -4,7 +4,7 @@ module.exports = (req, res, username, users, pages, recentchanges, history) =>
     pages.findOne({where: {title: req.body.newName}}).then(oldpage =>
     {
         var doneby = req.session.username
-        if (doneby === undefined) doneby = req.connection.remoteAddress
+        if (doneby === undefined) req.headers['x-forwarded-for'] || req.socket.remoteAddress
         if (oldpage) //if page exists
         {
             require(global.path + '/error.js')(req, res, null, 'Cannot move the page because the page with the name already exists.', '/', 'the main page')

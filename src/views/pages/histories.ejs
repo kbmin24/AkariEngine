@@ -1,14 +1,14 @@
 <form action='/diff/<%= changes[0].page%>' method='GET' style='width:270px'>
     <div class="mb-3 row">
-        <label for="staticEmail" class="col-sm-2 col-form-label" style='width: 200px'>Compare version no.</label>
+        <label for="rev1" class="col-sm-2 col-form-label" style='width: 200px'>Compare version no.</label>
         <div class="col-sm-10" style='width: 92px'>
-            <input type="number" class="form-control" name='rev1'>
+            <input type="number" class="form-control" id='rev1' name='rev1' min='1'>
         </div>
     </div>
     <div class="mb-3 row">
-        <label for="inputPassword" class="col-sm-2 col-form-label" style='width: 200px'>and version no.</label>
+        <label for="rev2" class="col-sm-2 col-form-label" style='width: 200px'>and version no.</label>
         <div class="col-sm-10" style='width: 92px'>
-            <input type="number" class="form-control" name='rev2'>
+            <input type="number" class="form-control" id='rev2' name='rev2' min='1'>
         </div>
     </div>
     <div class="mb-3 row">

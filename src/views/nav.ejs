@@ -17,19 +17,42 @@
                     <span class='d-none d-lg-inline'>PageList</span>
                 </a>
             </li>
-            <!-- filelist -->
+            <!-- RandomPage -->
             <li class="nav-item">
-                <a class="nav-link active" href="/FileList">
-                    <i class="fa fa-picture-o nav-icon" aria-hidden="true"></i>
-                    <span class='d-none d-lg-inline'>FileList</span>
+                <a class="nav-link active" href="/RandomPage">
+                    <i class="fa fa-random" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>RandomPage</span>
                 </a>
             </li>
-            <!-- upload -->
-            <li class="nav-item">
-                <a class="nav-link active" href="/Upload">
-                    <i class="fa fa-upload nav-icon" aria-hidden="true"></i>
-                    <span class='d-none d-lg-inline'>Upload</span>
+            <!-- toolbox -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle active" href="#" id="navbarTools" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-gear nav-icon" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>Tools</span>
                 </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarTools" style='position: absolute'>
+                    <li>
+                        <!-- filelist -->
+                        <a class="dropdown-item" href="/FileList">
+                            <i class="fa fa-picture-o nav-icon" aria-hidden="true"></i>
+                            <span class='d-none d-lg-inline'>FileList</span>
+                        </a>
+                    </li>
+                    <li>
+                        <!-- upload -->
+                        <a class="dropdown-item" href="/Upload">
+                            <i class="fa fa-upload nav-icon" aria-hidden="true"></i>
+                            <span class='d-none d-lg-inline'>Upload</span>
+                        </a>
+                    </li>
+                    <li>
+                        <!-- Admin log -->
+                        <a class="dropdown-item" href="/adminlog">
+                            <i class="fa fa-history" aria-hidden="true"></i>
+                            <span class='d-none d-lg-inline'>Admin log</span>
+                        </a>
+                    </li>
+                </ul>
             </li>
         </ul>
         <div class='navbar-nav' id='userIcon'>
@@ -54,8 +77,8 @@
             </div>
         </div>
         <!-- search box -->
-        <form class="input-group d-flex" action='/w' method='POST' id='searchBox'>
-            <input class="form-control" name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
+        <form class="input-group d-flex" action='/search' method='POST' id='searchBox'>
+            <input class="form-control" id='searchinput' name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
             <button class="btn btn-outline-light bg-primary" type="subimt"><i class="fa fa-arrow-right text-light" aria-hidden="true"></i></button>
             <!-- <button class="btn btn-outline-light" type="submit">Open</button> -->
         </form>

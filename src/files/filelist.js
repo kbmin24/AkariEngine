@@ -5,7 +5,7 @@ module.exports = (req, res, files) =>
     {
         order:
         [
-            ['id', 'DESC']
+            ['filename', 'ASC']
         ]
     }).then( filelist =>
     {

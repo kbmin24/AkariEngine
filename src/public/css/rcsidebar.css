@@ -1,0 +1,22 @@
+#rcsidebar
+{
+    float: right;
+    position: relative;
+    width: 200px;
+}
+.article-wrapper
+{
+    margin-right: 13em;
+}
+
+@media (max-width: 992px)
+{
+    #rcsidebar
+    {
+        display: none
+    }
+    .article-wrapper
+    {
+        margin-right: 0;
+    }
+}

@@ -6,7 +6,7 @@ module.exports = (req, res, files, history, recentchanges) =>
     files.findOne({where: {filename: req.params.name}}).then(file =>
     {
         var doneby = req.session.username
-        if (doneby === undefined) doneby = req.connection.remoteAddress
+        if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
         if (file) //if page exists
         {
             const oldLength = file.explanation.length
