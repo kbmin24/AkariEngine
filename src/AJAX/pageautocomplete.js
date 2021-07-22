@@ -3,12 +3,13 @@ const sanitiseHtml = require('sanitize-html')
 module.exports = async (req, res, pages) =>
 {
     //just search
-    const query = req.query.q.trim()
-    if (query == '')
+    var query = req.query.q
+    if (!query)
     {
         res.json({})
         return
     }
+    query = query.trim()
     const searchres = await pages.findAll(
         {
             attributes: ['title'],

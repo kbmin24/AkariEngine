@@ -1,5 +1,4 @@
-//http://localhost:8080/revert/FrontPage?rev=29
-module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm) =>
+module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block) =>
 {
     //username parameter: reserved for history
     //todo: ACL
@@ -7,7 +6,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     //check for protection 
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
     var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm)
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
     if (r)
     {
         //do nothing
@@ -21,7 +20,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         require(global.path + '/error.js')(req, res, username, 'You cannot edit because the protection level for this page is ' + acl + '.', '/', 'the main page')
         return
     }
-    pages.findOne({where: {title: decodeURI(decodeURI(req.params.name))}}).then(page =>
+    pages.findOne({where: {title: decodeURI(req.params.name)}}).then(page =>
     {
         var doneby = req.session.username
         if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
@@ -29,7 +28,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             const oldLength = page.content.length
             var oldcontent = undefined
-            history.findOne({where: {page: decodeURI(req.params.name), rev: req.query.rev}}).then(oldrev =>
+            history.findOne({where: {page: decodeURI(req.params.name), rev: req.body.rev}}).then(oldrev =>
             {
                 if (oldrev === undefined)
                 {
@@ -38,6 +37,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                 else
                 {
                     oldcontent = oldrev.content
+                    const comment = 'Reverted to r' + req.body.rev + ' - ' + req.body.comment
                     page.update({content: oldcontent, currentRev: page.currentRev + 1})
                     .then(() =>
                     {
@@ -47,7 +47,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                             rev: page.currentRev,
                             doneBy: doneby,
                             bytechange: page.content.length - oldLength,
-                            comment: 'Reverted to r' + req.query.rev,
+                            comment: comment,
                             type: 'revert'
                         })
                         history.create(
@@ -57,8 +57,8 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                             content: page.content,
                             bytechange: page.content.length - oldLength,
                             editedby: doneby,
-                            comment: 'Reverted to r' + req.query.rev,
-                            revertTo: req.query.rev,
+                            comment: comment,
+                            revertTo: req.body.rev,
                             type: 'revert'
                         })
                         res.redirect('/w/' + decodeURI(req.params.name))

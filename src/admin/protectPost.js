@@ -1,18 +1,19 @@
 const ejs = require('ejs')
-module.exports = async (req, res, perm, protect, pages, history, rc) =>
+module.exports = async (req, res, perm, protect, pages, history, rc, block) =>
 {
     //todo: RC
     //todo: add support for REVISION
     const username = req.session.username
 
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, 'acl', perm)
+    const permsACL = await perm.findAll({where: {username: username}})
+    var r = false
+    permsACL.forEach((v) =>
+    {
+        r = r || (v.perm == 'acl')
+    })
     if (r)
     {
         //do nothing
-    }
-    else if (r === undefined)
-    {
-        return //error message already given out
     }
     else
     {

@@ -1,0 +1,50 @@
+<form action='/admin/blockuser' method='POST'>
+    <div class='mb-3 row'>
+        <label for='tbUsername' class='col-sm-2 col-form-label'>Username</label>
+        <div class='col-sm-10'>
+            <input type='text' maxlength='255' class='form-control' id='tbUsername' name='target'>
+        </div>
+    </div>
+
+    <div class='mb-3 row'>
+        <!-- time is in mins -->
+        <label for='tbTime' class='col-sm-2 col-form-label'>Block for</label>
+        <div class='col-sm-10'>
+            <select class="form-select" aria-label="Block for" name='blockfor'>
+                <option value="unblock">Unblock</option>
+                <option value="1">1 second</option>
+                <option value="60">1 minute</option>
+                <option value="300">5 minutes</option>
+                <option value="600">10 minutes</option>
+                <option value="3600">1 hour</option>
+                <option value="7200">2 hours</option>
+                <option value="21600">6 hours</option>
+                <option value="43200">12 hours</option>
+                <option value="86400">1 day</option>
+                <option value="259320">3 days</option>
+                <option value="432000">5 days</option>
+                <option value="604800">1 week</option>
+                <option value="864000">10 days</option>
+                <option value="1209600">2 weeks</option>
+                <option value='1814400'>3 weeks</option>
+                <option value='2419200'>1 month</option>
+                <option value='3628800'>6 weeks</option>
+                <option value='4838400'>2 months</option>
+                <option value='7257600'>3 months</option>
+                <option value='14515200'>6 months</option>
+                <option value='29030400'>1 year</option>
+                <option value='58060800'>2 years</option>
+                <option value='forever'>Forever</option>
+            </select>
+        </div>
+    </div>
+    <div class='mb-3 row'>
+        <label for='tbComment' class='col-sm-2 col-form-label'>Comment</label>
+        <div class='col-sm-10'>
+            <input type='text' maxlength='255' class='form-control' id='tbComment' name='comment'>
+        </div>
+    </div>
+    <div class='mt-3'>
+        <button type='submit' class='btn btn-primary'>Block</button>
+    </div>
+</form>

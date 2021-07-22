@@ -1,0 +1,13 @@
+<form action='/revert/<%= pagename %>' method='POST' class='editForm'>
+    <div class="form-group mt-2 mb-2 row">
+        <label for='newName' class='col-sm-2 col-form-label'>Comment</label>
+        <div class="col-sm-10">
+            <input class="form-control" id='newName' maxlength=230 name='comment' type="text" placeholder="Max 230 characters">
+        </div>
+    </div>
+    <% if (locals.username === undefined) { %>
+    <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone.</p>
+    <% } %>
+    <input type='hidden' value='<%= rev %>' name='rev'>
+    <button type='submit' type='button' class='btn btn-primary mt-3'>Revert</button>
+</form>

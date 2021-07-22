@@ -1,7 +1,7 @@
-module.exports = (req, res, title, filename) =>
+module.exports = async (req, res, title, filename) =>
 {
     const fs = require('fs')
-    fs.readFile(__dirname + filename, (err,data) =>
+    await fs.readFile(__dirname + filename, (err,data) =>
     {
         if (err)
         {

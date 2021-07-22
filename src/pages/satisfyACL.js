@@ -1,10 +1,22 @@
-const e = require("express")
+const {Op} = require('sequelize')
+const dateandtime = require('date-and-time')
+const ipRangeCheck = require('ip-range-check')
 
-module.exports = async (req, res, ACL, perms, autoredirect=true) =>
+module.exports = async (req, res, ACL, perms, block, autoredirect=true, editErrorMsg=false) =>
 {
     const username = req.session.username
+    //remove any 'old' blocks
+    await block.destroy(
+        {
+            where: {
+                isForever: false,
+                until: {[Op.lt]: new Date()}
+            }
+        }
+    )
+
     const notLoggedin = username === undefined && !(ACL == 'login' || ACL == 'everyone' || ACL == 'blocked')
-    if (notLoggedin)
+    if (notLoggedin && !editErrorMsg)
     {
         if (autoredirect)
         {
@@ -14,6 +26,42 @@ module.exports = async (req, res, ACL, perms, autoredirect=true) =>
         else
         {
             return false
+        }
+    }
+    
+    //Check for ip
+    if (ACL !== 'blocked')
+    {
+        //Loop Thru every IP blocks
+        const ipBlocks = await block.findAll({where: {targetType: 'ip'}})
+        let isBlocked = false
+        let b
+        for (val of ipBlocks)
+        {
+            //we don't care if the user is logged in and the block allows login
+            if (val.allowLogin && username) continue
+            let newBlock = ipRangeCheck(req.headers['x-forwarded-for'] || req.socket.remoteAddress, val.target) //does this entry satisfy the user?
+            isBlocked = isBlocked || newBlock
+            if (isBlocked)
+            {
+                b = val
+                break
+            }
+        }
+        if (isBlocked)
+        {
+            if (editErrorMsg)
+            {
+                if (b.isForever)
+                {
+                    return `Your ip address or its range (${b.target}) is blocked forever by ${b.doneBy} - ${b.comment}`
+                }
+                else
+                {
+                    return `Your ip address or its range (${b.target}) is blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`
+                }
+            }
+            else return false
         }
     }
     switch (ACL)
@@ -47,10 +95,58 @@ module.exports = async (req, res, ACL, perms, autoredirect=true) =>
             return isAdmin
         //GROUPS
         case 'login':
-            return username !== undefined
+            if (editErrorMsg)
+            {
+                if (username === undefined)
+                {
+                    return `You need to be logged in in order to edit this page.`
+                }
+                else
+                {
+                    const b = await block.findOne({where: {target: username}})
+                    if (b)
+                    {
+                        if (editErrorMsg)
+                        {
+                            if (b.isForever)
+                            {
+                                return `You are blocked forever by ${b.doneBy} - ${b.comment}`
+                            }
+                            else
+                            {
+                                console.log(b.until)
+                                return `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`
+                            }
+                        }
+                        else return false
+                    }
+                    else return true
+                }
+            }
+            else return username !== undefined
         case 'everyone':
+            if (username)
+            {
+                const b = await block.findOne({where: {target: username, targetType: 'user'}})
+                if (b)
+                {
+                    if (editErrorMsg)
+                    {
+                        if (b.isForever)
+                        {
+                            return `You are blocked forever by ${b.doneBy} - ${b.comment}`
+                        }
+                        else
+                        {
+                            return `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`
+                        }
+                    }
+                    else return false
+                }
+                else return true
+            }
+            else return true //ip block is already checked
         case 'blocked':
             return true
-            //todo: check for blocks
     }
 }

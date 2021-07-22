@@ -2,14 +2,14 @@ const sanitiseHtml = require('sanitize-html')
 const ejs = require('ejs')
 const diff2html = require('diff2html')
 const diff = require('diff')
-module.exports = async (req, res, history, protect, perm) =>
+module.exports = async (req, res, history, protect, perm, block) =>
 {   
     //check read ACL
     req.params.name = req.params.name.trim()
     const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
     var username = req.session.username
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm)
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
     if (r)
     {
         //do nothing
@@ -28,7 +28,7 @@ module.exports = async (req, res, history, protect, perm) =>
     var rev1 = req.query.rev1
     var rev2 = req.query.rev2
 
-    if (rev1 > rev2) [rev1, rev2] = [rev2, rev1]
+    if (rev1 * 1 > rev2 * 1) [rev1, rev2] = [rev2, rev1]
     const pagev1 = await history.findOne(
     {
         where:

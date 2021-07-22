@@ -21,7 +21,7 @@
     <% }) %>
         <ul class="pagination">
         <% if (from > 0) { %>
-            <% var prevlink = '/adminlog?from=' + (from * 1 - 30).toString() + '&doneBy=' + doneBy + '&job=' + job %>
+            <% var prevlink = '/adminlog?from=' + (from * 1 - 30).toString() + (doneBy ? '&doneBy=' + doneBy : '') + (job ? '&job=' + job : '') %>
             <li class="page-item">
                 <a class="page-link" href=<%= prevlink %> aria-label="Previous">
                     &laquo;
@@ -29,7 +29,7 @@
             </li>
         <% } %>
         <% if (from + 30 < count) { %>
-            <% var nextlink = '/adminlog?from=' + (from * 1 + 30).toString() + '&doneBy=' + doneBy + '&job=' + job %>
+            <% var nextlink = '/adminlog?from=' + (from * 1 + 30).toString() + (doneBy ? '&doneBy=' + doneBy : '') + (job ? '&job=' + job : '') %>
             <li class="page-item">
                 <a class="page-link" href=<%= nextlink %> aria-label="Next">
                     &raquo;

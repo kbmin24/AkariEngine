@@ -1,10 +1,11 @@
 const {Op} = require('sequelize')
+const arraywrap = require('arraywrap')
 const sanitiseHtml = require('sanitize-html')
 const ejs = require('ejs')
 module.exports = async (req, res, pages) =>
 {
     //just search
-    const query = req.query.q.trim()
+    const query = arraywrap(req.query.q)[0].trim()
     if (query == '')
     {
         res.status(400).send('Search keyword cannot be null.')

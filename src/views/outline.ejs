@@ -9,13 +9,6 @@
         <div class='container container-fluid'>
             <%- include('rc') %>
             <section>
-                <!-- Notifications-->
-                <% if (locals.notification) { %>
-                    <div class="alert alert-primary" role="alert">
-                            <%= notification %>
-                    </div>
-                <% } %>
-
                 <div class='article-wrapper h-75 p-4 border rounded-top row'>
                     <div class='pb-2 mt-2 mb-3 border-bottom'>
                         <h1 style='display:inline-block'><%= title %></h1>
@@ -27,6 +20,12 @@
                         <% } %>
                     </div>
                     <div style='clear: both'></div>
+                    <!-- Notifications-->
+                    <% if (locals.notification) { %>
+                        <div class="alert alert-danger" role="alert">
+                                <%= notification %>
+                        </div>
+                    <% } %>
                     <div id='article'>
                         <%- content %>
                     </div>

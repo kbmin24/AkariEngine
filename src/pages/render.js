@@ -3,6 +3,7 @@
 //todo: redirect loop (?redirect=true?)
 const { response } = require('express')
 var sanitiseHtml = require('sanitize-html')
+const dateandtime = require('date-and-time')
 async function renderMacro(macro, args, pages = undefined, incl=true)
 {
     //switch?
@@ -125,7 +126,7 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    var res = `<h${depth+1} class='border-bottom' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
+    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
     for (var i = 1; i < depth; i++) toc += '&ensp;'
@@ -166,6 +167,7 @@ function fredirect(orgname, pagename, paragraph, text, res, redirect)
     }
     else return '<p><span class="fw-bold text-danger">REDIRECT ERROR</span>: redirect can only be done on a normal page.</p>'
 }
+
 var currentTOC = undefined
 var latestHeading = 7
 var toc
@@ -217,11 +219,11 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
     })
 
     //centred text
-    data = data.replace(/<:>{{(.*)}}/igm, '<div class="ren-center">$1</div>')
+    data = data.replace(/\[\:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
     //left aligned text
-    data = data.replace(/<<>{{(.*)}}/igm, '<div class="ren-left">$1</div>')
+    data = data.replace(/\[\(\]{{(.*)}}/igm, '<div class="ren-left">$1</div>')
     //right aligned text
-    data = data.replace(/<>>{{(.*)}}/igm, '<div class="ren-right">$1</div>')
+    data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
 
     //headings
     data = data.replace(/^(=+)\ (.*)\ =+\r?\n/igm, (match, p1, p2, offset, string, groups) => renderHeading(p2, p1.length))
@@ -280,7 +282,17 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
     */
    
     //make into paragraphs
-    data = data.replace(/(.+?)(\r?\n|$)+/igm, '<p>$1</p>')
+    /*data = data.replace(/^( *)(.*?)(?:\r?\n)(?:\r?\n)?/igm, (match, p1, p2, offset, string, groups) =>
+    {
+        if (/^<(ul|ol)>(.*?)<\/ul|ol>/ig.test(p2) || p2 == '<hr>' || /^<h\d>(.*?)<\/h\d>$/) return p2
+        var ind = ''
+        return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
+    })*/
+    data = data.replace(/(?:^|\>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, offset, string, groups) =>
+    {
+        return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`
+    })
+    data = data.replace(/\r?\n/igm, '<br>')
 
     //escape things
     data = data.replace(/((\\\\|\\))/igm, (match, p1, offset, string, groups) => {return p1 == '\\' ? '' : '\\\\'})

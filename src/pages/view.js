@@ -1,11 +1,11 @@
-module.exports = async (req, res, pages, history, protect, perm) =>
+module.exports = async (req, res, pages, history, protect, perm, block) =>
 {
     //check read ACL
     req.params.name = req.params.name.trim()
     const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
     var username = req.session.username
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm)
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
     if (r)
     {
         //do nothing

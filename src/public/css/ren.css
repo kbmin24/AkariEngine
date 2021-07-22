@@ -45,3 +45,14 @@ a
 {
     color: darkgreen;
 }
+
+p:empty
+{
+    height: 1.5em;
+}
+
+.ren-header
+{
+    margin-top: 1em;
+    margin-bottom: 1em;
+}

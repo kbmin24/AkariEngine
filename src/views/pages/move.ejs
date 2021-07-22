@@ -1,10 +1,12 @@
 <form action='/move/<%= originalName %>' method='POST' class='editForm'>
     <div class="form-group mt-2 mb-2 row">
-        <label for='comment' class='col-sm-1 col-form-label sr-only'>Move</label>
+        <label for='comment' class='col-sm-1 col-form-label'>Move</label>
         <div class="col-sm-11">
             <input class="form-control" id='originalName' maxlength=255 name='originalName' type="text" placeholder="Max 255 characters" value='<%= originalName %>' disabled readonly>
         </div>
-        <label for='comment' class='col-sm-1 col-form-label sr-only'>To</label>
+    </div>
+    <div class="form-group mt-2 mb-2 row">
+        <label for='newName' class='col-sm-1 col-form-label'>To</label>
         <div class="col-sm-11">
             <input class="form-control" id='newName' maxlength=255 name='newName' type="text" placeholder="Max 255 characters">
         </div>

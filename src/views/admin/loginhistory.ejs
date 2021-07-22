@@ -1,0 +1,21 @@
+<div style='overflow-x: auto'> <!-- wrpper -->
+    <p>Following are login records for recent 12 weeks.</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope='col'>Time</th>
+                <th scope='col'>IP Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(const r of records) { %>
+                <tr>
+                    <td>
+                        <%= date.format(r.createdAt, global.dtFormat) %>
+                    </td>
+                    <td><%= r.ipaddr %></td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>

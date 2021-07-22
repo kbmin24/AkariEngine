@@ -1,6 +1,7 @@
 //error.js: display error to the user.
 module.exports = (req, res, username, description, returnlink, returnname, code=200) =>
 {
+    username = req.session.username
     if (username === null)
     {
         res.status(code)

@@ -4,7 +4,7 @@ const { Op } = require("sequelize")
 module.exports = async (req, res, adminlog) =>
 {
     const username = req.session.username
-    const showfrom = req.query.from ? req.query.from: 0
+    const showfrom = !isNaN(req.query.from) ? req.query.from: 0
     var where = {}
     if (req.query.doneBy)
     {

@@ -1,4 +1,4 @@
-module.exports = (req, res, sequelize, users) =>
+module.exports = async (req, res, sequelize, users) =>
 {
     //req.body.id,req.body.password,req.body.passwordConfirm
     
@@ -20,7 +20,7 @@ module.exports = (req, res, sequelize, users) =>
             password: hashedPW.toString('base64'),
             salt: salt
         })
-        .then(() => require(global.path + '/sendfile.js')(req, res, 'Signup completed', '/views/user/signupnotify.html'))
+        .then(async () => await require(global.path + '/sendfile.js')(req, res, 'Signup completed', '/views/user/signupnotify.html'))
         .catch(err => require(global.path + '/error.js')(req, res, null, 'Could not create the user. Please check whether the user already exists.', '/signup', 'the account creation page'))
     })
 }

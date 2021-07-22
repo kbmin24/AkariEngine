@@ -1,0 +1,65 @@
+<form action='/admin/blockip' method='POST'>
+    <div class='mb-3 row'>
+        <label for='tbUsername' class='col-sm-2 col-form-label'>IP Address (CIDR)</label>
+        <div class='col-sm-10'>
+            <input type='text' maxlength='255' class='form-control' id='target' name='target' onkeyup='CIDRcheck()'>
+        </div>
+        <p><small>NOTE: You can only block /16 - /32.</small></p>
+        <p>
+            <small id='msgRight' class='text-success fw-bold' style='display: none'>It is a valid CIDR.</small>
+            <small id='msgWrong' class='text-danger fw-bold' style='display: none'>It is NOT a valid CIDR. (Check for spaces?)</small>
+        </p>
+    </div>
+
+    <div class='mb-3 row'>
+        <!-- time is in mins -->
+        <label for='tbTime' class='col-sm-2 col-form-label'>Block for</label>
+        <div class='col-sm-10'>
+            <select class='form-select' aria-label='Block for' id='blockfor' name='blockfor' onchange='unblockCheck()'>
+                <option value='unblock'>Unblock</option>
+                <option value='1'>1 second</option>
+                <option value='60'>1 minute</option>
+                <option value='300'>5 minutes</option>
+                <option value='600'>10 minutes</option>
+                <option value='3600'>1 hour</option>
+                <option value='7200'>2 hours</option>
+                <option value='21600'>6 hours</option>
+                <option value='43200'>12 hours</option>
+                <option value='86400'>1 day</option>
+                <option value='259320'>3 days</option>
+                <option value='432000'>5 days</option>
+                <option value='604800'>1 week</option>
+                <option value='864000'>10 days</option>
+                <option value='1209600'>2 weeks</option>
+                <option value='1814400'>3 weeks</option>
+                <option value='2419200'>1 month</option>
+                <option value='3628800'>6 weeks</option>
+                <option value='4838400'>2 months</option>
+                <option value='7257600'>3 months</option>
+                <option value='14515200'>6 months</option>
+                <option value='29030400'>1 year</option>
+                <option value='58060800'>2 years</option>
+                <option value='forever'>Forever</option>
+            </select>
+        </div>
+        <p><small>NOTE: For simplicity, 1 month is regarded as 4 weeks = 28 days. Likewise, 1 year is regarded as 336 days.</small></p>
+    </div>
+    <div class='mb-3 row' id='allowLoginGrp' style='display: none'>
+        <div class='form-check'>
+            <input class='form-check-input' type='checkbox' value='allowLogin' name='allowLogin' id='chkAllowLogin'>
+            <label class='form-check-label' for='chkAllowLogin'>
+                Allow Login
+            </label>
+        </div>
+    </div>
+    <div class='mb-3 row'>
+        <label for='tbComment' class='col-sm-2 col-form-label'>Comment</label>
+        <div class='col-sm-10'>
+            <input type='text' maxlength='255' class='form-control' id='tbComment' name='comment'>
+        </div>
+    </div>
+    <div class='mt-3'>
+        <button type='submit' id='btnSubmit' class='btn btn-primary' disabled>Block</button>
+    </div>
+</form>
+<script src='/js/ipblockCheck.js'></script>

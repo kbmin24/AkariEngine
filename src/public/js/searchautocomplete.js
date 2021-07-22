@@ -27,4 +27,3 @@ $(function() {
         minLength: 1
     })
 })
-  
