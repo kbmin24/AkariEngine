@@ -9,5 +9,15 @@
     <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone.</p>
     <% } %>
     <input type='hidden' value='<%= rev %>' name='rev'>
+    <div class='mt-2 mb-2'>
+        <%- captcha %>
+        <div class='row'>
+            <label for='captchaIn' class='col-form-label col-sm-4'>CAPTCHA</b></label>
+            <div class='col-sm-8'>
+                <input class="form-control" maxlength=5 id='captchaIn' name='captcha' type="text" style='width:100px' autocomplete='off'>
+            </div>
+        </div>
+        <small class='form-text text-muted'>For spam protection, please type <b>five</b> characters shown above.</small>
+    </div>
     <button type='submit' type='button' class='btn btn-primary mt-3'>Revert</button>
 </form>

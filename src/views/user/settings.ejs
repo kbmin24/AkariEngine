@@ -1,0 +1,21 @@
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Set sign</h5>
+        <p class="card-text">You can set sign to use. The default format is only displaying user name. Date and Time will be automatically appended when you sign.</p>
+        <form method='POST' action='/settings/setSign'>
+            <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+            <div class='form-group mb-2'>
+                <div class='row'>
+                    <p>Previous sign: <%= sign %></p>
+                </div>
+                <div class='row'>
+                    <label for='signInputbox' class='col-form-label col-sm-2'>New Sign</label>
+                    <div class='col-sm-10'>
+                        <input type='text' name='sign' class='form-control' id='signInputbox' required>
+                    </div>
+                </div>
+            </div>
+            <button type='submit' class='btn btn-primary'>Save</button>
+        </form>
+    </div>
+</div>

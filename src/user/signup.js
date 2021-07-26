@@ -1,6 +1,7 @@
-module.exports = async (req, res, sequelize, users) =>
+module.exports = async (req, res, sequelize, users, perm) =>
 {
     //req.body.id,req.body.password,req.body.passwordConfirm
+    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
     
     if (req.body.password != req.body.passwordConfirm)
     {

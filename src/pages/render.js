@@ -1,10 +1,9 @@
+/* eslint-disable no-unused-vars */
 //This function:
 //gets markup and returns HTML.
 //todo: redirect loop (?redirect=true?)
-const { response } = require('express')
 var sanitiseHtml = require('sanitize-html')
-const dateandtime = require('date-and-time')
-async function renderMacro(macro, args, pages = undefined, incl=true)
+async function renderMacro(macro, args, pages = undefined, incl = true)
 {
     //switch?
     switch (macro)
@@ -16,18 +15,19 @@ async function renderMacro(macro, args, pages = undefined, incl=true)
         case 'toc':
             return buildTOC()
         case 'file':
+        {
             //todo: change to random file name
             var options = args.split('|')
             var res = ''
             var filename = ''
             const properties = [
-                new RegExp('^(.*?\.(?:png|jpg|jpeg|gif|webp))$', 'gi'),
-                new RegExp('^width\ ?=\ ?(.*?)$', 'ig'),
-                new RegExp('^height\ ?=\ ?(.*?)$', 'ig')
+                /^(.*?\.(?:png|jpg|jpeg|gif|webp))$/gi,
+                /^width ?= ?(.*?)$'/ig,
+                /^height ?= ?(.*?)$/ig
             ]
-            options.forEach((val, i, arr) =>
+            options.forEach((val) =>
             {
-                properties.forEach((reg, j, props) =>
+                properties.forEach((reg, j) =>
                 {
                     if (reg.test(val.trim()))
                     {
@@ -43,7 +43,13 @@ async function renderMacro(macro, args, pages = undefined, incl=true)
                 })
             })
             return `<a href='/file/${filename}'><img ${res} class='ren-img img-fluid'></a>`
+        }
         case 'include':
+        {
+            if (!incl)
+            {
+                return `[${macro}(${args})]`
+            }
             //let's fetch the data
             args = args.split('|')
             const p = await pages.findOne({where: {title: args[0]}})
@@ -65,18 +71,23 @@ async function renderMacro(macro, args, pages = undefined, incl=true)
                     const v = args[i].substring(eqSign + 1).trim()
                     temArgs[k] = v
                 }
-                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, undefined, undefined, redirect=false, incl=false, args=temArgs)
+                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, undefined, undefined, false, false, temArgs)
                 return res
             }
+        }
         case 'color':
+        {
             const lastComma = args.lastIndexOf('|')
             const color = args.substring(lastComma + 1, args.length)
             const text = args.substring(0, lastComma)
             return '<span style="color: ' + color + '" class="renColor">' + text + '</span>'
+        }
         case 'youtube':
+        {
             const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
             //console.log(ifr)
             return ifr
+        }
         default:
             return `[${macro}(${args})]`
             //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
@@ -86,9 +97,9 @@ async function asyncMacro(str, regex, fn, pages, incl=true)
 {
     //https://stackoverflow.com/questions/33631041/javascript-async-await-in-replace
     const promises = []
-    str.replace(regex, (match, p1, p2, offset, string, groups) =>
+    str.replace(regex, (_match, p1, p2, _offset, _string, _groups) =>
     {
-        const promise = fn(p1, p2, pages, incl=incl)
+        const promise = fn(p1, p2, pages, incl)
         promises.push(promise)
     })
     const data = await Promise.all(promises)
@@ -98,9 +109,16 @@ function list(line, type)
 {
     //type: ul, ol
     line = line.trim()
+    var res = ''
+    const r = /^<\/h\d>(.*)$/s
+    if (r.test(line))
+    {
+        res += '</h2>'
+        line = line.replace(r, '$1')
+    }
     var lines = line.split(/\r?\n/)
-    var res = '<' + type + '>'
-    lines.forEach((item, index, a) =>
+    res += '<' + type + '>'
+    lines.forEach((item, _index, _a) =>
     {
         res += '<li>'
         item = item.substr(2,item.length)
@@ -122,14 +140,14 @@ function buildHeadingName(depth, separator)
 }
 function renderHeading(text, depth)
 {
-    for (var i = depth + 1; i <= 5; i++) currentTOC[i] = 0
+    for (let i = depth + 1; i <= 5; i++) currentTOC[i] = 0
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
     var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
-    for (var i = 1; i < depth; i++) toc += '&ensp;'
+    for (let i = 1; i < depth; i++) toc += '&ensp;'
     toc += `<a href='#s${buildHeadingName(depth, '_')}'>${buildHeadingName(depth, '.')}</a>.&nbsp;${text}<br>`
     return res
 }
@@ -175,16 +193,18 @@ var footnotes = []
 var footnote
 var footnotecount
 
-const ulRegex = /^(?:\* (.+(?:\r?\n|$)))+/igm
-const olRegex = /^(?:1\.+ (.+(?:\r?\n|$)))+/igm
+const ulRegex = /(?:^|<\/h\d>)(?:\* (.+(?:\r?\n|$)))+/igm
+const olRegex = /(?:^|<\/h\d>)(?:1\.+ (.+(?:\r?\n|$)))+/igm
 
-module.exports = async (pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}) => //todo: remove pages requirement
+module.exports = async (pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
 {
     //initialise
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
     toc = 'Table of Contents<hr>'
 
+
+    data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/ig, '')
     const redrFrom = req === undefined ? undefined : req.query.from
     if (redrFrom !== undefined)
     {
@@ -192,7 +212,7 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
         data = `<i>Redirected from <a href="/w/${redrFrom}?redirect=false">${redrFrom}</a></i><br>` + data
     }
     //Redirect
-    const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (match, p1, p2, offset, string, groups) =>
+    const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (_match, p1, p2, _offset, string, _groups) =>
     {
         if (undefined === fredirect(pagename, p1, p2, string, res, redirect))
         {
@@ -205,7 +225,7 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
     } //escape
     
     //args
-    data = data.replace(/{{{(.+?)}}}/igm, (match, p1, offset, string, groups) =>
+    data = data.replace(/{{{(.+?)}}}/igm, (_match, p1, _offset, _string, _groups) =>
     {
         const res = args[p1.trim()]
         if (res === undefined)
@@ -219,24 +239,24 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
     })
 
     //centred text
-    data = data.replace(/\[\:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
+    data = data.replace(/\[:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
     //left aligned text
     data = data.replace(/\[\(\]{{(.*)}}/igm, '<div class="ren-left">$1</div>')
     //right aligned text
     data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
 
     //headings
-    data = data.replace(/^(=+)\ (.*)\ =+\r?\n/igm, (match, p1, p2, offset, string, groups) => renderHeading(p2, p1.length))
+    data = data.replace(/^(=+) (.*) =+\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
     //macro
     //asyncMacro(str, regex, fn, pages)
-    data = await asyncMacro(data, /\[(.*?)\((.*?)\)\]/igm, renderMacro, pages, incl=incl)
+    data = await asyncMacro(data, /\[(.*?)\((.*?)\)\]/igm, renderMacro, pages, incl)
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
-    data = data.replace(ulRegex, (match, p1, offset, string, groups) => list(match,'ul')) //NOTE: must have /n at the end
+    data = data.replace(ulRegex, (match, _p1, _offset, _string, _groups) => list(match,'ul')) //NOTE: must have /n at the end
     //ol
-    data = data.replace(olRegex, (match, p1, offset, string, groups) => (list(match,'ol')))
+    data = data.replace(olRegex, (match, _p1, _offset, _string, _groups) => (list(match,'ol')))
     //big text
     data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
     //bold
@@ -253,17 +273,18 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
     data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
     
     //external link
-    data = data.replace(/\[\[(https?\:([^|\r\n]*?))\]\]/igm, (match, p1, offset, string, groups) =>
+    data = data.replace(/\[\[(https?:([^|\r\n]*?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
     {
-        return `<i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i><a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'>${p1}</a>`
+        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p1}</a>`
     })
     //external link with different text
-    data = data.replace(/\[\[(https?\:.*?)\|(.*?)\]\]/igm, (match, p1, p2, offset, string, groups) =>
+    data = data.replace(/\[\[(https?:.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
-        return `<i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i><a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'>${p2}</a>`
+        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p2}</a>`
     })
+    data = data.replace(/\[\[category:(.*?)\]\]/igm, '')
     //Internal Link
-    data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, '<a href="/w/$1">$1</a>')
+    data = data.replace(/\[\[(.*?)\]\]/igm, '<a href="/w/$1">$1</a>')
     //Internal Link with different text
     data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, '<a href="/w/$1">$2</a>')
 
@@ -271,7 +292,7 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
     footnotes = []
     footnote = '<hr><b>Footnotes</b><br>'
     footnotecount = 0
-    data = data.replace(/\[\*\ (.*?)\]/igm, (match, p1, offset, string, groups) => regFootnote(p1))
+    data = data.replace(/\[\* (.*?)\]/igm, (_match, p1, _offset, _string, _groups) => regFootnote(p1))
 
     //build footnote
     data += footnotes.length == 0 ? '' : generateFootnote()
@@ -288,14 +309,14 @@ module.exports = async (pagename, data, renderInclude, pages = undefined, req = 
         var ind = ''
         return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
     })*/
-    data = data.replace(/(?:^|\>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, offset, string, groups) =>
+    data = data.replace(/(?:^|>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, _offset, _string, _groups) =>
     {
         return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`
     })
     data = data.replace(/\r?\n/igm, '<br>')
 
     //escape things
-    data = data.replace(/((\\\\|\\))/igm, (match, p1, offset, string, groups) => {return p1 == '\\' ? '' : '\\\\'})
+    data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\\\'})
     //sanitising things
     data = sanitiseHtml(data, global.sanitiseOptions)
 

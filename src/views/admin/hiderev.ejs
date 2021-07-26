@@ -1,0 +1,37 @@
+<div class='p-3'>
+    <p>Here you can manage the READ permission of a specific revision of a page.</p>
+    <p>Note: This does not work if the revision given is the current reivision.</p>
+    <form action='/admin/hiderev' method='POST' style='max-width:600px'>
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+        <div class='form-group mb-2'>
+            <div class='row'>
+                <label for='pgInputbox' class='col-sm-2'>Page name</label>
+                <div class='col-sm-10'>
+                    <input type='text' name='pagename' class='form-control' id='pgInputbox' required>
+                </div>
+            </div>
+        </div>
+        <div class='form-group mb-2'>
+            <div class='row'>
+                <label for='revInputbox' class='col-sm-2'>Revision</label>
+                <div class='col-sm-10'>
+                    <input type='number' name='rev' class='form-control' id='revInputbox' required>
+                </div>
+            </div>
+        </div>
+        <div class='form-group mb-2'>
+            <div class='row'>
+                <label for='revInputbox' class='col-sm-2'>ACL Level</label>
+                <div class='col-sm-10'>
+                    <select class='w-auto form-select' name='level' aria-label='ACL Level'>
+                        <option value='everyone'>Everyone (Except blocked users)</option>
+                        <option value='blocked' selected>Everyone (Including blocked users)</option>
+                        <option value='login'>Logged in users only</option>
+                        <option value='admin'>Admins only</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <button type='submit' class='btn btn-primary'>Hide</button>
+    </form>
+</div>

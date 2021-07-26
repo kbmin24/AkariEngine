@@ -1,5 +1,4 @@
 function loadRC() {
-    const URLSearch = new URLSearchParams(location.search)
     $('#rcsidebarcontents').empty()
     $.ajax({
         url: '/ajax/recentchanges',
@@ -20,7 +19,7 @@ function loadRC() {
                 {
                     ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> (r${data[rc].rev})`
                 }
-                $('#rcsidebarcontents').append(`<li class='list-group-item'>${ln}</li>`)
+                $('#rcsidebarcontents').append(`<li class='list-group-item' style='overflow-wrap: anywhere;'>${ln}</li>`)
             })
         }
     })

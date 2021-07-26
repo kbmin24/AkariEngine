@@ -1,5 +1,6 @@
 <div class='p-3' style='max-width: 500px'>
     <form action='/login' method='POST'>
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <div class='form-group mb-2'>
             <label for='idInputbox'>ID</label>
             <input type='text' name='id' class='form-control' id='idInputbox'placeholder='Enter ID' required>

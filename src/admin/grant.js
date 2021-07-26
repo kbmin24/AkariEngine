@@ -23,10 +23,11 @@ module.exports = (req, res, users, perm, adminlog) =>
             {
                 if (u)
                 {
+                    // eslint-disable-next-line no-unused-vars
                     perm.destroy({where: {username: grantTo}}).then(res => //Clear up existing permissions
                     {
                         //give out permissions
-                        for (k in req.body)
+                        for (let k in req.body)
                         {
                             if (k == 'grantTo') continue
                             perm.create(
@@ -37,11 +38,17 @@ module.exports = (req, res, users, perm, adminlog) =>
                             })
                         }
                     //print DONE message
+                    let permsLst = ''
+                    for (let i in req.body)
+                    {
+                        if (i == 'grantTo' || i == '_csrf') continue
+                        permsLst += i + ' '
+                    }
                     adminlog.create({
                         username: username,
-                        job: `granted: ${JSON.stringify(req.body)}`
+                        job: `granted to ${grantTo}: ${permsLst}`
                     })
-                    console.log(`[ADMIN] ${username} granted: ${JSON.stringify(req.body)}`)
+                    console.log(`[ADMIN] ${username} granted to ${grantTo}: ${permsLst}`)
                     //res.write('<script>alert("Successfully finished granting. Returning to the admin page.");window.location.href = "/admin";</script>')
                     })
                 }

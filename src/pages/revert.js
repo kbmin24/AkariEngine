@@ -1,12 +1,11 @@
 module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block) =>
 {
-    //username parameter: reserved for history
-    //todo: ACL
+    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
     
     //check for protection 
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
     var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing

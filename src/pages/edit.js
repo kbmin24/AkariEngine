@@ -1,42 +1,86 @@
 const date = require('date-and-time')
-async function sign(req)
+async function sign(req, settings)
 {
-    //todo: load from DB if applicable
     const dtnow = date.format(new Date(), global.dtFormat)
     if (req.session.username)
     {
-        return `- ${req.session.username} ${dtnow}`
+        const s = await settings.findOne({
+            where:
+            {
+                user: req.session.username,
+                key: 'sign'
+            }
+        })
+        const prefix = s ? s.value : req.session.username
+        return `${prefix} ${dtnow}`
     }
     else
     {
-        return `- ${req.headers['x-forwarded-for'] || req.socket.remoteAddress} ${dtnow}`
+        return `${req.headers['x-forwarded-for'] || req.socket.remoteAddress} ${dtnow}`
     }
 }
 
-async function signAsync(req, str, regex)
+async function signAsync(req, str, regex, settings)
 {
     //https://stackoverflow.com/questions/33631041/javascript-async-await-in-replace
     const promises = []
+    // eslint-disable-next-line no-unused-vars
     str.replace(regex, (match, offset, string, groups) =>
     {
-        const promise = sign(req)
+        const promise = sign(req, settings)
         promises.push(promise)
     })
     const data = await Promise.all(promises)
     return str.replace(regex, () => data.shift())
 }
-module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block) =>
-{
-    req.params.name = req.params.name.trim()
 
-    //do something about contents
+async function regCategory(title, content, category)
+{
+    /*
+        Algorithm:
+        1. erase all
+        2. insert all found ones
+        Time Complexity: O(P+N+K) (P: Length of page, N: # of records in the table, K: # to register)
+    */
+    //erase existing categories
+    await category.destroy({where: {page: title}})
+
+    const categoryRegex = /\[\[Category:(.*?)\]\]/igm
+    let e
+    while ((e = categoryRegex.exec(content)) !== null)
+    {
+        if (!e[1]) continue
+        category.create(
+            {
+                page: title,
+                category: e[1]
+            }
+        )
+    }
+
+}
+
+module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block, category, settings) =>
+{
+
+    //check CAPTCHA
+    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return //CAPTCHA error
+
+    if (!req.params.name)
+    {
+        require(global.path + '/error.js')(req, res, username, 'Title is required.', '/', 'the main page')
+    }
     if (!req.body.content)
     {
         require(global.path + '/error.js')(req, res, username, 'Content is required.', '/', 'the main page')
     }
     
-    //[sign]
-    req.body.content = await signAsync(req, req.body.content, /~~~~/igm)
+    //sign
+    req.body.content = await signAsync(req, req.body.content, /~~~~/igm, settings)
+
+    //category
+    await regCategory(req.params.name, req.body.content, category)
+
 
     await pages.findOne({where: {title: req.params.name}}).then(async page =>
     {
@@ -46,7 +90,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         //check for protection 
         const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
         var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-        const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
+        const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
         if (r)
         {
             //do nothing

@@ -4,7 +4,17 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
     const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
     var username = req.session.username
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
+    let ACLList = [acl]
+    var rev = req.query.rev
+    if (rev)
+    {
+        const proRev = await protect.findOne({where: {title: req.params.name, task: 'read', revision: rev}})
+        if (proRev)
+        {
+            ACLList.push(proRev.protectionLevel)
+        }
+    }
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ACLList, perm, block)
     if (r)
     {
         //do nothing
@@ -19,7 +29,6 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
         return
     }
 
-    var rev = req.query.rev
     if (rev === undefined)
     {
         pages.findOne({where: {title: req.params.name}}).then(page =>

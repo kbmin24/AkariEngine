@@ -7,7 +7,7 @@ module.exports = (req, res, username, users, pages, recentchanges, history, perm
         require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
         return
     }
-    perm.findOne({where: {username: username, perm: 'grant'}}).then(p =>
+    perm.findOne({where: {username: username, perm: 'deletepage'}}).then(p =>
     {
         if (p)
         {

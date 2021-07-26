@@ -1,0 +1,8 @@
+<p><%= category.count %> pages found.</p>
+<ul>
+    <% category.rows.forEach((r) => { %>
+        <li>
+            <a href='/w/<%= r.page %>'><%= r.page %></a>
+        </li>
+    <% }) %>
+</ul>

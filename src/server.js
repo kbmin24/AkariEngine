@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const { Router } = require('express')
 const express = require('express')
 const app = express()
@@ -9,7 +10,7 @@ global.path = __dirname
 global.license = 'CC BY-SA 3.0'
 global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This cannot be undone.`
 global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
-global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'developer', 'loginhistory']
+global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha']
 
 //initialise db
 const {Sequelize} = require('sequelize')
@@ -41,6 +42,10 @@ app.use(session({
     }
 }))
 
+//CSRF
+const csurf = require('csurf')
+const csrfProtection = csurf({})
+
 app.use(express.json())
 app.use(express.urlencoded({extended: false}))
 
@@ -57,6 +62,8 @@ const protect = require(__dirname + '/models/protect.model.js')(sequelize)
 const adminlog = require(__dirname + '/models/adminlog.model.js')(sequelize)
 const block = require(__dirname + '/models/block.model.js')(sequelize)
 const loginhistory = require(__dirname + '/models/loginhistory.model.js')(sequelize)
+const category = require(__dirname + '/models/category.model.js')(sequelize)
+const settings = require(__dirname + '/models/setting.model.js')(sequelize)
 sequelize.sync()
 
 global.sanitiseOptions =
@@ -118,13 +125,13 @@ global.sanitiseOptions =
             'padding-right': [/^\d+(?:px|em|%)$/],
             'padding-top': [/^\d+(?:px|em|%)$/],
             'padding: bottom': [/^\d+(?:px|em|%)$/],
-            'border': [/^(thin|medium|thick|\d+(?:px|em|%))?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)\ ?((?!url).*)?$/],
-            'border-bottom': [/^(thin|medium||\d+(?:px|em|%))?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)\ ?((?!url).*)?$/],
-            'border-top': [/^(thin|medium|thick|\d+(?:px|em|%))?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)\ ?((?!url).*)?$/],
-            'border-left': [/^(thin|medium|thick|\d+(?:px|em|%))?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)\ ?((?!url).*)?$/],
-            'border-right': [/^(thin|medium|thick|\d+(?:px|em|%))?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)\ ?((?!url).*)?$/],
-            'border-style': [/^(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?$/],
-            'border-*-style': [/^(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?\ ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?$/],
+            'border': [/^(thin|medium|thick|\d+(?:px|em|%))? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset) ?((?!url).*)?$/],
+            'border-bottom': [/^(thin|medium||\d+(?:px|em|%))? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset) ?((?!url).*)?$/],
+            'border-top': [/^(thin|medium|thick|\d+(?:px|em|%))? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset) ?((?!url).*)?$/],
+            'border-left': [/^(thin|medium|thick|\d+(?:px|em|%))? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset) ?((?!url).*)?$/],
+            'border-right': [/^(thin|medium|thick|\d+(?:px|em|%))? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset) ?((?!url).*)?$/],
+            'border-style': [/^(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?$/],
+            'border-*-style': [/^(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)? ?(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset)?$/],
             'border-color': [/^.*?$/],
             'border-*-color': [/^.*?$/],
             'border-image': [/^(?:repeating-)?(?:linear|radial)-gradient\([^(]*(\([^)]*\)[^(]*)*[^)]*\)( \d*)?$/],
@@ -164,24 +171,30 @@ app.get('/noEmail', async (req, res) =>
 })
 app.get('/signup', async (req, res) =>
 {
-    await require(__dirname + '/sendfile.js')(req, res, 'Sign up', '/views/user/signup.html')
+    const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
+    const signuppage = await ejs.renderFile(global.path + '/views/user/signup.ejs',{captcha: captchaSVG})
+    res.render('outline',
+    {
+        title: 'Sign up',
+        content: signuppage,
+        username: req.session.username,
+        wikiname: global.appname
+    })
 })
 app.post('/signup', (req, res) =>
 {
-    require(__dirname + '/user/signup.js')(req, res, sequelize,users)
+    require(__dirname + '/user/signup.js')(req, res, sequelize, users, perm)
 })
 
-app.get('/login', async (req,res) =>
+app.get('/login', csrfProtection, async (req,res) =>
 {
-    //give CSRF token
-
     //render page
     const username = req.session.username
-    ejs.renderFile(global.path + '/views/user/login.ejs',{csrftoken: ''}, (err, html) => 
+    ejs.renderFile(global.path + '/views/user/login.ejs',{csrfToken: req.csrfToken()}, (err, html) => 
     {
         if (err)
         {
-            console.log(err)
+            console.error(err)
             res.writeHead(500).write('Internal Server Error')
             return
         }
@@ -189,15 +202,13 @@ app.get('/login', async (req,res) =>
         {
             title: 'Login',
             content: html,
-            isPage: true,
-            notification: r,
-            pagename: req.params.name,
+            //notification: r,
             username: username,
             wikiname: global.appname
         })
     })
 })
-app.post('/login', async (req, res) =>
+app.post('/login', csrfProtection, async (req, res) =>
 {
     require(__dirname + '/user/login.js')(req, res, users, loginhistory)
 })
@@ -215,8 +226,58 @@ app.get('/whoami', (req, res) =>
         wikiname: global.appname
     })
 })
+app.get('/settings', csrfProtection, async (req, res) =>
+{
+    const username = req.session.username
+    if (!username)
+    {
+        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+        return
+    }
+    const sR = await settings.findOne({
+        where:
+        {
+            user: req.session.username,
+            key: 'sign'
+        }
+    })
+    const sign = sR ? sR.value : ''
+    if (!username)
+    {
+        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+        return
+    }
+    ejs.renderFile(global.path + '/views/user/settings.ejs',
+    {
+        csrfToken: req.csrfToken(),
+        sign: sign
+    }, (err, html) => 
+    {
+        if (err)
+        {
+            console.error(err)
+            res.writeHead(500).write('Internal Server Error')
+            return
+        }
+        res.render('outline',
+        {
+            title: 'User Settings',
+            content: html,
+            //notification: r,
+            username: username,
+            wikiname: global.appname
+        })
+    })
+})
+app.post('/settings/:name', csrfProtection, async (req, res) =>
+{
+    require(__dirname + '/user/settings.js')(req, res,
+        {
+            settings: settings
+        })
+})
 
-app.get('/edit/:name', async (req, res) =>
+app.get('/edit/:name', csrfProtection, async (req, res) =>
 {
     //TODO: error if the name is too long (>255)s
     if (req.params.name.length > 255)
@@ -226,15 +287,43 @@ app.get('/edit/:name', async (req, res) =>
     }
     const target = await pages.findOne({where: {title: req.params.name}})
     var username = req.session.username
-    if (username === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    //if (username === undefined) = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
     //check for protection 
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
     var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block, autoredirect=true, editErrorMsg=true)
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block, true, true)
     if (r === true)
     {
-        //do nothing
+        //generate CAPTCHA
+        const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
+        var content = ''
+        if (target) content = target.content
+        ejs.renderFile(global.path + '/views/pages/edit.ejs',
+        {
+            title: req.params.name,
+            content: content,
+            username: username,
+            captcha: captchaSVG,
+            csrfToken: req.csrfToken()
+        }, (err, html) => 
+        {
+            if (err)
+            {
+                console.log(err)
+                res.writeHead(500).write('Internal Server Error')
+                return
+            }
+            res.render('outline',
+            {
+                title: 'Edit ' + req.params.name,
+                content: html,
+                isPage: true,
+                pagename: req.params.name,
+                username: username,
+                wikiname: global.appname
+            })
+        })
     }
     else if (r === undefined)
     {
@@ -242,9 +331,9 @@ app.get('/edit/:name', async (req, res) =>
     }
     else
     {
-        var content = ''
+        let content = ''
         if (target) content = target.content
-        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username, disabled: true}, (err, html) => 
+        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username, disabled: true, csrfToken: req.csrfToken()}, (err, html) => 
         {
             if (err)
             {
@@ -264,52 +353,54 @@ app.get('/edit/:name', async (req, res) =>
             })
         })
         //require(global.path + '/error.js')(req, res, username, 'You cannot edit because the protection level for this page is ' + acl + '.', '/', 'the main page')
-        return
     }
-
-    var content = ''
-    if (target) content = target.content
-    ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username}, (err, html) => 
-    {
-        if (err)
-        {
-            console.log(err)
-            res.writeHead(500).write('Internal Server Error')
-            return
-        }
-        res.render('outline',
-        {
-            title: 'Edit ' + req.params.name,
-            content: html,
-            isPage: true,
-            pagename: req.params.name,
-            username: username,
-            wikiname: global.appname
-        })
-    })
 })
 
-app.post('/edit/:name', async (req, res) =>
+app.post('/edit/:name', csrfProtection, async (req, res) =>
 {
+    const username = req.session.username
     if (req.params.name.length > 255)
     {
         require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 256 characters long at most.', '/', 'the main page')
         return
     }
-    await require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block) //actually no need to separately pass on username (in req)
+    await require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block, category, settings) //actually no need to separately pass on username (in req)
 })
 
-app.get('/move/:name', (req, res) =>
+app.get('/move/:name', async (req, res) =>
 {
-    pages.findOne({where: {title: req.params.name}}).then(target =>
+    const pro = await protect.findOne({where: {title: req.params.name, task: 'move'}})
+    var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    if (r)
+    {
+        //do nothing
+    }
+    else if (r === undefined)
+    {
+        return //error message already given out
+    }
+    else
+    {
+        require(global.path + '/error.js')(req, res, null, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        return
+    }
+    pages.findOne({where: {title: req.params.name}}).then(async (target) =>
     {
         if (!target)
         {
-            require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+            require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', 404)
             return
         }
         const username = req.session.username
-        ejs.renderFile(global.path + '/views/pages/move.ejs',{originalName: req.params.name, username: username}, (err, html) => 
+        //generate CAPTCHA
+        const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
+        ejs.renderFile(global.path + '/views/pages/move.ejs',
+        {
+            originalName: req.params.name,
+            username: username,
+            captcha: captchaSVG
+        }, (err, html) => 
         {
             res.render('outline',
             {
@@ -321,11 +412,11 @@ app.get('/move/:name', (req, res) =>
         })
     })
 })
-app.post('/move/:name', (req, res) =>
+app.post('/move/:name', async (req, res) =>
 {
-    require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history)
+    await require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history, perm, block, protect)
 })
-app.get('/delete/:name', (req, res) =>
+app.get('/delete/:name', csrfProtection, (req, res) =>
 {
     const username = req.session.username
     if (username === undefined)
@@ -342,7 +433,7 @@ app.get('/delete/:name', (req, res) =>
                 if (target)
                 {
                     const username = req.session.username
-                    ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username}, (err, html) => 
+                    ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username, csrfToken: req.csrfToken()}, (err, html) => 
                     {
                         res.render('outline',
                         {
@@ -367,20 +458,43 @@ app.get('/delete/:name', (req, res) =>
         }
     })
 })
-app.post('/delete/:name', (req, res) =>
+app.post('/delete/:name', csrfProtection, (req, res) =>
 {
     require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm)
 })
 app.get('/revert/:name', async (req, res) =>
 {
+    const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
+    var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    if (r)
+    {
+        //do nothing
+    }
+    else if (r === undefined)
+    {
+        return //error message already given out
+    }
+    else
+    {
+        require(global.path + '/error.js')(req, res, username, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        return
+    }
     const p = await pages.findOne({where: {title: req.params.name}})
     if (!p)
     {
-        require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+        require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', 404)
         return
     }
     const username = req.session.username
-    ejs.renderFile(global.path + '/views/pages/revert.ejs', {pagename: req.params.name, username: username, rev: req.query.rev}, (err, html) => 
+    const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
+    ejs.renderFile(global.path + '/views/pages/revert.ejs',
+    {
+        pagename: req.params.name,
+        username: username,
+        rev: req.query.rev,
+        captcha: captchaSVG
+    }, (err, html) => 
     {
         if (err)
         {
@@ -390,7 +504,7 @@ app.get('/revert/:name', async (req, res) =>
         }
         res.render('outline',
         {
-            title: 'Revert ' + req.params.name + ' to ' + req.query.rev,
+            title: 'Revert ' + req.params.name + ' to r' + req.query.rev,
             content: html,
             username: username,
             wikiname: global.appname
@@ -403,7 +517,7 @@ app.post('/revert/:name', async (req, res) =>
 })
 app.get('/w/:name', async (req, res) =>
 {
-    await require(global.path + '/pages/view.js')(req, res, pages, history, protect, perm, block)
+    await require(global.path + '/pages/view.js')(req, res, pages, history, protect, perm, block, category)
 })
 app.post('/w', async (req,res) =>
 {
@@ -442,10 +556,15 @@ app.get('/PageList', (req, res) =>
     require(global.path + '/pages/pagelist.js')(req, res, pages)
 })
 
-app.get('/Upload', (req, res) =>
+app.get('/Upload', async (req, res) =>
 {
     const username = req.session.username
-    ejs.renderFile(global.path + '/views/files/upload.ejs', {username: username}, (err, html) => 
+    const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
+    ejs.renderFile(global.path + '/views/files/upload.ejs',
+    {
+        username: username,
+        captcha: captchaSVG
+    }, (err, html) => 
     {
         res.render('outline',
         {
@@ -456,14 +575,8 @@ app.get('/Upload', (req, res) =>
         })
     })
 })
-app.get('/diff/:name', async (req, res) =>
-{
-    //usage example: /diff/FrontPage?rev1=20&rev2=30 (compare r20 and r30)
-    await require(global.path + '/pages/diff.js')(req, res, history, protect, perm, block)
-})
 const multer = require('multer')
 const fs = require('fs')
-const { Session } = require('inspector')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
@@ -485,14 +598,18 @@ var storage = multer.diskStorage({
     {
         if (req.body.filename == '')
         {
-            cb('Filename cannot be null')
+            let e = new Error('File name is null')
+            e.code = 'FILENAMENULL'
+            return cb(e)
         }
         try
         {
             //todo: refuse comma
             if (fs.existsSync(__dirname + '/public/uploads/' + req.body.filename))
             {
-                cb('File already exists.')
+                let e = new Error('File already exists')
+                e.code = 'FILEEXISTS'
+                return cb(e)
             }
             else
             {
@@ -501,7 +618,8 @@ var storage = multer.diskStorage({
         }
         catch(err)
         {
-            cb(err + 'Internal Server Error')
+            console.error(err)
+            cb('Internal Server Error')
         }
     }
 })
@@ -513,9 +631,33 @@ var upload = multer({
         fieldNameSize: 255,
         fieldSize: 20 * 1024 * 1024
     },
-    fileFilter: (req, file, cb) => checkFileType(file, cb)
+    fileFilter: async (req, file, cb) =>
+    {
+        console.log(req.body)
+        console.log(req.session)
+        const p = await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})
+        if (p)
+        {
+            //do nothing
+        }
+        else
+        {
+            if (req.body.captcha !== req.session.captcha)
+            {
+                console.error('止まれ')
+                let e = new Error('Captcha Error')
+                e.code = 'INVALIDCAPTCHA'
+                return cb(e)
+            }
+            else
+            {
+                req.session.captcha = require(global.path + '/tools/captcha.js').genArbitaryString(16)
+            }
+        }
+        checkFileType(file, cb)
+    }
 })
-app.post('/Upload', upload.single('inputFile'), (req, res, ) =>
+app.post('/Upload', upload.single('inputFile'), (req, res) =>
 {
     //exploit: user can upload by sending a POST request directly
     mfile.create(
@@ -537,38 +679,56 @@ app.post('/Upload', upload.single('inputFile'), (req, res, ) =>
         res.redirect('/file/' + req.body.filename)
     })
 })
-
+app.get('/diff/:name', async (req, res) =>
+{
+    //usage example: /diff/FrontPage?rev1=20&rev2=30 (compare r20 and r30)
+    await require(global.path + '/pages/diff.js')(req, res, history, protect, perm, block)
+})
 app.get('/file/:name', async (req, res) => 
 {
     await require(global.path + '/files/viewfile.js')(req, res, mfile)
 })
-app.get('/deletefile/:name', (req, res) =>
+app.get('/deletefile/:name', csrfProtection, (req, res) =>
 {
-    mfile.findOne({where: {filename: req.params.name}}).then(target =>
+    const username = req.session.username
+    if (username === undefined)
+    {
+        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+        return
+    }
+    perm.findOne({where: {username: username, perm: 'deletefile'}}).then(p =>
+    {
+        if (!p)
         {
-            if (target)
+            require(global.path + '/error.js')(req, res, null, 'You do not have permission to delete file.', '/login', 'the login page')
+            return
+        }
+        mfile.findOne({where: {filename: req.params.name}}).then(target =>
             {
-                const username = req.session.username
-                ejs.renderFile(global.path + '/views/files/delete.ejs',{title: req.params.name, username: username}, (err, html) => 
+                if (target)
                 {
-                    res.render('outline',
+                    const username = req.session.username
+                    ejs.renderFile(global.path + '/views/files/delete.ejs',{title: req.params.name, username: username, csrfToken: req.csrfToken()}, (err, html) => 
                     {
-                        title: 'Delete ' + req.params.name,
-                        content: html,
-                        username: username,
-                        wikiname: global.appname
+                        res.render('outline',
+                        {
+                            title: 'Delete ' + req.params.name,
+                            content: html,
+                            username: username,
+                            wikiname: global.appname
+                        })
                     })
-                })
-            }
-            else
-            {
-                require(global.path + '/error.js')(req, res, null, 'The file requested is not found. Would you like to <a href="/upload/'+req.params.name+'">upload one?</a>', '/', 'the main page')
-            }
-        })
+                }
+                else
+                {
+                    require(global.path + '/error.js')(req, res, null, 'The file requested is not found. Would you like to <a href="/upload/'+req.params.name+'">upload one?</a>', '/', 'the main page')
+                }
+            })
+    })
 })
-app.post('/deletefile/:name', (req, res) =>
+app.post('/deletefile/:name', csrfProtection, (req, res) =>
 {
-    require(global.path + '/files/deletefile.js')(req, res, mfile, history, recentchanges)
+    require(global.path + '/files/deletefile.js')(req, res, mfile, history, recentchanges, perm)
 })
 app.get('/FileList', (req, res) =>
 {
@@ -589,7 +749,7 @@ app.get('/admin', async (req, res) =>
         await require(global.path + '/error.js')(req, res, null, 'Please Login.', '/login', 'the login page')
         return
     }
-    if (perm.findOne({where:{username: req.session.username, perm: 'grant'}}))
+    if (perm.findOne({where:{username: req.session.username, perm: 'admin'}}))
     {
         await require(__dirname + '/sendfile.js')(req, res, 'Admin tools', '/views/admin/index.html')
     }
@@ -598,18 +758,23 @@ app.get('/admin', async (req, res) =>
         await require(global.path + '/error.js')(req, res, null, 'You need admin permission.', '/', 'the main page')
     }
 })
-app.get('/admin/:name', async (req, res) =>
+app.get('/admin/:name', csrfProtection, async (req, res) =>
 {
     //handler
     await require(global.path + '/admin/adminGetHandler.js')(req, res, users, perm, loginhistory, adminlog)
 })
-app.post('/admin/:name', async (req, res) =>
+app.post('/admin/:name', csrfProtection, async (req, res) =>
 {
-    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, adminlog)
+    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog)
 })
 app.get('/adminlog', async (req, res) =>
 {
     await require(global.path + '/admin/adminlog.js')(req, res, adminlog)
+})
+
+app.get('/category/:name', async (req, res) =>
+{
+    await require(global.path + '/pages/category.js')(req, res, category)
 })
 
 //AJAX
@@ -637,8 +802,40 @@ app.get('/lovelive', (req, res) =>
 //error handler
 app.use((err, req, res, next) =>
 {
-    console.error(err.stack)
-    res.status(500).send('Internal Server Error')
+    console.error(err)
+    switch (err.code)
+    {
+        case 'EBADCSRFTOKEN':
+            {
+                //Send CSRF Error message
+                require(__dirname + '/sendfile.js')(req, res, 'CSRF token error', '/csrfError.html')
+            }
+            break
+        case 'FILENAMENULL':
+            {
+                require(global.path + '/error.js')(req, res, null, 'File name cannot be blank.', 'javascript:window.history.back()', 'the previous page')
+            }
+            break
+        case 'FILEEXISTS':
+            {
+                require(global.path + '/error.js')(req, res, null, 'File already exists. Please change the file name.', 'javascript:window.history.back()', 'the previous page')
+            }
+            break
+        case 'PROCESSED':
+            break
+        case 'INVALIDCAPTCHA':
+            {
+                require(global.path + '/error.js')(req, res, null, 'Please complete CAPTCHA correctly.', 'javascript:window.history.back()', 'the previous page')
+            }
+            break
+        default:
+            {
+                console.error(err)
+                console.error(err.stack)
+                res.status(500).send('Internal Server Error')
+            }
+            break
+    }
 })
 
 var server = app.listen(port, '0.0.0.0', () =>

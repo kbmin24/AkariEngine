@@ -16,6 +16,12 @@ module.exports = (req, res, histories) =>
         ]
     }).then( changes =>
     {
+        console.log(changes)
+        if (changes.count == 0)
+        {
+            require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+            return
+        }
         //from & to is nth entry in history (NOT nth revision)
         var from = req.query.from
         var to = req.query.to

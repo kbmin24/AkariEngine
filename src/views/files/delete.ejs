@@ -1,5 +1,6 @@
 <form action='/deletefile/<%= title %>' method='POST' class='editForm'>
     <div class="form-group mt-2 mb-2 row">
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <label for='comment' class='col-sm-1 col-form-label sr-only'>Comment</label>
         <div class="col-sm-11">
             <input class="form-control" id='comment' maxlength=255 name='comment' type="text" placeholder="Max 255 characters">

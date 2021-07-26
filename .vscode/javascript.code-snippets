@@ -1,0 +1,11 @@
+{
+    "ipaddress":
+    {
+        "scope": "javascript",
+        "prefix": "ip",
+        "body":
+        [
+            "req.headers['x-forwarded-for'] || req.socket.remoteAddress"
+        ]
+    }
+}

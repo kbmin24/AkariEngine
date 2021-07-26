@@ -9,7 +9,19 @@ module.exports = async (req, res, history, protect, perm, block) =>
     const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
     var username = req.session.username
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, acl, perm, block)
+
+    //rule: OLD AND NEW
+    var rev1 = req.query.rev1
+    var rev2 = req.query.rev2
+
+    if (rev1 * 1 > rev2 * 1) [rev1, rev2] = [rev2, rev1]
+
+    let ACLList = [acl]
+    const pro1 = await protect.findOne({where: {title: req.params.name, task: 'read', revision: rev1}})
+    const pro2 = await protect.findOne({where: {title: req.params.name, task: 'read', revision: rev2}})
+    if (pro1) ACLList.push(pro1.protectionLevel)
+    if (pro2) ACLList.push(pro2.protectionLevel)
+    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ACLList, perm, block, rev1)
     if (r)
     {
         //do nothing
@@ -24,11 +36,6 @@ module.exports = async (req, res, history, protect, perm, block) =>
         return
     }
 
-    //rule: OLD AND NEW
-    var rev1 = req.query.rev1
-    var rev2 = req.query.rev2
-
-    if (rev1 * 1 > rev2 * 1) [rev1, rev2] = [rev2, rev1]
     const pagev1 = await history.findOne(
     {
         where:
@@ -70,6 +77,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     html += '<link rel="stylesheet" type="text/css" href="/lib/diff/diff2html.min.css" />'
     html += '<script type="text/javascript" src="/lib/diff/diff2html.min.js"></script>'
+    html += '<style>.d2h-moved-tag{display: none;}</style>'
     //var html = ''
     
     //html = await ejs.renderFile(global.path + '/views/pages/diff.ejs',{})

@@ -1,6 +1,7 @@
 <form action='/admin/grant' method='POST'>
+    <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
     <input type='hidden' id='grantTo' name='grantTo' value='<%= grantTo %>'>
-    <% global.perms.forEach(i => { %>
+    <% global.perms.forEach((i) => { %>
     <div class='form-check form-check-inline'>
         <input class='form-check-input' type='checkbox' id='cb<%= i %>' name='<%= i %>' value='<%= i %>'>
         <label class='form-check-label' for='cb<%= i %>'><%= i %></label>

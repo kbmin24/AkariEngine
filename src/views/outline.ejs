@@ -4,14 +4,14 @@
         <%- include('head') %>
         <title><%= title %></title>
     </head>
-    <body>
+    <body class='d-flex flex-column min-vh-100'>
         <%- include('nav') %>
         <div class='container container-fluid'>
             <%- include('rc') %>
             <section>
                 <div class='article-wrapper h-75 p-4 border rounded-top row'>
                     <div class='pb-2 mt-2 mb-3 border-bottom'>
-                        <h1 style='display:inline-block'><%= title %></h1>
+                        <h1 style='display:inline-block;overflow-wrap: anywhere;'><%= title %></h1>
                         <% if (locals.isPage) { %>
                             <%- include('pageTools') %>
                         <% } %>

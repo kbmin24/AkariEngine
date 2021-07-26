@@ -17,7 +17,7 @@
 </form>
 <ul>
     <% changes.forEach((item, i, ch) => { %>
-        <li><%= date.format(item.createdAt, global.dtFormat) %> - <%= item.username %> <%= item.job %></li>
+        <li><%= date.format(item.createdAt, global.dtFormat) %> - <a href='/w/User:<%= item.username %>'><%= item.username %></a> <%= item.job %></li>
     <% }) %>
         <ul class="pagination">
         <% if (from > 0) { %>

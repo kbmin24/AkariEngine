@@ -1,5 +1,6 @@
 <link rel='stylesheet' href='/css/edit.css'>
 <form action='/edit/<%= title %>' method='POST' class='editForm'>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class='form-group'>
         <textarea class='form-control' id='editAreaBox' name='content'<% if (locals.disabled) { %> disabled <% } %>><%= content %></textarea>
     </div>
@@ -9,6 +10,16 @@
         <div class="col-sm-10">
             <input class="form-control" id='comment' maxlength=255 name='comment' type="text" placeholder="Max 255 characters">
         </div>
+    </div>
+    <div class='mt-2 mb-2'>
+        <%- captcha %>
+        <div class='row'>
+            <label for='captchaIn' class='col-form-label col-sm-2'>CAPTCHA</b></label>
+            <div class='col-sm-10'>
+                <input class="form-control" maxlength=5 id='captchaIn' name='captcha' type="text" style='width:100px' autocomplete='off'>
+            </div>
+        </div>
+        <small class='form-text text-muted'>For spam protection, please type <b>five</b> characters shown above.</small>
     </div>
     <!-- TODO:
     1) prehaps preview (use post?)-->

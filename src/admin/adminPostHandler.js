@@ -1,4 +1,4 @@
-module.exports = async (req, res, users, perm, block, adminlog) =>
+module.exports = async (req, res, users, perm, block, page, protect, adminlog) =>
 {
     const username = req.session.username
     switch (req.params.name)
@@ -11,6 +11,15 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
             return
         case 'blockip':
             await require(__dirname + '/blockip.js')(req, res, users, perm, block, adminlog)
+            return
+        case 'hiderev':
+            await require(__dirname + '/protectRevision.js')(req, res, 
+                {
+                    'perm': perm,
+                    'page': page,
+                    'protect': protect,
+                    'adminlog': adminlog
+                })
             return
         default:
             res.writeHead(404)

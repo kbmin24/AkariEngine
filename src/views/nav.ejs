@@ -66,6 +66,14 @@
                     <% } %>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end position-absolute" aria-labelledby="navUserDropDown">
+                    <% if (locals.username) { %>
+                    <li>
+                        <a class='dropdown-item' href='/w/User:<%= username %>'>User Page</a>
+                    </li>
+                    <li>
+                        <a class='dropdown-item' href='/settings'>Settings</a>
+                    </li>
+                    <% } %>
                     <li>
                         <% if (locals.username) { %>
                             <a class="dropdown-item" href='/logout'>Logout</a>
