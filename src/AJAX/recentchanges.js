@@ -2,7 +2,7 @@
 //const updRecentChanges = require('./updRecentChanges')
 module.exports = (req, res, recentchanges) =>
 {
-    const show = (req.query.show ? req.query.show: 30)
+    const show = (req.query.show ? req.query.show: 30) * 1
     recentchanges.findAll(
     {
         order:

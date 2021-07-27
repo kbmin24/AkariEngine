@@ -46,7 +46,6 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                     })
                     history.findAll({where: {page: req.params.name}}).then(oldhistories =>
                     {
-                        console.log( req.params.name, oldhistories.length)
                         for (var i = 0; i < oldhistories.length; i++)
                         {
                             oldhistories[i].update(

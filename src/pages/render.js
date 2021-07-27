@@ -284,7 +284,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     })
     data = data.replace(/\[\[category:(.*?)\]\]/igm, '')
     //Internal Link
-    data = data.replace(/\[\[(.*?)\]\]/igm, '<a href="/w/$1">$1</a>')
+    data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, '<a href="/w/$1">$1</a>')
     //Internal Link with different text
     data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, '<a href="/w/$1">$2</a>')
 

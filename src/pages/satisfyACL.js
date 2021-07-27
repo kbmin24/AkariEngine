@@ -126,7 +126,6 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
                                     }
                                     else
                                     {
-                                        console.log(b.until)
                                         return `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`
                                     }
                                 }

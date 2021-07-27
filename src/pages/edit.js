@@ -11,7 +11,7 @@ async function sign(req, settings)
                 key: 'sign'
             }
         })
-        const prefix = s ? s.value : req.session.username
+        const prefix = s ? s.value : `[[User:${req.session.username}]]`
         return `${prefix} ${dtnow}`
     }
     else

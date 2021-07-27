@@ -4,7 +4,7 @@ const express = require('express')
 const app = express()
 
 const port = 8080
-global.appname = 'testwiki'
+global.appname = 'GECWiki'
 global.path = __dirname
 //global.loopbackAddress = 'http://127.0.0.1:' + port.toString() //change if running behind a load balancer
 global.license = 'CC BY-SA 3.0'
@@ -36,7 +36,8 @@ app.use(session({
     expires: new Date(Date.now() + (30 * 86400 * 1000)), //expires after 30 days
     cookie:
     {
-        secure: false, //TODO: change it to TRUE on production
+        samesite: 'strict',
+        secure: true, //TODO: change it to TRUE on production
         httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
@@ -310,7 +311,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
         {
             if (err)
             {
-                console.log(err)
+                console.error(err)
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
@@ -498,7 +499,7 @@ app.get('/revert/:name', async (req, res) =>
     {
         if (err)
         {
-            console.log(err)
+            console.error(err)
             res.writeHead(500).write('Internal Server Error')
             return
         }
@@ -629,12 +630,10 @@ var upload = multer({
     {
         fields: 3,
         fieldNameSize: 255,
-        fieldSize: 20 * 1024 * 1024
+        fileSize: 4 * 1024 * 1024
     },
     fileFilter: async (req, file, cb) =>
     {
-        console.log(req.body)
-        console.log(req.session)
         const p = await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})
         if (p)
         {

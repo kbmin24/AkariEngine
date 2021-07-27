@@ -68,7 +68,6 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         else
         {
             //error!
-            console.log(decodeURI(req.params.name))
             require(global.path + '/error.js')(req, res, null, 'No such page.', '/', 'the main page')
         }
     })

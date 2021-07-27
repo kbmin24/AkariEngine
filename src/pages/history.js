@@ -16,7 +16,6 @@ module.exports = (req, res, histories) =>
         ]
     }).then( changes =>
     {
-        console.log(changes)
         if (changes.count == 0)
         {
             require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)

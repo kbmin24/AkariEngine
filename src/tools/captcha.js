@@ -32,8 +32,6 @@ exports.genCaptcha = async (req) =>
 exports.chkCaptcha = async (req, res, perm) =>
 {
     //check if the user has bypasscaptcha perm
-    console.log(req.session.captcha)
-    console.log(req.body.captcha)
     if (req.session.username && (await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})))
         return true //dont check
     if (req.body.captcha !== req.session.captcha)

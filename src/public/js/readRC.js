@@ -36,7 +36,7 @@ $(function() {
                 const entry = `
                 <tr>
                     <th scope='row'>${ln}</th>
-                    <td>${data[rc].doneBy}</td>
+                    <td><a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a></td>
                     <td>${data[rc].type} (${bytechange})</td>
                     <td>${data[rc].comment}</td>
                     <td>${moment(data[rc].createdAt).format('YYYY/MM/DD HH:mm:ss')}</td>
