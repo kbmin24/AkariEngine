@@ -48,7 +48,7 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
         {
             if (!incl)
             {
-                return `[${macro}(${args})]`
+                return ''//`[${macro}(${args})]`
             }
             //let's fetch the data
             args = args.split('|')
@@ -193,8 +193,8 @@ var footnotes = []
 var footnote
 var footnotecount
 
-const ulRegex = /(?:^|<\/h\d>)(?:\* (.+(?:\r?\n|$)))+/igm
-const olRegex = /(?:^|<\/h\d>)(?:1\.+ (.+(?:\r?\n|$)))+/igm
+const ulRegex = /(^|<\/h\d>)((?:\* (?:.+(?:\r?\n|$)))+)/igm
+const olRegex = /(^|<\/h\d>)((?:1\.+ (?:.+(?:\r?\n|$)))+)/igm
 
 module.exports = async (pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
 {
@@ -204,7 +204,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     toc = 'Table of Contents<hr>'
 
 
-    data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/ig, '')
+    data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/igm, '')
     const redrFrom = req === undefined ? undefined : req.query.from
     if (redrFrom !== undefined)
     {
@@ -212,7 +212,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         data = `<i>Redirected from <a href="/w/${redrFrom}?redirect=false">${redrFrom}</a></i><br>` + data
     }
     //Redirect
-    const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/igm, (_match, p1, p2, _offset, string, _groups) =>
+    const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
     {
         if (undefined === fredirect(pagename, p1, p2, string, res, redirect))
         {
@@ -237,6 +237,9 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
             return res
         }
     })
+    
+    //headings
+    data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
     //centred text
     data = data.replace(/\[:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
@@ -245,18 +248,15 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     //right aligned text
     data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
 
-    //headings
-    data = data.replace(/^(=+) (.*) =+\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
-
     //macro
     //asyncMacro(str, regex, fn, pages)
     data = await asyncMacro(data, /\[(.*?)\((.*?)\)\]/igm, renderMacro, pages, incl)
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
-    data = data.replace(ulRegex, (match, _p1, _offset, _string, _groups) => list(match,'ul')) //NOTE: must have /n at the end
+    data = data.replace(ulRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ul'))) //NOTE: must have /n at the end
     //ol
-    data = data.replace(olRegex, (match, _p1, _offset, _string, _groups) => (list(match,'ol')))
+    data = data.replace(olRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ol')))
     //big text
     data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
     //bold

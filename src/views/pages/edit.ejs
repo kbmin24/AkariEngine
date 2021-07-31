@@ -24,9 +24,9 @@
     <!-- TODO:
     1) prehaps preview (use post?)-->
     <% if (locals.username === undefined) { %>
-    <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone.</p>
+    <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone. (비로그인 상태로 당신의 IP 주소가 영구히 기록되어 공개될 것입니다.)</p>
     <% } %>
-    <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission. <%= global.copyrightNotice %></p>
+    <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission. (저작권이 존재하는 내용을 허가 없이 저장하지 마십시오.) <%= global.copyrightNotice %></p>
     <button type='submit' type='button' class='btn btn-primary mt-3'>Save</button>
     <% } %>
 </form>

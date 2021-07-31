@@ -9,6 +9,13 @@
     /*display: grid;*/
     float: right;
 }
+@media (max-width: 400px)
+{
+    #pageTools
+    {
+        margin-right: -25px;
+    }
+}
 .pageToolItem > a
 {
     text-decoration: none;

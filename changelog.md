@@ -1,4 +1,15 @@
-v0.3
+v0.4 (2021-07-31)
+Improved responsiveness of the page toolbar
+Changed misbehaving #redirect problem
+Included Korean edit notice
+Parser now returns an empty string for template in template
+Solved problem which ul after heading is regarded as part of the heading
+solved problem where a header is not render when it is succeeded by a blank
+
+v0.3a (2021-07-29)
+CSRF Issue Hotfix
+
+v0.3 (2021-07-28)
 Changed branding
 Resolved issue of having two title tags
 Changed cookie security options

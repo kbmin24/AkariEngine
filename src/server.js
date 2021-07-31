@@ -8,7 +8,8 @@ global.appname = 'GECWiki'
 global.path = __dirname
 //global.loopbackAddress = 'http://127.0.0.1:' + port.toString() //change if running behind a load balancer
 global.license = 'CC BY-SA 3.0'
-global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This cannot be undone.`
+//(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
+global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
 global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
 global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha']
 
@@ -37,7 +38,7 @@ app.use(session({
     cookie:
     {
         samesite: 'strict',
-        secure: true, //TODO: change it to TRUE on production
+        //secure: true, //TODO: change it to TRUE on production
         httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
