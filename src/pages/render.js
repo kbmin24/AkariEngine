@@ -186,6 +186,164 @@ function fredirect(orgname, pagename, paragraph, text, res, redirect)
     else return '<p><span class="fw-bold text-danger">REDIRECT ERROR</span>: redirect can only be done on a normal page.</p>'
 }
 
+function renderTable(data)
+{
+    let res = '<table class=\'table table-bordered ren-table\' '
+    
+    //get table-wide options
+    //Get the first cell
+    let cellRegEx = /\|\| ?((?: ?\[.*?\] ?)*)(.*?)(?=\|\|)/igm
+    let firstCellOptRegex = /\[ *(.*?) *\]/igm
+    let firstCell = cellRegEx.exec(data)
+    let firstCellOptFound
+    let tableStyle = ''
+    let caption = ''
+    let borderColor
+    let borderWidth
+    while (((firstCellOptFound = firstCellOptRegex.exec(firstCell)) !== null))
+    {
+        if (/tablefloat *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            switch (firstCellOptFound[1].split('=')[1].trim())
+            {
+                case 'left':
+                    tableStyle += 'float:left;'
+                    break
+                case 'center':
+                case 'centre':
+                    tableStyle += 'margin:auto;'
+                    break
+                case 'right':
+                    tableStyle += 'float:right;'
+                    break
+            }
+        }
+        else if (/caption *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            caption = `<caption style='text-align:center'>${firstCellOptFound[1].split('=')[1].trim()}</caption>`
+        }
+        else if (/tablebordercolou?r *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            tableStyle += `border-color:${firstCellOptFound[1].split('=')[1].trim()};`
+            borderColor = firstCellOptFound[1].split('=')[1].trim()
+        }
+        else if (/tableborderwidth *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            tableStyle += `border-width:${firstCellOptFound[1].split('=')[1].trim()};`
+            borderWidth = firstCellOptFound[1].split('=')[1].trim()
+        }
+        else if (/tablebackgroundcolou?r *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            tableStyle += `background-color:${firstCellOptFound[1].split('=')[1].trim()};`
+        }
+        else if (/tablewidth *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            tableStyle += `width:${firstCellOptFound[1].split('=')[1].trim()};`
+        }
+        else if (/tableheight *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            tableStyle += `height:${firstCellOptFound[1].split('=')[1].trim()};`
+        }
+    }
+    res += `style='${tableStyle}'>`
+
+    let colbody = '<colgroup'
+    let tbody = '<tbody>'
+    let rowNum = 1
+    let tSplit = data.split('\n')
+    tSplit.forEach((line) =>
+    {
+        //line.replace('\r', '') // /r/n problem
+        if (line.trim() == '') return
+        let l = '<tr '
+        let rowStyle = ''
+        let found
+        let isFirst = true
+        let cellRegEx = /\|\| ?((?: ?\[.*?\] ?)*)(.*?)(?=\|\|)/igm
+        while (((found = cellRegEx.exec(line)) !== null))
+        {
+            if (isFirst)
+            {
+                //put row-wide attribute
+                let colOptRegex = /\[ *(.*?) *\]/igm
+                let optFound
+                
+                //search for attritubtes
+                while (((optFound = colOptRegex.exec(found[1].trim())) !== null))
+                {
+                    if (optFound.length < 2) continue;
+                    if (/rowbackgroundcolor=(.+?)/i.test(optFound[1]))
+                    {
+                        rowStyle += `background-color:${optFound[1].split('=')[1]};`
+                    }
+                }
+                isFirst = false
+                l += `style='${rowStyle}'>`
+            }
+            let cell = '<td '
+            let cellStyle = ''
+            let cellOptRegex = /\[ *(.*?) *\]/igm
+            let cellOptFound
+            if (borderColor) cellStyle += 'border-color:' + borderColor + ';'
+            if (borderWidth) cellStyle += 'border-width:' +  borderWidth + ';'
+            while (((cellOptFound = cellOptRegex.exec(found[1].trim())) !== null))
+            {
+                if (cellOptFound.length < 2) continue
+                cellOptFound[1] = cellOptFound[1].trim()
+                if (/-(.*?)/.test(cellOptFound[1])) //[-3]
+                {
+                    cell += `colspan='${cellOptFound[1].substring(1)}' `
+                }
+                else if (/|(.*?)/.test(cellOptFound[1])) //[-3]
+                {
+                    cell += `rowspan='${cellOptFound[1].substring(1)}' `
+                }
+                else if (cellOptFound[1] == ':')
+                {
+                    cellStyle += 'text-align: center;'
+                }
+                else if (cellOptFound[1] == '(')
+                {
+                    cellStyle += 'text-align: left;'
+                }
+                else if (cellOptFound[1] == ')')
+                {
+                    cellStyle += 'text-align: right;'
+                }
+                else if (/bordercolou?r *?= *?(.+?)/i.test(cellOptFound[1]))
+                {
+                    cellStyle += `border-color:${cellOptFound[1].split('=')[1].trim()};`
+                }
+                else if (/borderwidth *?= *?(.+?)/i.test(cellOptFound[1]))
+                {
+                    cellStyle += `border-width:${cellOptFound[1].split('=')[1].trim()};`
+                }
+                else if (/backgroundcolou?r *?= *?(.+?)/i.test(cellOptFound[1]))
+                {
+                    cellStyle += `background-color:${cellOptFound[1].split('=')[1].trim()};`
+                }
+                else if (/width *?= *?(.+?)/i.test(cellOptFound[1]))
+                {
+                    cellStyle += `width:${cellOptFound[1].split('=')[1].trim()};`
+                }
+                else if (/height *?= *?(.+?)/i.test(cellOptFound[1]))
+                {
+                    cellStyle += `height:${cellOptFound[1].split('=')[1].trim()};`
+                }
+            }
+            cell += `style='${cellStyle}'>${found[2].trim() || ''}</td>`
+            l += cell
+        }
+        l += '</tr>'
+        tbody += l
+        rowNum++
+    })
+    colbody += ''
+    tbody += '</tbody>'
+    res += caption + tbody + '</table>'
+    return res
+}
+
 var currentTOC = undefined
 var latestHeading = 7
 var toc
@@ -248,15 +406,15 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
     //centred text
-    data = data.replace(/\[:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
+    data = data.replace(/\[:\]{{(.*)}}/igms, '<div class="ren-center">$1</div>')
     //left aligned text
-    data = data.replace(/\[\(\]{{(.*)}}/igm, '<div class="ren-left">$1</div>')
+    data = data.replace(/\[\(\]{{(.*)}}/igms, '<div class="ren-left">$1</div>')
     //right aligned text
-    data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
+    data = data.replace(/\[\)\]{{(.*)}}/igms, '<div class="ren-right">$1</div>')
 
     //macro
     //asyncMacro(str, regex, fn, pages)
-    data = await asyncMacro(data, /\[(.*?)\((.*?)\)\]/igm, renderMacro, pages, incl)
+    data = await asyncMacro(data, /\[([^\]]+?)\((.+?)\)\]/igm, renderMacro, pages, incl)
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
@@ -315,6 +473,11 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         var ind = ''
         return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
     })*/
+        //table
+    data = data.replace(/(^\|\|(.*?\|\|)+(\r?\n|$))+/igm, (match) =>
+    {
+        return renderTable(match)
+    })
     data = data.replace(/(?:^|>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, _offset, _string, _groups) =>
     {
         return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`

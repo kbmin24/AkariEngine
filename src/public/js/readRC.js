@@ -33,10 +33,12 @@ $(function() {
                 {
                     bytechange = `<span class='text-danger fw-bold'>${data[rc].bytechange}</span>`
                 }
-                const entry = `
+                let entry = `
                 <tr>
-                    <th scope='row'>${ln}</th>
-                    <td><a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a></td>
+                    <th scope='row'>${ln}</th>`
+                //entry += <td>$<a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a></td>
+                entry += '<td>' + (!/\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?/.test(data[rc].doneBy) ? `<a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a>` : data[rc].doneBy) + '</td>'
+                entry += `
                     <td>${data[rc].type} (${bytechange})</td>
                     <td>${data[rc].comment}</td>
                     <td>${moment(data[rc].createdAt).format('YYYY/MM/DD HH:mm:ss')}</td>

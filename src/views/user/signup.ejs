@@ -2,7 +2,11 @@
     <form action='/signup' method='POST'>
         <div class='form-group mb-2'>
             <label for='idInputbox'>ID</label>
-            <input type='text' name='id' maxlength=255 class='form-control' id='idInputbox'placeholder='Enter ID' required minlength='3' maxlength='255'>
+            <input type='text' name='id' maxlength=255 class='form-control' id='idInputbox'placeholder='Enter ID' required minlength='3' maxlength='255', onkeyup='idCheck()'>
+            <p>
+                <small id='goodid' class='text-success fw-bold' style='display: none'>Good ID.</small>
+                <small id='badid' class='text-danger fw-bold' style='display: none'>IDs can only contain alphanumeric characters or underscores(_).</small>
+            </p>
         </div>
         <div class='form-group mb-2'>
             <label for='passwordInputbox'>Password</label>

@@ -56,3 +56,8 @@ p:empty
     margin-top: 1rem !important;
     margin-bottom: 1rem !important;
 }
+
+.ren-table
+{
+    width: auto;
+}

@@ -96,10 +96,10 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
             if (page) //if page exists
             {
                 //show the page
-                const redirect = req.query.redirect !== undefined ? true : (req.query.redirect == 'true')
-                if (redirect)
+                const redirect = !(req.query.redirect == 'true' || req.query.from)
+                if (req.query.from)
                 {
-                    titleSuffix = `<i>redirected from ${req.query.from}</i>&nbsp;` + titleSuffix
+                    titleSuffix = `<i>redirected from <a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a></i>&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
                 let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, redirect, true, {}, opt)
@@ -139,9 +139,8 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
             if (page)
             {
                 //show the page
-                const redirect = req.query.redirect === undefined ? true : (req.query.redirect == 'true')
                 //(pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={})
-                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, redirect, true, {}, await getOptions(page.content))
+                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, false, true, {}, await getOptions(page.content))
                 if (content === undefined) return
                 let renderOpt = {
                     title: page.page,

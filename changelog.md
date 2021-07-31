@@ -1,3 +1,9 @@
+v0.5
+solved 'redirected from' bug
+Includes support for table 
+Signup checks for username validity
+Added Email info at footer
+
 v0.4a (2021-07-31)
 Quick security patch
 title now shows page rev and admin label when applicable

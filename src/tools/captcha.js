@@ -18,10 +18,10 @@ exports.genCaptcha = async (req) =>
     //check ignorecaptcha
     const c = svgCaptcha.create(
         {
-            size: 5,
-            noise: 5,
-            ignoreChars: '0o1iI',
-            color: true
+            size: 4,
+            noise: 3,
+            ignoreChars: '0o1iI5SsvuVUCcGg',
+            color: false
         }
     )
     const svg = c.data
