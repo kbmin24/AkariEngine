@@ -2,7 +2,7 @@ v0.5
 solved 'redirected from' bug
 Includes support for table 
 Signup checks for username validity
-Added Email info at footer
+Added Email info to footer
 
 v0.4a (2021-07-31)
 Quick security patch
