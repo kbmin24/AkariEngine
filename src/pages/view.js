@@ -73,6 +73,21 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
         return
     }
 
+    let titleSuffix = ''
+    //check if it's a user page AND it's an admin's one
+    if (rev) titleSuffix = `(r${rev})&nbsp;`
+    const usernameRegex = /User:(.*)/
+    if (usernameRegex.test(req.params.name))
+    {
+        const username = usernameRegex.exec(req.params.name)[1]
+        if (username)
+        {
+            if (await (perm.findOne({where: {username: username, perm: 'admin'}})))
+            {
+                titleSuffix += '(<i>admin</i>)'
+            }
+        }
+    }
     if (rev === undefined)
     {
         //get the newest ver.
@@ -81,20 +96,25 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
             if (page) //if page exists
             {
                 //show the page
-                const redirect = req.query.redirect === undefined ? true : (req.query.redirect == 'true')
+                const redirect = req.query.redirect !== undefined ? true : (req.query.redirect == 'true')
+                if (redirect)
+                {
+                    titleSuffix = `<i>redirected from ${req.query.from}</i>&nbsp;` + titleSuffix
+                }
                 let opt = await getOptions(page.content)
                 let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, redirect, true, {}, opt)
                 if (content === undefined) return
                 content = await getCategory(req.params.name, category, opt['category']) + content
-                res.render('outline',
-                {
+                let renderOpt = {
                     title: page.title,
                     content: content,
                     isPage: true,
                     pagename: page.title,
                     username: req.session.username,
                     wikiname: global.appname
-                })
+                }
+                if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
+                res.render('outline',renderOpt)
             }
             else
             {
@@ -123,15 +143,16 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
                 //(pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={})
                 let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, redirect, true, {}, await getOptions(page.content))
                 if (content === undefined) return
-                res.render('outline',
-                {
-                    title: page.page + ' (r' + rev +')',
+                let renderOpt = {
+                    title: page.page,
                     content: content,
                     isPage: true,
                     pagename: page.page,
                     username: req.session.username,
                     wikiname: global.appname
-                })
+                }
+                if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
+                res.render('outline', renderOpt)
             }
             else
             {

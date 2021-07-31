@@ -20,7 +20,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         return
     }
     //todo: ACL
-    pages.findOne({where: {title: req.body.newName}}).then(oldpage =>
+    pages.findOne({where: {title: req.body.newName}}).then(async oldpage =>
     {
         var doneby = req.session.username
         if (doneby === undefined) req.headers['x-forwarded-for'] || req.socket.remoteAddress
@@ -30,8 +30,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            pages.findOne({where: {title: req.params.name}}).then(page =>
+            pages.findOne({where: {title: req.params.name}}).then(async page =>
             {
+                let ps = await protect.findAll({where: {title: req.params.name}})
+                ps.forEach(async v =>
+                    {
+                        v.update({title: req.body.newName})
+                    })
                 page.update({title: req.body.newName, currentRev: page.currentRev + 1})
                 .then(() =>
                 {

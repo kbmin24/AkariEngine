@@ -1,10 +1,15 @@
+v0.4a (2021-07-31)
+Quick security patch
+title now shows page rev and admin label when applicable
+'Move' feature now moves acl as well
+
 v0.4 (2021-07-31)
 Improved responsiveness of the page toolbar
 Changed misbehaving #redirect problem
 Included Korean edit notice
 Parser now returns an empty string for template in template
 Solved problem which ul after heading is regarded as part of the heading
-solved problem where a header is not render when it is succeeded by a blank
+solved problem which a header is not rendered when it is succeeded by a blank
 
 v0.3a (2021-07-29)
 CSRF Issue Hotfix

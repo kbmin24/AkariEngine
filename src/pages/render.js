@@ -198,6 +198,8 @@ const olRegex = /(^|<\/h\d>)((?:1\.+ (?:.+(?:\r?\n|$)))+)/igm
 
 module.exports = async (pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
 {
+    //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
+    //deprecated options: _renderInclude, redirect
     //initialise
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
@@ -205,12 +207,16 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
 
 
     data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/igm, '')
+
+    /*
     const redrFrom = req === undefined ? undefined : req.query.from
     if (redrFrom !== undefined)
     {
         redirect = false;
         data = `<i>Redirected from <a href="/w/${redrFrom}?redirect=false">${redrFrom}</a></i><br>` + data
-    }
+    }*/
+    //deprecated
+
     //Redirect
     const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
     {
