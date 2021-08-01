@@ -38,9 +38,35 @@ async function getOptions(content)
     })
     return res
 }
+async function updViewCount(title, viewcount, updateTime)
+{
+    const u = await updateTime.findOne({where: {key: 'viewcount'}})
+    if (u)
+    {
+        console.log(u.value.getDate())
+        console.log((new Date()).getDate())
+        if (u.value.getDate() != (new Date()).getDate())
+        {
+            //wipe out
+            await viewcount.destroy({where: {}, truncate: true})
+        }
+    }
+    else
+    {
+        await updateTime.create(
+            {
+                key: 'viewcount',
+                value: new Date()
+            }
+        )
+    }
+    const p = await viewcount.findOne({where: {title: title}})
+    if (p) p.update({count: p.count + 1})
+    else viewcount.create({title: title, count: 1})
+}
 exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
 exports.getOptions = async content => await getOptions(content)
-module.exports = async (req, res, pages, history, protect, perm, block, category) =>
+module.exports = async (req, res, pages, history, protect, perm, block, category, viewcount, updateTime) =>
 {
     //check read ACL
     req.params.name = req.params.name.trim()
@@ -96,6 +122,7 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
         {
             if (page) //if page exists
             {
+                await updViewCount(req.params.name, viewcount, updateTime)
                 //show the page
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
                 if (req.query.from)

@@ -1,0 +1,47 @@
+<div style='overflow-x: auto'>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope='col'>Page name</th>
+                <th scope='col'>Change made</th>
+                <th scope='col'>Comment</th>
+                <th scope='col'>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% contributions.forEach((item, i, ch) => { %>
+            <tr>
+                <td>
+                    <% if (item.type == 'upload') { %>
+                        <a href='/file/<%= item.page %>'><%= item.page %></a> <em>(file)</em>
+                    <% } else if (item.type == 'delete') { %>
+                        <span><%= item.page %></span>
+                    <% } else { %>
+                        <a href='/w/<%= item.page %>?redirect=false'><%= item.page %></a> (r<%= item.rev %>)
+                    <% } %>
+                </td>
+                <td><%= item.type %> (<% if (item.bytechange > 0) { %><span class='text-success fw-bold'>+<%= item.bytechange %></span><% } else if (item.bytechange == 0) { %><span class='text-secondary fw-bold'><%= item.bytechange %></span><% } else { %><span class='text-danger fw-bold'><%= item.bytechange %></span><% } %>)</td>
+                <td><%= item.comment %></td>
+                <td><%= date.format(item.createdAt, global.dtFormat) %></td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>
+<ul class="pagination">
+<% if (from * 1 > 0) { %>
+    <% var prevlink = `/contribution/${username}?from=${(from * 1 - 100).toString()}` %>
+    <li class="page-item">
+        <a class="page-link" href=<%= prevlink %> aria-label="Previous">
+            &laquo;
+        </a>
+    </li>
+<% } %>
+<% if (from * 1 + 100 < count * 1) { %>
+    <% var nextlink = `/contribution/${username}?from=${(from * 1 + 100).toString()}` %>
+    <li class="page-item">
+        <a class="page-link" href=<%= nextlink %> aria-label="Next">
+            &raquo;
+        </a>
+    </li>
+<% } %>

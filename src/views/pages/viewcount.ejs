@@ -1,0 +1,21 @@
+<p>Following list shows the 30 most viewed pages of the day.</p>
+<div style='overflow-x: auto'>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope='col'>#</th>
+                <th scope='col'>Page name</th>
+                <th scope='col'>Views</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% rank.forEach((rec, i, arr) => { %>
+                <tr>
+                    <td><%= i * 1 + 1 %></td>
+                    <td><a href='/w/<%= rec.title %>'><%= rec.title %></a></td>
+                    <td><%= rec.count %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>

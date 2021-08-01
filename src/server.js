@@ -66,6 +66,8 @@ const block = require(__dirname + '/models/block.model.js')(sequelize)
 const loginhistory = require(__dirname + '/models/loginhistory.model.js')(sequelize)
 const category = require(__dirname + '/models/category.model.js')(sequelize)
 const settings = require(__dirname + '/models/setting.model.js')(sequelize)
+const viewcount = require(__dirname + '/models/viewcount.model.js')(sequelize)
+const updateTime = require(__dirname + '/models/updateTime.model.js')(sequelize)
 sequelize.sync()
 
 global.sanitiseOptions =
@@ -83,9 +85,9 @@ global.sanitiseOptions =
 
     allowedAttributes:
     {
-        a: ['href', 'name', 'id', 'target', 'rel', 'class', 'title'],
-        i: ['class', 'id', 'aria-hidden'],
-        font: ['class', 'id', 'size', 'color', 'face'],
+        a: ['href', 'name', 'id', 'target', 'rel', 'class', 'title', 'style'],
+        i: ['class', 'id', 'aria-hidden', 'style'],
+        font: ['class', 'id', 'size', 'color', 'face', 'style'],
         div: ['class', 'id', 'style'],
         span: ['class', 'id', 'style'],
         caption: ['class', 'id', 'style'],
@@ -147,7 +149,8 @@ global.sanitiseOptions =
             'box-shadow': [/^.*?$/],
             'float': [/^ *(left|right) *$/],
             'width': [/^.*?$/],
-            'height': [/^.*?$/]
+            'height': [/^.*?$/],
+            'clear': [/^.*?$/]
         },
     },
     exclusiveFilter: (img) =>
@@ -528,7 +531,7 @@ app.post('/revert/:name', async (req, res) =>
 })
 app.get('/w/:name', async (req, res) =>
 {
-    await require(global.path + '/pages/view.js')(req, res, pages, history, protect, perm, block, category)
+    await require(global.path + '/pages/view.js')(req, res, pages, history, protect, perm, block, category, viewcount, updateTime)
 })
 app.post('/w', async (req,res) =>
 {
@@ -788,6 +791,16 @@ app.get('/adminlog', async (req, res) =>
 app.get('/category/:name', async (req, res) =>
 {
     await require(global.path + '/pages/category.js')(req, res, category)
+})
+
+app.get('/contribution/:name', async (req, res) =>
+{
+    await require(global.path + '/user/contribution.js')(req, res, history)
+})
+
+app.get('/viewrank', async (req, res) =>
+{
+    await require(global.path + '/pages/viewrank.js')(req, res, viewcount)
 })
 
 //AJAX

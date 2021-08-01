@@ -407,11 +407,11 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
     //centred text
-    data = data.replace(/\[:\]{{(.*)}}/igms, '<div class="ren-center">$1</div>')
+    data = data.replace(/\[:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
     //left aligned text
-    data = data.replace(/\[\(\]{{(.*)}}/igms, '<div class="ren-left">$1</div>')
+    data = data.replace(/\[\(\]{{(.*)}}/igm, '<div class="ren-left">$1</div>')
     //right aligned text
-    data = data.replace(/\[\)\]{{(.*)}}/igms, '<div class="ren-right">$1</div>')
+    data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
 
     //macro
     //asyncMacro(str, regex, fn, pages)

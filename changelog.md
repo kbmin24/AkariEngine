@@ -1,3 +1,8 @@
+v0.5b (2021-08-01)
+Changed timestamp to date
+Added contribution list
+Most viewed pages of the day feature
+
 v0.5a (2021-08-01)
 Table cell background error hotfix
 Changed colours

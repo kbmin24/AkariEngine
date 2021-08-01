@@ -24,7 +24,7 @@
                 <th scope='col'>Username</th>
                 <th scope='col'>Change made</th>
                 <th scope='col'>Comment</th>
-                <th scope='col'>Timestamp</th>
+                <th scope='col'>Date</th>
                 <th scope='col'></th>
             </tr>
         </thead>
@@ -51,7 +51,14 @@
                         )
                         -->
                     </th>
-                    <td><%= changes[i].editedby %></td>
+                    <td>
+                        <% if (/\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?/.test(changes[i].editedby)) { %>
+                            <%= changes[i].editedby %>
+                        <% } else { %>
+                            <a href='/w/User:<%= changes[i].editedby %>'><%= changes[i].editedby %></a>
+                        <% } %>
+                        <sup><a href='/contribution/<%= changes[i].editedby %>'>C</a></sup>
+                    </td>
                     <td><%= changes[i].type %></td>
                     <td><%= changes[i].comment %></td>
                     <td><%= date.format(changes[i].createdAt, global.dtFormat) %> </td>

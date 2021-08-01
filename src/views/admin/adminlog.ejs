@@ -28,7 +28,7 @@
                 </a>
             </li>
         <% } %>
-        <% if (from + 30 < count) { %>
+        <% if (from * 1 + 30 < count * 1) { %>
             <% var nextlink = '/adminlog?from=' + (from * 1 + 30).toString() + (doneBy ? '&doneBy=' + doneBy : '') + (job ? '&job=' + job : '') %>
             <li class="page-item">
                 <a class="page-link" href=<%= nextlink %> aria-label="Next">
