@@ -17,7 +17,8 @@ global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'd
 const {Sequelize} = require('sequelize')
 const sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: __dirname + '/db.sqlite'
+    storage: __dirname + '/db.sqlite',
+    logging: false
 })
 
 
@@ -819,6 +820,11 @@ app.get('/ajax/username', async (req, res) =>
     await require(global.path + '/AJAX/username.js')(req, res, users)
 })
 
+app.get('/robots.txt', (req, res) =>
+{
+    res.type('text/plain')
+    res.send('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /login\nDisallow: /logout\nDisallow: /signup\nDisallow: /settings\nDisallow: /upload')
+})
 app.get('/lovelive', (req, res) =>
 {
     res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')

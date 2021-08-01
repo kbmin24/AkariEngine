@@ -1,3 +1,5 @@
+v0.5c (2021-08-01)
+Miscellaneous changes
 v0.5b (2021-08-01)
 Changed timestamp to date
 Added contribution list

@@ -43,8 +43,6 @@ async function updViewCount(title, viewcount, updateTime)
     const u = await updateTime.findOne({where: {key: 'viewcount'}})
     if (u)
     {
-        console.log(u.value.getDate())
-        console.log((new Date()).getDate())
         if (u.value.getDate() != (new Date()).getDate())
         {
             //wipe out
