@@ -1,4 +1,9 @@
-v0.5
+v0.5a (2021-08-01)
+Table cell background error hotfix
+Changed colours
+Edit preview feature
+
+v0.5 (2021-08-01)
 solved 'redirected from' bug
 Includes support for table 
 Signup checks for username validity

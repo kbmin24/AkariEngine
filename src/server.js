@@ -534,6 +534,10 @@ app.post('/w', async (req,res) =>
 {
     await res.redirect('/w/' + req.body.pagename)
 })
+app.post('/preview', async (req, res) =>
+{
+    await require(global.path + '/pages/preview.js')(req, res, pages, category)
+})
 app.get('/search', async (req, res) =>
 {
     await require(global.path + '/pages/search.js')(req, res, pages)

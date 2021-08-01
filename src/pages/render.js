@@ -55,7 +55,8 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
             const p = await pages.findOne({where: {title: args[0]}})
             if (!p)
             {
-                return `[${macro}(${args})]`
+                return ''
+                //return `[${macro}(${args})]`
             }
             else
             {
@@ -294,7 +295,7 @@ function renderTable(data)
                 {
                     cell += `colspan='${cellOptFound[1].substring(1)}' `
                 }
-                else if (/|(.*?)/.test(cellOptFound[1])) //[-3]
+                else if (/\|(.*?)/.test(cellOptFound[1])) //[-3]
                 {
                     cell += `rowspan='${cellOptFound[1].substring(1)}' `
                 }
@@ -414,7 +415,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
 
     //macro
     //asyncMacro(str, regex, fn, pages)
-    data = await asyncMacro(data, /\[([^\]]+?)\((.+?)\)\]/igm, renderMacro, pages, incl)
+    data = await asyncMacro(data, /\[(\w*)\((.*?)\)\]/igm, renderMacro, pages, incl)
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul

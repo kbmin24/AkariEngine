@@ -38,7 +38,8 @@ async function getOptions(content)
     })
     return res
 }
-
+exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
+exports.getOptions = async content => await getOptions(content)
 module.exports = async (req, res, pages, history, protect, perm, block, category) =>
 {
     //check read ACL

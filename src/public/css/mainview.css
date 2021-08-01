@@ -84,3 +84,19 @@
     width: 100%;
     clear: both;
 }
+
+.bg-primary, .btn-primary
+{
+    background-color: #7aa7d6 !important;
+}
+.btn-outline-primary
+{
+    border-color: #7aa7d6 !important;
+    color: #7aa7d6 !important;
+}
+.btn-outline-primary:hover, .btn-primary, .btn-outline-primary.dropdown-toggle.show
+{
+    background-color: #7aa7d6 !important;
+    border-color: #7aa7d6 !important;
+    color: white !important;
+}
