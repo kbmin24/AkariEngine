@@ -14,7 +14,7 @@ module.exports = async (req, res, history) =>
                 ['createdAt', 'DESC']
             ],
             limit: 100,
-            offset: showfrom
+            offset: showfrom * 1
         }
     )
     const html = await ejs.renderFile(global.path + '/views/user/contributions.ejs',

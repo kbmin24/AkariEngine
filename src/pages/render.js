@@ -22,7 +22,7 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
             var filename = ''
             const properties = [
                 /^(.*?\.(?:png|jpg|jpeg|gif|webp))$/gi,
-                /^width ?= ?(.*?)$'/ig,
+                /^width ?= ?(.*?)$/ig,
                 /^height ?= ?(.*?)$/ig
             ]
             options.forEach((val) =>
@@ -345,6 +345,13 @@ function renderTable(data)
     return res
 }
 
+function linkFix(t)
+{
+    const rExec = /^<a.*?>(.*?)<\/a>$/ig.exec(t)
+    if (rExec && rExec.legnth == 2) return rExec[1]
+    else return t
+}
+
 var currentTOC = undefined
 var latestHeading = 7
 var toc
@@ -445,13 +452,21 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     //external link with different text
     data = data.replace(/\[\[(https?:.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
+        p2 = linkFix(p2)
         return `<a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p2}</a>`
     })
     data = data.replace(/\[\[category:(.*?)\]\]/igm, '')
     //Internal Link
-    data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, '<a href="/w/$1">$1</a>')
+    data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, (_match, p1, _offset, _string, _groups) =>
+    {
+        return `<a href='/w/${p1}'>${p1}</a>`
+    })
     //Internal Link with different text
-    data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, '<a href="/w/$1">$2</a>')
+    data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
+    {
+        p2 = linkFix(p2)
+        return `<a href='/w/${p1}'>${p2}</a>`
+    })
 
     //footnote
     footnotes = []
@@ -474,7 +489,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         var ind = ''
         return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
     })*/
-        //table
+    //table
     data = data.replace(/(^\|\|(.*?\|\|)+(\r?\n|$))+/igm, (match) =>
     {
         return renderTable(match)
@@ -483,6 +498,21 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     {
         return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`
     })
+
+    //blockquote
+    data = data.replace(/^(>.*(\r?\n|$))+/igm, match =>
+    {
+        let txt = ''
+        let lSplit = match.split('\n')
+        lSplit.forEach((l, i) =>
+        {
+            l = l.replace('\r','')
+            txt += l.substring(1,l.length) + (i + 1 == lSplit.length ? '' : '<br>')
+        })
+        return `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>${txt}</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
+    })
+
+    //remove \r?\n
     data = data.replace(/\r?\n/igm, '<br>')
 
     //escape things

@@ -1,5 +1,12 @@
+v0.6 (2021-08-04)
+File width fix
+Fixed file in link
+Other bug fixes
+Blockquote feature
+
 v0.5c (2021-08-01)
 Miscellaneous changes
+
 v0.5b (2021-08-01)
 Changed timestamp to date
 Added contribution list

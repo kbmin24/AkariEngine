@@ -61,3 +61,30 @@ p:empty
 {
     width: auto;
 }
+.ren-quote
+{
+    display: table;
+    width: auto;
+    border-left: 5px solid #7aa7d6;
+    padding-left: 16px;
+    padding-right: 16px;
+    background-color: #f5f5f5;
+}
+.ren-quote, .ren-quote > table, .ren-quote > tbody, .ren-quote > tr
+{
+    min-height: 48px;
+}
+.ren-quote-content
+{
+    position: relative;
+    min-width: 32px;
+
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+.ren-quote-icon
+{
+    vertical-align: top;
+    color: silver;
+    font-size: 28px;
+}

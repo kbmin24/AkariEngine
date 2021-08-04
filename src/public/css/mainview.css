@@ -100,3 +100,7 @@
     border-color: #7aa7d6 !important;
     color: white !important;
 }
+.dropdown-item.active, .dropdown-item:active
+{
+    background-color: #7aa7d6 !important;
+}

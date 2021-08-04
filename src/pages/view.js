@@ -47,6 +47,7 @@ async function updViewCount(title, viewcount, updateTime)
         {
             //wipe out
             await viewcount.destroy({where: {}, truncate: true})
+            await u.update({value: new Date()})
         }
     }
     else

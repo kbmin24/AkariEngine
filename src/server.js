@@ -7,7 +7,7 @@ const port = 8080
 global.appname = 'GECWiki'
 global.path = __dirname
 //global.loopbackAddress = 'http://127.0.0.1:' + port.toString() //change if running behind a load balancer
-global.license = 'CC BY-SA 3.0'
+global.license = 'CC BY-SA 4.0'
 //(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
 global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
 global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
@@ -110,7 +110,8 @@ global.sanitiseOptions =
         thead: ['class', 'id', 'style', 'colspan', 'rowspan'],
         tbody: ['class', 'id', 'style', 'colspan', 'rowspan'],
         iframe: ['class', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'],
-        img: ['class', 'id', 'style', 'height', 'width', 'src']
+        img: ['class', 'id', 'style', 'height', 'width', 'src'],
+        blockquote: ['class', 'id', 'style']
     },
     allowedStyles:
     {

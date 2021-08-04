@@ -1,8 +1,8 @@
-<p class='fw-bold'>Looking for <a href='/w/<%= searchtitle %>'>direct link</a>?</p>
+<p class='fw-bold'>Looking for <a href='/w/<%= searchtitle %>'>edit page</a>?</p>
 <ul class="list-group list-group-flush">
     <% for (let i = 0; i < results.length; i++) { %>
         <li class="list-group-item">
-            <a href='<%= results[i].title %>'><%= results[i].title %></a>
+            <a href='/w/<%= results[i].title %>'><%= results[i].title %></a>
         </li>
     <% } %>
 </ul>

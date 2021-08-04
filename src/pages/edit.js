@@ -69,10 +69,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     if (!req.params.name)
     {
         require(global.path + '/error.js')(req, res, username, 'Title is required.', '/', 'the main page')
+        return
     }
     if (!req.body.content)
     {
         require(global.path + '/error.js')(req, res, username, 'Content is required.', '/', 'the main page')
+        return
     }
     
     //sign
