@@ -600,7 +600,7 @@ const fs = require('fs')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
-    const filetypes = /jpeg|jpg|png|gif|webp/
+    const filetypes = /jpeg|jpg|png|gif|webp|svg/i
     const ext = filetypes.test(path.extname(file.originalname).toLowerCase())
     const mime = filetypes.test(file.mimetype)
     if (mime && ext)
@@ -609,7 +609,7 @@ function checkFileType(file, cb)
     }
     else
     {
-        cb('You can only upload JPEG, JPG, PNG, GIF and WebP files.')
+        cb('You can only upload JPEG, JPG, PNG, GIF, SVG and WebP files.')
     }
 }
 var storage = multer.diskStorage({
