@@ -824,7 +824,7 @@ app.get('/ajax/username', async (req, res) =>
 app.get('/robots.txt', (req, res) =>
 {
     res.type('text/plain')
-    res.send('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /login\nDisallow: /logout\nDisallow: /signup\nDisallow: /settings\nDisallow: /upload')
+    res.send('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /login\nDisallow: /logout\nDisallow: /signup\nDisallow: /settings\nDisallow: /upload\nDisallow: /file/\nUser-agent: Googlebot-Image\nDisallow: /')
 })
 app.get('/lovelive', (req, res) =>
 {
