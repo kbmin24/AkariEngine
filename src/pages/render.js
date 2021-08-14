@@ -525,7 +525,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     })
 
     //remove \r?\n
-    data = data.replace(/\r?\n/igm, '<br>')
+    data = data.replace(/^$/igm, '<br>')
 
     //escape things
     data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\\\'})
