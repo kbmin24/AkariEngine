@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 //This function:
 //gets markup and returns HTML.
-//todo: redirect loop (?redirect=true?)
+
+const dateandtime = require('date-and-time')
 var sanitiseHtml = require('sanitize-html')
 async function renderMacro(macro, args, pages = undefined, incl = true)
 {
@@ -89,6 +90,55 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
             //console.log(ifr)
             return ifr
         }
+        case 'anchor':
+        {
+            return `<a id='${args}'></a>`
+        }
+        case 'dday':
+        {
+            try
+            {
+                if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
+                const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
+                let gap = (new Date()) - d1
+                let res = Math.floor(gap / (1000 * 60 * 60 * 24))
+                res = res < 0 ? res + '' : '+' + res
+                return res
+            }
+            catch (e)
+            {
+                return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
+            }
+        }
+        case 'agek':
+        {
+            try
+            {
+                if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
+                const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
+                return (new Date()).getFullYear() - d1.getFullYear() + 1
+            }
+            catch (e)
+            {
+                return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
+            }
+        }
+        case 'age':
+            {
+                try
+                {
+                    if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
+                    const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
+                    let age = (new Date()).getFullYear() - d1.getFullYear()
+                    const m = (new Date()).getMonth() - d1.getMonth()
+                    if (m < 0 || (m === 0 && (new Date()).getDate() < d1.getDate())) age--;
+                    return age
+                }
+                catch (e)
+                {
+                    return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
+                }
+            }
         default:
             return `[${macro}(${args})]`
             //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
@@ -364,6 +414,19 @@ function linkFix(t)
     else return t
 }
 
+function blockquote(match, rgx, depth)
+{
+    if (depth++ >= 10) return match
+    let txt = ''
+    let lSplit = match.split('\n')
+    lSplit.forEach((l, i) =>
+    {
+        txt += l.substring(1,l.length) + (i + 1 == lSplit.length ? '' : '\n')
+    })
+   txt = txt.replace(rgx, match => {return blockquote(match, rgx, depth)}).replace(/\n/g, '')
+    return `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>${txt}</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
+}
+
 var currentTOC = undefined
 var latestHeading = 7
 var toc
@@ -373,6 +436,7 @@ var footnotecount
 
 const ulRegex = /(^|<\/h\d>)((?:\* (?:.+(?:\r?\n|$)))+)/igm
 const olRegex = /(^|<\/h\d>)((?:1\.+ (?:.+(?:\r?\n|$)))+)/igm
+const blockquoteRegex = /^(>.*(\r?\n|$))+/igm
 
 module.exports = async (pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
 {
@@ -422,6 +486,9 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         }
     })
     
+    //\r\n issue
+    data = data.replace(/\r/g, '')
+
     //headings
     data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
@@ -467,18 +534,72 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         p2 = linkFix(p2)
         return `<a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p2}</a>`
     })
+    //category
     data = data.replace(/\[\[category:(.*?)\]\]/igm, '')
+    //anchor
+    data = data.replace(/\[\[#([^|\r\n]*?)\]\]/igm, `<a href='#$1'>$1</a>`)
+    //anchor with different text
+    data = data.replace(/\[\[(#.*?)\|(.*?)\]\]/igm, `<a href='$1'>$2</a>`)
     //Internal Link
+    {
+        let r = /\[\[([^|\r\n]*?)\]\]/igm
+        const promises = []
+        data.replace(r, (_match, p1, _offset, _string, _groups) =>
+        {
+            let f = async (p1) =>
+            {
+                let p = await pages.findOne({where: {title: p1}})
+                let p1Esc = encodeURIComponent(p1)
+                p1Esc = p1Esc.replace(/'/g, '%27')
+                let p1Tooltip = p1.replace(/'/g,`&apos;`)
+                p1 = p1.replace(/</g, '&lt;')
+                p1 = p1.replace(/>/g, '&gt;')
+                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}'>${p1}</a>`
+                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage'>${p1}</a>`
+            }
+            const promise = f(p1)
+            promises.push(promise)
+        })
+        const pData = await Promise.all(promises)
+        data = data.replace(r, () => pData.shift())
+    }
+    /*
     data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, (_match, p1, _offset, _string, _groups) =>
     {
         return `<a href='/w/${p1}'>${p1}</a>`
     })
+    */
+   
     //Internal Link with different text
+    {
+        let r = /\[\[(.*?)\|(.*?)\]\]/igm
+        const promises = []
+        data.replace(r, (_match, p1, p2, _offset, _string, _groups) =>
+        {
+            let f = async (p1) =>
+            {
+                let p = await pages.findOne({where: {title: p1}})
+                let p1Esc = encodeURIComponent(p1)
+                p1Esc = p1Esc.replace(/'/g, '%27')
+                let p1Tooltip = p1.replace(/'/g,`&apos;`)
+                p2 = p2.replace(/</g, '&lt;')
+                p2 = p2.replace(/>/g, '&gt;')
+                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}'>${p2}</a>`
+                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage'>${p2}</a>`
+            }
+            const promise = f(p1, p2)
+            promises.push(promise)
+        })
+        const pData = await Promise.all(promises)
+        data = data.replace(r, () => pData.shift())
+    }
+    /*
     data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
         p2 = linkFix(p2)
         return `<a href='/w/${p1}'>${p2}</a>`
     })
+    */
 
     //footnote
     footnotes = []
@@ -512,21 +633,11 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     })
 
     //blockquote
-    data = data.replace(/^(>.*(\r?\n|$))+/igm, match =>
-    {
-        let txt = ''
-        let lSplit = match.split('\n')
-        lSplit.forEach((l, i) =>
-        {
-            l = l.replace('\r','')
-            txt += l.substring(1,l.length) + (i + 1 == lSplit.length ? '' : '<br>')
-        })
-        return `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>${txt}</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
-    })
+    data = data.replace(blockquoteRegex, match => {return blockquote(match, blockquoteRegex, 1)})
 
     //remove \r?\n
-    data = data.replace(/^$/igm, '<br>')
-
+    data = data.replace(/^\n/igm, '<br>')
+    data = data.replace('\n', '')
     //escape things
     data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\\\'})
     //sanitising things

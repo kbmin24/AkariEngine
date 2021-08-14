@@ -822,14 +822,6 @@ app.get('/ajax/username', async (req, res) =>
     await require(global.path + '/AJAX/username.js')(req, res, users)
 })
 
-<<<<<<< HEAD
-=======
-app.get('/robots.txt', (req, res) =>
-{
-    res.type('text/plain')
-    res.send('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /login\nDisallow: /logout\nDisallow: /signup\nDisallow: /settings\nDisallow: /upload\nDisallow: /file/\nUser-agent: Googlebot-Image\nDisallow: /')
-})
->>>>>>> 0a87b6f29d314a48f3c578b2d5f1b3f4b528fe2c
 app.get('/lovelive', (req, res) =>
 {
     res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')

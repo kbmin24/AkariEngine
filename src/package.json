@@ -1,6 +1,6 @@
 {
   "name": "wikiengine",
-  "version": "0.6",
+  "version": "0.7",
   "description": "Wiki engine",
   "main": "server.js",
   "dependencies": {

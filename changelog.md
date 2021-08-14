@@ -1,7 +1,16 @@
 v0.7 (2021-08-14)
-Improved robots.txt
+'anchor' macro
+'age' macro
+'agek' macro
+
+Red text for broken links
+Supports nested quotation
+link within page
 Fixed file randering issue
-Other big fixes
+Now linebreaks are automatically inserted ONLY for blank lines
+URL's are now escaped
+Improved robots.txt
+Other bug fixes
 Other miscellaneous changes
 
 v0.6 (2021-08-04)
