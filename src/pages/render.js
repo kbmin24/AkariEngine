@@ -311,6 +311,18 @@ function renderTable(data)
                 {
                     cellStyle += 'text-align: right;'
                 }
+                else if (cellOptFound[1] == '^')
+                {
+                    cellStyle += 'vertical-align: top;'
+                }
+                else if (cellOptFound[1] == '=')
+                {
+                    cellStyle += 'vertical-align: middle;'
+                }
+                else if (cellOptFound[1] == 'v')
+                {
+                    cellStyle += 'vertical-align: bottom;'
+                }
                 else if (/bordercolou?r *?= *?(.+?)/i.test(cellOptFound[1]))
                 {
                     cellStyle += `border-color:${cellOptFound[1].split('=')[1].trim()};`
@@ -348,7 +360,7 @@ function renderTable(data)
 function linkFix(t)
 {
     const rExec = /^<a.*?>(.*?)<\/a>$/ig.exec(t)
-    if (rExec && rExec.legnth == 2) return rExec[1]
+    if (rExec && rExec.length == 2) return rExec[1]
     else return t
 }
 

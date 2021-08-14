@@ -4,3 +4,12 @@
     bottom: 0px;
     right: 0px;
 }
+#btnTop
+{
+    border-bottom-left-radius: 0;
+}
+#btnTOC
+{
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}

@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /login
+Disallow: /logout
+Disallow: /signup
+Disallow: /settings
+Disallow: /upload
+Disallow: /file/
+User-agent: Googlebot-Image
+Disallow: /

@@ -121,6 +121,7 @@ global.sanitiseOptions =
             'background-color': [/^.*?$/],
             'background-image': [/^ *(?:repeating-)?(?:linear|radial)-gradient\([^(]*(\([^)]*\)[^(]*)*[^)]*\) *$/],
             'text-align': [/^ *left *$/, /^ *right *$/, /^ *center *$/],
+            'vertical-align': [/^ *top *$/, /^ *middle *$/, /^ *bottom *$/],
             'font-size': [/^ *\d+(?:px|em|%) *$/],
             'word-break': [/^ *normal *$/, /^ *break-all *$/, /^ *keep-all *$/],
             'margin': [/^ *(((-|\+)?\d+(px|em|%) *)+|auto) *$/],
@@ -704,7 +705,7 @@ app.get('/diff/:name', async (req, res) =>
 })
 app.get('/file/:name', async (req, res) => 
 {
-    await require(global.path + '/files/viewfile.js')(req, res, mfile)
+    await require(global.path + '/files/viewfile.js')(req, res, mfile, pages)
 })
 app.get('/deletefile/:name', csrfProtection, (req, res) =>
 {
@@ -821,11 +822,6 @@ app.get('/ajax/username', async (req, res) =>
     await require(global.path + '/AJAX/username.js')(req, res, users)
 })
 
-app.get('/robots.txt', (req, res) =>
-{
-    res.type('text/plain')
-    res.send('User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /login\nDisallow: /logout\nDisallow: /signup\nDisallow: /settings\nDisallow: /upload')
-})
 app.get('/lovelive', (req, res) =>
 {
     res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')
@@ -859,6 +855,11 @@ app.use((err, req, res, next) =>
         case 'INVALIDCAPTCHA':
             {
                 require(global.path + '/error.js')(req, res, null, 'Please complete CAPTCHA correctly.', 'javascript:window.history.back()', 'the previous page')
+            }
+            break
+        case 'LIMIT_FILE_SIZE':
+            {
+                require(global.path + '/error.js')(req, res, null, 'Sorry. The file selected is too large.', 'javascript:window.history.back()', 'the upload page')
             }
             break
         default:

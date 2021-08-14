@@ -1,8 +1,15 @@
+v0.7 (2021-08-14)
+Improved robots.txt
+Fixed file randering issue
+Other big fixes
+Other miscellaneous changes
+
 v0.6 (2021-08-04)
 File width fix
 Fixed file in link
 Other bug fixes
 Blockquote feature
+cell vertical align
 
 v0.5c (2021-08-01)
 Miscellaneous changes
