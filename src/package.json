@@ -33,7 +33,6 @@
     "svg-captcha": "^1.4.0",
     "tar": "^6.1.8"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"

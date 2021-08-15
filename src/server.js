@@ -958,14 +958,13 @@ io.on('connection', async socket =>
         let username = socket.handshake.session.username
         let IP = socket.handshake.address
         
-        //render to wikitext
-        //PUT in DB
+        //get username
         let doneBy = username ? username : IP
 
         data.username = doneBy
         if (await block.findOne({where: {target: doneBy}})) return
 
-
+        //put in DB
         await threadcomment.create(
             {
                 type: 'comment',
@@ -975,7 +974,18 @@ io.on('connection', async socket =>
                 isHidden: false
             }
         )
-        let t = await thread.findOne({where: {threadID: data.roomId}})
+        let t = await thread.findOne(
+        {
+                where: {threadID: data.roomId}
+        })
+        
+        //RD should be unique
+        await recentdiscuss.destroy(
+        {
+            where: {threadID: data.roomId}
+        })
+
+        //And PUT
         await recentdiscuss.create(
             {
                 threadname: t.threadTitle,
@@ -983,6 +993,8 @@ io.on('connection', async socket =>
                 pagename: t.pagename
             }
         )
+
+        //render to wikitext
         data.message  = await require(global.path + '/pages/render.js')('', data.message, true, pages, null, null, false, true, {}, {})
         io.sockets.in(data.roomId).emit('message', data)
     })
