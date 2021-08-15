@@ -1,0 +1,32 @@
+<div class="dropstart">
+    <button class="btn btn-secondary dropdown-toggle float-end" type="button" id="rcshowNDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      Show...
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="rcshowNDropdown">
+      <li><a class="dropdown-item" href="/RecentDiscuss?show=5">Show 5</a></li>
+      <li><a class="dropdown-item" href="/RecentDiscuss?show=10">Show 10</a></li>
+      <li><a class="dropdown-item" href="/RecentDiscuss?show=30">Show 30</a></li>
+      <li><a class="dropdown-item" href="/RecentDiscuss?show=100">Show 100</a></li>
+    </ul>
+</div>
+<div style='clear:both'></div>
+<div style='overflow-x: auto'>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope='col'>Thread name</th>
+                <th scope='col'>Page name</th>
+                <th scope='col'>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% changes.forEach(c => { %>
+            <tr>
+                <td><a href='/thread/<%= c.threadID %>'><%= c.threadname %></a></td>
+                <td><a href='/w/<%= c.pagename %>'><%= c.pagename %></a></td>
+                <td><%= date.format(c.createdAt, global.dtFormat) %></td>
+            </tr>
+            <% }) %>
+        </tbody>
+    </table>
+</div>

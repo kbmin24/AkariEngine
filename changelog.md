@@ -1,5 +1,8 @@
+v0.8 (2021-08-16)
+Discuss
+
 v0.7 (2021-08-14)
-'anchor' macro
+'anchor' macro <- undocumented
 'age' macro
 'agek' macro
 
@@ -8,8 +11,8 @@ Supports nested quotation
 link within page
 Fixed file randering issue
 Now linebreaks are automatically inserted ONLY for blank lines
-URL's are now escaped
-Improved robots.txt
+(Internal) URL's are now escaped
+robots.txt modifications
 Other bug fixes
 Other miscellaneous changes
 

@@ -1,16 +1,8 @@
 <!-- pageTools.ejs: edit, delete, move...-->
 <div class="w-auto btn-group mt-3" id='pageTools' role="group" aria-label="Basic outlined example">
-  <% if (/^Discuss:.+$/.test(pagename)) { %>
-  <a href='/w/<%= pagename.match(/^Discuss:(.+)$/)[1] %>' class='btn btn-outline-primary'>Page</a>
-  <% } else { %>
-  <a href="/w/<%= pagename %>" class="btn btn-outline-primary">Page</a>
-  <% } %>
+  <a href='/w/<%= pagename %>' class='btn btn-outline-primary'>Page</a>
   <a href='/edit/<%= pagename %>' class="btn btn-outline-primary">Edit</a>
-  <% if (/^Discuss:.+$/.test(pagename)) { %>
-  <a href='/w/<%= pagename %>' class='btn btn-outline-primary'>Discuss</a>
-  <% } else { %>
-  <a href='/w/Discuss:<%= pagename %>' class='btn btn-outline-primary'>Discuss</a>
-  <% }%>
+  <a href="/threads/<%= pagename %>" class="btn btn-outline-primary">Discuss</a>
   <a href='/history/<%= pagename %>' class='btn btn-outline-primary'>History</a>
   <a class='btn btn-outline-primary dropdown-toggle rounded-end' style='-webkit-appearance: none' type='button' id="pageToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
     More

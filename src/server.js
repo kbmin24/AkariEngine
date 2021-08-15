@@ -11,7 +11,7 @@ global.license = 'CC BY-SA 4.0'
 //(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
 global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
 global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
-global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha']
+global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
 const {Sequelize} = require('sequelize')
@@ -29,7 +29,7 @@ const cookieParser = require('cookie-parser')
 const sessionStore = require('express-session-sequelize')(session.Store)
 const sequelizeSessionStore = new sessionStore({db: sequelize})
 app.use(cookieParser(secret))
-app.use(session({
+const sess = session({
     resave: false,
     saveUninitialized: false,
     secret: secret,
@@ -43,7 +43,8 @@ app.use(session({
         httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
-}))
+})
+app.use(sess)
 
 //CSRF
 const csurf = require('csurf')
@@ -69,6 +70,9 @@ const category = require(__dirname + '/models/category.model.js')(sequelize)
 const settings = require(__dirname + '/models/setting.model.js')(sequelize)
 const viewcount = require(__dirname + '/models/viewcount.model.js')(sequelize)
 const updateTime = require(__dirname + '/models/updateTime.model.js')(sequelize)
+const thread = require(__dirname + '/models/thread.model.js')(sequelize)
+const threadcomment = require(__dirname + '/models/threadcomment.model.js')(sequelize)
+const recentdiscuss = require(__dirname + '/models/recentdiscuss.model.js')(sequelize)
 sequelize.sync()
 
 global.sanitiseOptions =
@@ -299,7 +303,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
     //TODO: error if the name is too long (>255)s
     if (req.params.name.length > 255)
     {
-        require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 256 characters long at most.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 255 characters long at most.', '/', 'the main page')
         return
     }
     const target = await pages.findOne({where: {title: req.params.name}})
@@ -598,6 +602,7 @@ app.get('/Upload', async (req, res) =>
 })
 const multer = require('multer')
 const fs = require('fs')
+const { isObject } = require('util')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
@@ -784,7 +789,7 @@ app.get('/admin/:name', csrfProtection, async (req, res) =>
 })
 app.post('/admin/:name', csrfProtection, async (req, res) =>
 {
-    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog)
+    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread)
 })
 app.get('/adminlog', async (req, res) =>
 {
@@ -806,6 +811,45 @@ app.get('/viewrank', async (req, res) =>
     await require(global.path + '/pages/viewrank.js')(req, res, viewcount)
 })
 
+app.get('/threads/:name', async (req, res) =>
+{
+    await require(global.path + '/threads/threadList.js')(req, res,
+    {
+        'pages': pages,
+        'thread': thread,
+        'block': block
+    })
+})
+app.post('/threads/:name', async (req, res) =>
+{
+    await require(global.path + '/threads/createThread.js')(req, res,
+    {
+        'pages': pages,
+        'thread': thread,
+        'threadcomment': threadcomment,
+        'recentdiscuss': recentdiscuss,
+        'block': block
+    })
+})
+
+app.get('/thread/:name', csrfProtection, async (req, res) =>
+{
+    //dbs: users, pages, recentdiscuss, protect, perm, block
+    await require(global.path + '/threads/thread.js')(req, res,
+    {
+        'pages': pages,
+        'thread': thread,
+        'threadcomment': threadcomment,
+        'perm': perm
+    })
+})
+
+app.get('/RecentDiscuss',  async (req, res) =>
+{
+    //dbs: users, pages, recentdiscuss, protect, perm, block
+    await require(global.path + '/threads/rd.js')(req, res, recentdiscuss)
+})
+
 //AJAX
 app.get('/ajax/autocomplete', async (req, res) =>
 {
@@ -820,6 +864,27 @@ app.get('/ajax/recentchanges', async (req, res) =>
 app.get('/ajax/username', async (req, res) =>
 {
     await require(global.path + '/AJAX/username.js')(req, res, users)
+})
+
+app.get('/ajax/threadcomments', async (req, res) =>
+{
+    await require(global.path + '/AJAX/threadcomments.js')(req, res,
+    {
+        'pages': pages,
+        'thread': thread,
+        'threadcomment': threadcomment
+    })
+})
+
+app.get('/ajax/threadinfo', async (req, res) =>
+{
+    //user blocked
+    //thread current status
+    await require(global.path + '/AJAX/threadinfo.js')(req, res,
+        {
+            'thread': thread,
+            'block': block
+        })
 })
 
 app.get('/lovelive', (req, res) =>
@@ -872,9 +937,53 @@ app.use((err, req, res, next) =>
     }
 })
 
-var server = app.listen(port, '0.0.0.0', () =>
+const server = app.listen(port, '0.0.0.0', () =>
 {
     const host = server.address().address
     const port = server.address().port
     console.log("App listening at http://%s:%s",host,port)
+})
+
+const io = require('socket.io')(server)
+io.use(require('express-socket.io-session')(sess, {autoSave: true}))
+io.on('connection', async socket =>
+{
+    socket.on('joinRoom', data =>
+    {
+        socket.join(data.roomId)
+    })
+    socket.on('message', async data =>
+    {
+        if (!data.message) return
+        let username = socket.handshake.session.username
+        let IP = socket.handshake.address
+        
+        //render to wikitext
+        //PUT in DB
+        let doneBy = username ? username : IP
+
+        data.username = doneBy
+        if (await block.findOne({where: {target: doneBy}})) return
+
+
+        await threadcomment.create(
+            {
+                type: 'comment',
+                threadID: data.roomId,
+                doneBy: doneBy,
+                content: data.message,
+                isHidden: false
+            }
+        )
+        let t = await thread.findOne({where: {threadID: data.roomId}})
+        await recentdiscuss.create(
+            {
+                threadname: t.threadTitle,
+                threadID: data.roomId,
+                pagename: t.pagename
+            }
+        )
+        data.message  = await require(global.path + '/pages/render.js')('', data.message, true, pages, null, null, false, true, {}, {})
+        io.sockets.in(data.roomId).emit('message', data)
+    })
 })

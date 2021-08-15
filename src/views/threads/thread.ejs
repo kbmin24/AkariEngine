@@ -1,0 +1,60 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js" integrity="sha512-PU5S6BA03fRv1Q5fpwXjg5nlRrgdoguZ74urFInkbABMCENyx5oP3hrDzYMMPh3qdLdknIvrGj3yqZ4JuU7Nag==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src='/js/thread.js'></script>
+<link rel='stylesheet' href='/css/thread.css'>
+<div style='display:none' id='threadUsername'><%= username %></div>
+<div style='display:none' id='roomId'><%= roomId %></div>
+<div id='thread'>
+</div>
+<textarea class="form-control" id="commentBox" name="content"></textarea>
+<button id ='btnSubmit' class="btn btn-primary mt-3">Send</button>
+<% if (locals.username === undefined) { %>
+<p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone. (비로그인 상태로 당신의 IP 주소가 영구히 기록되어 공개될 것입니다.)</p>
+<% } %>
+<% if (isAdmin) { %>
+<hr>
+<h3>Admin Area</h3>
+<form method='POST' action='/admin/hidethread' style='margin-top: 20px; border: 1px solid grey' class='p-3'>
+    <input type='hidden' name = '_csrf' value='<%= csrfToken %>'>
+    <input type='hidden' name = 'threadid' value='<%= roomId %>'>
+    <div class="mb-3 row">
+        <label for="tno" class="col-sm-2 col-form-label" style='width: 200px'>Hide thread no.</label>
+        <div class="col-sm-10" style='width: 92px'>
+            <input type="number" class="form-control" id='tno' name='threadNo' min='1'>
+        </div>
+    </div>
+    <div class='mb-3 row'>
+        <div class='form-check'>
+            <input class='form-check-input' type='checkbox' value='unhide' name='unhide' id='chkUnhide'>
+            <label class='form-check-label' for='chkUnhide'>
+                Check to Unhide (Uncheck to hide)
+            </label>
+        </div>
+    </div>
+    <button type='submit' class='btn btn-primary'>Hide</button>
+</form>
+<form method='POST' action='/admin/changethreadstatus' style='margin-top: 20px; border: 1px solid grey' class='p-3'>
+    <input type='hidden' name = '_csrf' value='<%= csrfToken %>'>
+    <input type='hidden' name = 'threadid' value='<%= roomId %>'>
+    <div class='mb-3 row'>
+        <div class='form-check'>
+            <input class='form-check-input' type='checkbox' value='close' name='close' id='chkclose'>
+            <label class='form-check-label' for='chkclose'>
+                Check to close (Uncheck to open)
+            </label>
+        </div>
+    </div>
+    <button type='submit' class='btn btn-primary'>Change status</button>
+</form>
+<form method='POST' action='/admin/changethreadname' style='margin-top: 20px; border: 1px solid grey' class='p-3'>
+    <input type='hidden' name = '_csrf' value='<%= csrfToken %>'>
+    <input type='hidden' name = 'threadid' value='<%= roomId %>'>
+    <div class="form-group mt-2 mb-2 row">
+        <label for='newtitle' class='col-sm-2 col-form-label'>New Title</label>
+        <div class="col-sm-10">
+            <input class="form-control" id='newtitle' maxlength=255 name='newtitle' type="text" placeholder="Max 255 characters" required>
+        </div>
+    </div>
+    <button type='submit' class='btn btn-primary'>Change</button>
+</form>
+<% } %>

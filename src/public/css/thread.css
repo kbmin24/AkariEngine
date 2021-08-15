@@ -1,0 +1,45 @@
+.thBox
+{
+    width: 100%;
+    border: 1px solid grey;
+    margin-bottom: 10px;
+}
+.thTop
+{
+    background-color: lightgrey;
+}
+.thTopMe
+{
+    background-color: #7aa7d6;
+}
+/*
+.thTopMe > td > a, .thTopMe > td > sup > a
+{
+    color: black;
+}
+*/
+.thTopAdmin
+{
+    background-color: lightgreen;
+}
+.thTopHidden
+{
+    background-color: pink;
+}
+.thTop > *
+{
+    padding: 8px;
+}
+.thNumber
+{
+    width: 48px;
+}
+.thTime
+{
+    text-align: right;
+}
+.thText
+{
+    padding: 10px;
+    word-wrap: anywhere;
+}

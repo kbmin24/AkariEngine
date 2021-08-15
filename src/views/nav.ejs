@@ -5,16 +5,16 @@
         <ul class="navbar-nav me-auto mb-lg-0" style='flex-direction: row;'>
             <!-- rc -->
             <li class="nav-item">
-                <a class="nav-link active" href="/RecentChanges?show=30">
+                <a class="nav-link active" href="/RecentChanges">
                     <i class="fa fa-refresh nav-icon" aria-hidden="true"></i>
                     <span class='d-none d-lg-inline'>RecentChanges</span>
                 </a>
             </li>
-            <!-- pagelist-->
+            <!-- rd -->
             <li class="nav-item">
-                <a class="nav-link active" href="/PageList">
-                    <i class="fa fa-list-ul nav-icon" aria-hidden="true"></i>
-                    <span class='d-none d-lg-inline'>PageList</span>
+                <a class="nav-link active" href="/RecentDiscuss">
+                    <i class="fa fa-comments nav-icon" aria-hidden="true"></i>
+                    <span class='d-none d-lg-inline'>RecentDiscuss</span>
                 </a>
             </li>
             <!-- RandomPage -->
@@ -31,6 +31,13 @@
                     <span class='d-none d-lg-inline'>Tools</span>
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarTools" style='position: absolute'>
+                    <!-- pagelist-->
+                    <li>
+                        <a class="dropdown-item" href="/PageList">
+                            <i class="fa fa-list-ul nav-icon" aria-hidden="true"></i>
+                            <span>PageList</span>
+                        </a>
+                    </li>
                     <li>
                         <!-- filelist -->
                         <a class="dropdown-item" href="/FileList">

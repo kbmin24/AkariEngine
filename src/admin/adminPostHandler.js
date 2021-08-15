@@ -1,4 +1,4 @@
-module.exports = async (req, res, users, perm, block, page, protect, adminlog) =>
+module.exports = async (req, res, users, perm, block, page, protect, adminlog, threadcomment, thread) =>
 {
     const username = req.session.username
     switch (req.params.name)
@@ -19,6 +19,29 @@ module.exports = async (req, res, users, perm, block, page, protect, adminlog) =
                     'page': page,
                     'protect': protect,
                     'adminlog': adminlog
+                })
+            return
+        case 'hidethread':
+            await require(__dirname + '/hidethreadcomment.js')(req, res,
+            {
+                'perm': perm,
+                'threadcomment': threadcomment
+            })
+            return
+        case 'changethreadstatus':
+            await require(__dirname + '/changethreadstatus.js')(req, res,
+                {
+                    'perm': perm,
+                    'thread': thread,
+                    'threadcomment': threadcomment
+                })
+            return
+        case 'changethreadname':
+            await require(__dirname + '/changethreadtitle.js')(req, res,
+                {
+                    'perm': perm,
+                    'thread': thread,
+                    'threadcomment': threadcomment
                 })
             return
         default:

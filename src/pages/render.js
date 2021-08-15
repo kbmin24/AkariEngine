@@ -198,7 +198,7 @@ function renderHeading(text, depth)
     var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
-    for (let i = 1; i < depth; i++) toc += '&ensp;'
+    for (let i = 1; i < depth; i++) toc += '&emsp;'
     toc += `<a href='#s${buildHeadingName(depth, '_')}'>${buildHeadingName(depth, '.')}</a>.&nbsp;${text}<br>`
     return res
 }
@@ -421,9 +421,10 @@ function blockquote(match, rgx, depth)
     let lSplit = match.split('\n')
     lSplit.forEach((l, i) =>
     {
+        if (l.length < 2) return
         txt += l.substring(1,l.length) + (i + 1 == lSplit.length ? '' : '\n')
     })
-   txt = txt.replace(rgx, match => {return blockquote(match, rgx, depth)}).replace(/\n/g, '')
+   txt = txt.replace(rgx, match => {return blockquote(match, rgx, depth)}).replace(/\n/g, '<br>')
     return `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>${txt}</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
 }
 
@@ -552,8 +553,6 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
                 let p1Esc = encodeURIComponent(p1)
                 p1Esc = p1Esc.replace(/'/g, '%27')
                 let p1Tooltip = p1.replace(/'/g,`&apos;`)
-                p1 = p1.replace(/</g, '&lt;')
-                p1 = p1.replace(/>/g, '&gt;')
                 if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}'>${p1}</a>`
                 else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage'>${p1}</a>`
             }
@@ -582,8 +581,6 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
                 let p1Esc = encodeURIComponent(p1)
                 p1Esc = p1Esc.replace(/'/g, '%27')
                 let p1Tooltip = p1.replace(/'/g,`&apos;`)
-                p2 = p2.replace(/</g, '&lt;')
-                p2 = p2.replace(/>/g, '&gt;')
                 if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}'>${p2}</a>`
                 else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage'>${p2}</a>`
             }

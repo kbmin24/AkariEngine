@@ -1,8 +1,8 @@
 //const ejs = require('ejs')
-//const updRecentChanges = require('./updRecentChanges')
 const sanitiseHtml = require('sanitize-html')
-module.exports = (req, res, recentchanges) =>
+module.exports = async (req, res, recentchanges) =>
 {
+    await require(global.path + '/pages/updRecentChanges.js')(recentchanges)
     const show = (req.query.show ? req.query.show: 30) * 1
     recentchanges.findAll(
     {
