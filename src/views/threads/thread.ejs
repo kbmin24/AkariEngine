@@ -6,7 +6,7 @@
 <div style='display:none' id='roomId'><%= roomId %></div>
 <div id='thread'>
 </div>
-<textarea class="form-control" id="commentBox" name="content"></textarea>
+<textarea class="form-control" id="commentBox" name="content" style='height: 150px'></textarea>
 <button id ='btnSubmit' class="btn btn-primary mt-3">Send</button>
 <% if (locals.username === undefined) { %>
 <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone. (비로그인 상태로 당신의 IP 주소가 영구히 기록되어 공개될 것입니다.)</p>

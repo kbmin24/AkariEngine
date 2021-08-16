@@ -435,7 +435,7 @@ app.get('/move/:name', async (req, res) =>
 })
 app.post('/move/:name', async (req, res) =>
 {
-    await require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history, perm, block, protect)
+    await require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history, thread, perm, block, protect)
 })
 app.get('/delete/:name', csrfProtection, (req, res) =>
 {
@@ -962,7 +962,13 @@ io.on('connection', async socket =>
         let doneBy = username ? username : IP
 
         data.username = doneBy
-        if (await block.findOne({where: {target: doneBy}})) return
+        let ipblock = await block.findOne({where: {target: IP}})
+        if (ipblock)
+        {
+                if (!username) return
+                if (!ipblock.allowLogin) return
+        }
+        if (username && await block.findOne({where: {target: username}})) return
 
         //put in DB
         await threadcomment.create(
@@ -978,7 +984,7 @@ io.on('connection', async socket =>
         {
                 where: {threadID: data.roomId}
         })
-        
+
         //RD should be unique
         await recentdiscuss.destroy(
         {

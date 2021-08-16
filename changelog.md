@@ -1,3 +1,6 @@
+v0.8c (2021-08-16)
+MOVE now moves thread as well
+
 v0.8b (2021-08-16)
 IE Not supported
 

@@ -1,4 +1,4 @@
-module.exports = async (req, res, username, users, pages, recentchanges, history, perm, block, protect) =>
+module.exports = async (req, res, username, users, pages, recentchanges, history, thread, perm, block, protect) =>
 {
     if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
 
@@ -59,6 +59,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                             })
                         }
                     })
+                    thread.findAll({where: {pagename: req.params.name}}).then(oldthreads =>
+                        {
+                            oldthreads.forEach(o =>
+                                {
+                                    o.update({pagename: req.body.newName})
+                                })
+                        })
                     history.create(
                     {
                         page: req.body.newName,
