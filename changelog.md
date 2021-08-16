@@ -1,3 +1,9 @@
+v0.8b (2021-08-16)
+IE Not supported
+
+v0.8a (2021-08-16)
+Discuss HotFix
+
 v0.8 (2021-08-16)
 Discuss
 

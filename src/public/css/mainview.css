@@ -1,3 +1,9 @@
+/*
+html
+{
+    font-family: Noto Sans CJK KR, arial, 나눔고딕, 나눔바른고딕, NanumGothic, 맑은고딕, 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif !important;
+}
+*/
 .article-wrapper
 {
     /*I don't know what to put here*/
@@ -107,4 +113,9 @@
 .dropdown-item.active, .dropdown-item:active
 {
     background-color: #7aa7d6 !important;
+}
+
+#iealert
+{
+    display: none;
 }
