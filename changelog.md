@@ -1,3 +1,6 @@
+v0.8d (2021-08-24)
+\n -> 줄바꿈으로 환원
+
 v0.8c (2021-08-16)
 MOVE now moves thread as well
 

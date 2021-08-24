@@ -7,7 +7,7 @@
         <%- include('nav') %>
         <div class='container container-fluid'>
             <%- include('rc') %>
-            <section>
+            <div>
                 <div class='article-wrapper h-75 p-4 border rounded-top row'>
                     <div class='pb-2 mt-2 mb-3 border-bottom'>
                         <h1 style='display:inline-block;overflow-wrap: anywhere;'>
@@ -31,11 +31,11 @@
                                 <%= notification %>
                         </div>
                     <% } %>
-                    <div id='article'>
+                    <article id='article'>
                         <%- content %>
-                    </div>
+                    </article>
                 </div>
-            </section>
+            </div>
         </div>
         <%- include('footer') %>
         <%- include('floatingToolbox') %>

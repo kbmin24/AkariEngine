@@ -5,7 +5,10 @@ Disallow: /login
 Disallow: /logout
 Disallow: /signup
 Disallow: /settings
-Disallow: /upload
 Disallow: /file/
+Disallow: /history
+Disallow: /edit
+Disallow: /diff
+Disallow: /protect
 User-agent: Googlebot-Image
 Disallow: /

@@ -32,7 +32,7 @@ function renderDiscuss(thNumber, username, date, message, isHidden, type)
     bottomRow += `<tr><td colspan='3' class='thText'>${message}</td></tr>`
 
     let res = ''
-    res += `<table id='${threadNum}' class='thBox'><tbody>`
+    res += `<table id='${thNumber}' class='thBox'><tbody>`
     res += topRow
     res += bottomRow
     res += `</tbody></table>`

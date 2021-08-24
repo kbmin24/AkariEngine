@@ -632,9 +632,14 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     //blockquote
     data = data.replace(blockquoteRegex, match => {return blockquote(match, blockquoteRegex, 1)})
 
+    data = data.replace(/```(.*?)```/igms, (match, p1, _offset, _string, _groups) =>
+    {
+        return p1.replace(/\n/igm, '')
+    })
     //remove \r?\n
-    data = data.replace(/^\n/igm, '<br>')
-    data = data.replace('\n', '')
+    data = data.replace(/\n/igm, '<br>')
+    //data = data.replace(/^\n/igm, '<br>')
+    //data = data.replace('\n', '')
     //escape things
     data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\\\'})
     //sanitising things

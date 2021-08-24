@@ -30,6 +30,7 @@ const sessionStore = require('express-session-sequelize')(session.Store)
 const sequelizeSessionStore = new sessionStore({db: sequelize})
 app.use(cookieParser(secret))
 const sess = session({
+    proxy: true,
     resave: false,
     saveUninitialized: false,
     secret: secret,
@@ -39,7 +40,7 @@ const sess = session({
     cookie:
     {
         samesite: 'strict',
-        //secure: true, //TODO: change it to TRUE on production
+        secure: true,
         httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
@@ -956,7 +957,7 @@ io.on('connection', async socket =>
     {
         if (!data.message) return
         let username = socket.handshake.session.username
-        let IP = socket.handshake.address
+        let IP = socket.handshake.headers['x-real-ip'] || socket.handshake.address
         
         //get username
         let doneBy = username ? username : IP
