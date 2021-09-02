@@ -24,19 +24,23 @@
                         <% } %>
                     </div>
                     <div style='clear: both'></div>
-                    <%- include('IEalert') %>
                     <!-- Notifications-->
+                    <%- include('IEalert') %>
                     <% if (locals.notification) { %>
                         <div class="alert alert-danger" role="alert">
-                                <%= notification %>
+                            <%= notification %>
                         </div>
                     <% } %>
+                    <div class='alert alert-info' id='satobox' style='display: none' role="alert">
+                        An <a id='satoboxlink'>user page discussion</a> is open.
+                    </div>
                     <article id='article'>
                         <%- content %>
                     </article>
                 </div>
             </div>
         </div>
+        <div style='display: none' id='hdusername'><%= locals.username %></div>
         <%- include('footer') %>
         <%- include('floatingToolbox') %>
     </body>

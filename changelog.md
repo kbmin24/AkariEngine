@@ -1,3 +1,9 @@
+v0.9 (2021-09-02)
+User page discussion alert
+Renderer bug fix
+five -> four
+a few message tweaks
+
 v0.8d (2021-08-24)
 \n -> 줄바꿈으로 환원
 

@@ -51,8 +51,8 @@ app.use(sess)
 const csurf = require('csurf')
 const csrfProtection = csurf({})
 
-app.use(express.json())
-app.use(express.urlencoded({extended: false}))
+app.use(express.json({limit : "1mb"}))
+app.use(express.urlencoded({limit : "1mb", extended: false}))
 
 app.disable('x-powered-by')
 
@@ -886,6 +886,11 @@ app.get('/ajax/threadinfo', async (req, res) =>
             'thread': thread,
             'block': block
         })
+})
+
+app.get('/ajax/threadlist', async (req, res) =>
+{
+    await require(global.path + '/AJAX/threadlist.js')(req, res, thread)
 })
 
 app.get('/lovelive', (req, res) =>

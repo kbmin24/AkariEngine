@@ -15,7 +15,7 @@ module.exports = async (req, res, dbs = {}) =>
             },
         }
     )
-
+    if (!t) return
     const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ['everyone'], null, dbs['block'], true, true)
     res.json({'isOpen': t.isOpen, 'r': r})
     return

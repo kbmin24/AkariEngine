@@ -195,7 +195,7 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
+    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
     for (let i = 1; i < depth; i++) toc += '&emsp;'
@@ -210,7 +210,7 @@ function regFootnote(text)
 {
     const f = [++footnotecount, text]
     footnotes.push(f)
-    return `<sup><a href='#foot_${footnotecount}' id='foot_source${footnotecount}'>[${footnotecount}]</a></sup>`
+    return `<sup><a href='#foot_${footnotecount}' id='foot_source${footnotecount}' title='${sanitiseHtml(text, {allowedTags: [], allowedAttributes: {}})}'>[${footnotecount}]</a></sup>`
 }
 function generateFootnote()
 {
@@ -407,7 +407,7 @@ function renderTable(data)
     return res
 }
 
-function linkFix(t)
+function linkfix(t)
 {
     const rExec = /^<a.*?>(.*?)<\/a>$/ig.exec(t)
     if (rExec && rExec.length == 2) return rExec[1]
@@ -527,13 +527,16 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
     //external link
     data = data.replace(/\[\[(https?:([^|\r\n]*?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
     {
-        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p1}</a>`
+        p1 = linkfix(p1)
+        let p1Tooltip = p1.replace(/'/g,`&apos;`)
+        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p1}</a>`
     })
     //external link with different text
     data = data.replace(/\[\[(https?:.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
-        p2 = linkFix(p2)
-        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p2}</a>`
+        p2 = linkfix(p2)
+        let p1Tooltip = p1.replace(/'/g,`&apos;`)
+        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p2}</a>`
     })
     //category
     data = data.replace(/\[\[category:(.*?)\]\]/igm, '')
@@ -547,14 +550,17 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         const promises = []
         data.replace(r, (_match, p1, _offset, _string, _groups) =>
         {
+            p1 = linkfix(p1)
             let f = async (p1) =>
             {
                 let p = await pages.findOne({where: {title: p1}})
                 let p1Esc = encodeURIComponent(p1)
                 p1Esc = p1Esc.replace(/'/g, '%27')
                 let p1Tooltip = p1.replace(/'/g,`&apos;`)
-                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}'>${p1}</a>`
-                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage'>${p1}</a>`
+
+                let p_me = (pagename == p1) ? 'ren_thispage' : ''
+                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p1}</a>`
+                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage ${p_me}'>${p1}</a>`
             }
             const promise = f(p1)
             promises.push(promise)
@@ -575,14 +581,16 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         const promises = []
         data.replace(r, (_match, p1, p2, _offset, _string, _groups) =>
         {
+            p2 = linkfix(p2)
             let f = async (p1) =>
             {
                 let p = await pages.findOne({where: {title: p1}})
                 let p1Esc = encodeURIComponent(p1)
                 p1Esc = p1Esc.replace(/'/g, '%27')
                 let p1Tooltip = p1.replace(/'/g,`&apos;`)
-                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}'>${p2}</a>`
-                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage'>${p2}</a>`
+                let p_me = (pagename == p1) ? 'ren_thispage' : ''
+                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p2}</a>`
+                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage ${p_me}'>${p2}</a>`
             }
             const promise = f(p1, p2)
             promises.push(promise)
@@ -637,6 +645,10 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
         return p1.replace(/\n/igm, '')
     })
     //remove \r?\n
+    data = data.replace(/(<\/h\d>)\n/igm, (match, p1, offset, input) =>
+        {
+            return p1
+        })
     data = data.replace(/\n/igm, '<br>')
     //data = data.replace(/^\n/igm, '<br>')
     //data = data.replace('\n', '')
