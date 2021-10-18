@@ -14,6 +14,36 @@ function idCheck()
         badid.style.display = 'inline'
     }
 }
+function pwAppropriateCheck()
+{
+    const pw = document.getElementById('passwordInputbox').value
+    const badlength = document.getElementById('passwordbadlength')
+    const badchar = document.getElementById('passwordbadchar')
+    const badcharlist = document.getElementById('passwordbadcharlist')
+    const goodchars = /^[A-Za-z\d@\$!%\*\?&\^#_\-\+=<>,\.\/\|]$/
+    //passwordbadlength
+    if (pw.length < 8 || pw.length > 255)
+        badlength.style.display = 'block'
+    else
+        badlength.style.display = 'none'
+    let badchars = new Set()
+    for (let c of pw)
+    {
+        if (!goodchars.test(c))
+        {
+            badchars.add(c)
+        }
+    }
+    if (badchars.size)
+    {
+        badchar.style.display = 'block'
+        badcharlist.innerHTML = '\'' + Array.from(badchars).join('\', \'') + '\''
+    }
+    else
+    {
+        badchar.style.display = 'none'
+    }
+}
 function pwMatchCheck()
 {
     const pw = document.getElementById('passwordInputbox')

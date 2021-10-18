@@ -1,3 +1,7 @@
+v0.9a (2021-10-18)
+No more irritating password limits
+password change
+
 v0.9 (2021-09-02)
 User page discussion alert
 Renderer bug fix

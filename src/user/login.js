@@ -38,7 +38,7 @@ module.exports = async (req, res, users, loginhistory) =>
                 }
                 else
                 {
-                    console.log("Login error (password mismatch) " + id + 'IP Address: ' + ipaddr)
+                    console.log("Login error (password mismatch) " + id + '; IP Address: ' + ipaddr)
                     require(global.path + '/error.js')(req, res, null, 'The password given is incorrect. Please try again.', '/login', 'the login page')
                 }
             })

@@ -40,8 +40,8 @@ const sess = session({
     cookie:
     {
         samesite: 'strict',
-        secure: true,
-        httpOnly: true, //so that the cookie cannot be taken away
+        //secure: true,
+        //httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
 })
@@ -295,7 +295,8 @@ app.post('/settings/:name', csrfProtection, async (req, res) =>
 {
     require(__dirname + '/user/settings.js')(req, res,
         {
-            settings: settings
+            settings: settings,
+            users: users
         })
 })
 
