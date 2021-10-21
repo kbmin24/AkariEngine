@@ -1,7 +1,7 @@
 const { Op } = require('sequelize')
 const date = require('date-and-time')
 const ejs = require('ejs')
-module.exports = async (req, res, recentdiscuss) =>
+module.exports = async (req, res, recentdiscuss, thread) =>
 {
 
     //remove 'old' ones
@@ -21,18 +21,29 @@ module.exports = async (req, res, recentdiscuss) =>
         })
     })
 
-    const show = (req.query.show ? req.query.show: 30) * 1
+    //const show = (req.query.show ? req.query.show: 30) * 1
+    const isOpen = (req.query.isopen ? req.query.isopen != 'false' : true)
     let ch = await recentdiscuss.findAll(
     {
         order:
         [
             ['id', 'DESC']
         ],
-        limit: show
+        //.limit: show
     })
+    let filteredCh = []
+    for (m of ch)
+    {
+        let th = await thread.findOne({where: {threadID: m.threadID}})
+        if (th.isOpen == isOpen)
+        {
+            filteredCh.push(m)
+        }   
+    }
+
     ejs.renderFile(global.path + '/views/threads/RecentDiscuss.ejs',
     {
-        changes: ch,
+        changes: filteredCh,
         date: date
     }, (err, html) => 
     {

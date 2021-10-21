@@ -10,6 +10,13 @@ html
     margin-top: 100px;
     margin-bottom: 100px;
 }
+@media (max-width: 1200px)
+{
+    .container
+    {
+        margin-left: 0;
+    }
+}
 #pageTools
 {
     /*display: grid;*/

@@ -10,6 +10,14 @@
     margin-right: 13em;
 }
 
+@media (max-width: 1200px)
+{
+    .container, .container-lg, .container-md, .container-sm, .container-xs
+    {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
 @media (max-width: 992px)
 {
     #rcsidebar
@@ -21,6 +29,10 @@
         margin-right: 0;
     }
 }
+    #rcsidebar
+    {
+        margin-right: 0;
+    }
 @media (max-width: 575px)
 {
     .article-wrapper

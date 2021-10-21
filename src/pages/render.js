@@ -199,7 +199,7 @@ function renderHeading(text, depth)
 
     //update TOC
     for (let i = 1; i < depth; i++) toc += '&emsp;'
-    toc += `<a href='#s${buildHeadingName(depth, '_')}'>${buildHeadingName(depth, '.')}</a>.&nbsp;${text}<br>`
+    toc += `<a href='#s${buildHeadingName(depth, '_')}'>${buildHeadingName(depth, '.')}.&nbsp;<span style='color:black'>${text}</span></a><br>`
     return res
 }
 function buildTOC()

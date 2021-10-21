@@ -1,6 +1,15 @@
+v1.0 (2021-10-21)
+Better responsive layout
+Better recentdiscuss (open/close)
+Dropped recentdicsuss number of entries feature
+Better RC sidebar (entry checks do not run at small screen because it's invisible anyway, fixed link)
+Changed copyright notices
+Last edited
+
 v0.9a (2021-10-18)
 No more irritating password limits
 password change
+link
 
 v0.9 (2021-09-02)
 User page discussion alert

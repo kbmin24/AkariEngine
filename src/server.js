@@ -40,8 +40,8 @@ const sess = session({
     cookie:
     {
         samesite: 'strict',
-        //secure: true,
-        //httpOnly: true, //so that the cookie cannot be taken away
+        secure: true,
+        httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
 })
@@ -849,7 +849,7 @@ app.get('/thread/:name', csrfProtection, async (req, res) =>
 app.get('/RecentDiscuss',  async (req, res) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
-    await require(global.path + '/threads/rd.js')(req, res, recentdiscuss)
+    await require(global.path + '/threads/rd.js')(req, res, recentdiscuss, thread)
 })
 
 //AJAX

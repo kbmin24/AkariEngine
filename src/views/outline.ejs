@@ -7,37 +7,39 @@
         <%- include('nav') %>
         <div class='container container-fluid'>
             <%- include('rc') %>
-            <div>
-                <div class='article-wrapper h-75 p-4 border rounded-top row'>
-                    <div class='pb-2 mt-2 mb-3 border-bottom'>
-                        <h1 style='display:inline-block;overflow-wrap: anywhere;'>
-                            <%= title %>
-                            <% if (locals.titleInfo) { %>
-                                <h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5>
-                            <% } %>
-                        </h1>
-                        <% if (locals.isPage) { %>
-                            <%- include('pageTools') %>
+            <div class='article-wrapper h-75 p-4 border rounded-top row'>
+                <div class='pb-2 mt-2 mb-3 border-bottom'>
+                    <h1 style='display:inline-block;overflow-wrap: anywhere;'>
+                        <%= title %>
+                        <% if (locals.titleInfo) { %>
+                            <h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5>
                         <% } %>
-                        <% if (locals.isFile) { %>
-                            <%- include('fileTools') %>
-                        <% } %>
-                    </div>
-                    <div style='clear: both'></div>
-                    <!-- Notifications-->
-                    <%- include('IEalert') %>
-                    <% if (locals.notification) { %>
-                        <div class="alert alert-danger" role="alert">
-                            <%= notification %>
-                        </div>
+                    </h1>
+                    <% if (locals.isPage) { %>
+                        <%- include('pageTools') %>
                     <% } %>
-                    <div class='alert alert-info' id='satobox' style='display: none' role="alert">
-                        An <a id='satoboxlink'>user page discussion</a> is open.
-                    </div>
-                    <article id='article'>
-                        <%- content %>
-                    </article>
+                    <% if (locals.isFile) { %>
+                        <%- include('fileTools') %>
+                    <% } %>
                 </div>
+                <div style='clear: both'></div>
+                <!-- Notifications-->
+                <%- include('IEalert') %>
+                <% if (locals.notification) { %>
+                    <div class="alert alert-danger" role="alert">
+                        <%= notification %>
+                    </div>
+                <% } %>
+                <div class='alert alert-info' id='satobox' style='display: none' role="alert">
+                    An <a id='satoboxlink'>user page discussion</a> is open.
+                </div>
+                <article id='article'>
+                    <% if (locals.updatedAt) { %>
+                        <p style='float:right'>Last updated: <%= locals.updatedAt %></p>
+                        <div style='clear: both'></div>
+                    <% } %>
+                    <%- content %>
+                </article>
             </div>
         </div>
         <div style='display: none' id='hdusername'><%= locals.username %></div>

@@ -1,3 +1,4 @@
+const date = require('date-and-time')
 async function getCategory(title, category, categorys)
 {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : !(categorys == 'off')
@@ -137,6 +138,7 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
                     content: content,
                     isPage: true,
                     pagename: page.title,
+                    updatedAt: date.format(page.updatedAt, global.dtFormat),
                     username: req.session.username,
                     wikiname: global.appname
                 }

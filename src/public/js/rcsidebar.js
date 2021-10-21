@@ -24,5 +24,22 @@ function loadRC() {
         }
     })
 }
-loadRC()
-setInterval(() => {loadRC()}, 30000)
+var registered = false
+function regLoadRC()
+{
+    if (registered=== true) return
+    if ($('#rcsidebar').css('display') !== 'none') 
+    {
+        registered = true
+        loadRC()
+        setInterval(() => {loadRC()}, 30000)
+    }
+}
+$(() =>
+{
+    regLoadRC()
+})
+$( window ).resize(() =>
+{
+    regLoadRC()
+})
