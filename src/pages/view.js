@@ -4,8 +4,8 @@ async function getCategory(title, category, categorys)
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : !(categorys == 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='card mb-2'><div class='card-body'>Categories: `
-    const cardEnd = `</div></div>`
+    const cardBeginning = `<div class='category'>Categories: `
+    const cardEnd = `</div>`
 
     if (categories.length == 0)
     {
@@ -66,7 +66,7 @@ async function updViewCount(title, viewcount, updateTime)
 }
 exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
 exports.getOptions = async content => await getOptions(content)
-module.exports = async (req, res, pages, history, protect, perm, block, category, viewcount, updateTime) =>
+module.exports = async (req, res, pages, files, history, protect, perm, block, category, viewcount, updateTime) =>
 {
     //check read ACL
     req.params.name = req.params.name.trim()
@@ -130,7 +130,7 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
                     titleSuffix = `<i>redirected from <a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a></i>&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
-                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, redirect, true, {}, opt)
+                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, files, req, res, redirect, true, {}, opt)
                 if (content === undefined) return
                 content = await getCategory(req.params.name, category, opt['category']) + content
                 let renderOpt = {
@@ -169,7 +169,7 @@ module.exports = async (req, res, pages, history, protect, perm, block, category
             {
                 //show the page
                 //(pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={})
-                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, req, res, false, true, {}, await getOptions(page.content))
+                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
                 if (content === undefined) return
                 let renderOpt = {
                     title: page.page,

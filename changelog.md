@@ -1,3 +1,9 @@
+v1.1 (2021-10-31)
+Slight UI fix
+better ul, ol
+modified discuss screen
+non-existant files are not displayed
+
 v1.0 (2021-10-21)
 Better responsive layout
 Better recentdiscuss (open/close)

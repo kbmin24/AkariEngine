@@ -6,7 +6,7 @@ module.exports = async (req, res, files, pages) =>
     {
         if (file)
         {
-            const content = await require(global.path + '/pages/render.js')(req.params.name, file.explanation, true, pages, req, res, false, true, {}, {})
+            const content = await require(global.path + '/pages/render.js')(req.params.name, file.explanation, true, pages, files, req, res, false, true, {}, {})
             ejs.renderFile(global.path + '/views/files/viewfile.ejs',
             {
                 filename: req.params.name,

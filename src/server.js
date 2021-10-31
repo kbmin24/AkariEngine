@@ -540,7 +540,7 @@ app.post('/revert/:name', async (req, res) =>
 })
 app.get('/w/:name', async (req, res) =>
 {
-    await require(global.path + '/pages/view.js')(req, res, pages, history, protect, perm, block, category, viewcount, updateTime)
+    await require(global.path + '/pages/view.js')(req, res, pages, mfile, history, protect, perm, block, category, viewcount, updateTime)
 })
 app.post('/w', async (req,res) =>
 {
@@ -548,7 +548,7 @@ app.post('/w', async (req,res) =>
 })
 app.post('/preview', async (req, res) =>
 {
-    await require(global.path + '/pages/preview.js')(req, res, pages, category)
+    await require(global.path + '/pages/preview.js')(req, res, pages, mfile, category)
 })
 app.get('/search', async (req, res) =>
 {
@@ -874,7 +874,8 @@ app.get('/ajax/threadcomments', async (req, res) =>
     {
         'pages': pages,
         'thread': thread,
-        'threadcomment': threadcomment
+        'threadcomment': threadcomment,
+        'file': mfile
     })
 })
 
@@ -1008,7 +1009,7 @@ io.on('connection', async socket =>
         )
 
         //render to wikitext
-        data.message  = await require(global.path + '/pages/render.js')('', data.message, true, pages, null, null, false, true, {}, {})
+        data.message  = await require(global.path + '/pages/render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
         io.sockets.in(data.roomId).emit('message', data)
     })
 })

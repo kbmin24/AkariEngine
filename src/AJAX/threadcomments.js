@@ -35,7 +35,7 @@ module.exports = async (req, res, dbs = {}) =>
         {
             type: v.type,
             username: sanitiseHtml(v.doneBy, {allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape}),
-            content: await require(global.path + '/pages/render.js')('', content, true, dbs['pages'], null, null, false, false, {}, {}),
+            content: await require(global.path + '/pages/render.js')('', content, true, dbs['pages'], dbs['file'], null, null, false, false, {}, {}),
             date: v.createdAt,
             isHidden: v.isHidden
         })

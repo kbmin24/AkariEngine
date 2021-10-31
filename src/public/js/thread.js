@@ -2,7 +2,7 @@ var threadNum = 1
 function renderDiscuss(thNumber, username, date, message, isHidden, type)
 {
     let isme = username == $('#threadUsername').text()
-    if (isHidden) message = '<em>This comment has been hidden.</em>'
+    if (isHidden) message = '<em>This comment is hidden.</em>'
     if (type !== 'comment') message = '<em>' +type + ' ' + message + '</em>'
 
     let thNumberField = `<a href='#${thNumber}'>#${thNumber}</a>`
@@ -29,7 +29,7 @@ function renderDiscuss(thNumber, username, date, message, isHidden, type)
     topRow += `</tr>`
 
     let bottomRow = ''
-    bottomRow += `<tr><td colspan='3' class='thText'>${message}</td></tr>`
+    bottomRow += `<tr><td colspan='3'><div class='thText'>${message}</div></td></tr>`
 
     let res = ''
     res += `<table id='${thNumber}' class='thBox'><tbody>`
@@ -66,7 +66,7 @@ $(document).ready(() =>
                 if (!data['isOpen'])
                 {
                     $("#commentBox").prop('disabled', true)
-                    $("#commentBox").val('This thread has been closed (hint: It may be reopened; please refresh to check).')
+                    $("#commentBox").val('This thread has been closed (Hint: It may be reopened; please refresh to check).')
                 }
                 else
                 {

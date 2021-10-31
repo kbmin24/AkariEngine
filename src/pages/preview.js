@@ -38,10 +38,10 @@ async function getOptions(content)
     })
     return res
 }
-module.exports = async (req, res, pages, category) =>
+module.exports = async (req, res, pages, files, category) =>
 {
     let opt = await getOptions(req.body.content)
-    let content = await require(global.path + '/pages/render.js')(req.body.title, req.body.content, true, pages, req, res, false, true, {}, opt)
+    let content = await require(global.path + '/pages/render.js')(req.body.title, req.body.content, true, pages, files, req, res, false, true, {}, opt)
     content = await getCategory(req.body.title, category, opt['category']) + content
     content = `<div class='alert alert-warning' role='alert'>The page has <b>not</b> been saved yet. Make sure to return to the edit page and save your changes.</div>` + content
     let renderOpt = {

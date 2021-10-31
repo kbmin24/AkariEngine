@@ -42,4 +42,6 @@
 {
     padding: 10px;
     word-wrap: anywhere;
+    max-height: 512px;
+    overflow-y: auto;
 }

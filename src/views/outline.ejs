@@ -9,17 +9,16 @@
             <%- include('rc') %>
             <div class='article-wrapper h-75 p-4 border rounded-top row'>
                 <div class='pb-2 mt-2 mb-3 border-bottom'>
-                    <h1 style='display:inline-block;overflow-wrap: anywhere;'>
-                        <%= title %>
-                        <% if (locals.titleInfo) { %>
-                            <h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5>
-                        <% } %>
-                    </h1>
+                    <h1 style='display:inline-block;overflow-wrap: anywhere;'><%= title %><% if (locals.titleInfo) { %><h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5><% } %></h1>
                     <% if (locals.isPage) { %>
                         <%- include('pageTools') %>
                     <% } %>
                     <% if (locals.isFile) { %>
                         <%- include('fileTools') %>
+                    <% } %>
+                    <% if (locals.updatedAt) { %>
+                        <div style='clear: both'></div>
+                        <span style='float:right;'>Last updated: <%= locals.updatedAt %></span>
                     <% } %>
                 </div>
                 <div style='clear: both'></div>
@@ -34,10 +33,6 @@
                     An <a id='satoboxlink'>user page discussion</a> is open.
                 </div>
                 <article id='article'>
-                    <% if (locals.updatedAt) { %>
-                        <p style='float:right'>Last updated: <%= locals.updatedAt %></p>
-                        <div style='clear: both'></div>
-                    <% } %>
                     <%- content %>
                 </article>
             </div>

@@ -4,7 +4,7 @@
 
 const dateandtime = require('date-and-time')
 var sanitiseHtml = require('sanitize-html')
-async function renderMacro(macro, args, pages = undefined, incl = true)
+async function renderMacro(match, macro, args, pages = undefined, files, incl = true)
 {
     //switch?
     switch (macro)
@@ -26,23 +26,35 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
                 /^width ?= ?(.*?)$/ig,
                 /^height ?= ?(.*?)$/ig
             ]
-            options.forEach((val) =>
+            let ok = true
+            for (let val of options)
             {
-                properties.forEach((reg, j) =>
+                let j = 0
+                for(let reg of properties)
                 {
                     if (reg.test(val.trim()))
                     {
                         if (j == 0)
                         {
                             filename = val
-                            res += 'src=\'/uploads/'//src
+                            let f = await files.findOne({where: {filename: filename}})
+                            if (f === null)
+                            {
+                                ok = false
+                            }
+                            else
+                            {
+                                res += 'src=\'/uploads/'//src
+                            }
                         }
                         res += val
                         if (j == 0) res += '\''
                         res += ' ' 
                     }
-                })
-            })
+                    j++;
+                }
+            }
+            if (!ok) return match
             return `<a href='/file/${filename}'><img ${res} class='ren-img img-fluid'></a>`
         }
         case 'include':
@@ -73,7 +85,7 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
                     const v = args[i].substring(eqSign + 1).trim()
                     temArgs[k] = v
                 }
-                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, undefined, undefined, false, false, temArgs)
+                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs)
                 return res
             }
         }
@@ -140,17 +152,17 @@ async function renderMacro(macro, args, pages = undefined, incl = true)
                 }
             }
         default:
-            return `[${macro}(${args})]`
+            return match
             //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
     }
 }
-async function asyncMacro(str, regex, fn, pages, incl=true)
+async function asyncMacro(str, regex, fn, pages, files, incl=true)
 {
     //https://stackoverflow.com/questions/33631041/javascript-async-await-in-replace
     const promises = []
-    str.replace(regex, (_match, p1, p2, _offset, _string, _groups) =>
+    str.replace(regex, (match, p1, p2, _offset, _string, _groups) =>
     {
-        const promise = fn(p1, p2, pages, incl)
+        const promise = fn(match, p1, p2, pages, files, incl)
         promises.push(promise)
     })
     const data = await Promise.all(promises)
@@ -158,6 +170,17 @@ async function asyncMacro(str, regex, fn, pages, incl=true)
 }
 function list(line, type)
 {
+    opentag = '<' + type + '>'
+    closetag = '</' + type + '>'
+    liIdentifier = null
+    if (type == 'ol')
+    {
+        liIdentifier = /(#+) (.+)/i
+    }
+    else
+    {
+        liIdentifier = /(\*+) (.+)/i
+    }
     //type: ul, ol
     line = line.trim()
     var res = ''
@@ -167,16 +190,29 @@ function list(line, type)
         res += '</h2>'
         line = line.replace(r, '$1')
     }
+    var currentLevel = 0
     var lines = line.split(/\r?\n/)
-    res += '<' + type + '>'
     lines.forEach((item, _index, _a) =>
     {
-        res += '<li>'
-        item = item.substr(2,item.length)
-        res += item
-        res += '</li>'
+        var e = liIdentifier.exec(item)
+        var newLevel = e[1].length
+        while (currentLevel < newLevel)
+        {
+            res += opentag
+            currentLevel++
+        }
+        while (currentLevel > newLevel)
+        {
+            res += closetag
+            currentLevel--
+        }
+        res += `<li>${e[2]}</li>`
     })
-    res += '</' + type + '>'
+    while (currentLevel)
+    {
+        res+= closetag
+        currentLevel -= 1
+    }
     return res
 }
 function buildHeadingName(depth, separator)
@@ -435,11 +471,11 @@ var footnotes = []
 var footnote
 var footnotecount
 
-const ulRegex = /(^|<\/h\d>)((?:\* (?:.+(?:\r?\n|$)))+)/igm
-const olRegex = /(^|<\/h\d>)((?:1\.+ (?:.+(?:\r?\n|$)))+)/igm
+const ulRegex = /(^|<\/h\d>)((?:\*+ (?:.+(?:\r?\n|$)))+)/igm
+const olRegex = /(^|<\/h\d>)((?:#+ (?:.+(?:\r?\n|$)))+)/igm
 const blockquoteRegex = /^(>.*(\r?\n|$))+/igm
 
-module.exports = async (pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
+module.exports = async (pagename, data, _renderInclude, pages = undefined, files = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
 {
     //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
     //deprecated options: _renderInclude, redirect
@@ -502,7 +538,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, req =
 
     //macro
     //asyncMacro(str, regex, fn, pages)
-    data = await asyncMacro(data, /\[(\w*)\((.*?)\)\]/igm, renderMacro, pages, incl)
+    data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igm, renderMacro, pages, files, incl)
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
