@@ -16,11 +16,23 @@
     /*display: grid;*/
     float: right;
 }
+.article-wrapper
+{
+    padding: 1.5rem !important;
+}
+@media (max-width: 575px)
+{
+    .article-wrapper
+    {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+}
 @media (max-width: 400px)
 {
     #pageTools
     {
-        margin-right: -25px;
+        margin-right: -20px;
     }
 }
 .pageToolItem > a
