@@ -17,7 +17,7 @@ $(function() {
                 }
                 else
                 {
-                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> (r${data[rc].rev})`
+                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(deleted)</em>'}`
                 }
 
                 var bytechange;

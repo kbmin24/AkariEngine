@@ -110,7 +110,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         if (page) //if page exists
         {
             const oldLength = page.content.length
-            page.update({content: req.body.content, currentRev: page.currentRev + 1})
+            page.update({content: req.body.content.replace(/\r/g, ''), currentRev: page.currentRev + 1})
             .then(() =>
             {
                 recentchanges.create(
@@ -141,7 +141,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             pages.create(
             {
                 title: req.params.name,
-                content: req.body.content,
+                content: req.body.content.replace(/\r/g, ''),
                 currentRev: 1
             })
             .then(() =>

@@ -20,6 +20,7 @@ module.exports = async (req, res, recentchanges) =>
             show = 999999 //we can treat this as INF
         }
         show = (show > changes.count ? changes.count : show)*/
+        
         //XSS Protection
         changes.forEach((value, index, array) =>
         {

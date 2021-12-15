@@ -17,7 +17,7 @@ function loadRC() {
                 }
                 else
                 {
-                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> (r${data[rc].rev})`
+                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(deleted)</em>'}`
                 }
                 $('#rcsidebarcontents').append(`<li class='list-group-item' style='overflow-wrap: anywhere;'>${ln}</li>`)
             })
@@ -27,7 +27,7 @@ function loadRC() {
 var registered = false
 function regLoadRC()
 {
-    if (registered=== true) return
+    if (registered === true) return
     if ($('#rcsidebar').css('display') !== 'none') 
     {
         registered = true

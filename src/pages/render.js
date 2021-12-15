@@ -3,6 +3,7 @@
 //gets markup and returns HTML.
 
 const dateandtime = require('date-and-time')
+const katex = require('katex');
 var sanitiseHtml = require('sanitize-html')
 async function renderMacro(match, macro, args, pages = undefined, files, incl = true)
 {
@@ -150,6 +151,12 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 {
                     return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
                 }
+            }
+        case 'math':
+            {
+                args = args.replace(/\\/gi, '\\\\') //backslash,
+                            .replace(/\n/gi, '') //linebreak dosent' matter in latex
+                return `<span class='math'>${args}</span>`
             }
         default:
             return match
@@ -538,7 +545,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
 
     //macro
     //asyncMacro(str, regex, fn, pages)
-    data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igm, renderMacro, pages, files, incl)
+    data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igms, renderMacro, pages, files, incl)
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
@@ -686,10 +693,11 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
             return p1
         })
     data = data.replace(/\n/igm, '<br>')
+    data = data.replace(/(<br>)?<hr>(<br>)?/igm, '<hr>')
     //data = data.replace(/^\n/igm, '<br>')
     //data = data.replace('\n', '')
     //escape things
-    data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\\\'})
+    data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
     //sanitising things
     data = sanitiseHtml(data, global.sanitiseOptions)
 

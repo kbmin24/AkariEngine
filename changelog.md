@@ -1,3 +1,8 @@
+v1.2 (2021-12-15)
+rnull
+UI fix
+maths
+
 v1.1 (2021-10-31)
 Slight UI fix
 better ul, ol
