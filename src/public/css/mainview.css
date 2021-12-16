@@ -79,7 +79,7 @@ body
 #userIcon
 {
     position: absolute;
-    right: 50px;
+    right: 10px;
     float: right !important;
 }
 #navUserDropDown
@@ -100,14 +100,21 @@ body
 #searchBox
 {
     max-width: 300px;
-    margin-right: 100px;
+    margin-right: 60px;
     float: right;
 }
 @media (max-width: 648px)
 {
     #userIcon
     {
-        top: 5px;
+        top: -5px;
+        right: 0px;
+    }
+    .identicon
+    {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 5px;
     }
     #searchBox
     {
