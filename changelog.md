@@ -1,5 +1,12 @@
+v1.3 (2021-12-17)
+UI fix
+Comment
+Changed how youtube videos work
+Upgraded fontawesome
+Separate conf file
+
 v1.2 (2021-12-15)
-rnull
+rnull issue
 UI fix
 maths
 
@@ -18,24 +25,24 @@ Changed copyright notices
 Last edited
 
 v0.9a (2021-10-18)
-No more irritating password limits
+No more irritating password limitations
 password change
 link
 
 v0.9 (2021-09-02)
 User page discussion alert
 Renderer bug fix
-five -> four
+five -> four (password limitation)
 a few message tweaks
 
 v0.8d (2021-08-24)
-\n -> 줄바꿈으로 환원
+\n now means linebreak
 
 v0.8c (2021-08-16)
 MOVE now moves thread as well
 
 v0.8b (2021-08-16)
-IE Not supported
+IE Not supported message
 
 v0.8a (2021-08-16)
 Discuss HotFix

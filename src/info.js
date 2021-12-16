@@ -7,6 +7,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
         title: 'Information',
         content: description + '<br>Return to ' + '<a href="' + returnlink + '">' + returnname + '</a>.',
         username: username,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname
     })
 }

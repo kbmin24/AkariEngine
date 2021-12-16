@@ -99,7 +99,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
         }
         case 'youtube':
         {
-            const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}?rel=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+            const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
             //console.log(ifr)
             return ifr
         }
@@ -533,6 +533,9 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //\r\n issue
     data = data.replace(/\r/g, '')
 
+    //comments
+    data = data.replace(/^##.*?$/igm, '')
+    
     //headings
     data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
@@ -572,14 +575,14 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     {
         p1 = linkfix(p1)
         let p1Tooltip = p1.replace(/'/g,`&apos;`)
-        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p1}</a>`
+        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
     })
     //external link with different text
     data = data.replace(/\[\[(https?:.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
         p2 = linkfix(p2)
         let p1Tooltip = p1.replace(/'/g,`&apos;`)
-        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fa fa-external-link-square ren-extlink-icon" aria-hidden="true"></i>${p2}</a>`
+        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
     })
     //category
     data = data.replace(/\[\[category:(.*?)\]\]/igm, '')

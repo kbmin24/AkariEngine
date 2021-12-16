@@ -1,0 +1,23 @@
+{
+    "_comment": "This is sample AkariEngine configuration file.",
+    "appname": "GECWiki",
+    "port": 8080,
+    "dateTimeFormat": "YYYY/MM/DD HH:mm:ss",
+    "licence": "CC BY-SA 4.0",
+    "session_secret": "secret for encrypting sessions. This must NOT be exposed.",
+    "adminEmail": "admin@gecwiki.kr",
+    "database": {
+        "_comment": "This section is concerned with database connections. Database type can either be mariadb OR sqlite.",
+        "type": "mariadb",
+        "mariadb_options": {
+            "_comment": "This section is only necessary if mariadb dialect is used.",
+            "database:": "database name",
+            "username": "user name",
+            "password": "password"
+        },
+        "sqlite_options": {
+            "_comment": "This section is only necessary if sqlite dialect is used. DB file location MUST be relative to the parent directory of server.js.",
+            "storage": "/db.sqlite"
+        }
+    }
+}

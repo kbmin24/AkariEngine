@@ -50,6 +50,7 @@ module.exports = async (req, res, pages, files, category) =>
         content: content,
         isPage: true,
         pagename: req.body.title,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         username: req.session.username,
         wikiname: global.appname
     }

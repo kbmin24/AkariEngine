@@ -3,27 +3,46 @@ const { Router } = require('express')
 const express = require('express')
 const app = express()
 
-const port = 8080
-global.appname = 'GECWiki'
+global.conf = require(__dirname + '/LocalSettings.json')
+
+const port = global.conf.port
+
+//Legacy ways to access settings. Deprecated.
+global.appname = global.conf.appname
+global.licence = global.conf.licence
+global.dtFormat = global.conf.dateTimeFormat
 global.path = __dirname
-//global.loopbackAddress = 'http://127.0.0.1:' + port.toString() //change if running behind a load balancer
-global.license = 'CC BY-SA 4.0'
-//(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
-global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.license}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
-global.dtFormat = 'YYYY/MM/DD HH:mm:ss'
+
+//(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
+global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.licence}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
 global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
 const {Sequelize} = require('sequelize')
-const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: __dirname + '/db.sqlite',
-    logging: false
-})
-
+let sequelize = null
+if (global.conf.database.type == 'sqlite')
+{
+    sequelize = new Sequelize({
+        dialect: 'sqlite',
+        storage: __dirname + global.conf.database.sqlite_options.storage,
+        logging: false
+    })
+}
+else if (global.conf.database.type == 'mariadb')
+{
+    sequelize = new Sequelize(global.conf.database.mariadb_options.database, global.conf.database.mariadb_options.username, global.conf.database.mariadb_options.password, {
+        dialect: 'mariadb',
+        dialectOptions: {connectTimeout: 1000}
+    })
+}
+else
+{
+    console.error('[ERROR!] Invalid DB type.')
+    return
+}
 
 //session
-const secret = '6YOhz+9FXUDnTCl1OcqUTDbE0yy39a37JDUYvuhdhQ/PNXopXu7iLKFdnIEFKlQv5WcwHD4hDn8Gg8Pb4DgEIg=='
+const secret = global.conf.session_secret
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const sessionStore = require('express-session-sequelize')(session.Store)
@@ -200,6 +219,7 @@ app.get('/signup', async (req, res) =>
         title: 'Sign up',
         content: signuppage,
         username: req.session.username,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname
     })
 })
@@ -226,6 +246,7 @@ app.get('/login', csrfProtection, async (req,res) =>
             content: html,
             //notification: r,
             username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
             wikiname: global.appname
         })
     })
@@ -245,6 +266,7 @@ app.get('/whoami', (req, res) =>
         title: 'You are',
         content: `${req.session.username}<br>IP Address: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`,
         username: req.session.username,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname
     })
 })
@@ -287,6 +309,7 @@ app.get('/settings', csrfProtection, async (req, res) =>
             content: html,
             //notification: r,
             username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
             wikiname: global.appname
         })
     })
@@ -344,6 +367,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
                 isPage: true,
                 pagename: req.params.name,
                 username: username,
+                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                 wikiname: global.appname
             })
         })
@@ -372,6 +396,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
                 notification: r,
                 pagename: req.params.name,
                 username: username,
+                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                 wikiname: global.appname
             })
         })
@@ -430,6 +455,7 @@ app.get('/move/:name', async (req, res) =>
                 title: 'Move ' + req.params.name,
                 content: html,
                 username: username,
+                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                 wikiname: global.appname
             })
         })
@@ -465,6 +491,7 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
                             pagename: target.title,
                             content: html,
                             username: username,
+                            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                             wikiname: global.appname
                         })
                     })
@@ -530,6 +557,7 @@ app.get('/revert/:name', async (req, res) =>
             title: 'Revert ' + req.params.name + ' to r' + req.query.rev,
             content: html,
             username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
             wikiname: global.appname
         })
     })
@@ -598,6 +626,7 @@ app.get('/Upload', async (req, res) =>
             title: 'Upload',
             content: html,
             username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
             wikiname: global.appname
         })
     })
@@ -741,6 +770,7 @@ app.get('/deletefile/:name', csrfProtection, (req, res) =>
                             title: 'Delete ' + req.params.name,
                             content: html,
                             username: username,
+                            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                             wikiname: global.appname
                         })
                     })

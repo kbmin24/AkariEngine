@@ -104,6 +104,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
         title: `Difference of ${req.params.name} r${rev1} and r${rev2}`,
         content: html,
         username: req.session.username,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname
     })        
 

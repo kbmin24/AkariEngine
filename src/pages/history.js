@@ -45,6 +45,7 @@ module.exports = (req, res, histories) =>
                 title: 'History of ' + req.params.name,
                 content: html,
                 username: username,
+                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                 isPage: true,
                 pagename: req.params.name,
                 wikiname: global.appname

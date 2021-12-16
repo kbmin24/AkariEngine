@@ -8,6 +8,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
         res.render('outline',{
             title: 'Error!',
             content: description + '<br>Return to ' + '<a href="' + returnlink + '">' + returnname + '</a>.',
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
             wikiname: global.appname
         })
     }

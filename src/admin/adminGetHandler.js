@@ -27,6 +27,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                 title: 'Select username to grant to',
                                 content: html,
                                 username: username,
+                                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                                 wikiname: global.appname
                             })
                         })
@@ -61,6 +62,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                             title: 'Grant to ' + req.query.grantTo,
                                             content: html,
                                             username: username,
+                                            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                                             wikiname: global.appname
                                         })
                                     })
@@ -101,6 +103,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         title: 'Block user',
                         content: html,
                         username: username,
+                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                         wikiname: global.appname
                     })
                 })
@@ -129,6 +132,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         title: 'Block IP address',
                         content: html,
                         username: username,
+                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                         wikiname: global.appname
                     })
                 })
@@ -169,6 +173,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         title: 'Login history of ' + req.query.user,
                         content: lgInHTML,
                         username: username,
+                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                         wikiname: global.appname
                     })
                     return
@@ -181,6 +186,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         title: 'Select username view login history',
                         content: gr,
                         username: username,
+                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                         wikiname: global.appname
                     })
                     return
@@ -206,6 +212,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         title: 'Hide specific revision of a page',
                         content: html,
                         username: username,
+                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                         wikiname: global.appname
                     })
                 }

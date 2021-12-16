@@ -22,6 +22,7 @@ module.exports = async (req, res, files, pages) =>
                     content: html,
                     isFile: true,
                     username: req.session.username,
+                    ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                     wikiname: global.appname
                 })
             })

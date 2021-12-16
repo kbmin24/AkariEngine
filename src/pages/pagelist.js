@@ -17,6 +17,7 @@ module.exports = (req, res, pages) =>
                 title: 'PageList',
                 content: html,
                 username: username,
+                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                 wikiname: global.appname
             })
         })

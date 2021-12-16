@@ -6,68 +6,68 @@
             <!-- rc -->
             <li class="nav-item">
                 <a class="nav-link" href="/RecentChanges">
-                    <i class="fa fa-refresh nav-icon" aria-hidden="true"></i>
+                    <i class="fas fa-sync-alt nav-icon"></i>
                     <span class='d-none d-xl-inline'>RecentChanges</span>
                 </a>
             </li>
             <!-- rd -->
             <li class="nav-item">
                 <a class="nav-link" href="/RecentDiscuss">
-                    <i class="fa fa-comments nav-icon" aria-hidden="true"></i>
+                    <i class="fa fa-comments nav-icon"></i>
                     <span class='d-none d-xl-inline'>RecentDiscuss</span>
                 </a>
             </li>
             <!-- RandomPage -->
             <li class="nav-item">
                 <a class="nav-link" href="/RandomPage">
-                    <i class="fa fa-random" aria-hidden="true"></i>
+                    <i class="fas fa-random"></i>
                     <span class='d-none d-xl-inline'>RandomPage</span>
                 </a>
             </li>
             <!-- toolbox -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle active" href="#" id="navbarTools" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa fa-gear nav-icon" aria-hidden="true"></i>
+                    <i class="fas fa-cog"></i>
                     <span class='d-none d-xl-inline'>Tools</span>
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarTools" style='position: absolute'>
                     <!-- pagelist-->
                     <li>
                         <a class="dropdown-item" href="/PageList">
-                            <i class="fa fa-list-ul nav-icon" aria-hidden="true"></i>
+                            <i class="fa fa-list-ul nav-icon"></i>
                             <span>PageList</span>
                         </a>
                     </li>
                     <li>
                         <!-- filelist -->
                         <a class="dropdown-item" href="/FileList">
-                            <i class="fa fa-picture-o nav-icon" aria-hidden="true"></i>
+                            <i class="fas fa-images nav-icon"></i>
                             <span>FileList</span>
                         </a>
                     </li>
                     <li>
                         <!-- upload -->
                         <a class="dropdown-item" href="/Upload">
-                            <i class="fa fa-upload nav-icon" aria-hidden="true"></i>
+                            <i class="fa fa-upload nav-icon"></i>
                             <span>Upload</span>
                         </a>
                     </li>
                     <li>
                         <!-- Admin log -->
                         <a class="dropdown-item" href="/adminlog">
-                            <i class="fa fa-history nav-icon" aria-hidden="true"></i>
+                            <i class="fa fa-history nav-icon"></i>
                         <span>Admin log</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="/viewrank">
-                            <i class="fa fa-line-chart nav-icon" aria-hidden="true"></i>
+                            <i class="fas fa-chart-line"></i>
                             <span>View count rank</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="/Licence">
-                            <i class="fa fa-check nav-icon" aria-hidden="true"></i>
+                            <i class="fa fa-check nav-icon"></i>
                             <span>Licence</span>
                         </a>
                     </li>
@@ -77,14 +77,21 @@
         <div class='navbar-nav' id='userIcon'>
             <!-- user-->
             <div class="dropdown">
-                <button class="btn btn-secondary btn-sm dropdown-toggle" id="navUserDropDown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn" id="navUserDropDown" data-bs-toggle="dropdown" aria-expanded="false">
                     <% if (locals.username) { %>
-                        <%= username %>
+                        <img class='identicon rounded' data-id='<%= username %>'>
                     <% } else { %>
-                        IP User
+                        <i class="fas fa-sign-in-alt"></i>
                     <% } %>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end position-absolute" aria-labelledby="navUserDropDown">
+                    <li class='userButton_username'>
+                        <% if (locals.username) { %>
+                            <%= username %>
+                        <% } else { %>
+                            <%= ipaddr %>
+                        <% } %>
+                    </li>
                     <% if (locals.username) { %>
                     <li>
                         <a class='dropdown-item' href='/w/User:<%= username %>'>User Page</a>
@@ -106,7 +113,7 @@
         <!-- search box -->
         <form class="input-group d-flex" action='/search' method='POST' id='searchBox'>
             <input class="form-control" id='searchinput' name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
-            <button class="btn btn-outline-light bg-primary" type="submit"><i class="fa fa-arrow-right text-light" aria-hidden="true"></i></button>
+            <button class="btn btn-outline-light bg-primary" type="submit"><i class="fa fa-arrow-right text-light"></i></button>
             <!-- <button class="btn btn-outline-light" type="submit">Open</button> -->
         </form>
     </div>

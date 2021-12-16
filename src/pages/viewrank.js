@@ -20,6 +20,7 @@ module.exports = async (req, res, viewcount) =>
         title: 'Most viewed pages of the day',
         content: html,
         username: req.session.username,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname
     })
 }

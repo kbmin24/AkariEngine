@@ -33,6 +33,7 @@ module.exports = async (req, res, pages) =>
         title: 'Search results for ' + sanitiseHtml(query, {disallowedTagsMode: escape}),
         content: searchHTML,
         username: username,
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname
     })
     return

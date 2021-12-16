@@ -140,6 +140,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     pagename: page.title,
                     updatedAt: date.format(page.updatedAt, global.dtFormat),
                     username: req.session.username,
+                    ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                     wikiname: global.appname
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
@@ -177,6 +178,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     isPage: true,
                     pagename: page.page,
                     username: req.session.username,
+                    ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                     wikiname: global.appname
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix

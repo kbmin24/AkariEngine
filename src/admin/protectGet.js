@@ -19,6 +19,7 @@ module.exports = async (req, res, perm, protect, block) =>
             title: 'Protect ' + req.params.name,
             content: html,
             username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
             wikiname: global.appname
         })
     })
