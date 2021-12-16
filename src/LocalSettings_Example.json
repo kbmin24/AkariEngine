@@ -11,7 +11,7 @@
         "type": "mariadb",
         "mariadb_options": {
             "_comment": "This section is only necessary if mariadb dialect is used.",
-            "database:": "database name",
+            "database": "database name",
             "username": "user name",
             "password": "password"
         },
