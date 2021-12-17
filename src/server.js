@@ -59,8 +59,8 @@ const sess = session({
     cookie:
     {
         samesite: 'strict',
-        secure: true,
-        httpOnly: true, //so that the cookie cannot be taken away
+        //secure: true,
+        //httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
 })
@@ -805,7 +805,7 @@ app.get('/admin', async (req, res) =>
         await require(global.path + '/error.js')(req, res, null, 'Please Login.', '/login', 'the login page')
         return
     }
-    if (perm.findOne({where:{username: req.session.username, perm: 'admin'}}))
+    if (await perm.findOne({where:{username: req.session.username, perm: 'admin'}}))
     {
         await require(__dirname + '/sendfile.js')(req, res, 'Admin tools', '/views/admin/index.html')
     }
