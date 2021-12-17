@@ -59,8 +59,8 @@ const sess = session({
     cookie:
     {
         samesite: 'strict',
-        //secure: true,
-        //httpOnly: true, //so that the cookie cannot be taken away
+        secure: true,
+        httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
 })
