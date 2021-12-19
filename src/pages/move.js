@@ -19,7 +19,6 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         require(global.path + '/error.js')(req, res, username, 'You cannot move because the protection level for this page is ' + acl + '.', '/', 'the main page')
         return
     }
-    //todo: ACL
     pages.findOne({where: {title: req.body.newName}}).then(async oldpage =>
     {
         var doneby = req.session.username
@@ -32,6 +31,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             pages.findOne({where: {title: req.params.name}}).then(async page =>
             {
+                //move protects
                 let ps = await protect.findAll({where: {title: req.params.name}})
                 ps.forEach(async v =>
                     {
@@ -40,6 +40,35 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                 page.update({title: req.body.newName, currentRev: page.currentRev + 1})
                 .then(() =>
                 {
+                    //create redirect
+                    let redrPageContent = `#redirect ${req.body.newName}`
+                    pages.create(
+                    {
+                        title: req.params.name,
+                        content: redrPageContent,
+                        currentRev: 1
+                    })
+                    history.create(
+                    {
+                        page: req.params.name,
+                        rev: 1,
+                        content: redrPageContent,
+                        bytechange: redrPageContent.length,
+                        editedby: doneby,
+                        comment: `Auto-created redirect due to page move`,
+                        type: 'create'
+                    })
+                    recentchanges.create(
+                    {
+                        page: req.params.name,
+                        rev: 1,
+                        doneBy: doneby,
+                        comment: `Auto-created redirect due to page move`,
+                        bytechange: redrPageContent.length,
+                        type: 'create'
+                    })
+                    
+                    //deal with the main page
                     recentchanges.create(
                     {
                         page: req.body.newName,

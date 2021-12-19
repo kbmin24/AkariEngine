@@ -1,3 +1,9 @@
+v1.4 (2021-12-19)
+Auto-create redirect on page move
+
+v1.3a (2021-12-18)
+UI fix (profile picture error on mobile)
+
 v1.3 (2021-12-17)
 UI fix
 Comment
@@ -8,7 +14,7 @@ Separate conf file
 v1.2 (2021-12-15)
 rnull issue
 UI fix
-maths
+'math' macro
 
 v1.1 (2021-10-31)
 Slight UI fix

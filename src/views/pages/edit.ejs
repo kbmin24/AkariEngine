@@ -3,7 +3,7 @@
 <form action='/edit/<%= title %>' method='POST' class='editForm'>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <div class='form-group'>
-        <textarea class='form-control' id='editAreaBox' name='content'<% if (locals.disabled) { %> disabled <% } %>><%= content %></textarea>
+        <textarea class='form-control' id='editAreaBox' name='content' placeholder='Describe <%= title %> here...' <% if (locals.disabled) { %> disabled <% } %>><%= content %></textarea>
     </div>
     <% if (!locals.disabled) { %>
     <div class="form-group mt-2 mb-2 row">
