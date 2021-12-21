@@ -238,7 +238,7 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text}</h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
+    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text} <a class='ren-header-edit' href='/edit/${pgname}?section=${currentSection++}'>[edit]</a></h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
     for (let i = 1; i < depth; i++) toc += '&emsp;'
@@ -471,7 +471,9 @@ function blockquote(match, rgx, depth)
     return `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>${txt}</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
 }
 
+var pgname
 var currentTOC = undefined
+var currentSection = 1
 var latestHeading = 7
 var toc
 var footnotes = []
@@ -487,6 +489,8 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
     //deprecated options: _renderInclude, redirect
     //initialise
+    pgname = pagename
+    currentSection = 1
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
     toc = 'Table of Contents<hr>'

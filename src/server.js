@@ -339,16 +339,34 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
     var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
     const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block, true, true)
+    let prefix = ''
+    let suffix = ''
     if (r === true)
     {
         //generate CAPTCHA
         const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
         var content = ''
-        if (target) content = target.content
+        if (target)
+        {
+            content = target.content
+            if (req.query.section && !isNaN(req.query.section) && req.query.section * 1 > 0)
+            {
+                req.query.section *= 1
+                let headLookupRegex = /(?=^(?:=+) (?:.*) =+(?: )*\r?\n)/gim
+                let splits = content.split(headLookupRegex)
+                let offset = 0
+                if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
+                for (let i = 0; i < req.query.section + offset - 1; i++) prefix += splits[i]
+                for (let i = req.query.section + offset + 1; i < splits.length; i++) suffix += splits[i]
+                content = splits[req.query.section + offset]
+            }
+        }
         ejs.renderFile(global.path + '/views/pages/edit.ejs',
         {
             title: req.params.name,
             content: content,
+            prefix: prefix,
+            suffix: suffix,
             username: username,
             captcha: captchaSVG,
             csrfToken: req.csrfToken()
@@ -380,7 +398,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
     {
         let content = ''
         if (target) content = target.content
-        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username, disabled: true, csrfToken: req.csrfToken()}, (err, html) => 
+        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username, prefix: prefix, suffix: suffix, disabled: true, csrfToken: req.csrfToken()}, (err, html) => 
         {
             if (err)
             {
@@ -633,7 +651,6 @@ app.get('/Upload', async (req, res) =>
 })
 const multer = require('multer')
 const fs = require('fs')
-const { isObject } = require('util')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware

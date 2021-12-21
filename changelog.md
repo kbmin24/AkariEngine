@@ -1,5 +1,8 @@
-v1.4 (2021-12-19)
+v1.4 (2021-12-21)
 Auto-create redirect on page move
+Better design on navbar menu
+Reset password info text
+Added edit section feature
 
 v1.3a (2021-12-18)
 UI fix (profile picture error on mobile)

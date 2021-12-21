@@ -77,6 +77,8 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         return
     }
     
+    if (!req.body.content.endsWith('\n')) req.body.content += '\n'
+    req.body.content = req.body.editPrefix + req.body.content + req.body.editSuffix
     //sign
     req.body.content = await signAsync(req, req.body.content, /~~~~/igm, settings)
 

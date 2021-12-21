@@ -92,13 +92,21 @@
                             <%= ipaddr %>
                         <% } %>
                     </li>
+                    <hr style='margin: 0.3rem 0'>
                     <% if (locals.username) { %>
                     <li>
                         <a class='dropdown-item' href='/w/User:<%= username %>'>User Page</a>
                     </li>
+                    <% } %>
+                    <li>
+                        <a class='dropdown-item' href='/contribution/<%= locals.username ? username :  ipaddr %>'>Contributions</a>
+                    </li>
+                    <hr style='margin: 0.3rem 0'>
+                    <% if (locals.username) { %>
                     <li>
                         <a class='dropdown-item' href='/settings'>Settings</a>
                     </li>
+                    <hr style='margin: 0.3rem 0'>
                     <% } %>
                     <li>
                         <% if (locals.username) { %>
