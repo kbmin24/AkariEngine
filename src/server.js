@@ -356,7 +356,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
                 let splits = content.split(headLookupRegex)
                 let offset = 0
                 if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
-                for (let i = 0; i < req.query.section + offset - 1; i++) prefix += splits[i]
+                for (let i = 0; i < req.query.section + offset; i++) prefix += splits[i]
                 for (let i = req.query.section + offset + 1; i < splits.length; i++) suffix += splits[i]
                 content = splits[req.query.section + offset]
             }
