@@ -238,7 +238,8 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text} <a class='ren-header-edit' href='/edit/${pgname}?section=${currentSection++}'>[edit]</a></h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
+    let editButton = renderSectionEditButton ? `<a class='ren-header-edit' href='/edit/${pgname}?section=${currentSection++}'>[edit]</a>` : ''
+    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text} ${editButton}</h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
     for (let i = 1; i < depth; i++) toc += '&emsp;'
@@ -479,6 +480,7 @@ var toc
 var footnotes = []
 var footnote
 var footnotecount
+var renderSectionEditButton = true
 
 const ulRegex = /(^|<\/h\d>)((?:\*+ (?:.+(?:\r?\n|$)))+)/igm
 const olRegex = /(^|<\/h\d>)((?:#+ (?:.+(?:\r?\n|$)))+)/igm
@@ -494,6 +496,15 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
     toc = 'Table of Contents<hr>'
+
+    if (renderOptions.showSectionEditButton == 'on')
+    {
+        renderSectionEditButton = true
+    }
+    else
+    {
+        renderSectionEditButton = false
+    }
 
 
     data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/igm, '')

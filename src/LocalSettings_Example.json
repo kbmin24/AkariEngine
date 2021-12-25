@@ -2,6 +2,7 @@
     "_comment": "This is sample AkariEngine configuration file.",
     "appname": "AkariEngine",
     "port": 8080,
+    "ssl": false,
     "dateTimeFormat": "YYYY/MM/DD HH:mm:ss",
     "licence": "CC BY-SA 4.0",
     "session_secret": "secret for encrypting sessions. This must NOT be exposed.",

@@ -1,9 +1,11 @@
 <link rel='stylesheet' href='/css/edit.css'>
 <script src='/js/editpreview.js'></script>
 <form action='/edit/<%= title %>' method='POST' class='editForm'>
-    <div class="alert alert-info" role="alert">
-        You are editing a section from the page.
-    </div>
+    <% if (prefix || suffix) {%>
+        <div class="alert alert-info" role="alert">
+            You are editing a section from the page.
+        </div>
+    <% } %>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <textarea name='editPrefix' style='display:none'><%= prefix %></textarea>
     <textarea name='editSuffix' style='display:none'><%= suffix %></textarea>

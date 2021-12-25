@@ -58,8 +58,8 @@ const sess = session({
     expires: new Date(Date.now() + (30 * 86400 * 1000)), //expires after 30 days
     cookie:
     {
+        secure: global.conf.ssl,
         samesite: 'strict',
-        secure: true,
         httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000
     }
@@ -356,6 +356,12 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
                 let splits = content.split(headLookupRegex)
                 let offset = 0
                 if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
+
+                if (req.query.section + offset > splits)
+                {
+                    require(global.path + '/error.js')(req, res, null, 'No such section found. Are you trying to edit as section the page from an old revision?', '/login', 'the login page')
+                    return
+                }
                 for (let i = 0; i < req.query.section + offset; i++) prefix += splits[i]
                 for (let i = req.query.section + offset + 1; i < splits.length; i++) suffix += splits[i]
                 content = splits[req.query.section + offset]

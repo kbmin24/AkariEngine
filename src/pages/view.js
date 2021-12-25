@@ -130,6 +130,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     titleSuffix = `<i>redirected from <a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a></i>&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
+                opt.showSectionEditButton = 'on'
                 let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, files, req, res, redirect, true, {}, opt)
                 if (content === undefined) return
                 content = await getCategory(req.params.name, category, opt['category']) + content
