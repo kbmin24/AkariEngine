@@ -24,7 +24,6 @@ module.exports = async (req, res, dbs = {}) =>
         roomId: roomId,
         username: req.session.username || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
         isAdmin: isAdmin,
-        username: req.session.username,
         csrfToken: req.csrfToken()
     }, (err, html) => 
     {

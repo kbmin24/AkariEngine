@@ -190,5 +190,5 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         })
     }
 }
-exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
-exports.getOptions = async content => await getOptions(content)
+module.exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
+module.exports.getOptions = async content => await getOptions(content)

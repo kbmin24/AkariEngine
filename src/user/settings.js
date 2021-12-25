@@ -18,6 +18,7 @@ module.exports = async (req, res, tables = {}) =>
                         value: req.body.sign
                 })
             require(global.path + '/info.js')(req, res, null, 'Done.', '/settings', 'the settings page')
+            return
             }
         case 'changePassword':
             {
@@ -48,6 +49,7 @@ module.exports = async (req, res, tables = {}) =>
                         require(global.path + '/info.js')(req, res, null, 'Done.', '/settings', 'the settings page')
                     })
                 })
+                return
             }
     }
 }

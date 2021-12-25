@@ -72,7 +72,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
                 {
                     if (username === undefined) return false
                     const permsU = await perms.findAll({where: {username: username}})
-                    var isAdmin = false
+                    let isAdmin = false
                     permsU.forEach((v) =>
                     {
                         isAdmin = isAdmin || (v.perm == 'admin')
@@ -84,7 +84,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
                 {
                     if (username === undefined) return false
                     const p = await perms.findAll({where: {username: username}})
-                    var isAdmin = false
+                    let isAdmin = false
                     p.forEach((v) =>
                     {
                         isAdmin = isAdmin || (v.perm == 'grant')
@@ -96,7 +96,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
                 {
                     if (username === undefined) return false
                     const permsACL = await perms.findAll({where: {username: username}})
-                    var isAdmin = false
+                    let isAdmin = false
                     permsACL.forEach((v) =>
                     {
                         isAdmin = isAdmin || (v.perm == 'acl')
@@ -118,18 +118,14 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
                             const b = await block.findOne({where: {target: username}})
                             if (b)
                             {
-                                if (editErrorMsg)
+                                if (b.isForever)
                                 {
-                                    if (b.isForever)
-                                    {
-                                        return `You are blocked forever by ${b.doneBy} - ${b.comment}`
-                                    }
-                                    else
-                                    {
-                                        return `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`
-                                    }
+                                    return `You are blocked forever by ${b.doneBy} - ${b.comment}`
                                 }
-                                else return false
+                                else
+                                {
+                                    return `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`
+                                }
                             }
                             else continue
                         }

@@ -1,5 +1,3 @@
-const sanitiseHtml = require('sanitize-html')
-const ejs = require('ejs')
 const diff2html = require('diff2html')
 const diff = require('diff')
 module.exports = async (req, res, history, protect, perm, block) =>

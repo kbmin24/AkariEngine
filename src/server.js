@@ -286,11 +286,6 @@ app.get('/settings', csrfProtection, async (req, res) =>
         }
     })
     const sign = sR ? sR.value : ''
-    if (!username)
-    {
-        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
-        return
-    }
     ejs.renderFile(global.path + '/views/user/settings.ejs',
     {
         csrfToken: req.csrfToken(),

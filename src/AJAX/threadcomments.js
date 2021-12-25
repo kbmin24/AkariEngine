@@ -1,4 +1,3 @@
-const {Op} = require('sequelize')
 const sanitiseHtml = require('sanitize-html')
 module.exports = async (req, res, dbs = {}) =>
 {

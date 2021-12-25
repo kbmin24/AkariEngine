@@ -27,7 +27,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
         case 'unblock':
             //todo: find records that the time has passed
             //perm.destroy({where: {username: grantTo}})
-            var currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
+            let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
             if (!currentBlock)
             {
                 await require(global.path + '/error.js')(req, res, null, 'The IP currently is not blocked.', '/admin/blockip', 'blockip page')
@@ -37,7 +37,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
             description = `unblocked ${req.body.target} - ${req.body.comment}`
             break
         case 'forever':
-            var currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
+            let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
             if (currentBlock)
             {
                 await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockip', 'blockip page')
@@ -60,7 +60,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 await require(global.path + '/error.js')(req, res, null, 'Block period must be unblock, forever or an integer.', '/admin/blockip', 'blockip page')
                 return
             }
-            var currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
+            let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
             if (currentBlock)
             {
                 await require(global.path + '/error.js')(req, res, null, 'The IP is already blocked. Please unblock the IP first.', '/admin/blockip', 'blockip page')
