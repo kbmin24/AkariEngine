@@ -24,58 +24,61 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     switch (req.body.blockfor)
     {
         case 'unblock':
-            //todo: find records that the time has passed
-            //perm.destroy({where: {username: grantTo}})
-            let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
-            if (!currentBlock)
             {
-                await require(global.path + '/error.js')(req, res, null, 'The user currently is not blocked.', '/admin/blockuser', 'blockuser page')
-                return
+                let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
+                if (!currentBlock)
+                {
+                    await require(global.path + '/error.js')(req, res, null, 'The user currently is not blocked.', '/admin/blockuser', 'blockuser page')
+                    return
+                }
+                await block.destroy({where: {target: req.body.target, targetType: 'user'}})
+                description = `unblocked ${req.body.target} - ${req.body.comment}`
+                break
             }
-            await block.destroy({where: {target: req.body.target, targetType: 'user'}})
-            description = `unblocked ${req.body.target} - ${req.body.comment}`
-            break
         case 'forever':
-            let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
-            if (currentBlock)
             {
-                await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
-                return
+                let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
+                if (currentBlock)
+                {
+                    await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
+                    return
+                }
+                await block.create({
+                    target: req.body.target,
+                    targetType: 'user',
+                    isForever: true,
+                    doneBy: username,
+                    comment: req.body.comment
+                })
+                description = `blocked ${req.body.target} forever - ${req.body.comment}`
+                break
             }
-            await block.create({
-                target: req.body.target,
-                targetType: 'user',
-                isForever: true,
-                doneBy: username,
-                comment: req.body.comment
-            })
-            description = `blocked ${req.body.target} forever - ${req.body.comment}`
-            break
         default:
-            //other periods
-            if (isNaN(req.body.blockfor))
             {
-                await require(global.path + '/error.js')(req, res, null, 'Block period must be unblock, forever or an integer.', '/admin/blockuser', 'blockuser page')
-                return
+                //other periods
+                if (isNaN(req.body.blockfor))
+                {
+                    await require(global.path + '/error.js')(req, res, null, 'Block period must be unblock, forever or an integer.', '/admin/blockuser', 'blockuser page')
+                    return
+                }
+                let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
+                if (currentBlock)
+                {
+                    await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
+                    return
+                }
+                const blockTill = new Date(Date.now() + req.body.blockfor * 1000)
+                await block.create({
+                    target: req.body.target,
+                    targetType: 'user',
+                    isForever: false,
+                    doneBy: username,
+                    until: blockTill,
+                    comment: req.body.comment
+                })
+                description = `blocked ${req.body.target} until ${dateandtime.format(blockTill, global.dtFormat)} - ${req.body.comment}`
+                break
             }
-            let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
-            if (currentBlock)
-            {
-                await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
-                return
-            }
-            const blockTill = new Date(Date.now() + req.body.blockfor * 1000)
-            await block.create({
-                target: req.body.target,
-                targetType: 'user',
-                isForever: false,
-                doneBy: username,
-                until: blockTill,
-                comment: req.body.comment
-            })
-            description = `blocked ${req.body.target} until ${dateandtime.format(blockTill, global.dtFormat)} - ${req.body.comment}`
-            break
-
     }
     adminlog.create({
         username: username,
