@@ -1,6 +1,6 @@
 {
     "_comment": "This is sample AkariEngine configuration file.",
-    "appname": "GECWiki",
+    "appname": "AkariEngine",
     "port": 8080,
     "dateTimeFormat": "YYYY/MM/DD HH:mm:ss",
     "licence": "CC BY-SA 4.0",
