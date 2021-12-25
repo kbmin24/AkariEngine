@@ -1,3 +1,8 @@
+v1.4a (2021-12-25)
+Added some conf options
+section edit is now only visible if you are reading the current revision
+Removed GECWiki ref.
+
 v1.4 (2021-12-21)
 Auto-create redirect on page move
 Better design on navbar menu

@@ -1,4 +1,3 @@
-const ejs = require('ejs')
 const { Op } = require('sequelize')
 module.exports = async (recentchanges) =>
 {

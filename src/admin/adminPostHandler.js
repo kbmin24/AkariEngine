@@ -1,6 +1,5 @@
 module.exports = async (req, res, users, perm, block, page, protect, adminlog, threadcomment, thread) =>
 {
-    const username = req.session.username
     switch (req.params.name)
     {
         case 'grant':

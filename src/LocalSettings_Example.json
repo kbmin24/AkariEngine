@@ -20,5 +20,19 @@
             "_comment": "This section is only necessary if sqlite dialect is used. DB file location MUST be relative to the parent directory of server.js.",
             "storage": "/db.sqlite"
         }
-    }
+    },
+    "specialPages": [
+        {
+            "title": "Contact",
+            "link": "mailto:(your email)"
+        },
+        {
+            "title": "Licence",
+            "link": "/Licence"
+        },
+        {
+            "title": "anther entry",
+            "link": "another link"
+        }
+    ]
 }

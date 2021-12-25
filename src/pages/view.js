@@ -1,7 +1,7 @@
 const date = require('date-and-time')
 async function getCategory(title, category, categorys)
 {
-    let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : !(categorys == 'off')
+    let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
     const cardBeginning = `<div class='category'>Categories: `
@@ -17,7 +17,7 @@ async function getCategory(title, category, categorys)
 
     categories.forEach((c, i) =>
     {
-        res += `<a href='/category/${c.category.replace(`'`,`&apos;`)}'>${c.category}</a> `
+        res += `<a href='/category/${c.category.replace(/\'/g,`&apos;`)}'>${c.category}</a> `
         if (i < categories.length - 1) res += '| '
     })
     res += cardEnd
@@ -64,8 +64,6 @@ async function updViewCount(title, viewcount, updateTime)
     if (p) p.update({count: p.count + 1})
     else viewcount.create({title: title, count: 1})
 }
-exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
-exports.getOptions = async content => await getOptions(content)
 module.exports = async (req, res, pages, files, history, protect, perm, block, category, viewcount, updateTime) =>
 {
     //check read ACL
@@ -192,3 +190,5 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         })
     }
 }
+exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
+exports.getOptions = async content => await getOptions(content)

@@ -1,6 +1,6 @@
 async function getCategory(title, category, categorys)
 {
-    let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : !(categorys == 'off')
+    let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
     const cardBeginning = `<div class='card mb-2'><div class='card-body'>Categories: `
@@ -16,7 +16,7 @@ async function getCategory(title, category, categorys)
 
     categories.forEach((c, i) =>
     {
-        res += `<a href='/category/${c.category.replace(`'`,`&apos;`)}'>${c.category}</a> `
+        res += `<a href='/category/${c.category.replace(/\'/g,`&apos;`)}'>${c.category}</a> `
         if (i < categories.length - 1) res += '| '
     })
     res += cardEnd

@@ -643,7 +643,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         data.replace(r, (_match, p1, p2, _offset, _string, _groups) =>
         {
             p2 = linkfix(p2)
-            let f = async (p1) =>
+            let f = async (p1, p2) =>
             {
                 let p = await pages.findOne({where: {title: p1}})
                 let p1Esc = encodeURIComponent(p1)

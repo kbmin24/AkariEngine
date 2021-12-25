@@ -24,6 +24,7 @@ module.exports = async (req, res, dbs = {}) =>
     if (!t)
     {
         require(global.path + '/error.js')(req, res, null, 'No such comment.', 'javascript:window.history.back()', 'the thread.')
+        return
     }
     
     let unhide = false

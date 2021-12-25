@@ -32,7 +32,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
         //.limit: show
     })
     let filteredCh = []
-    for (m of ch)
+    for (let m of ch)
     {
         let th = await thread.findOne({where: {threadID: m.threadID}})
         if (th.isOpen == isOpen)

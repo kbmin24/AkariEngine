@@ -325,14 +325,13 @@ app.post('/settings/:name', csrfProtection, async (req, res) =>
 
 app.get('/edit/:name', csrfProtection, async (req, res) =>
 {
-    //TODO: error if the name is too long (>255)s
+    let username = req.session.username
     if (req.params.name.length > 255)
     {
         require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 255 characters long at most.', '/', 'the main page')
         return
     }
     const target = await pages.findOne({where: {title: req.params.name}})
-    var username = req.session.username
     //if (username === undefined) = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
     //check for protection 
@@ -538,6 +537,7 @@ app.post('/delete/:name', csrfProtection, (req, res) =>
 })
 app.get('/revert/:name', async (req, res) =>
 {
+    const username = req.session.username
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
     const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
@@ -560,7 +560,6 @@ app.get('/revert/:name', async (req, res) =>
         require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', 404)
         return
     }
-    const username = req.session.username
     const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
     ejs.renderFile(global.path + '/views/pages/revert.ejs',
     {

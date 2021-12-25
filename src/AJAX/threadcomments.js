@@ -23,7 +23,7 @@ module.exports = async (req, res, dbs = {}) =>
     )
     
     var resArr = []
-    for (v of searchres)
+    for (let v of searchres)
     {
         let content = v.content
         if (v.isHidden)

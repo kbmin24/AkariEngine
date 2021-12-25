@@ -1,4 +1,3 @@
-const ejs = require('ejs')
 const sanitiseHtml = require('sanitize-html')
 function genArbitaryString(len)
 {

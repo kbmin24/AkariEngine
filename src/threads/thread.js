@@ -1,4 +1,3 @@
-const socketio = require('socket.io')
 const ejs = require('ejs')
 module.exports = async (req, res, dbs = {}) =>
 {

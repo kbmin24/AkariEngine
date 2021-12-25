@@ -1,4 +1,3 @@
-const ejs = require('ejs')
 module.exports = async (req, res, perm, protect, pages, history, rc, block) =>
 {
     //todo: RC
