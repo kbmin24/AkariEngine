@@ -1,6 +1,8 @@
 # AkariEngine
 AkariEngine is a nodejs based wiki engine developed for use in [GECWiki](https://gecwiki.kr).
 
+## Get Started
+
 ## Licence
 AkariEngine is distributed under GNU AGPL 3.0.
 
