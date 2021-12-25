@@ -1,5 +1,8 @@
-# wikiengine
+# AkariEngine
+AkariEngine is a nodejs based wiki engine developed for use in [GECWiki](https://gecwiki.kr).
 
-List of open source softwares used can be found on '''/src/license.html'''.
+## Licence
+AkariEngine is distributed under GNU AGPL 3.0.
 
-https://www.npmjs.com/package/nlf
+## Disclaimer
+AkariEngine is designed specifically for [GECWiki](https://gecwiki.kr); therefore, it is __not__ adaptable for general use.
