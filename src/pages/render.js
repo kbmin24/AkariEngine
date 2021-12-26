@@ -549,7 +549,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     data = data.replace(/\r/g, '')
 
     //comments
-    data = data.replace(/^##.*?$/igm, '')
+    data = data.replace(/^##.*?\r?\n/igm, '')
     
     //headings
     data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
