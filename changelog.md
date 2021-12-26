@@ -1,134 +1,133 @@
 v1.4a (2021-12-25)
-Added some conf options
-section edit is now only visible if you are reading the current revision
-Removed GECWiki ref.
+* Added some conf options
+* section edit is now only visible if you are reading the current revision
+* Removed GECWiki ref.
 
 v1.4 (2021-12-21)
-Auto-create redirect on page move
-Better design on navbar menu
-Reset password info text
-Added edit section feature
+* Auto-create redirect on page move
+* Better design on navbar menu
+* Reset password info text
+* Added edit section feature
 
 v1.3a (2021-12-18)
-UI fix (profile picture error on mobile)
+* UI fix (profile picture error on mobile)
 
 v1.3 (2021-12-17)
-UI fix
-Comment
-Changed how youtube videos work
-Upgraded fontawesome
-Separate conf file
+* UI fix
+* Comment
+* Changed how youtube videos work
+* Upgraded fontawesome
+* Separate conf file
 
 v1.2 (2021-12-15)
-rnull issue
-UI fix
-'math' macro
+* rnull issue
+* UI fix
+* 'math' macro
 
 v1.1 (2021-10-31)
-Slight UI fix
-better ul, ol
-modified discuss screen
-non-existant files are not displayed
+* Slight UI fix
+* better ul, ol
+* modified discuss screen
+* non-existant files are not displayed
 
 v1.0 (2021-10-21)
-Better responsive layout
-Better recentdiscuss (open/close)
-Dropped recentdicsuss number of entries feature
-Better RC sidebar (entry checks do not run at small screen because it's invisible anyway, fixed link)
-Changed copyright notices
-Last edited
+* Better responsive layout
+* Better recentdiscuss (open/close)
+* Dropped recentdicsuss number of entries feature
+* Better RC sidebar (entry checks do not run at small screen because it's invisible anyway, fixed link)
+* Changed copyright notices
+* Last edited
 
 v0.9a (2021-10-18)
-No more irritating password limitations
-password change
-link
+* No more irritating password limitations
+* password change
+* link
 
 v0.9 (2021-09-02)
-User page discussion alert
-Renderer bug fix
-five -> four (password limitation)
-a few message tweaks
+* User page discussion alert
+* Renderer bug fix
+* five -> four (password limitation)
+* a few message tweaks
 
 v0.8d (2021-08-24)
-\n now means linebreak
+* \n now means linebreak
 
 v0.8c (2021-08-16)
-MOVE now moves thread as well
+* MOVE now moves thread as well
 
 v0.8b (2021-08-16)
-IE Not supported message
+* IE Not supported message
 
 v0.8a (2021-08-16)
-Discuss HotFix
+* Discuss HotFix
 
 v0.8 (2021-08-16)
-Discuss
+* Discuss
 
 v0.7 (2021-08-14)
-'anchor' macro <- undocumented
-'age' macro
-'agek' macro
-
-Red text for broken links
-Supports nested quotation
-link within page
-Fixed file randering issue
-Now linebreaks are automatically inserted ONLY for blank lines
-(Internal) URL's are now escaped
-robots.txt modifications
-Other bug fixes
-Other miscellaneous changes
+* 'anchor' macro <- undocumented
+* 'age' macro
+* 'agek' macro
+* Red text for broken links
+* Supports nested quotation
+* link within page
+* Fixed file randering issue
+* Now linebreaks are automatically inserted ONLY for blank lines
+* (Internal) URL's are now escaped
+* robots.txt modifications
+* Other bug fixes
+* Other miscellaneous changes
 
 v0.6 (2021-08-04)
-File width fix
-Fixed file in link
-Other bug fixes
-Blockquote feature
-cell vertical align
+* File width fix
+* Fixed file in link
+* Other bug fixes
+* Blockquote feature
+* cell vertical align
 
 v0.5c (2021-08-01)
-Miscellaneous changes
+* Miscellaneous changes
 
 v0.5b (2021-08-01)
-Changed timestamp to date
-Added contribution list
-Most viewed pages of the day feature
+* Changed timestamp to date
+* Added contribution list
+* Most viewed pages of the day feature
 
 v0.5a (2021-08-01)
-Table cell background error hotfix
-Changed colours
-Edit preview feature
+* Table cell background error hotfix
+* Changed colours
+* Edit preview feature
 
 v0.5 (2021-08-01)
-solved 'redirected from' bug
-Includes support for table 
-Signup checks for username validity
-Added Email info to footer
+* solved 'redirected from' bug
+* Includes support for table 
+* Signup checks for username validity
+* Added Email info to footer
 
 v0.4a (2021-07-31)
-Quick security patch
-title now shows page rev and admin label when applicable
-'Move' feature now moves acl as well
+* Quick security patch
+* title now shows page rev and admin label when applicable
+* 'Move' feature now moves acl as well
 
 v0.4 (2021-07-31)
-Improved responsiveness of the page toolbar
-Changed misbehaving #redirect problem
-Included Korean edit notice
-Parser now returns an empty string for template in template
-Solved problem which ul after heading is regarded as part of the heading
-solved problem which a header is not rendered when it is succeeded by a blank
+* Improved responsiveness of the page toolbar
+* Changed misbehaving #redirect problem
+* Included Korean edit notice
+* Parser now returns an empty string for template in template
+* Solved problem which ul after heading is regarded as part of the heading
+* solved problem which a header is not rendered when it is succeeded by a blank
 
 v0.3a (2021-07-29)
-CSRF Issue Hotfix
+* CSRF Issue Hotfix
 
 v0.3 (2021-07-28)
-Changed branding
-Resolved issue of having two title tags
-Changed cookie security options
-개인정보처리방침
-Changed file upload notice
-Changed various texts to point to user pages when relavent
+* Changed branding
+* Resolved issue of having two title tags
+* Changed cookie security options
+* 개인정보처리방침
+* Changed file upload notice
+* Changed various texts to point to user pages when relavent
 
 v0.2 (2021-07-27)
-Changed DB to Mariadb
-Resolved RecentChanges issue
+* Changed DB to Mariadb
+* Resolved RecentChanges issue
