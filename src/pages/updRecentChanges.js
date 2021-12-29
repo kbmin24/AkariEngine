@@ -10,7 +10,7 @@ module.exports = async (recentchanges) =>
     })
     .then(entries =>
     {
-        const latestChange = entries[0].id || 0
+        const latestChange = entries.length ? entries[0].id : 0
         recentchanges.destroy(
         {
             where:
