@@ -48,6 +48,7 @@ body
 {
     word-wrap: break-word;
     overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 .nav-icon
