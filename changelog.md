@@ -1,3 +1,6 @@
+v1.4b (2022-01-09)
+* Auto rectify username case
+
 v1.4a (2021-12-25)
 * Added some conf options
 * section edit is now only visible if you are reading the current revision
