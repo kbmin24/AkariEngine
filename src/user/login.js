@@ -30,9 +30,9 @@ module.exports = async (req, res, users, loginhistory) =>
                 if (hashedPW.toString('base64') == realPW)
                 {
                     //login success. give a cookie
-                    req.session.username = id
+                    req.session.username = loginUser.username
                     //create login history
-                    await loginhistory.create({username: req.body.id, ipaddr: ipaddr})
+                    await loginhistory.create({username: loginUser.username, ipaddr: ipaddr})
                     //and redirect.
                     res.redirect('/')
                 }
@@ -46,7 +46,7 @@ module.exports = async (req, res, users, loginhistory) =>
         else
         {
             console.log("Login error (no such user): " + req.body.id)
-            require(global.path + '/error.js')(req, res, null, 'The user given does not exist (Note: Username is case sensitive). Please ensure that you inputted it correctly.', '/login', 'the login page')
+            require(global.path + '/error.js')(req, res, null, 'The user given does not exist. Please ensure that you inputted it correctly.', '/login', 'the login page')
         }
     })
 }
