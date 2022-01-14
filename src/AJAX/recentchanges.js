@@ -13,12 +13,16 @@ module.exports = async (req, res, recentchanges) =>
     })
 
     let isUnique = req.query.isunique === 'true'
+    let excludefile = req.query.excludefile === 'true'
+    let editOnly = req.query.editonly === 'true'
 
     let uniqueNames = new Set()
     let results = []
     changes.forEach((value, index, array) =>
     {
         if (show <= 0) return
+        if (excludefile && value.page.toLowerCase().startsWith('file:')) return
+        if (editOnly && value.type !== 'edit') return
         if (!isUnique || !uniqueNames.has(value.page))
         {
             array[index].page = sanitiseHtml(value.page, {allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape})

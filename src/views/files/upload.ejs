@@ -13,6 +13,7 @@
     <div class='form-group mb-2'>
         <label for='filenameInputBox'>Filename</label>
         <input type='text' name='filename' maxlength='255' class='form-control' id='filenameInputBox' placeholder='Enter Filename'>
+        <p>The filename may <b>not</b> contain: #, ?, /, \, &lt;, &gt;, :, *, |, ".</p>
     </div>
     <div class='form-group mb-2'>
         <label for='editAreaBox'>Explanation</label>
@@ -28,12 +29,12 @@
             <figcaption class='figure-caption'>Image preview</figcaption>
         </figure>
     </div> 
-    <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission. <%= global.copyrightNotice %></p>
+    <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission; legal consequences may follow. Entering informations about the licence is <b>required</b>.<br>저작권이 있는 내용을 함부로 저장하지 마십시오. 법적 책임이 뒤따를 수 있습니다. 라이선스(CCL, 제한적 이용 등) 표기는 필수입니다.<br><%= global.copyrightNotice %></p>
     <p>You can only upload JPEG, JPG, PNG, GIF and WebP.</p>
     <button type='submit' id='uploadButton' class='btn btn-primary' disabled>Upload</button>
 </form>
 
 <script type='text/javascript' src='/js/upload.js'></script>
 <% } else { %>
-    <p>Sorry. You need to be logged in to upload a file. <a href='/login'>Login</a></p>
+    <p>You need to be logged in to upload a file. <a href='/login'>Login</a></p>
 <% } %>

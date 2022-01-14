@@ -191,6 +191,7 @@ global.sanitiseOptions =
 }
 
 const path = require('path')
+const dateandtime = require('date-and-time')
 
 //views
 const ejs = require('ejs')
@@ -321,12 +322,21 @@ app.post('/settings/:name', csrfProtection, async (req, res) =>
 app.get('/edit/:name', csrfProtection, async (req, res) =>
 {
     let username = req.session.username
+    req.params.name = req.params.name
     if (req.params.name.length > 255)
     {
         require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 255 characters long at most.', '/', 'the main page')
         return
     }
     const target = await pages.findOne({where: {title: req.params.name}})
+    if (!target)
+    {
+        if (req.params.name.toLowerCase().startsWith('file:'))
+        {
+            require(global.path + '/error.js')(req, res, username, 'Illegal page name. Page names cannot start with \'File:\'.', '/', 'the main page')
+            return
+        }
+    }
     //if (username === undefined) = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
     //check for protection 
@@ -526,9 +536,9 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
         }
     })
 })
-app.post('/delete/:name', csrfProtection, (req, res) =>
+app.post('/delete/:name', csrfProtection, async (req, res) =>
 {
-    require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm)
+    await require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm, mfile)
 })
 app.get('/revert/:name', async (req, res) =>
 {
@@ -664,7 +674,7 @@ function checkFileType(file, cb)
     }
     else
     {
-        cb('You can only upload JPEG, JPG, PNG, GIF and WebP files.')
+        cb('You can only upload JPEG, JPG, PNG, GIF and WebP files. File names should also obey this rule.')
     }
 }
 var storage = multer.diskStorage({
@@ -708,6 +718,26 @@ var upload = multer({
     },
     fileFilter: async (req, file, cb) =>
     {
+        const username = req.session.username
+        if (username === undefined)
+        {
+            require(global.path + '/error.js')(req, res, null, 'You need to be logged in.', '/login', 'the login page')
+            return
+        }
+        const b = await block.findOne({where: {target: username, targetType: 'user'}})
+        if (b)
+        {
+            if (b.isForever)
+            {
+                require(global.path + '/error.js')(req, res, null, `You are blocked forever by ${b.doneBy} - ${b.comment}`, '/', 'FrontPage')
+                return
+            }
+            else
+            {
+                require(global.path + '/error.js')(req, res, null, `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`, '/', 'FrontPage')
+                return
+            }
+        }
         const p = await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})
         if (p)
         {
@@ -717,7 +747,6 @@ var upload = multer({
         {
             if (req.body.captcha !== req.session.captcha)
             {
-                console.error('止まれ')
                 let e = new Error('Captcha Error')
                 e.code = 'INVALIDCAPTCHA'
                 return cb(e)
@@ -727,30 +756,53 @@ var upload = multer({
                 req.session.captcha = require(global.path + '/tools/captcha.js').genArbitaryString(16)
             }
         }
+        if (!req.body.filename.match(/^.*\.(jpeg|jpg|png|gif|webp)$/i))
+        {
+            cb('You can only upload JPEG, JPG, PNG, GIF and WebP files. File names should also obey this rule.')
+        }
+        if (!req.body.filename.match(/^[^\#\?\\\/\<\>\:\*\|\"]*$/i))
+        {
+            cb('The filename may not contain: #, ?, /, \\, &lt;, &gt;, :, *, |, ".')
+        }
         checkFileType(file, cb)
     }
 })
-app.post('/Upload', upload.single('inputFile'), (req, res) =>
+app.post('/Upload', upload.single('inputFile'), async (req, res) =>
 {
-    //exploit: user can upload by sending a POST request directly
-    mfile.create(
+    let filepgname = 'File:' + req.body.filename
+
+    await mfile.create(
     {
         filename: req.body.filename,
         uploader: req.session.username,
         explanation: req.body.explanation
-    }).then(() =>
-    {
-        recentchanges.create(
-        {
-            page: req.body.filename,
-            rev: 0,
-            doneBy: req.session.username,
-            comment: `Uploaded ${req.body.filename}`,
-            bytechange: req.body.explanation.length,
-            type: 'upload'
-        })
-        res.redirect('/file/' + req.body.filename)
     })
+    await pages.create(
+        {
+            title: filepgname,
+            content: req.body.explanation,
+            currentRev: 1
+        })
+    await history.create(
+        {
+            page: filepgname,
+            rev: 1,
+            content: req.body.explanation,
+            bytechange: req.body.explanation.length,
+            editedby: req.session.username,
+            comment: `Uploaded ${req.body.filename}`,
+            type: 'edit'
+        })
+    await recentchanges.create(
+    {
+        page: filepgname,
+        rev: 1,
+        doneBy: req.session.username,
+        comment: `Uploaded ${req.body.filename}`,
+        bytechange: req.body.explanation.length,
+        type: 'upload'
+    })
+    res.redirect('/w/' + filepgname)
 })
 app.get('/diff/:name', async (req, res) =>
 {
@@ -804,10 +856,6 @@ app.post('/deletefile/:name', csrfProtection, (req, res) =>
 {
     require(global.path + '/files/deletefile.js')(req, res, mfile, history, recentchanges, perm)
 })
-app.get('/FileList', (req, res) =>
-{
-    require(global.path + '/files/filelist.js')(req, res, mfile)
-})
 app.get('/RandomPage', async (req, res) =>
 {
     const randomPage = await pages.findOne({ 
@@ -832,9 +880,9 @@ app.get('/admin', async (req, res) =>
         await require(global.path + '/error.js')(req, res, null, 'You need admin permission.', '/', 'the main page')
     }
 })
-app.get('/admin/developer/:name', csrfProtection, async (req, res) =>
+app.get('/admin/developer', csrfProtection, async (req, res) =>
 {
-    await require(globa.path + '/admin/developerGetHandler.js')(req, res, {perm: perm})
+    await require(global.path + '/admin/developerGetHandler.js')(req, res, {perm: perm})
 })
 app.get('/admin/:name', csrfProtection, async (req, res) =>
 {
@@ -991,7 +1039,7 @@ app.use((err, req, res, next) =>
             {
                 console.error(err)
                 console.error(err.stack)
-                res.status(500).send('Internal Server Error')
+                res.status(500).send(err.toString())
             }
             break
     }
@@ -1006,17 +1054,20 @@ const server = app.listen(port, '0.0.0.0', () =>
 
 const io = require('socket.io')(server)
 io.use(require('express-socket.io-session')(sess, {autoSave: true}))
+
 io.on('connection', async socket =>
 {
     socket.on('joinRoom', async data =>
     {
-        if (data.notThread === true && data.roomId === 'developerconsole')
+        if (data.notAThread === true && data.roomId === 'developerconsole')
         {
             //developer console.
             let username = socket.handshake.session.username
-            if (!(await perm.findOne({where: {username: username, perm: 'developer'}})))
+            if (await perm.findOne({where: {username: username, perm: 'developer'}}))
             {
-                socket.join('developerconsole')
+                await socket.join('developerconsole')
+                await socket.emit('joinok')
+                socket.emit('output', 'AkariEngine 1.4c\nCopyright GECWiki 2021-2022. All rights reserved.\n\nType \'help\' for instructions.\n')
             }
         }
         else
@@ -1075,5 +1126,9 @@ io.on('connection', async socket =>
         //render to wikitext
         data.message  = await require(global.path + '/pages/render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
         io.sockets.in(data.roomId).emit('message', data)
+    })
+    socket.on('input', async data =>
+    {
+        await require(global.path + '/admin/command.js')(io, socket, data.command, {perm: perm, file: mfile, pages: pages, history: history})
     })
 })

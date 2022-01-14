@@ -1,3 +1,10 @@
+v1.4c (2022-01-15)
+* Added developer console
+* Changed RC sidebar
+* Changed RC
+* Changed font
+* 'File pages'
+
 v1.4b (2022-01-09)
 * Auto rectify username case
 

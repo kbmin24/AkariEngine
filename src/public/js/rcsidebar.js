@@ -5,21 +5,15 @@ function loadRC() {
         type: 'GET',
         data: {
             show: 10,
-            isunique: true
+            isunique: true,
+            excludefile: true,
+            editonly: true
         },
         success: (data) =>
         {
             $.each(data, (rc) =>
             {
-                var ln;
-                if (data[rc].type == 'upload')
-                {
-                    ln = `<a href='/file/${data[rc].page}'>${data[rc].page}</a> <em>(file)</em>`
-                }
-                else
-                {
-                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '' : '<em>(deleted)</em>'}`
-                }
+                var ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '' : '<em>(deleted)</em>'}`
                 let dt = ''
                 if (moment(data[rc].createdAt).isSame(moment(), 'day'))
                 {
@@ -29,7 +23,7 @@ function loadRC() {
                 {
                     dt = moment(data[rc].createdAt).format('MM/DD')
                 }
-                res = `<li class='list-group-item' style='overflow-wrap: anywhere;'>${dt} ${ln}</li>`
+                res = `<li class='list-group-item' style='overflow: hidden; text-overflow : ellipsis;white-space: nowrap;'>${dt} ${ln}</li>`
                 $('#rcsidebarcontents').append(res)
             })
         }

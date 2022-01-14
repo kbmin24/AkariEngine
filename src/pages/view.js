@@ -97,8 +97,8 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         require(global.path + '/error.js')(req, res, username, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
         return
     }
-
     let titleSuffix = ''
+    let contentPrefix = ''
     //check if it's a user page AND it's an admin's one
     if (rev) titleSuffix = `(r${rev})&nbsp;`
     const usernameRegex = /User:(.*)/
@@ -113,6 +113,12 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             }
         }
     }
+    if (req.params.name.toLowerCase().startsWith('file:'))
+    {
+        const filename = /File:(.*)/.exec(req.params.name)[1]
+        contentPrefix = `[file(${filename})]\n`
+    }
+
     if (rev === undefined)
     {
         //get the newest ver.
@@ -129,7 +135,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
-                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, files, req, res, redirect, true, {}, opt)
+                let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, redirect, true, {}, opt)
                 if (content === undefined) return
                 content = await getCategory(req.params.name, category, opt['category']) + content
                 let renderOpt = {
@@ -169,7 +175,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             {
                 //show the page
                 //(pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={})
-                let content = await require(global.path + '/pages/render.js')(req.params.name, page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
+                let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
                 if (content === undefined) return
                 let renderOpt = {
                     title: page.page,

@@ -9,8 +9,27 @@ module.exports = async (req, res, options) =>
         require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
         return
     }
-    if (!(await perm.findOne({where: {username: req.session.username, perm: 'developer'}})))
+    if (!(await options.perm.findOne({where: {username: req.session.username, perm: 'developer'}})))
     {
-        
+        require(global.path + '/error.js')(req, res, null, 'No such user.', '/', 'FrontPage')
+        return
     }
+    ejs.renderFile(global.path + '/views/admin/developermenu.ejs',
+    (err, html) => 
+    {
+        if (err)
+        {
+            console.error(err)
+            res.status(500).send('Internal Server Error')
+            return
+        }
+        res.render('outline',
+        {
+            title: 'Developer console',
+            content: html,
+            username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            wikiname: global.appname
+        })
+    })
 }

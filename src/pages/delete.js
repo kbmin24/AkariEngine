@@ -1,11 +1,33 @@
-module.exports = (req, res, username, users, pages, recentchanges, history, perm) =>
+let fs = require('fs')
+module.exports = async (req, res, username, users, pages, recentchanges, history, perm, files) =>
 {
-    //username parameter: reserved for history
-    //todo: ACL
     if (username === undefined)
     {
         require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
         return
+    }
+    if (req.params.name === undefined)
+    {
+        require(global.path + '/error.js')(req, res, null, 'The page name is not specified.', '/', 'the main page.')
+        return
+    }
+    let isaFile = req.params.name.toLowerCase().startsWith('file:')
+    let filename = ''
+    if (isaFile)
+    {
+        if (!(perm.findOne({where: {username: username, perm: 'deletefile'}})))
+        {
+            require(global.path + '/error.js')(req, res, null, 'You do not have permission to delete file.', '/login', 'the login page')
+            return
+        }
+        filename = /File:(.*)/.exec(req.params.name)[1]
+        if (!(filename.length > 0))
+        {
+            require(global.path + '/error.js')(req, res, null, 'An unknown error occurred whilst trying to delete the file.', '/', 'the main page.')
+            return
+        }
+        files.destroy({where: {filename: filename}})
+        fs.unlinkSync(global.path + '/public/uploads/' + filename)
     }
     perm.findOne({where: {username: username, perm: 'deletepage'}}).then(p =>
     {

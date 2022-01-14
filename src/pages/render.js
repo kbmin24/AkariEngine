@@ -56,7 +56,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 }
             }
             if (!ok) return match
-            return `<a href='/file/${filename}'><img ${res} class='ren-img img-fluid'></a>`
+            return `<a href='/w/File:${filename}'><img ${res} class='ren-img img-fluid'></a>`
         }
         case 'include':
         {

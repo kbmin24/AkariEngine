@@ -83,12 +83,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     //sign
     req.body.content = await signAsync(req, req.body.content, /~~~~/igm, settings)
 
-    //category
-    await regCategory(req.params.name, req.body.content, category)
-
 
     await pages.findOne({where: {title: req.params.name}}).then(async page =>
     {
+        //category
+        await regCategory(req.params.name, req.body.content, category)
+
         var doneby = req.session.username
         if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
@@ -140,6 +140,16 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
+            req.params.name = req.params.name
+            if (req.params.name.toLowerCase().startsWith('file:'))
+            {
+                require(global.path + '/error.js')(req, res, username, 'Illegal page name. Page names cannot start with \'File:\'.', '/', 'the main page')
+                return
+            }
+
+            //category
+            await regCategory(req.params.name, req.body.content, category)
+
             //add one
             pages.create(
             {
