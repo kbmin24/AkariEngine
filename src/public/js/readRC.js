@@ -44,6 +44,7 @@ $(function() {
                     <td>${moment(data[rc].createdAt).format('YYYY/MM/DD HH:mm:ss')}</td>
                 </tr>
                 `
+                $('#rcplaceholder').remove()
                 $('#rclist').append(entry)
             })
         }

@@ -3,12 +3,13 @@
     background-color: white;
     float: right;
     position: relative;
-    width: 200px;
+    width: 250px;
     margin-top: 75px;
+    word-break: break-all;
 }
 .article-wrapper
 {
-    margin-right: 13em;
+    margin-right: 260px;
 }
 
 @media (max-width: 1200px)

@@ -19,7 +19,7 @@
                     An <a id='satoboxlink'>user page discussion</a> is open.
                 </div>
                 <div class='pb-2 mt-2 mb-3 border-bottom'>
-                    <h1 style='display:inline-block;overflow-wrap: anywhere;'><%= title %><% if (locals.titleInfo) { %><h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5><% } %></h1>
+                    <h1 class='pgTitle'><%= title %><% if (locals.titleInfo) { %><h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5><% } %></h1>
                     <% if (locals.isPage) { %>
                         <%- include('pageTools') %>
                     <% } %>

@@ -4,7 +4,8 @@ function loadRC() {
         url: '/ajax/recentchanges',
         type: 'GET',
         data: {
-            show: 10
+            show: 10,
+            isunique: true
         },
         success: (data) =>
         {
@@ -17,9 +18,19 @@ function loadRC() {
                 }
                 else
                 {
-                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(deleted)</em>'}`
+                    ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '' : '<em>(deleted)</em>'}`
                 }
-                $('#rcsidebarcontents').append(`<li class='list-group-item' style='overflow-wrap: anywhere;'>${ln}</li>`)
+                let dt = ''
+                if (moment(data[rc].createdAt).isSame(moment(), 'day'))
+                {
+                    dt = moment(data[rc].createdAt).format('HH:mm')
+                }
+                else
+                {
+                    dt = moment(data[rc].createdAt).format('MM/DD')
+                }
+                res = `<li class='list-group-item' style='overflow-wrap: anywhere;'>${dt} ${ln}</li>`
+                $('#rcsidebarcontents').append(res)
             })
         }
     })

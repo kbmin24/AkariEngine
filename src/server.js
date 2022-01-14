@@ -651,6 +651,7 @@ app.get('/Upload', async (req, res) =>
 })
 const multer = require('multer')
 const fs = require('fs')
+const { SocketAddress } = require('net')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
@@ -831,6 +832,10 @@ app.get('/admin', async (req, res) =>
         await require(global.path + '/error.js')(req, res, null, 'You need admin permission.', '/', 'the main page')
     }
 })
+app.get('/admin/developer/:name', csrfProtection, async (req, res) =>
+{
+    await require(globa.path + '/admin/developerGetHandler.js')(req, res, {perm: perm})
+})
 app.get('/admin/:name', csrfProtection, async (req, res) =>
 {
     //handler
@@ -1003,9 +1008,21 @@ const io = require('socket.io')(server)
 io.use(require('express-socket.io-session')(sess, {autoSave: true}))
 io.on('connection', async socket =>
 {
-    socket.on('joinRoom', data =>
+    socket.on('joinRoom', async data =>
     {
-        socket.join(data.roomId)
+        if (data.notThread === true && data.roomId === 'developerconsole')
+        {
+            //developer console.
+            let username = socket.handshake.session.username
+            if (!(await perm.findOne({where: {username: username, perm: 'developer'}})))
+            {
+                socket.join('developerconsole')
+            }
+        }
+        else
+        {
+            socket.join(data.roomId)
+        }
     })
     socket.on('message', async data =>
     {
