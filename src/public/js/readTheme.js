@@ -1,5 +1,5 @@
-if (localStorage.getItem('theme') == 'light' ||
-(window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches))
+console.log(localStorage.getItem('theme'))
+if (localStorage.getItem('theme') == 'light' || localStorage.getItem('theme') != 'dark' && (window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches))
 {
     //do nothing
 }
