@@ -126,3 +126,10 @@ textarea
     background-color: #244b75 !important;
     border-color: #244b75 !important
 }
+.ren-quote
+{
+    background-color: var(--dark-nav);
+    border-bottom: 1px solid var(--dark-border) !important;
+    border-right: 1px solid var(--dark-border) !important;
+    border-top: 1px solid var(--dark-border) !important;   
+}
