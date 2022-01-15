@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function()
 {
-    if (window.document.documentMode == 11)
+    if (window.document.documentMode)
     {
         document.getElementById('iealert').style.display = 'block'
     }
