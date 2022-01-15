@@ -7,6 +7,10 @@
     margin-top: 75px;
     word-break: break-all;
 }
+.rcTitle
+{
+    color: #212529;
+}
 .article-wrapper
 {
     margin-right: 260px;

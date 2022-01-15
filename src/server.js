@@ -203,6 +203,7 @@ app.get('/', (req, res) =>
 {
     res.redirect('/w/FrontPage')
 })
+
 app.get('/Licence', async (req, res) =>
 {
     await require(__dirname + '/sendfile.js')(req, res, 'Licence', '/license.html')

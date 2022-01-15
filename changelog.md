@@ -1,3 +1,6 @@
+v.1.5 (2022-01-15)
+* Dark theme
+
 v1.4c (2022-01-15)
 * Added developer console
 * Changed RC sidebar

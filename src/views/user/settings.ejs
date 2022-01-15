@@ -1,5 +1,35 @@
 <div class="card mb-3">
     <div class="card-body">
+        <h5 class="card-title">Theme</h5>
+        <p class="card-text">Select whether you will you light theme, dark theme or use system settings.</p>
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+        <div class='form-group mb-2'>
+            <div class='row'>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeLight" value='light'>
+                    <label class="form-check-label" for="radioThemeLight">
+                        Light theme
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeDark" value='dark'>
+                    <label class="form-check-label" for="radioThemeDark">
+                        Dark theme
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeSystem" value='system'>
+                    <label class="form-check-label" for="radioThemeSystem">
+                        Use system settings
+                    </label>
+                </div>
+            </div>
+        </div>
+        <button class='btn btn-primary' onClick='setThemePref()'>Save</button>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
         <h5 class="card-title">Set sign</h5>
         <p class="card-text">You can set sign to use. The default format is only displaying user name. Date and Time will be automatically appended when you sign.</p>
         <form method='POST' action='/settings/setSign'>
@@ -51,3 +81,4 @@
         </form>
     </div>
 </div>
+<script src='/js/settings.js'></script>

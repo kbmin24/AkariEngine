@@ -78,15 +78,9 @@
                         <i class="fas fa-sign-in-alt"></i>
                     <% } %>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end position-absolute" aria-labelledby="navUserDropDown">
-                    <li class='userButton_username'>
-                        <% if (locals.username) { %>
-                            <%= username %>
-                        <% } else { %>
-                            <%= ipaddr %>
-                        <% } %>
-                    </li>
-                    <hr style='margin: 0.3rem 0'>
+                <ul class="dropdown-menu dropdown-menu-end position-absolute dropdown-menu-macos mx-0 shadow" aria-labelledby="navUserDropDown">
+                    <li class='userButton_username'><% if (locals.username) { %><%= username %><% } else { %><%= ipaddr %><% } %></li>
+                    <li><hr class="dropdown-divider"></li>
                     <% if (locals.username) { %>
                     <li>
                         <a class='dropdown-item' href='/w/User:<%= username %>'>User Page</a>
@@ -115,7 +109,7 @@
         <!-- search box -->
         <form class="input-group d-flex" action='/search' method='POST' id='searchBox'>
             <input class="form-control" id='searchinput' name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
-            <button class="btn btn-outline-light bg-primary" type="submit"><i class="fa fa-arrow-right text-light"></i></button>
+            <button class="btn btn-outline-light bg-primary" id='searchSubmit' type="submit"><i class="fa fa-arrow-right text-light"></i></button>
             <!-- <button class="btn btn-outline-light" type="submit">Open</button> -->
         </form>
     </div>

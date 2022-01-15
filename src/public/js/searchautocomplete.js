@@ -20,10 +20,6 @@ $(function() {
                 }
             })
         },
-        close: () =>
-        {
-            $("#searchBox").submit()
-        },
         minLength: 1
     })
 })
