@@ -149,8 +149,6 @@ body
     max-width: 1320px;
     position: relative;
 }
-
-
 #footer
 {
     width: 100%;
@@ -180,4 +178,8 @@ body
 .blackln
 {
     color: #212529;
+}
+.page-link
+{
+    font-family: sans-serif;
 }

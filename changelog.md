@@ -1,4 +1,8 @@
-v.1.4d (2022-01-15)
+v1.5a (2022-01-21)
+* fixed some dark mode bugs
+* changed history page ui
+
+v.1.5 (2022-01-15)
 * Dark theme
 
 v1.4c (2022-01-15)

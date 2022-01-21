@@ -38,7 +38,7 @@ $(function() {
                 `
                 if (data[rc].comment)
                 {
-                    entry += `<tr><td style='word-wrap: anywhere;' colspan=4>${data[rc].comment}</td></tr>`
+                    entry += `<tr><td style='word-wrap: anywhere;' colspan='4'>${data[rc].comment}</td></tr>`
                 }
                 $('#rcplaceholder').remove()
                 $('#rclist').append(entry)

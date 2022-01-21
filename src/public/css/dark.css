@@ -107,7 +107,7 @@ tbody
 {
     background-color: var(--dark-nav) !important;
 }
-textarea
+textarea, input[type=text], input[type=number]
 {
     background-color: var(--dark-nav) !important;
     color: var(--dark-foreground) !important;
@@ -132,4 +132,8 @@ textarea
     border-bottom: 1px solid var(--dark-border) !important;
     border-right: 1px solid var(--dark-border) !important;
     border-top: 1px solid var(--dark-border) !important;   
+}
+.d2h-wrapper
+{
+    color: rgb(33, 37, 41);
 }
