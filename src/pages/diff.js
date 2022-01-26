@@ -64,8 +64,8 @@ module.exports = async (req, res, history, protect, perm, block) =>
 
     //const cont1 = sanitiseHtml(pagev1.content, {allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape})
     //const cont2 = sanitiseHtml(pagev2.content, {allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape})
-    const cont1 = pagev1.content
-    const cont2 = pagev2.content
+    const cont1 = pagev1.content.replace(/\r\n/, '\n')
+    const cont2 = pagev2.content.replace(/\r\n/, '\n')
     const difference = diff.createTwoFilesPatch(`r${rev1}`, `r${rev2}`, cont1, cont2)
     var html = diff2html.html(difference,
     {

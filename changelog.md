@@ -1,3 +1,8 @@
+v1.5b (2022-01-26)
+* Better DIFF
+* includes forum link
+* better noemail
+
 v1.5a (2022-01-21)
 * fixed some dark mode bugs
 * changed history page ui
