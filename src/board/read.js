@@ -103,7 +103,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
         require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
         return
     }
-    const post = await posts.findOne({where: {idAtBoard: req.query.no}})
+    const post = await posts.findOne({where: {idAtBoard: req.query.no, boardID: boardNow.boardID}})
     if (!post)
     {
         require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
