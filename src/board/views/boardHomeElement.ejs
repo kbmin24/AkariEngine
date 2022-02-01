@@ -1,0 +1,30 @@
+<div class='col-md-6 col-sm-6 boardHomeTable'>
+    <a class='boardHomeBoardLink' href='/board/<%= id %>'>
+        <div class='boardHomeBoardNameWrapper'>
+            <h5 class='boardHomeBoardName'><%= title %></h5>
+            <div class='boardHomeBoardNameFiller'></div>
+            <div class='boardHomeBoardNameIcon'>
+                <i class="fas fa-angle-right"></i>
+            </div>
+        </div>
+    </a>
+    <% let i = 1 %>
+    <% for (post of posts) { %>
+        <a class='boardHomePostLink' href='/board/read/<%= id %>?no=<%= post.id %>'>
+            <div class='boardHomePostWrapper'>
+                <div class='boardHomePostTitle'>
+                    <span class='rankblue'><%= i++ %></span>
+                    <%= post.title %>
+                    <% if (post.commentCount > -1) {%>
+                        <span class='articleCommentCount'>
+                            [<%= post.commentCount %>]
+                        </span>
+                    <% } %>
+                </div>
+                <div class='boardHomePostDate'>
+                    <time class='dt boardHomePostTime' datetime='<%= post.createdAt.toISOString() %>' data-format='Q'></time>
+                </div>
+            </div>
+        </a>
+    <% } %>
+</div>

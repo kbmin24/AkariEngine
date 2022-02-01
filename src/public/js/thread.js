@@ -19,7 +19,7 @@ function renderDiscuss(thNumber, username, date, message, isHidden, type)
         usernameField = `<a href='/w/User:${username}'>${username}</a>`
     }
 
-    let dateStr = moment(date).format('YYYY/MM/DD HH:mm:ss')
+    let dateStr = moment(date).utcOffset('+0900').format('YYYY/MM/DD HH:mm:ss')
     
     let topRow = ''
     topRow += `<tr class='thTop ${isme ? 'thTopMe' : '' } ${!isHidden ? '' : 'thTopHidden'} ${type == 'comment' ? '' : 'thTopAdmin'}'>`

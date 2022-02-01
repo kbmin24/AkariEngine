@@ -7,3 +7,7 @@
 {
     height: 25rem;
 }
+.ck-editor__editable_inline, .ck-source-editing-area {
+    min-height: 400px;
+    max-height: calc(100vh - 500px);
+}

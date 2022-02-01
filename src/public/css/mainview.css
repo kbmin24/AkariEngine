@@ -30,6 +30,14 @@ body
     overflow-wrap: anywhere;
     font-weight: 600;
 }
+.pgTitleLink
+{
+    color: inherit;
+}
+.pgTitleLink:hover
+{
+    color: inherit;
+}
 .article-wrapper
 {
     padding: 1.5rem !important;

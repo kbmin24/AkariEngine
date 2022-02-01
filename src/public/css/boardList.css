@@ -1,0 +1,185 @@
+.articleLink
+{
+    color: inherit;
+}
+.articleInfo
+{
+    border-bottom: 1px solid #aaaaaa80;
+}
+.articleInfo:hover, .articleInfo_current
+{
+    background-color: #eeeeee;
+}
+.articleLink:hover
+{
+    color: inherit;
+}
+.articleTop
+{
+    min-width: 0;
+}
+.articleBottom
+{
+    flex-shrink: 0;
+}
+.articleTop > div
+{
+    display: flex;
+}
+.articleBottom > div
+{
+    display: flex;
+}
+.articleID
+{
+    width: 4rem;
+    font-size: 0.80em;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+.articleTitle
+{
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.articleTitleText
+{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.8em;
+}
+.articleCommentCount
+{
+    font-size: 0.80em;
+    justify-content: center;
+    align-items: center;
+    opacity: 80%;
+}
+.articleWriter
+{
+    display: flex;
+    width: 8rem;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.80em;
+}
+.articleWriter
+{
+    display: flex;
+    min-width: 0;
+}
+.articleWriterNickname
+{
+    overflow: hidden;
+    white-space: nowrap;
+    height: 1.50em;
+    text-overflow: ellipsis;
+}
+.articleWriterIndicator
+{
+    flex-shrink: 0;
+}
+.articleWriterUser
+{
+    margin-left: 0.25rem;
+}
+.articleDate
+{
+    width: 6rem;
+    font-size: 0.80em;
+    justify-content: center;
+    align-items: center;
+}
+.articleViewCount
+{
+    width: 4rem;
+    font-size: 0.80em;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+}
+.articleNetGechu
+{
+    width: 4rem;
+    font-size: 0.80em;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+}
+.articleListHead
+{
+    border-bottom: 2px solid #aaaaaa;
+}
+.articleListHead > div
+{
+    display: flex;
+    font-size: 0.80em;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+.articleListHeadID
+{
+    width: 4rem;
+}
+.articleListHeadWriter
+{
+    width: 8rem;
+}
+.articleListHeadDate
+{
+    width: 6rem;
+}
+.articleListHeadViewCount
+{
+    width: 4rem;
+}
+.articleListHeadGechu
+{
+    width: 4rem;
+}
+.articleListSearchContainer
+{
+    max-width: 450px;
+    margin: 0 auto;
+}
+.articleListSearchCriteria
+{
+    width: 120px !important;
+}
+.page-item.active > .page-link
+{
+    background-color: #7aa7d6 !important;
+    border-color: #7aa7d6 !important;
+}
+.pagination
+{
+    flex-wrap: wrap;
+}
+@media (max-width: 767px)
+{
+    .articleListBody
+    {
+        border-top: 1px solid #aaaaaa80;
+    }
+    .articleWriter
+    {
+        justify-content: left;
+        flex-grow: 1;
+        width: auto;
+    }
+    .articleDate, .articleViewCount, .articleNetGechu
+    {
+        width: auto;
+    }
+    .articleViewCount::before
+    {
+        content: '조회수\00a0';
+    }
+    .articleNetGechu::before
+    {
+        content: '추천\00a0';
+    }
+}

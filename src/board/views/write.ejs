@@ -1,0 +1,33 @@
+<link rel='stylesheet' href='/css/edit.css'>
+<script src='/lib/ckeditor5/build/ckeditor.js'></script>
+<script src='/js/boardWrite.js'></script>
+<form action='/board/write/<%= board %>' method='POST' class='editForm'>
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type='hidden' id='bBoard' name='board' value='<%= board %>'>
+    <% if (locals.username === undefined) { %>
+    <div class='form-group input-group mb-2' style='max-width: 400px'>
+        <input class="form-control" maxlength=32 name='nickname' type="text" placeholder="닉네임" >
+        <input class="form-control" maxlength=32 name='pw' type="password" placeholder="비밀번호">
+    </div>
+    <% } %>
+    <div class='form-group mb-2'>
+        <input class="form-control" maxlength=255 name='title' type="text" placeholder="제목">
+    </div>
+    <div class='form-group'>
+        <textarea class='form-control' id='editAreaBox' name='content' placeholder='내용'></textarea>
+    </div>
+    <div class='mt-2 mb-2'>
+        <div class='captcha'><%- captcha %></div>
+        <div class='row'>
+            <label for='captchaIn' class='col-form-label col-sm-2'>CAPTCHA</b></label>
+            <div class='col-sm-10'>
+                <input class="form-control" maxlength=4 id='captchaIn' name='captcha' type="text" style='width:100px' autocomplete='off'>
+            </div>
+        </div>
+        <small class='form-text text-muted'>스팸 방지를 위해 위에 표시된 <b>네 글자</b>를 써 주세요.</small>
+    </div>
+    <% if (locals.username === undefined) { %>
+    <p><span class='text-danger fw-bold'>WARNING!</span>    비로그인 상태로 글을 작성하면 IP가 일부 공개될 수 있습니다.</p>
+    <% } %>
+    <button type='submit' type='button' class='btn btn-primary mt-3'>작성</button>
+</form>

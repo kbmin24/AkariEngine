@@ -1,0 +1,73 @@
+<script src='/js/boardRead.js'></script>
+<div>
+    <h3 class='board-posttitle'><%= post.title %></h3>
+</div>
+<div class='p-2 mt-2 mb-2 bg-light rounded-2 border-top board-infoBar'>
+    <div class='board-writtenBy'>
+        <span title="<%= post.writtenBy %><%= post.writtenIP ? '(' + ipProcessed + ')' : '' %>">
+            <%= post.writtenBy %>
+            <% if (post.writtenIP) { %>
+                <span class="articleWriterIP">(<%= ipProcessed %>)</span>
+            <% } else { %>
+                <i class="fas fa-user articleWriterUser"></i>
+            <% } %>
+        </span>
+    </div>
+    <div class='board-dateBar'>
+        <time class='dt-long' datetime='<%= post.createdAt.toISOString() %>' data-format='Q'></time>
+    </div>
+    <div class='board-infoBar-right'>
+        <div><i class="fas fa-eye"></i> <%= post.viewCount %></div>
+    </div>
+</div>
+<div class='board-postContent'>
+    <%- post.content %>
+</div>
+<div class='d-flex justify-content-center'>
+    <div class='gechu p-2'>
+        <i class="gechuIcon fas fa-thumbs-up"></i>
+        <div class='gechuCount'><%= post.gechu %></div>
+    </div>
+    <div style='width: 10px'></div> <!-- gap -->
+    <div class='bichu p-2'>
+        <i class="bichuIcon fas fa-thumbs-down"></i>
+        <div class='bichuCount'><%= post.bichu %></div>
+    </div>
+    <div style='display:none'>
+        <div id='csrf'><%= csrfToken %></div>
+        <div id='boardID'><%= post.boardID %></div>
+        <div id='postID'><%= post.id %></div>
+    </div>
+</div>
+<div>
+    <!-- comments -->
+    <div class='commentListHead'>
+        댓글 <span class='commentCount'><%= commentTree.commentCount%></span>개
+    </div>
+    <%- include('commentTree', {items: commentTree.commentTree, depth: 1, isAdmin: isAdmin}) %>
+    <div class='commentWrite bg-light p-3' id='commentMainForm'>
+        <!-- 댓글 작성-->
+        <form method='POST' action='/board/writecomment/'>
+            <fieldset>
+                <legend style='font-size: 1.25rem' class='commentFormTitle'>댓글 작성</legend>
+                <% if (locals.username === undefined) { %>
+                <div class='form-group input-group mb-2' style='max-width: 400px'>
+                    <input class="form-control" maxlength=32 name='nickname' type="text" placeholder="닉네임" >
+                    <input class="form-control" maxlength=32 name='pw' type="password" placeholder="비밀번호">
+                </div>
+                <% } %>
+                <textarea class="form-control" name='content'></textarea>
+                <input type='hidden' name='parent'>
+                <input type='hidden' name='boardid' value='<%= post.boardID %>'>
+                <input type='hidden' name='postid' value='<%= post.id %>'>
+                <input type='hidden' name='depth' value='1'>
+                <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+                <div class='mt-2 d-flex flex-row-reverse'>
+                    <button class="btn btn-primary" role="submit">등록</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+<hr>
+<%- lst %>

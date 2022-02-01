@@ -1,0 +1,11 @@
+<% for (let i = 0; i < boardMatome.length - 1; i += 2) { %>
+    <div class='row'>
+        <%- boardMatome[i] %>
+        <%- boardMatome[i+1] %>
+    </div>
+<% } %>
+<% if (boardMatome.length % 2) { %>
+    <div class='row'>
+        <%- boardMatome[boardMatome.length - 1] %>
+    </div>
+<% } %>

@@ -1,8 +1,17 @@
 <p class='fw-bold'>Looking for <a href='/edit/<%= searchtitle %>'>edit page</a>?</p>
+<h5>Titles match</h5>
 <ul class="list-group list-group-flush">
-    <% for (let i = 0; i < results.length; i++) { %>
+    <% for (let i = 0; i < resultTitle.length; i++) { %>
         <li class="list-group-item">
-            <a href='/w/<%= results[i].title %>'><%= results[i].title %></a>
+            <a href='/w/<%= resultTitle[i].title %>'><%= resultTitle[i].title %></a>
+        </li>
+    <% } %>
+</ul>
+<h5>Contents match</h5>
+<ul class="list-group list-group-flush">
+    <% for (let i = 0; i < resultContent.length; i++) { %>
+        <li class="list-group-item">
+            <a href='/w/<%= resultContent[i].title %>'><%= resultContent[i].title %></a>
         </li>
     <% } %>
 </ul>

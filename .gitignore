@@ -111,6 +111,7 @@ db.sqlite
 
 #image files
 src/public/uploads/*
+src/public/boarduploads/*
 
 LocalSettings.json
 google3cb516e66b73224c.html 

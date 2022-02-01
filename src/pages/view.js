@@ -154,6 +154,25 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             else
             {
                 //404!
+                //do stuff with user pages
+                if (/User\:.*?/igm.test(req.params.name))
+                {
+                    let content
+                    if (req.params.name.split(':')[1] == req.session.username)
+                        content = `<h3>The user page requested is not found.</h3><p>However, you can create your own user page to introduce yourself!</p><p><a href='/edit/${req.params.name}'>Create one</a></p>`
+                    else
+                        content = `<h3>The user page requested is not found.</h3><p>The user did not make a user page.</p><p><a href='javascript:window.history.back()'>Go back</a></p>`
+                    res.render('outline',
+                    {
+                        title: 'Error!',
+                        content: content,
+                        isPage: false,
+                        username: req.session.username,
+                        ipaddr: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                        wikiname: global.appname
+                    })
+                    return
+                }
                 require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
             }
         })

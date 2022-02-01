@@ -15,7 +15,7 @@ global.path = __dirname
 
 //(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
 global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.licence}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
-global.perms = ['admin', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
+global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
 const {Sequelize} = require('sequelize')
@@ -198,6 +198,8 @@ const ejs = require('ejs')
 app.set('view engine', 'ejs')
 app.set('views',__dirname + '/views')
 app.use(express.static(__dirname + '/public'))
+
+require(__dirname + '/board/router.js')(app, sequelize, csrfProtection)
 
 app.get('/', (req, res) =>
 {
@@ -662,11 +664,10 @@ app.get('/Upload', async (req, res) =>
 })
 const multer = require('multer')
 const fs = require('fs')
-const { SocketAddress } = require('net')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
-    const filetypes = /jpeg|jpg|png|gif|webp/i
+    const filetypes = /jpeg|jpg|jfif|png|gif|webp/i
     const ext = filetypes.test(path.extname(file.originalname).toLowerCase())
     const mime = filetypes.test(file.mimetype)
     if (mime && ext)
@@ -1034,6 +1035,13 @@ app.use((err, req, res, next) =>
         case 'LIMIT_FILE_SIZE':
             {
                 require(global.path + '/error.js')(req, res, null, 'Sorry. The file selected is too large.', 'javascript:window.history.back()', 'the upload page')
+            }
+            break
+        case 'BOARDUPLOAD_BADEXTENSION':
+            {
+                res.send({
+                    error: e.toString()
+                })
             }
             break
         default:

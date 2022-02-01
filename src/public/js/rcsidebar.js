@@ -17,11 +17,11 @@ function loadRC() {
                 let dt = ''
                 if (moment(data[rc].createdAt).isSame(moment(), 'day'))
                 {
-                    dt = moment(data[rc].createdAt).format('HH:mm')
+                    dt = moment(data[rc].createdAt).utcOffset('+0900').format('HH:mm')
                 }
                 else
                 {
-                    dt = moment(data[rc].createdAt).format('MM/DD')
+                    dt = moment(data[rc].createdAt).utcOffset('+0900').format('MM/DD')
                 }
                 res = `<li class='list-group-item' style='overflow: hidden; text-overflow : ellipsis;white-space: nowrap;'>${dt} ${ln}</li>`
                 $('#rcsidebarcontents').append(res)

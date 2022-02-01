@@ -1,0 +1,19 @@
+<form action='/board/deletecomment' method='POST'>
+    <p>댓글을 정말로 삭제하시겠습니까? <b>이 작업은 되돌릴 수 없습니다!</b></p>
+    <input type='hidden' name=_csrf value='<%= csrfToken %>'>
+    <input type='hidden' name='commentid' value='<%= commentID %>'>
+    <% if (passReq === 'true') { %>
+    <div class='row'>
+        <div class='col-auto'>
+            <label for="inpPass" class="col-form-label">비밀번호</label>
+        </div>
+        <div class='col-auto'>
+            <input type="password" id="inputPass" name='pw' class="form-control">
+        </div>
+    </div>
+    <% } %>
+    <div class="mt-2 d-flex flex-row-reverse">
+        <button class="btn btn-primary" role="submit">확인</button>
+        <a class="btn btn-secondary me-2" href='javascript:window.history.back()' role='button'>취소</a>
+    </div>
+</form>

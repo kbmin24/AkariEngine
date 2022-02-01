@@ -14,18 +14,22 @@ module.exports = async (req, res, pages) =>
     const searchres = await pages.findAll(
         {
             where: {
-                title: {[Op.like]: `%${query}%`}
-            },
-            order:
-            [
-                ['title', 'ASC']
-            ]
+                title: {[Op.like]: `%${query}%`},
+            }
+        }
+    )
+    const searchres2 = await pages.findAll(
+        {
+            where: {
+                content: {[Op.like]: `%${query}%`},
+            }
         }
     )
     const searchHTML = await ejs.renderFile(global.path + '/views/pages/search.ejs',
     {
         searchtitle: query,
-        results: searchres
+        resultTitle: searchres,
+        resultContent: searchres2
     })
     const username = req.session.username
     res.render('outline',

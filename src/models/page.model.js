@@ -17,5 +17,19 @@ module.exports = (sequelize) =>
         {
             type: DataTypes.INTEGER
         }
-    })
+    },
+    {
+        indexes:
+        [
+            {
+                type: 'FULLTEXT',
+                fields: ['title']
+            },
+            {
+                type: 'FULLTEXT',
+                fields: ['content']
+            }
+        ]
+    }
+    )
 }

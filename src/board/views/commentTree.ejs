@@ -1,0 +1,41 @@
+<ul class='commentWrap'>
+    <% items.forEach((v, k, o) => { %>
+        <li class='commentElement'>
+            <div class='commentContentWrap border' data-subEnabled='false' data-depth='<%= depth %>' data-id='<%= k %>'>
+                <div class='p-2 bg-light board-infoBar'>
+                    <% if (!v.isDeleted) { %>
+                    <div class='board-writtenBy'>
+                        <span title="<%= v.doneBy %><%= v.writtenIP ? '(' + v.writtenIP + ')' : '' %>">
+                            <%= v.doneBy %>
+                            <% if (v.writtenIP) { %>
+                                <span class="articleWriterIP">(<%= v.writtenIP %>)</span>
+                            <% } else { %>
+                                <i class="fas fa-user articleWriterUser"></i>
+                            <% } %>
+                        </span>
+                    </div>
+                    <% } %>
+                    <time class='dt-long' datetime='<%= v.date.toISOString() %>' data-format='Q'></time>
+                </div>
+                <div class='p-2 pb-0 commentContentBody'>
+                    <%= v.comment %>
+                    <% if (v.isDeleted) { %><b>삭제된 댓글입니다.</b> <% } %>
+                </div>
+                <div class='p-2 pt-1 commentContextMenu'>
+                    <% if (!v.isDeleted) { %>
+                    <% if (depth <= 5) { %>
+                    <a class='commentDaedaetgul' data-depth="<%= depth %>" data-id="<%= k %>">대댓글</a>
+                    <% } %>
+                    
+                    <% if (v.doneBy === username || v.writtenIP || isAdmin) { %>
+                    <a class='commentDelete' data-id='<%= k %>' href='/board/deletecomment?id=<%= k %>&passReq=<%= v.writtenIP !== undefined && false == isAdmin %>'>삭제</a>
+                    <% } %>
+                    <% } %>
+                </div>
+            </div>
+            <% if (depth <= 10) { %>
+            <%- include('commentTree', {items: v.childComments, depth: depth + 1, isAdmin: isAdmin}) %>
+            <% } %>
+        </li>
+    <% }) %>
+</ul>

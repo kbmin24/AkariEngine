@@ -1,0 +1,204 @@
+.board-posttitle
+{
+    font-weight: bold;
+    line-height: 1.4;
+}
+.board-infoBar
+{
+    font-size: 0.90rem;
+    display: flex;
+    justify-content: flex-end;
+    min-width: 0;
+}
+.board-writtenBy
+{
+    padding-right: 5px;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+.board-dateBar
+{
+    display: inline-block;
+    padding-left: 5px;
+    border-left: 1px solid #dee2e6;
+    flex-shrink: 0;
+}
+.board-infoBar-right
+{
+    display: flex;
+    justify-content: flex-end;
+    padding-left: 20px;
+    flex-shrink: 0;
+}
+.articleWriterUser
+{
+    margin-left: 0.25rem;
+}
+.articleWriterIP
+{
+    opacity: 70%;
+}
+.board-postContent
+{
+    min-height: 200px;
+}
+.gechu, .bichu
+{
+    width: 80px;
+    height: 80px;
+    text-align: center;
+    border: 2px solid #dee2e6;
+    border-radius: 5px;
+}
+.gechu:hover, .bichu:hover
+{
+    border-color: #7aa7d6;
+    cursor: pointer;
+}
+.gechuIcon, .bichuIcon
+{
+    font-size: 40px;
+}
+.gechuCount, .bichuCount
+{
+    font-weight: 600;
+}
+.gechuCount
+{
+    color: orangered;
+}
+.commentListHead
+{
+    padding-top: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #aaaaaa;
+}
+.commentCount
+{
+    color: orangered;
+    font-weight: bold;
+}
+.commentWrap
+{
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1rem;
+}
+.commentElement > .commentWrap
+{
+    padding-left: 2rem;
+}
+@media (max-width: 575px)
+{
+    .commentElement > .commentWrap
+    {
+        padding-left: 1rem;
+    }
+}
+.commentContentHead
+{
+    display: flex;
+    font-size: 0.9rem;
+    justify-content: flex-end;
+    min-width: 0;
+}
+.commentContextMenu
+{
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.9rem;
+}
+.commentDaedaetgul
+{
+    color: inherit;
+    opacity: 70%;
+}
+.commentDaedaetgul:hover
+{
+    color: inherit;
+    opacity: 70%;
+    cursor: pointer;
+}
+.commentDelete
+{
+    color: inherit;
+    opacity: 70%;
+    margin-left: 0.5rem;
+}
+.commentDelete:hover
+{
+    color: inherit;
+    cursor: pointer;
+}
+
+.boardHomeTable
+{
+    font-size: 0.80rem;
+}
+.boardHomeBoardNameWrapper
+{
+    display: flex;
+    color: inherit;
+    padding-bottom: 0.5rem;
+}
+.boardHomeBoardLink, .boardHomeBoardLink:hover
+{
+    color: inherit;
+}
+.boardHomeBoardName
+{
+    display: inline-block;
+    border-bottom: 3px solid #7aa7d6;
+    padding-bottom: 0.25rem;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    font-weight: 600;
+}
+.boardHomeBoardNameFiller
+{
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.25rem;
+    flex-grow: 1;
+}
+.boardHomeBoardNameIcon
+{
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+.boardHomePostLink
+{
+    color: inherit;
+}
+.boardHomePostWrapper
+{
+    display: flex;
+    padding-bottom: 0.5em;
+}
+.articleCommentCount
+{
+    /*font-size: 0.80em;*/
+    opacity: 80%;
+}
+.boardHomePostTitle
+{
+    flex-grow: 1;
+}
+.boardHomePostTime
+{
+    flex-shrink: 0;
+    opacity: 80%;
+}
+.rankblue
+{
+    display: inline-block;
+    min-width: 22px;
+    font-size: 11px;
+    line-height: 14px;
+    background-color: #007bff; /* #7aa7d6 */
+    color: white;
+    padding: 1px 6px;
+    text-align: center;
+}

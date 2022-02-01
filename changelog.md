@@ -1,3 +1,8 @@
+v2.0
+* board
+* full-text search
+* indexing
+
 v1.5b (2022-01-26)
 * Better DIFF
 * includes forum link

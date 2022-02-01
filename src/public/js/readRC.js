@@ -33,7 +33,7 @@ $(function() {
                 entry += '<td style="word-wrap: anywhere;">' + (!/\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?/.test(data[rc].doneBy) ? `<a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a>` : data[rc].doneBy) + `<sup><a href='/contribution/${data[rc].doneBy}'>C</a></sup>` + '</td>'
                 entry += `
                     <td>${data[rc].type} (${bytechange})</td>
-                    <td>${moment(data[rc].createdAt).format('YYYY/MM/DD HH:mm:ss')}</td>
+                    <td>${moment(data[rc].createdAt).utcOffset('+0900').format('YYYY/MM/DD HH:mm:ss')}</td>
                 </tr>
                 `
                 if (data[rc].comment)
