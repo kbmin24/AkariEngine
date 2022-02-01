@@ -6,7 +6,7 @@ module.exports = async (req, res, boards, posts, boardcomment, block, perm) =>
         require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
-    const articleNow = await posts.findOne({where: {boardID: boardNow.boardID, id: req.body.postid}})
+    const articleNow = await posts.findOne({where: {boardID: boardNow.boardID, idAtBoard: req.body.postid}})
     if (!articleNow)
     {
         require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
@@ -59,7 +59,7 @@ module.exports = async (req, res, boards, posts, boardcomment, block, perm) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + '이기 때문에 댓글 작성이 불가합니다.', 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 댓글 작성이 불가합니다.', 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
         return
     }
     req.body.content = req.body.content.replace(/\r\n/g, '\n')

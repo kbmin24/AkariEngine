@@ -4,7 +4,7 @@ const dt = require('date-and-time')
 
 global.pageLength = 30
 const pageLength = global.pageLength
-module.exports = async (isHTML, req, res, boards, posts, block, perm, currentPost) =>
+module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, currentPost) =>
 {
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
@@ -25,7 +25,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, currentPos
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + '이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
+        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
         return
     }
 
@@ -82,12 +82,18 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, currentPos
                 break
             }
     }
+    if (req.query.recommended === 'yes')
+    {
+        criteria.gechu = {
+            [Op.gte]: global.conf.gaenyumThreshold
+        }
+    }
     let lst = await posts.findAll(
         {
             where: criteria,
             order:
             [
-                ['id', 'DESC']
+                ['idAtBoard', 'DESC']
             ],
             offset: (page - 1) * pageLength,
             limit: pageLength
@@ -105,6 +111,16 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, currentPos
         ipProcessed.push(ipNow)
     })
 
+    //find gongjis
+    let gongjis = await gongji.findAll({where: {boardID: boardNow.boardID}, order: [['priority', 'ASC']]})
+    let gongjiPost = []
+    for (let g of gongjis)
+    {
+        let a = await posts.findOne({where: {boardID: boardNow.boardID, idAtBoard: g.postID}})
+        if (!a) continue
+        gongjiPost.push(a)
+    }
+
     let html = await ejs.renderFile(__dirname + '/views/list.ejs',
     {
         boardName: boardNow.boardID,
@@ -117,6 +133,8 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, currentPos
         post: lst,
         searchCriteria: req.query.searchCriteria,
         q: req.query.q,
+        gongji: gongjiPost,
+        isRecommended: req.query.recommended === 'yes'
     })
     if (isHTML) return html
     res.render('outline',

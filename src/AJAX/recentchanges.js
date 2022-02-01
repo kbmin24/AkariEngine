@@ -3,7 +3,7 @@ const sanitiseHtml = require('sanitize-html')
 module.exports = async (req, res, recentchanges) =>
 {
     await require(global.path + '/pages/updRecentChanges.js')(recentchanges)
-    let show = (req.query.show ? req.query.show: 30) * 1
+    let show = Math.min((req.query.show ? req.query.show: 30) * 1, 100)
     const changes = await recentchanges.findAll(
     {
         order:

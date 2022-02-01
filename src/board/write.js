@@ -1,4 +1,4 @@
-module.exports = async (req, res, boards, posts, block, perm) =>
+module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
 {
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
@@ -43,13 +43,15 @@ module.exports = async (req, res, boards, posts, block, perm) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + '이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
         return
     }
+
     req.body.content = req.body.content.replace(/\r\n/g, '\n')
     let doneby = req.session.username
     if (doneby === undefined) req.body.nickname
     let postOptions = {
+        idAtBoard: boardNow.postCount + 1,
         boardID: boardNow.boardID,
         title: req.body.title,
         writtenBy: req.session.username,
@@ -73,5 +75,25 @@ module.exports = async (req, res, boards, posts, block, perm) =>
     }
     let pg = await posts.create(postOptions)
     boardNow.update({postCount: boardNow.postCount + 1})
-    res.redirect(`/board/read/${pg.boardID}?no=${pg.id}`)
+
+    let fre = /<img src=\"\/boarduploads\/([a-zA-Z0-9]+)">/mig
+    let er
+    while ((er = fre.exec(req.body.content)) !== null)
+    {
+        let fname = er[1]
+        let fReg = await boardfiles.findOne(
+        {
+            where:
+            {
+                boardID: pg.boardID,
+                fileName: fname
+            }
+        })
+        if (!fReg.postID)
+        {
+            await fReg.update({postID: pg.idAtBoard})
+        }
+    }
+
+    res.redirect(`/board/read/${pg.boardID}?no=${pg.idAtBoard}`)
 }

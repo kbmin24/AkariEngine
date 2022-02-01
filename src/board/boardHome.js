@@ -24,7 +24,7 @@ module.exports = async (req, res, boards, posts) =>
             id: id,
             title: bdName,
             posts: postlist
-        })
+    })
 
         boardMatome.push(HTML)
     }

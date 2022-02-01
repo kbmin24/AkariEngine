@@ -1,4 +1,4 @@
-module.exports = async (req, res, users, perm, block, page, protect, adminlog, threadcomment, thread) =>
+module.exports = async (req, res, users, perm, block, page, protect, adminlog, threadcomment, thread, gongji) =>
 {
     switch (req.params.name)
     {
@@ -43,6 +43,11 @@ module.exports = async (req, res, users, perm, block, page, protect, adminlog, t
                     'threadcomment': threadcomment
                 })
             return
+        case 'gongji':
+            {
+                await require(__dirname + '/gongji.js')(req, res, gongji)
+                return
+            }
         default:
             res.writeHead(404)
             res.write('404 Not Found')

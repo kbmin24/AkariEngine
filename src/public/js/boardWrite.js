@@ -9,7 +9,11 @@ $(() =>
         },
         simpleUpload:
         {
-            uploadUrl: '/board/upload'
+            uploadUrl: '/board/upload',
+            headers:
+            {
+                boardid: $('#bBoard').attr('value')
+            }
         }
     })
     .then(editor =>

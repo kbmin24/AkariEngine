@@ -1,0 +1,18 @@
+<script src='/js/adminGetBoardGongji.js'></script>
+<form method='POST' action='/admin/gongji'>
+    <div class="mb-3 row">
+        <label for="tbBoardName" class="col-sm-2 col-form-label">게시판 고유 ID</label>
+        <div class="col-sm-6">
+            <input type="text" maxlength="255" class="form-control" id="tbBoardName" name="boardname">
+        </div>
+        <div class='col-sm-3'>
+            <button type="button" class="btn btn-primary" id='btnread'>불러오기</button>
+        </div>
+    </div>
+    <div class='mb-3 row'>
+        <label for="gongjis" class="form-label">한 줄에 하나씩 공지 게시물의 고유 ID를 입력</label>
+        <textarea class="form-control" id="gongjis" name='gongjis' rows="5"></textarea>
+    </div>
+    <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+    <button type="submit" class="btn btn-primary">저장</button>
+</form>

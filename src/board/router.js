@@ -8,6 +8,8 @@ module.exports = async (app, sequelize, csrfProtection) => {
     const boardgechu = require(global.path + '/models/boardgechu.model.js')(sequelize)
     const boardbichu = require(global.path + '/models/boardbichu.model.js')(sequelize)
     const boardcomment = require(global.path + '/models/boardcomment.model.js')(sequelize)
+    const boardfiles = require(global.path + '/models/boardfiles.model.js')(sequelize)
+    const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)
     sequelize.sync()
 
     app.get('/board/', async (req, res) =>
@@ -31,7 +33,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         }
         else
         {
-            require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + '이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+            require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
             return
         }
         const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
@@ -67,7 +69,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
     })
     app.post('/board/write/:board', csrfProtection, async(req, res) =>
     {
-        require(__dirname + '/write.js')(req, res, boards, posts, block, perm)
+        require(__dirname + '/write.js')(req, res, boards, posts, block, perm, boardfiles)
     })
 
     let multer = require('multer')
@@ -104,6 +106,14 @@ module.exports = async (app, sequelize, csrfProtection) => {
         },
         fileFilter: async (req, file, cb) =>
         {
+            const fileSize = parseInt(req.headers['content-length'])
+            if (fileSize > 4 * 1024 * 1024)
+            {
+                let e = new Error('File must be 4MB or less.')
+                e.code = 'BOARD_LIMIT_FILE_SIZE'
+                cb(e)
+                return
+            }
             checkFileType(file, cb)
         }
     })
@@ -122,6 +132,10 @@ module.exports = async (app, sequelize, csrfProtection) => {
             }
             else
             {
+                boardfiles.create({
+                    boardID: req.headers.boardid,
+                    fileName: req.file.filename
+                })
                 res.send(
                     {
                         url: '/boarduploads/' + req.file.filename
@@ -129,6 +143,92 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 )
             }
         })
+    })
+    app.get('/board/deletepost', csrfProtection, async (req, res) =>
+    {   
+        ejs.renderFile(__dirname + '/views/deletePostVerify.ejs',
+        {
+            boardID: req.query.board,
+            postID: req.query.id,
+            username: req.session.username,
+            passReq: req.query.passReq,
+            csrfToken: req.csrfToken()
+        }, (err, html) => 
+        {
+            if (err)
+            {
+                console.error(err)
+                res.writeHead(500).write('Internal Server Error')
+                return
+            }
+            res.render('outline',
+            {
+                title: '정말로 글을 삭제하시겠습니까?',
+                content: html,
+                username: req.session.username,
+                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                wikiname: global.appname
+            })
+        })
+    })
+    app.post('/board/deletepost', csrfProtection, async (req, res) =>
+    {
+        let isAdmin = (req.session.username && await perm.findOne({where:
+            {
+                username: req.session.username, 
+                perm: 'board'
+            }}) !== null ) === true
+        if (!req.body.postid)
+        {
+            require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+            return
+        }
+        const boardNow = await boards.findOne({where: {boardID: req.body.boardid}})
+
+        let post = await posts.findOne({where: {boardID: req.body.boardid, idAtBoard: req.body.postid}})
+        if (!post)
+        {
+            require(global.path + '/error.js')(req, res, null, '이미 삭제된 글입니다.', '/board', '게시판 홈', 403, 'ko')
+            return
+        }
+        if (post.writtenIP && !isAdmin)
+        {
+            //check PW
+            const crypto = require('crypto')
+            const saltedPW = crypto.pbkdf2Sync(req.body.pw, post.ipPWsalt, 10000, 64, 'sha512')
+            if (saltedPW.toString('base64') != post.ipPW)
+            {
+                require(global.path + '/error.js')(req, res, null, '비밀번호가 틀렸습니다.', 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
+                return
+            }
+        }
+        else
+        {
+            if (!isAdmin && post.writtenBy != req.session.username)
+            {
+                require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+                return
+            }
+        }
+        //delete relevant images from the disk
+        for (let f of await boardfiles.findAll({where: {boardID: req.body.boardid, postID: req.body.postid}}))
+        {
+            try
+            {
+                fs.unlinkSync(global.path + '/public/boarduploads/' + f.fileName)
+            }
+            catch
+            {
+                
+            }
+        }
+
+        //delete the comment
+        await boardcomment.destroy({where: {boardID: req.body.boardid, postID: post.idAtBoard}})
+        await posts.destroy({where: {boardID: req.body.boardid, idAtBoard: req.body.postid}})
+        await boardNow.update({postCount: boardNow.postCount - 1})
+
+        res.redirect('/board')
     })
     app.post('/board/writecomment', csrfProtection, async (req, res) =>
     {
@@ -164,16 +264,16 @@ module.exports = async (app, sequelize, csrfProtection) => {
     {
         let isAdmin = (req.session.username && await perm.findOne({where:
             {
-                username: req.session.username,
+                username: req.session.username, 
                 perm: 'board'
-            }})) === true
+            }}) !== null ) === true
         if (!req.body.commentid)
         {
             require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
             return
         }
         let comment = await boardcomment.findOne({where: {id: req.body.commentid}})
-        if (comment.isDeleted)
+        if (!comment || comment.isDeleted)
         {
             require(global.path + '/error.js')(req, res, null, '이미 삭제된 댓글입니다.', '/board', '게시판 홈', 403, 'ko')
             return
@@ -191,7 +291,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         }
         else
         {
-            if (comment.doneBy != req.session.username)
+            if (!isAdmin && comment.doneBy != req.session.username)
             {
                 require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
                 return
@@ -211,11 +311,11 @@ module.exports = async (app, sequelize, csrfProtection) => {
     })
     app.get('/board/read/:board', csrfProtection, async (req, res) =>
     {
-        require(__dirname + '/read.js')(req, res, boards, posts, block, perm, boardcomment)
+        require(__dirname + '/read.js')(req, res, boards, posts, block, perm, boardcomment, gongji)
     })
     app.get('/board/:board', async (req, res) =>
     {
-        require(__dirname + '/list.js')(false, req, res, boards, posts, block, perm, null)
+        require(__dirname + '/list.js')(false, req, res, boards, posts, block, perm, gongji, null)
     })
     app.post('/board/AJAX/gechu', csrfProtection, async (req, res) =>
     {
@@ -224,5 +324,13 @@ module.exports = async (app, sequelize, csrfProtection) => {
     app.post('/board/AJAX/bichu', csrfProtection, async (req, res) =>
     {
         require(__dirname + '/AJAX/bichu.js')(req, res, boards, posts, perm, block, boardbichu)
+    })
+    app.get('/board/AJAX/recentposts', async (req, res) =>
+    {
+        require(__dirname + '/AJAX/recentPosts.js')(req, res, posts)
+    })
+    app.get('/board/AJAX/gongji', async (req, res) =>
+    {
+        require(__dirname + '/AJAX/getgongjilist.js')(req, res, gongji)
     })
 }

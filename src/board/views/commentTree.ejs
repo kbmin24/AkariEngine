@@ -4,7 +4,7 @@
             <div class='commentContentWrap border' data-subEnabled='false' data-depth='<%= depth %>' data-id='<%= k %>'>
                 <div class='p-2 bg-light board-infoBar'>
                     <% if (!v.isDeleted) { %>
-                    <div class='board-writtenBy'>
+                    <div class='board-leftbar'>
                         <span title="<%= v.doneBy %><%= v.writtenIP ? '(' + v.writtenIP + ')' : '' %>">
                             <%= v.doneBy %>
                             <% if (v.writtenIP) { %>

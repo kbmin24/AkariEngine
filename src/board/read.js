@@ -74,7 +74,7 @@ let readComments = async (boardID, postID, comments) =>
         commentCount: allcomments.length
     }
 }
-module.exports = async (req, res, boards, posts, block, perm, comments) =>
+module.exports = async (req, res, boards, posts, block, perm, comments, gongji) =>
 {
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
@@ -100,10 +100,10 @@ module.exports = async (req, res, boards, posts, block, perm, comments) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + '이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
+        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
         return
     }
-    const post = await posts.findOne({where: {id: req.query.no}})
+    const post = await posts.findOne({where: {idAtBoard: req.query.no}})
     if (!post)
     {
         require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
@@ -117,16 +117,17 @@ module.exports = async (req, res, boards, posts, block, perm, comments) =>
         ipProcessed = `${ipSplit[0]}.${ipSplit[1]}`
     }
 
-    let commentTree = await readComments(boardNow.boardID, post.id, comments)
+    let commentTree = await readComments(boardNow.boardID, post.idAtBoard, comments)
 
-    let lst = await require(__dirname + '/list.js')(true, req, res, boards, posts, block, perm, post.id)
+    let lst = await require(__dirname + '/list.js')(true, req, res, boards, posts, block, perm, gongji, post.idAtBoard)
     
     //check if admin
     let isAdmin = (req.session.username && await perm.findOne({where:
         {
-            username: req.session.username,
+            username: req.session.username, 
             perm: 'board'
-        }})) === true
+        }}) !== null ) === true
+    post.content = sanitiseHtml(post.content, global.sanitiseOptions)
     ejs.renderFile(__dirname + '/views/read.ejs',
     {
         lst: lst,

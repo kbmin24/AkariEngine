@@ -93,12 +93,13 @@ const updateTime = require(__dirname + '/models/updateTime.model.js')(sequelize)
 const thread = require(__dirname + '/models/thread.model.js')(sequelize)
 const threadcomment = require(__dirname + '/models/threadcomment.model.js')(sequelize)
 const recentdiscuss = require(__dirname + '/models/recentdiscuss.model.js')(sequelize)
+const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)
 sequelize.sync()
 
 global.sanitiseOptions =
 {
-    allowedTags: ['div', 'span', 'blockquote', 'p', 'pre', 'caption',
-    'i', 'b', 'u', 'del', 'em', 'strong', 'a', 'sup', 'sub', 'font',
+    allowedTags: ['div', 'span', 'blockquote', 'code', 'p', 'pre', 'caption',
+    'i', 'b', 'u', 's', 'del', 'em', 'strong', 'a', 'sup', 'sub', 'font',
     'big', 'small',
     'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
     'br', 'hr',
@@ -111,6 +112,7 @@ global.sanitiseOptions =
     allowedAttributes:
     {
         a: ['href', 'name', 'id', 'target', 'rel', 'class', 'title', 'style'],
+        code: ['class', 'id', 'style'],
         i: ['class', 'id', 'aria-hidden', 'style'],
         font: ['class', 'id', 'size', 'color', 'face', 'style'],
         div: ['class', 'id', 'style'],
@@ -133,8 +135,9 @@ global.sanitiseOptions =
         table: ['class', 'id', 'style', 'colspan', 'rowspan'],
         thead: ['class', 'id', 'style', 'colspan', 'rowspan'],
         tbody: ['class', 'id', 'style', 'colspan', 'rowspan'],
+        figure: ['class', 'id', 'style'],
         iframe: ['class', 'width', 'height', 'src', 'frameborder', 'allow', 'allowfullscreen'],
-        img: ['class', 'id', 'style', 'height', 'width', 'src'],
+        img: ['class', 'id', 'style', 'height', 'width', 'src', 'srcset', 'alt', 'title'],
         blockquote: ['class', 'id', 'style']
     },
     allowedStyles:
@@ -146,7 +149,10 @@ global.sanitiseOptions =
             'background-image': [/^ *(?:repeating-)?(?:linear|radial)-gradient\([^(]*(\([^)]*\)[^(]*)*[^)]*\) *$/],
             'text-align': [/^ *left *$/, /^ *right *$/, /^ *center *$/],
             'vertical-align': [/^ *top *$/, /^ *middle *$/, /^ *bottom *$/],
+            'font': [/^.*?$/],
             'font-size': [/^ *\d+(?:px|em|%) *$/],
+            'font-family': [/^.*?$/],
+            'font-weight': [/^.*?$/],
             'word-break': [/^ *normal *$/, /^ *break-all *$/, /^ *keep-all *$/],
             'margin': [/^ *(((-|\+)?\d+(px|em|%) *)+|auto) *$/],
             'margin-top': [/^ *(((-|\+)?\d+(px|em|%) *)+|auto) *$/],
@@ -184,7 +190,7 @@ global.sanitiseOptions =
     {
         if (img.tag !== 'img') return false
         if (!img.attribs['src']) return false 
-        return !(/^\/uploads\/.*$/.test(img.attribs['src']))
+        return !(/^\/(board)?uploads\/.*$/.test(img.attribs['src']))
     },
     disallowedTagsMode: 'escape',
     allowedIframeHostnames: ['www.youtube.com', 'www.youtube-nocookie.com']
@@ -664,6 +670,7 @@ app.get('/Upload', async (req, res) =>
 })
 const multer = require('multer')
 const fs = require('fs')
+const e = require('express')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
@@ -893,7 +900,7 @@ app.get('/admin/:name', csrfProtection, async (req, res) =>
 })
 app.post('/admin/:name', csrfProtection, async (req, res) =>
 {
-    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread)
+    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread, gongji)
 })
 app.get('/adminlog', async (req, res) =>
 {
@@ -1032,16 +1039,31 @@ app.use((err, req, res, next) =>
                 require(global.path + '/error.js')(req, res, null, 'Please complete CAPTCHA correctly.', 'javascript:window.history.back()', 'the previous page')
             }
             break
-        case 'LIMIT_FILE_SIZE':
+        case 'BOARD_LIMIT_FILE_SIZE':
             {
-                require(global.path + '/error.js')(req, res, null, 'Sorry. The file selected is too large.', 'javascript:window.history.back()', 'the upload page')
+                res.send(
+                    {
+                        'error':
+                        {
+                            'message': err.toString()
+                        }
+                    }
+                )
             }
             break
         case 'BOARDUPLOAD_BADEXTENSION':
             {
                 res.send({
-                    error: e.toString()
+                    'error':
+                    {
+                        'message': e.toString()
+                    }
                 })
+            }
+            break
+        case 'LIMIT_FILE_SIZE':
+            {
+                require(global.path + '/error.js')(req, res, null, 'Sorry. The file selected is too large. It should be less than 4MB or less.', 'javascript:window.history.back()', 'the upload page')
             }
             break
         default:

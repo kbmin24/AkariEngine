@@ -3,6 +3,10 @@ module.exports = (sequelize) =>
 {
     return sequelize.define('boardPost',
     {
+        idAtBoard:
+        {
+            type: DataTypes.INTEGER
+        },
         boardID:
         {
             type: DataTypes.STRING
@@ -66,6 +70,9 @@ module.exports = (sequelize) =>
             {
                 type: 'FULLTEXT',
                 fields: ['writtenBy']
+            },
+            {
+                fields: ['idAtBoard']
             }
         ]
     })

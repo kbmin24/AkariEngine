@@ -223,6 +223,29 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 }
                 return
             }
+        case 'gongji':
+            {
+                const p = await perm.findOne({where: {username: username, perm: 'board'}})
+                if (p)
+                {
+                    //give form
+                    const html = await ejs.renderFile(global.path + '/views/admin/gongji.ejs', {csrfToken: req.csrfToken()})
+                    res.render('outline',
+                    {
+                        title: '게시판 공지 변경',
+                        content: html,
+                        username: username,
+                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        wikiname: global.appname
+                    })
+                }
+                else
+                {
+                    require(global.path + '/error.js')(req, res, null, 'You do not have a board permission.', '/admin', 'the admin page')
+                }
+                return
+            }
+
         default:
         res.writeHead(404)
         res.write('404 Not Found')

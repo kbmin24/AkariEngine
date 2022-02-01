@@ -1,9 +1,18 @@
 <aside>
-    <div id='rcsidebar' class='row border rounded'>
-        <div class='pb-2 mt-2 border-bottom'>
-            <a href='/RecentChanges'><span class='fw-bold rcTitle'>RecentChanges</span> <i class="fas fa-external-link-square-alt ren-extlink-icon"></i></a>
+    <div id='rcsidebar'>
+        <div class='border rounded'>
+            <div class='p-2 border-bottom bg-white'>
+                <a href='/RecentChanges'><span class='fw-bold rcTitle'>RecentChanges</span> <i class="fas fa-external-link-square-alt ren-extlink-icon"></i></a>
+            </div>
+            <ul class="list-group list-group-flush" id='rcsidebarcontents'>
+            </ul>
         </div>
-        <ul class="list-group list-group-flush" id='rcsidebarcontents'>
-        </ul>
+        <div class='border rounded' style='margin-top: 30px;'>
+            <div class='p-2 border-bottom bg-white'>
+                <a href='/board'><span class='fw-bold rcTitle'>Recent Posts</span> <i class="fas fa-external-link-square-alt ren-extlink-icon"></i></a>
+            </div>
+            <ul class="list-group list-group-flush" id='rcsidebarposts'>
+            </ul>
+        </div>
     </div>
 </aside>

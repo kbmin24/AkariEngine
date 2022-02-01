@@ -12,6 +12,10 @@
 }
 .board-writtenBy
 {
+    display: inline-block;
+}
+.board-leftbar
+{
     padding-right: 5px;
     flex-grow: 1;
     white-space: nowrap;
@@ -31,6 +35,18 @@
     justify-content: flex-end;
     padding-left: 20px;
     flex-shrink: 0;
+}
+.postDelete
+{
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.9rem;
+    opacity: 70%;
+}
+.postDelete > a, .postDelete > a:hover
+{
+    color: inherit;
+
 }
 .articleWriterUser
 {

@@ -27,7 +27,6 @@ module.exports = async (req, res, dbs = {}) =>
         let content = v.content
         if (v.isHidden)
         {
-            //TODO: check if admin
             content = ''
         }
         resArr.push(

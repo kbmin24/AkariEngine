@@ -10,7 +10,7 @@
     </a>
     <% let i = 1 %>
     <% for (post of posts) { %>
-        <a class='boardHomePostLink' href='/board/read/<%= id %>?no=<%= post.id %>'>
+        <a class='boardHomePostLink' href='/board/read/<%= id %>?no=<%= post.idAtBoard %>'>
             <div class='boardHomePostWrapper'>
                 <div class='boardHomePostTitle'>
                     <span class='rankblue'><%= i++ %></span>

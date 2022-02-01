@@ -1,6 +1,10 @@
 <link rel='stylesheet' href='/css/boardList.css'>
 <div class='articleListTop mb-2 d-flex flex-row-reverse'>
     <a class='btn btn-primary articleBtnWrite' href='/board/write/<%= boardName %>' role='button'>글쓰기</a>
+    <div style='display: flex; flex-grow: 1'>
+        <a class='btn btn-primary' href='/board/<%= boardName %>' role='button'>일반</a>
+        <a class='btn btn-primary' style='margin-left: 1rem' href='/board/<%= boardName %>?recommended=yes' role='button'>추천 <%= global.conf.gaenyumThreshold %>개 이상</a>
+    </div>
 </div>
 <div class='articleList'>
     <div class='d-flex articleListHead d-none d-md-flex'>
@@ -12,16 +16,64 @@
         <div class='p-2 articleListHeadGechu'>추천</div>
     </div>
     <div class='articleListBody'>
+        <% gongji.forEach((p, i, arr) => { %>
+            <a class='articleLink' href='/board/read/<%= p.boardID %>?no=<%= p.idAtBoard %>'>
+                <div class='d-block d-md-flex articleInfo articleInfo_gongji'>
+                    <div class='articleTop d-flex flex-grow-1'>
+                        <div class='p-2 articleID d-none d-md-flex fw-bold'>
+                            공지
+                        </div>
+                        <div class='articleTitle p-2'>
+                            <div class='articleTitleText'>
+                                <span class='articleLink' title='<%= p.title %>' href='/board/read/<%= p.boardID %>?no=<%= p.idAtBoard %>'>
+                                    <%= p.title %>
+                                </span>
+                            </div>
+                        </div>
+                        <% if (p.commentCount > 0) {%>
+                        <div class='articleCommentCount'>
+                            [<%= p.commentCount %>]
+                        </div>
+                        <% } %>
+                    </div>
+                    <div class='articleBottom d-flex'>
+                        <div class='p-2 articleWriter'>
+                            <div class='articleWriterNickname'>
+                                <soan title='<%= p.writtenBy %>'>
+                                    <%= p.writtenBy%>
+                                </span>
+                            </div>
+                            <div class='articleWriterIndicator'>
+                                <% if (p.writtenIP) { %>
+                                <span class='articleWriterIP'>(<%= ipProcessed[i] %>)</span>
+                                <% } else { %>
+                                <i class="fas fa-user articleWriterUser"></i>
+                                <% } %>
+                            </div>
+                        </div>
+                        <div class='p-2 articleDate'>
+                            <time class='dt' datetime='<%= p.createdAt.toISOString() %>' data-format='Q'></time>
+                        </div>
+                        <div class='p-2 articleViewCount'>
+                            <%= p.viewCount %>
+                        </div>
+                        <div class='p-2 articleNetGechu'>
+                            <%= p.gechu %>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        <% }) %>
         <% post.forEach((p, i, arr) => { %>
-        <a class='articleLink' href='/board/read/<%= p.boardID %>?no=<%= p.id %>'>
-            <div class='d-block d-md-flex articleInfo <% if (p.id === currentPost) { %> articleInfo_current <% } %>'>
+        <a class='articleLink' href='/board/read/<%= p.boardID %>?no=<%= p.idAtBoard %>'>
+            <div class='d-block d-md-flex articleInfo <% if (p.idAtBoard === currentPost) { %> articleInfo_current <% } %>'>
                 <div class='articleTop d-flex flex-grow-1'>
                     <div class='p-2 articleID d-none d-md-flex'>
-                        <%= p.id %>
+                        <%= p.idAtBoard %>
                     </div>
                     <div class='articleTitle p-2'>
                         <div class='articleTitleText'>
-                            <span class='articleLink' title='<%= p.title %>' href='/board/read/<%= p.boardID %>?no=<%= p.id %>'>
+                            <span class='articleLink' title='<%= p.title %>' href='/board/read/<%= p.boardID %>?no=<%= p.idAtBoard %>'>
                                 <%= p.title %>
                             </span>
                         </div>
@@ -54,8 +106,7 @@
                         <%= p.viewCount %>
                     </div>
                     <div class='p-2 articleNetGechu'>
-                        <!-- net 개추: (개추 - 비추) -->
-                        <%= p.gechu - p.bichu %>
+                        <%= p.gechu %>
                     </div>
                 </div>
             </div>
@@ -107,6 +158,9 @@
         </select>
         <div class='input-group ms-2'>
             <input class="form-control" id="searchinput" name="q" type="search" placeholder="검색" aria-label="검색어" autocomplete="off">
+            <% if (isRecommended) { %>
+                <input type='hidden' name='recommended' value='yes'>
+            <% } %>
             <button class="btn btn-outline-light bg-primary" id="searchSubmit" type="submit"><i class="fa fa-arrow-right text-light"></i></button>
         </div>
     </form>

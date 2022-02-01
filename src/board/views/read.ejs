@@ -3,23 +3,30 @@
     <h3 class='board-posttitle'><%= post.title %></h3>
 </div>
 <div class='p-2 mt-2 mb-2 bg-light rounded-2 border-top board-infoBar'>
-    <div class='board-writtenBy'>
-        <span title="<%= post.writtenBy %><%= post.writtenIP ? '(' + ipProcessed + ')' : '' %>">
-            <%= post.writtenBy %>
-            <% if (post.writtenIP) { %>
-                <span class="articleWriterIP">(<%= ipProcessed %>)</span>
-            <% } else { %>
-                <i class="fas fa-user articleWriterUser"></i>
-            <% } %>
-        </span>
-    </div>
-    <div class='board-dateBar'>
-        <time class='dt-long' datetime='<%= post.createdAt.toISOString() %>' data-format='Q'></time>
+    <div class='board-leftbar'>
+        <div class='board-writtenBy'>
+            <span title="<%= post.writtenBy %><%= post.writtenIP ? '(' + ipProcessed + ')' : '' %>">
+                <%= post.writtenBy %>
+                <% if (post.writtenIP) { %>
+                    <span class="articleWriterIP">(<%= ipProcessed %>)</span>
+                <% } else { %>
+                    <i class="fas fa-user articleWriterUser"></i>
+                <% } %>
+            </span>
+        </div>
+        <div class='board-dateBar'>
+            <time class='dt-long' datetime='<%= post.createdAt.toISOString() %>' data-format='Q'></time>
+        </div>
     </div>
     <div class='board-infoBar-right'>
         <div><i class="fas fa-eye"></i> <%= post.viewCount %></div>
     </div>
 </div>
+<% if (post.writtenBy === username || post.writtenIP || isAdmin) { %>
+    <div class='postDelete'>
+        <a href='/board/deletepost?board=<%= post.boardID %>&id=<%= post.idAtBoard %>&passReq=<%= post.writtenIP !== undefined && false == isAdmin %>'>삭제</a>
+    </div>
+<% } %>
 <div class='board-postContent'>
     <%- post.content %>
 </div>
@@ -36,7 +43,7 @@
     <div style='display:none'>
         <div id='csrf'><%= csrfToken %></div>
         <div id='boardID'><%= post.boardID %></div>
-        <div id='postID'><%= post.id %></div>
+        <div id='postID'><%= post.idAtBoard %></div>
     </div>
 </div>
 <div>
@@ -59,7 +66,7 @@
                 <textarea class="form-control" name='content'></textarea>
                 <input type='hidden' name='parent'>
                 <input type='hidden' name='boardid' value='<%= post.boardID %>'>
-                <input type='hidden' name='postid' value='<%= post.id %>'>
+                <input type='hidden' name='postid' value='<%= post.idAtBoard %>'>
                 <input type='hidden' name='depth' value='1'>
                 <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
                 <div class='mt-2 d-flex flex-row-reverse'>

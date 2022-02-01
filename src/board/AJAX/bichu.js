@@ -25,7 +25,7 @@ module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
         res.json({status: 'error', message: '잘못된 접근입니다.'})
         return
     }
-    let post = await posts.findOne({where: {id: postID}})
+    let post = await posts.findOne({where: {idAtBoard: postID}})
     if (!post)
     {
         res.json({status: 'error', message: '게시물이 삭제되었습니다.'})
