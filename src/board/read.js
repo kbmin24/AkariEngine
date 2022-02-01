@@ -127,7 +127,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
             username: req.session.username, 
             perm: 'board'
         }}) !== null ) === true
-    post.content = sanitiseHtml(post.content, global.sanitiseOptions)
+    //post.content = sanitiseHtml(post.content, global.sanitiseOptions)
     ejs.renderFile(__dirname + '/views/read.ejs',
     {
         lst: lst,

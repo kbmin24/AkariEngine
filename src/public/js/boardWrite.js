@@ -5,7 +5,18 @@ $(() =>
         language: 'ko',
         mediaEmbed:
         {
-            previewsInData: true
+            previewsInData: true,
+            removeProviders:
+            [
+                'instagram',
+                'twitter',
+                'googleMaps',
+                'flickr',
+                'facebook',
+                'dailymotion',
+                'spotify',
+                'vimeo'
+            ]
         },
         simpleUpload:
         {
