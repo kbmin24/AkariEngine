@@ -14,10 +14,7 @@ module.exports = async (req, res, gongji) =>
     let pri = 1
     req.body.gongjis = req.body.gongjis.replace(/\r\n/igm, '\n').trim()
     let sp = req.body.gongjis.split('\n')
-    console.log('WWWWWWWWWWWWWWWWWWWW')
-    console.log(req.body.gongjis)
-    console.log(sp)
-    if (sp.length > 1)
+    if (sp.length > 0)
     {
         for (let i of sp)
         {
