@@ -28,7 +28,7 @@ function loadRC() {
             })
         }
     })
-    $('#rcsidebararticles').empty()
+    $('#rcsidebarposts').empty()
     $.ajax({
         url: '/board/AJAX/recentposts',
         type: 'GET',
