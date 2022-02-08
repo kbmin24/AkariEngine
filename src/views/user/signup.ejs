@@ -4,28 +4,27 @@
             <label for='idInputbox'>ID</label>
             <input type='text' name='id' maxlength=255 class='form-control' id='idInputbox'placeholder='Enter ID' required minlength='3' maxlength='255', onkeyup='idCheck()'>
             <p>
-                <small id='goodid' class='text-success fw-bold' style='display: none'>Good ID.</small>
-                <small id='badid' class='text-danger fw-bold' style='display: none'>IDs can only contain alphanumeric characters or underscores(_).</small>
+                <small id='goodid' class='text-success fw-bold' style='display: none'>적합한 ID입니다.</small>
+                <small id='badid' class='text-danger fw-bold' style='display: none'>ID는 알파벳 대소문자와 숫자, 언더바(_)로만 이루어져야 합니다.</small>
             </p>
         </div>
         <div class='form-group mb-2'>
-            <label for='passwordInputbox'>Password</label>
+            <label for='passwordInputbox'>비밀번호</label>
             <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='Enter Password' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
             pattern='^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$'>
-            <small class='form-text text-muted'>Passwords must be at least eight characters long.</small>
-            <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'>Passwords should be 8 characters or longer, 255 characters or shorter.</small>
-            <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'>Your password contains illegal characters: <small id='passwordbadcharlist'></small></small>
+            <small class='form-text text-muted'>비밀번호는 8자 이상이어야 합니다.</small>
+            <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'>비밀번호는 8자 이상 255자 이하여야 합니다.</small>
+            <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'>비밀번호에 올바르지 않은 문자가 포함되어 있습니다: <small id='passwordbadcharlist'></small></small>
         </div>
         <div class='form-group mb-2'>
             <label for='passwordConfirmInputbox'>Confirm Password</label>
             <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='Re-enter password' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
             <p>
-                <small id='passwordmatch' class='text-success fw-bold' style='display: none'>Passwords match.</small>
-                <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>Passwords do not match.</small>
+                <small id='passwordmatch' class='text-success fw-bold' style='display: none'>비밀번호가 일치합니다.</small>
+                <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>비밀번호가 일치하지 않습니다.</small>
             </p>
-            <small id='passwordConfirmDesc' class='form-text text-muted'>In order to ensure that you have entered your password correctly, please type it one more time.</small>
+            <small id='passwordConfirmDesc' class='form-text text-muted'>비밀번호가 제대로 입력되었는지 확인하기 위해 한 번 더 입력해 주세요.</small>
         </div>
-        <p><span class='text-danger fw-bold'>WARNING!</span>    YOU CANNOT reset your password once you forget it. Make sure you make your password memorable.</p>
         <div class='mt-2 mb-2'>
             <div class='captcha'><%- captcha %></div>
             <div class='row'>

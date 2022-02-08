@@ -3,7 +3,7 @@
 <form action='/edit/<%= title %>' method='POST' class='editForm'>
     <% if (prefix || suffix) {%>
         <div class="alert alert-info" role="alert">
-            You are editing a section from the page.
+            문서의 일부분을 편집하고 있습니다.
         </div>
     <% } %>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -14,9 +14,9 @@
     </div>
     <% if (!locals.disabled) { %>
     <div class="form-group mt-2 mb-2 row">
-        <label for='comment' class='col-sm-2 col-form-label'>Comment</label>
+        <label for='comment' class='col-sm-2 col-form-label'>편집 요약</label>
         <div class="col-sm-10">
-            <input class="form-control" id='comment' maxlength=255 name='comment' type="text" placeholder="Max 255 characters">
+            <input class="form-control" id='comment' maxlength=255 name='comment' type="text" placeholder="최대 255자">
         </div>
     </div>
     <div class='mt-2 mb-2'>
@@ -30,11 +30,11 @@
         <small class='form-text text-muted'>For spam protection, please type <b>four</b> characters shown above.</small>
     </div>
     <% if (locals.username === undefined) { %>
-    <p><span class='text-danger fw-bold'>WARNING!</span>    You are NOT logged in. Your IP address will be PERMANENTLY logged and will be visible to everyone. (비로그인 상태로 당신의 IP 주소가 영구히 기록되어 공개될 것입니다.)</p>
+    <p><span class='text-danger fw-bold'>경고!</span>    비로그인 상태로 편집하면 IP가 영구히 기록되어 공개됩니다.</p>
     <% } %>
-    <p><span class='text-danger fw-bold'>WARNING!</span>    <%= global.copyrightNotice %></p>
-    <button type='submit' type='button' class='btn btn-primary mt-3'>Save</button>
-    <button type='button' class='btn btn-secondary mt-3' onclick='previewButtonClick()'>Preview</button>
+    <p><span class='text-danger fw-bold'>경고!</span>    <%= global.copyrightNotice %></p>
+    <button type='submit' type='button' class='btn btn-primary mt-3'>저장</button>
+    <button type='button' class='btn btn-secondary mt-3' onclick='previewButtonClick()'>미리보기</button>
     <% } %>
 </form>
 <form action='/preview/' method='POST' target='_blank' id='previewForm' style='display:none'>

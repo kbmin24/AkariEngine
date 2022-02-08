@@ -1,12 +1,12 @@
 <div class="dropstart">
     <button class="btn btn-secondary dropdown-toggle float-end" type="button" id="rcshowNDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-      Show...
+      옵션
     </button>
     <ul class="dropdown-menu dropdown-menu-macos shadow" aria-labelledby="rcshowNDropdown">
-      <li><a class="dropdown-item" href="/RecentChanges?show=5">Show 5</a></li>
-      <li><a class="dropdown-item" href="/RecentChanges?show=10">Show 10</a></li>
-      <li><a class="dropdown-item" href="/RecentChanges?show=30">Show 30</a></li>
-      <li><a class="dropdown-item" href="/RecentChanges?show=100">Show 100</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=5">5개 보이기</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=10">10개 보이기</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=30">30개 보이기</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=100">100개 보이기</a></li>
     </ul>
 </div>
 <div style='clear:both'></div>
@@ -20,16 +20,16 @@
                 <col style='min-width: 100px;'>
             </colgroup>
             <tr>
-                <th scope='col'>Page name</th>
-                <th scope='col'>Username</th>
-                <th scope='col'>Change made</th>
-                <th scope='col'>Date</th>
+                <th scope='col'>문서명</th>
+                <th scope='col'>사용자명</th>
+                <th scope='col'>수정 사항</th>
+                <th scope='col'>일시</th>
             </tr>
         </thead>
         <tbody id = 'rclist'>
         </tbody>
     </table>
-    <div id='rcplaceholder'>Loading...</div>
+    <div id='rcplaceholder'>로딩 중...</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src='/js/readRC.js'></script>

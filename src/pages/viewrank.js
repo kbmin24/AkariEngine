@@ -17,7 +17,7 @@ module.exports = async (req, res, viewcount) =>
     })
     res.render('outline',
     {
-        title: 'Most viewed pages of the day',
+        title: '오늘의 문서 조회수 랭킹',
         content: html,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

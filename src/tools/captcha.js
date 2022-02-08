@@ -37,7 +37,7 @@ exports.chkCaptcha = async (req, res, perm) =>
     if (req.body.captcha !== req.session.captcha)
     {
         //raise error
-        require(global.path + '/error.js')(req, res, null, 'Please complete CAPTCHA correctly.', 'javascript:window.history.back()', 'the previous page')
+        require(global.path + '/error.js')(req, res, null, `CAPTCHA를 올바르게 완성해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
         return false
     }
     else

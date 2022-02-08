@@ -1,5 +1,11 @@
 module.exports = async (req, res, username, users, pages, recentchanges, history, thread, perm, block, protect) =>
 {
+    if (req.params.name.toLowerCase().startsWith('file:'))
+    {
+        require(global.path + '/error.js')(req, res, null, `파일 문서는 이동할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
+        return
+    }
+    
     if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
 
     //check for protection 
@@ -16,7 +22,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     }
     else
     {
-        require(global.path + '/error.js')(req, res, username, 'You cannot move because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서의 이동 권한이 ${acl}이기 때문에 이동할 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
         return
     }
     pages.findOne({where: {title: req.body.newName}}).then(async oldpage =>
@@ -25,12 +31,17 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
         if (oldpage) //if page exists
         {
-            require(global.path + '/error.js')(req, res, null, 'Cannot move the page because the page with the name already exists.', '/', 'the main page')
+            require(global.path + '/error.js')(req, res, null, `문서가 이미 존재하기 때문에 이동할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
         }
         else
         {
             pages.findOne({where: {title: req.params.name}}).then(async page =>
             {
+                if (!page)
+                {
+                    require(global.path + '/error.js')(req, res, null, `잘못된 접근입니다.`, '/', '메인 페이지', 200, 'ko')
+                    return
+                }
                 //move protects
                 let ps = await protect.findAll({where: {title: req.params.name}})
                 ps.forEach(async v =>
@@ -55,7 +66,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                         content: redrPageContent,
                         bytechange: redrPageContent.length,
                         editedby: doneby,
-                        comment: `Auto-created redirect due to page move`,
+                        comment: `문서 이동으로 인해 자동 생성`,
                         type: 'create'
                     })
                     recentchanges.create(
@@ -63,7 +74,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                         page: req.params.name,
                         rev: 1,
                         doneBy: doneby,
-                        comment: `Auto-created redirect due to page move`,
+                        comment: `문서 이동으로 인해 자동 생성`,
                         bytechange: redrPageContent.length,
                         type: 'create'
                     })
@@ -75,7 +86,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                         rev: page.currentRev,
                         doneBy: doneby,
                         bytechange: 0,
-                        comment: 'Moved ' + req.params.name + ' to ' + req.body.newName,
+                        comment: req.params.name + '을(를) ' + req.body.newName + '로 이동',
                         type: 'move'
                     })
                     history.findAll({where: {page: req.params.name}}).then(oldhistories =>
@@ -104,7 +115,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                         editedby: doneby,
                         movedFrom: req.params.name,
                         movedTo: req.body.newName,
-                        comment: 'Moved ' + req.params.name + ' to ' + req.body.newName,
+                        comment: req.params.name + '을(를) ' + req.body.newName + '로 이동',
                         type: 'move'
                     })
                     res.redirect('/w/' + req.body.newName)

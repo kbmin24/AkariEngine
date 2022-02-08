@@ -27,7 +27,7 @@ module.exports = async (req, res, history) =>
     })
     res.render('outline',
     {
-        title: `Contributions of ${name}`,
+        title: `${name}의 기여 목록`,
         content: html,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

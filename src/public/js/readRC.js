@@ -11,9 +11,9 @@ $(function() {
             $.each(data, (rc) =>
             {
                 var ln;
-                ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(deleted)</em>'}`
+                ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(삭제)</em>'}`
 
-                var bytechange;
+                var bytechange
                 if (data[rc].bytechange > 0)
                 {
                     bytechange = `<span class='text-success fw-bold'>+${data[rc].bytechange}</span>`
@@ -31,8 +31,17 @@ $(function() {
                     <th scope='row' style='word-wrap: anywhere;'>${ln}</th>`
                 //entry += <td>$<a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a></td>
                 entry += '<td style="word-wrap: anywhere;">' + (!/\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?/.test(data[rc].doneBy) ? `<a href='/w/User:${data[rc].doneBy}'>${data[rc].doneBy}</a>` : data[rc].doneBy) + `<sup><a href='/contribution/${data[rc].doneBy}'>C</a></sup>` + '</td>'
+                
+                let typeMap = {
+                    'edit': '편집',
+                    'delete': '삭제',
+                    'create': '생성',
+                    'upload': '업로드',
+                    'move': '이동'
+                }
+                let type = typeMap[data[rc].type] || data[rc].type
                 entry += `
-                    <td>${data[rc].type} (${bytechange})</td>
+                    <td>${type} (${bytechange})</td>
                     <td>${moment(data[rc].createdAt).utcOffset('+0900').format('YYYY/MM/DD HH:mm:ss')}</td>
                 </tr>
                 `

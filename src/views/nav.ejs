@@ -7,67 +7,67 @@
             <li class="nav-item">
                 <a class="nav-link" href="/RecentChanges">
                     <i class="fas fa-sync-alt nav-icon"></i>
-                    <span class='d-none d-xl-inline'>RecentChanges</span>
+                    <span class='d-none d-lg-inline'>최근 변경</span>
                 </a>
             </li>
             <!-- rd -->
             <li class="nav-item">
                 <a class="nav-link" href="/RecentDiscuss">
                     <i class="fa fa-comments nav-icon"></i>
-                    <span class='d-none d-xl-inline'>RecentDiscuss</span>
+                    <span class='d-none d-lg-inline'>최근 토론</span>
                 </a>
             </li>
             <!-- RandomPage -->
             <li class="nav-item">
                 <a class="nav-link" href="/board">
                     <i class="fas fa-clipboard-list"></i>
-                    <span class='d-none d-xl-inline'>Forum</span>
+                    <span class='d-none d-lg-inline'>게시판</span>
                 </a>
             </li>
             <!-- toolbox -->
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle active" href="#" id="navbarTools" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-cog"></i>
-                    <span class='d-none d-xl-inline'>Tools</span>
+                    <span class='d-none d-lg-inline'>도구</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-macos shadow" aria-labelledby="navbarTools" style='position: absolute'>
                     <li>
                         <a class="dropdown-item" href="/RandomPage">
                             <i class="fa fa-random nav-icon"></i>
-                            <span>RandomPage</span>
+                            <span>랜덤 문서</span>
                         </a>
                     </li>
                     <li>
                         <!-- pagelist-->
                         <a class="dropdown-item" href="/PageList">
                             <i class="fa fa-list-ul nav-icon"></i>
-                            <span>PageList</span>
+                            <span>문서 목록</span>
                         </a>
                     </li>
                     <li>
                         <!-- upload -->
                         <a class="dropdown-item" href="/Upload">
                             <i class="fa fa-upload nav-icon"></i>
-                            <span>Upload</span>
+                            <span>업로드</span>
                         </a>
                     </li>
                     <li>
                         <!-- Admin log -->
                         <a class="dropdown-item" href="/adminlog">
                             <i class="fa fa-history nav-icon"></i>
-                            <span>Admin log</span>
+                            <span>관리 로그</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="/viewrank">
                             <i class="fa fa-chart-line nav-icon"></i>
-                            <span>View count rank</span>
+                            <span>문서 조회수 랭킹</span>
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" href="/Licence">
                             <i class="fa fa-check nav-icon"></i>
-                            <span>Licence</span>
+                            <span>라이센스</span>
                         </a>
                     </li>
                 </ul>
@@ -88,24 +88,24 @@
                     <li><hr class="dropdown-divider"></li>
                     <% if (locals.username) { %>
                     <li>
-                        <a class='dropdown-item' href='/w/User:<%= username %>'>User Page</a>
+                        <a class='dropdown-item' href='/w/User:<%= username %>'>사용자 문서</a>
                     </li>
                     <% } %>
                     <li>
-                        <a class='dropdown-item' href='/contribution/<%= locals.username ? username :  ipaddr %>'>Contributions</a>
+                        <a class='dropdown-item' href='/contribution/<%= locals.username ? username :  ipaddr %>'>기여 목록</a>
                     </li>
                     <hr style='margin: 0.3rem 0'>
                     <% if (locals.username) { %>
                     <li>
-                        <a class='dropdown-item' href='/settings'>Settings</a>
+                        <a class='dropdown-item' href='/settings'>설정</a>
                     </li>
                     <hr style='margin: 0.3rem 0'>
                     <% } %>
                     <li>
                         <% if (locals.username) { %>
-                            <a class="dropdown-item" href='/logout'>Logout</a>
+                            <a class="dropdown-item" href='/logout'>로그아웃</a>
                         <% } else { %>
-                            <a class="dropdown-item" href='/login'>Login</a>
+                            <a class="dropdown-item" href='/login'>로그인</a>
                         <% } %>
                     </li>
                 </ul>
@@ -113,7 +113,7 @@
         </div>
         <!-- search box -->
         <form class="input-group d-flex" action='/search' method='POST' id='searchBox'>
-            <input class="form-control" id='searchinput' name='pagename' type="search" placeholder="Type page name to open..." aria-label="Page name to open">
+            <input class="form-control" id='searchinput' name='pagename' type="search" placeholder="검색" aria-label="검색">
             <button class="btn btn-outline-light bg-primary" id='searchSubmit' type="submit"><i class="fa fa-arrow-right text-light"></i></button>
             <!-- <button class="btn btn-outline-light" type="submit">Open</button> -->
         </form>

@@ -39,14 +39,14 @@ module.exports = async (req, res, users, loginhistory) =>
                 else
                 {
                     console.log("Login error (password mismatch) " + id + '; IP Address: ' + ipaddr)
-                    require(global.path + '/error.js')(req, res, null, 'The password given is incorrect. Please try again.', '/login', 'the login page')
+                    require(global.path + '/error.js')(req, res, null, `비밀번호가 틀렸습니다. 다시 시도해 주세요.`, '/login', '로그인 페이지', 403, 'ko')
                 }
             })
         }
         else
         {
             console.log("Login error (no such user): " + req.body.id)
-            require(global.path + '/error.js')(req, res, null, 'The user given does not exist. Please ensure that you inputted it correctly.', '/login', 'the login page')
+            require(global.path + '/error.js')(req, res, null, `사용자를 찾을 수 없습니다. 사용자명을 올바르게 입력했는지 확인해 주세요.`, '/login', '로그인 페이지', 403, 'ko')
         }
     })
 }

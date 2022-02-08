@@ -80,7 +80,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                     const eqSign = args[i].indexOf('=')
                     if (eqSign === undefined)
                     {
-                        return `<p class="fw-bold text-danger">INCLUDE MACRO ERROR: no value given for argument ${args[i]}</p>`
+                        return `<p class="fw-bold text-danger">INCLUDE 매크로 오류: 인수 ${args[i]}의 값이 없습니다.</p>`
                     }
                     const k = args[i].substring(0,eqSign).trim()
                     const v = args[i].substring(eqSign + 1).trim()
@@ -120,7 +120,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             }
             catch (e)
             {
-                return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
+                return '<p class="fw-bold text-danger">DDAY 오류: 잘못된 날짜 형식</p>'
             }
         }
         case 'agek':
@@ -133,7 +133,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             }
             catch (e)
             {
-                return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
+                return '<p class="fw-bold text-danger">AGEK 오류: 잘못된 날짜 형식</p>'
             }
         }
         case 'age':
@@ -149,7 +149,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 }
                 catch (e)
                 {
-                    return '<p class="fw-bold text-danger">DDAY ERROR: Invalid Date Format</p>'
+                    return '<p class="fw-bold text-danger">AGE 오류: 잘못된 날짜 형식</p>'
                 }
             }
         case 'math':
@@ -238,7 +238,7 @@ function renderHeading(text, depth)
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
-    let editButton = renderSectionEditButton ? `<a class='ren-header-edit' href='/edit/${pgname}?section=${currentSection++}'>[edit]</a>` : ''
+    let editButton = renderSectionEditButton ? `<a class='ren-header-edit' href='/edit/${pgname}?section=${currentSection++}'>[편집]</a>` : ''
     var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text} ${editButton}</h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
@@ -278,7 +278,7 @@ function fredirect(orgname, pagename, paragraph, text, res, redirect)
         res.redirect(`/w/${pagename}?from=${orgname}${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
         return undefined
     }
-    else return '<p><span class="fw-bold text-danger">REDIRECT ERROR</span>: redirect can only be done on a normal page.</p>'
+    else return '<p><span class="fw-bold text-danger">리다이렉트 오류</span>: 리다이렉트는 일반 문서에서만 할 수 있습니다.</p>'
 }
 
 function renderTable(data)
@@ -651,7 +651,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
                 let p1Tooltip = p1.replace(/'/g,`&apos;`)
                 let p_me = (pagename == p1) ? 'ren_thispage' : ''
                 if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p2}</a>`
-                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage ${p_me}'>${p2}</a>`
+                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (존재하지 않는 페이지)' class='ren_nosuchpage ${p_me}'>${p2}</a>`
             }
             const promise = f(p1, p2)
             promises.push(promise)

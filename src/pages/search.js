@@ -8,7 +8,7 @@ module.exports = async (req, res, pages) =>
     const query = arraywrap(req.query.q)[0].trim()
     if (query == '')
     {
-        res.status(400).send('Search keyword cannot be null.')
+        res.status(400).send('검색어가 비어 있습니다.')
         return
     }
     const searchres = await pages.findAll(
@@ -34,7 +34,7 @@ module.exports = async (req, res, pages) =>
     const username = req.session.username
     res.render('outline',
     {
-        title: 'Search results for ' + sanitiseHtml(query, {disallowedTagsMode: escape}),
+        title: sanitiseHtml(query, {disallowedTagsMode: escape}) + '의 검색 결과',
         content: searchHTML,
         username: username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

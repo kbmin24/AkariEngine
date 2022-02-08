@@ -14,7 +14,7 @@ module.exports = (req, res, pages) =>
             const username = req.session.username
             res.render('outline',
             {
-                title: 'PageList',
+                title: '문서 목록',
                 content: html,
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

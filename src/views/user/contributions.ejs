@@ -2,10 +2,10 @@
     <table class="table">
         <thead>
             <tr>
-                <th scope='col'>Page name</th>
-                <th scope='col'>Change made</th>
-                <th scope='col'>Comment</th>
-                <th scope='col'>Date</th>
+                <th scope='col'>문서명</th>
+                <th scope='col'>수정 사항</th>
+                <th scope='col'>편집 요약</th>
+                <th scope='col'>일시</th>
             </tr>
         </thead>
         <tbody>
@@ -33,7 +33,7 @@
     <% var prevlink = `/contribution/${username}?from=${(from * 1 - 100).toString()}` %>
     <li class="page-item">
         <a class="page-link" href=<%= prevlink %> aria-label="Previous">
-            &laquo;
+            이전
         </a>
     </li>
 <% } %>
@@ -41,7 +41,7 @@
     <% var nextlink = `/contribution/${username}?from=${(from * 1 + 100).toString()}` %>
     <li class="page-item">
         <a class="page-link" href=<%= nextlink %> aria-label="Next">
-            &raquo;
+            다음
         </a>
     </li>
 <% } %>

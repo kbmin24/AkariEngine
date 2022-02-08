@@ -11,6 +11,11 @@ module.exports = async (req, res, history, protect, perm, block) =>
     //rule: OLD AND NEW
     var rev1 = req.query.rev1
     var rev2 = req.query.rev2
+    if (!rev1 || !rev2)
+    {
+        require(global.path + '/error.js')(req, res, null, `리비전이 지정되지 않았습니다.`, '/', '메인 페이지', 404, 'ko')
+        return
+    }
 
     if (rev1 * 1 > rev2 * 1) [rev1, rev2] = [rev2, rev1]
 
@@ -30,7 +35,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, username, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', '/login', '로그인 페이지', 403, 'ko')
         return
     }
 
@@ -44,7 +49,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev1)
     {
-        require(global.path + '/error.js')(req, res, null, 'The page (or revision) requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
         return
     }
 
@@ -58,7 +63,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev2)
     {
-        require(global.path + '/error.js')(req, res, null, 'The page (or revision) requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
         return
     }
 
@@ -99,7 +104,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     */
     res.render('outline',
     {
-        title: `Difference of ${req.params.name} r${rev1} and r${rev2}`,
+        title: `${req.params.name} r${rev1}, r${rev2} 비교`,
         content: html,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

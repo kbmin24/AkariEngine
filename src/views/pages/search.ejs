@@ -1,5 +1,5 @@
-<p class='fw-bold'>Looking for <a href='/edit/<%= searchtitle %>'>edit page</a>?</p>
-<h5>Titles match</h5>
+<p class='fw-bold'><a href='/edit/<%= searchtitle %>'>문서 편집</a>을 찾으시나요?</p>
+<h5>제목 일치</h5>
 <ul class="list-group list-group-flush">
     <% for (let i = 0; i < resultTitle.length; i++) { %>
         <li class="list-group-item">
@@ -7,7 +7,7 @@
         </li>
     <% } %>
 </ul>
-<h5>Contents match</h5>
+<h5>내용 일치</h5>
 <ul class="list-group list-group-flush">
     <% for (let i = 0; i < resultContent.length; i++) { %>
         <li class="list-group-item">

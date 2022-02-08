@@ -16,6 +16,22 @@ module.exports = async (io, socket, command, options) =>
         let cmdSplit = command.split(' ')
         switch (cmdSplit[0])
         {
+            case 'cleancategories':
+            {
+                let cat = await options.category.findAll()
+                cat.forEach(async (val, i , err) =>
+                {
+                    if (await options.pages.findOne({where: {title: val.page}}))
+                    {
+                        //do nothing
+                    }
+                    else
+                    {
+                        options.pages.destroy({where: {title: val.page}})
+                    }
+                })
+                break
+            }
             case 'filemigration':
             {
                 //go thru the list of files
@@ -68,7 +84,7 @@ module.exports = async (io, socket, command, options) =>
             }
             case 'help':
             {
-                let help = `filemigration\nhelp\npermissions (username)\nwhoami\n`
+                let help = `cleancategories\nfilemigration\nhelp\npermissions (username)\nwhoami\n`
                 stdout(socket, help)
                 break
             }

@@ -55,7 +55,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
         }
         res.render('outline',
         {
-            title: 'RecentDiscuss',
+            title: '최근 토론',
             content: html,
             isPage: false,
             username: req.session.username,

@@ -11,7 +11,7 @@ module.exports = async (req, res, tables={}) =>
     const rev = req.body.rev * 1
     if (!username)
     {
-        await require(global.path + '/error.js')(req, res, null, 'Please Login.', '/login', 'the login page')
+        await require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
     }
     if (!(await tables['perm'].findOne({where:{username: username, perm: 'acl'}})))

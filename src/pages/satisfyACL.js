@@ -22,7 +22,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
         {
             if (autoredirect)
             {
-                require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+                require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
                 return undefined
             }
             else

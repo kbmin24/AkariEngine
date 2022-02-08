@@ -17,7 +17,7 @@ module.exports = async (req, res, tables = {}) =>
                         key: 'sign',
                         value: req.body.sign
                 })
-            require(global.path + '/info.js')(req, res, null, 'Done.', '/settings', 'the settings page')
+            require(global.path + '/info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
             return
             }
         case 'changePassword':
@@ -27,7 +27,7 @@ module.exports = async (req, res, tables = {}) =>
                 const newPassword = req.body.password
                 if (!user)
                 {
-                    require(global.path + '/error.js')(req, res, null, 'You are not logged in', '/login', 'the login page')
+                    require(global.path + '/error.js')(req, res, null, `로그인이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
                     return
                 }
                 
@@ -38,7 +38,7 @@ module.exports = async (req, res, tables = {}) =>
                     if (hashedPW.toString('base64') != user.password)
                     {
                         //bad.
-                        require(global.path + '/error.js')(req, res, null, 'Please check whether you typed your previous password correctly.', 'javascript:window.history.back()', 'the previous  page')
+                        require(global.path + '/error.js')(req, res, null, `이전 비밀번호를 올바르게 입력했는지 확인해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
                         return
                     }
                     //good. Put new password in.
@@ -46,7 +46,7 @@ module.exports = async (req, res, tables = {}) =>
                     {
                         if (err) throw new error
                         await user.update({password: hashedPW.toString('base64')})
-                        require(global.path + '/info.js')(req, res, null, 'Done.', '/settings', 'the settings page')
+                        require(global.path + '/info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
                     })
                 })
                 return

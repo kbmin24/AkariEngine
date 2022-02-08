@@ -1,53 +1,32 @@
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="card-title">Set sign</h5>
-        <p class="card-text">You can set sign to use. The default format is only displaying user name. Date and Time will be automatically appended when you sign.</p>
-        <form method='POST' action='/settings/setSign'>
-            <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
-            <div class='form-group mb-2'>
-                <div class='row'>
-                    <p>Previous sign: <%= sign %></p>
-                </div>
-                <div class='row'>
-                    <label for='signInputbox' class='col-form-label col-sm-2'>New Sign</label>
-                    <div class='col-sm-10'>
-                        <input type='text' name='sign' class='form-control' id='signInputbox' required>
-                    </div>
-                </div>
-            </div>
-            <button type='submit' class='btn btn-primary'>Save</button>
-        </form>
-    </div>
-</div>
-<div class="card mb-3">
-    <div class="card-body">
-        <h5 class="card-title">Change password</h5>
-        <p class="card-text">You can change your current password.</p>
+        <h5 class="card-title">비밀번호 변경</h5>
+        <p class="card-text">비밀번호를 변경할 수 있습니다.</p>
         <form method='POST' action='/settings/changePassword'>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
             <div class='form-group mb-2'>
-                <label for='oldpassword'>Current Password</label>
+                <label for='oldpassword'>현재 비밀번호</label>
                 <input type='password' name='oldpassword' class='form-control' id='oldpassword' placeholder='Enter Current Password' required>
             </div>
             <div class='form-group mb-2'>
-                <label for='passwordInputbox'>New Password</label>
+                <label for='passwordInputbox'>새 비밀번호</label>
                 <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='Enter New Password' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
                 pattern='^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$'>
-                <small class='form-text text-muted'>Passwords must be at least eight characters long.</small>
-                <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'>Passwords should be 8 characters or longer, 255 characters or shorter.</small>
-                <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'>Your password contains illegal characters: <small id='passwordbadcharlist'></small></small>
+                <small class='form-text text-muted'>비밀번호는 최소 8자 이상이어야 합니다.</small>
+                <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'>비밀번호는 8자 이상 255자 이하여야 합니다.</small>
+                <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'>비밀번호에 잘못된 문자가 포함되어 있습니다: <small id='passwordbadcharlist'></small></small>
             </div>
             <div class='form-group mb-2'>
-                <label for='passwordConfirmInputbox'>Confirm Password</label>
+                <label for='passwordConfirmInputbox'>비밀번호 확인</label>
                 <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='Re-enter password' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
                 <p>
-                    <small id='passwordmatch' class='text-success fw-bold' style='display: none'>Passwords match.</small>
-                    <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>Passwords do not match.</small>
+                    <small id='passwordmatch' class='text-success fw-bold' style='display: none'>비밀번호 일치</small>
+                    <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>비밀번호 불일치</small>
                 </p>
-                <small id='passwordConfirmDesc' class='form-text text-muted'>In order to ensure that you have entered your password correctly, please type it one more time.</small>
+                <small id='passwordConfirmDesc' class='form-text text-muted'>비밀번호가 제대로 입력되었는지 확인하기 위해 한 번 더 입력해 주세요.</small>
             </div>
             <script src='/js/signupPasswordCheck.js'></script>
-            <button type='submit' class='btn btn-primary'>Change password</button>
+            <button type='submit' class='btn btn-primary'>비밀번호 변경</button>
         </form>
     </div>
 </div>

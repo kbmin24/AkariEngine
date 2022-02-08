@@ -2,7 +2,7 @@ var threadNum = 1
 function renderDiscuss(thNumber, username, date, message, isHidden, type)
 {
     let isme = username == $('#threadUsername').text()
-    if (isHidden) message = '<em>This comment is hidden.</em>'
+    if (isHidden) message = '<em>이 스레드는 숨겨져 있습니다.</em>'
     if (type !== 'comment') message = '<em>' +type + ' ' + message + '</em>'
 
     let thNumberField = `<a href='#${thNumber}'>#${thNumber}</a>`
@@ -66,7 +66,7 @@ $(document).ready(() =>
                 if (!data['isOpen'])
                 {
                     $("#commentBox").prop('disabled', true)
-                    $("#commentBox").val('This thread has been closed (Hint: It may be reopened; please refresh to check).')
+                    $("#commentBox").val('토론이 닫혀 있습니다 (새로고침하여 다시 확인할 수 있습니다).')
                 }
                 else
                 {

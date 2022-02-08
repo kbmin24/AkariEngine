@@ -11,30 +11,30 @@
         <small class='form-text text-muted'>For spam protection, please type <b>four</b> characters shown above.</small>
     </div>
     <div class='form-group mb-2'>
-        <label for='filenameInputBox'>Filename</label>
-        <input type='text' name='filename' maxlength='255' class='form-control' id='filenameInputBox' placeholder='Enter Filename'>
-        <p>The filename may <b>not</b> contain: #, ?, /, \, &lt;, &gt;, :, *, |, ".</p>
+        <label for='filenameInputBox'>파일명</label>
+        <input type='text' name='filename' maxlength='255' class='form-control' id='filenameInputBox' placeholder='파일명을 입력해 주세요.'>
+        <p>파일명은 다음 문자를 포함할 수 없습니다: #, ?, /, \, &lt;, &gt;, :, *, |, ".</p>
     </div>
     <div class='form-group mb-2'>
-        <label for='editAreaBox'>Explanation</label>
-        <textarea class='form-control' id='editAreaBox' name='explanation' placeholder='Please include licence information.' ></textarea>
+        <label for='editAreaBox'>파일 설명</label>
+        <textarea class='form-control' id='editAreaBox' name='explanation' placeholder='라이센스 정보, 출처 등을 기입해 주세요.' ></textarea>
     </div>   
     <div class='form-group mb-2'>
-        <label for='inputFile' class='form-label'>Select File (MAX 4MB)</label>
+        <label for='inputFile' class='form-label'>파일 선택 (최대 4MB)</label>
         <input class='form-control' type='file' name='inputFile' id='inputFile'>
     </div>
     <div class='form-group mb-2'>
         <figure class='figure'>
             <img class='figure-img rounded w-25' id='uploadImagePreview'>
-            <figcaption class='figure-caption'>Image preview</figcaption>
+            <figcaption class='figure-caption'>미리보기</figcaption>
         </figure>
     </div> 
-    <p><span class='text-danger fw-bold'>WARNING!</span>    DO NOT save copyrighted materials without permission; legal consequences may follow. Entering informations about the licence is <b>required</b>.<br>저작권이 있는 내용을 함부로 저장하지 마십시오. 법적 책임이 뒤따를 수 있습니다. 라이선스(CCL, 제한적 이용 등) 표기는 필수입니다.<br><%= global.copyrightNotice %></p>
-    <p>You can only upload JPEG, JPG, PNG, GIF and WebP.</p>
+    <p><span class='text-danger fw-bold'>경고!</span>    저작권이 있는 내용을 함부로 저장하지 마십시오. 법적 책임이 뒤따를 수 있습니다. 라이선스(CCL, 제한적 이용 등) 표기는 필수입니다.<br><%= global.copyrightNotice %></p>
+    <p>JPEG, JPG, PNG, GIF, WebP만 업로드할 수 있습니다.</p>
     <button type='submit' id='uploadButton' class='btn btn-primary' disabled>Upload</button>
 </form>
 
 <script type='text/javascript' src='/js/upload.js'></script>
 <% } else { %>
-    <p>You need to be logged in to upload a file. <a href='/login'>Login</a></p>
+    <p>파일을 업로드하기 위해서는 로그인이 필요합니다. <a href='/login'>로그인</a></p>
 <% } %>

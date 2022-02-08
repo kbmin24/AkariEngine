@@ -4,7 +4,7 @@ module.exports = async (req, res, pages) =>
     req.body.pagename = req.body.pagename.trim()
     if (req.body.pagename == '')
     {
-        res.status(400).send('Search keyword cannot be null.')
+        res.status(400).send('검색어가 비어 있습니다.')
         return
     }
     const p = await pages.findOne({where: {title: req.body.pagename}})

@@ -22,7 +22,7 @@ module.exports = async (req, res, category) =>
         }
         res.render('outline',
         {
-            title: 'Category ' + req.params.name,
+            title: '분류 ' + req.params.name,
             content: html,
             username: req.session.username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

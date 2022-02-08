@@ -14,7 +14,7 @@ global.dtFormat = global.conf.dateTimeFormat
 global.path = __dirname
 
 //(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
-global.copyrightNotice = `By saving this edit, you are allowing ${global.appname} to distribute your contribution under ${global.licence}. This agreement cannot be withdrawn. (이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)`
+global.copyrightNotice = `이 문서를 편집함으로써 당신은 ${global.appname}이(가) 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.`
 global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
@@ -227,7 +227,7 @@ app.get('/signup', async (req, res) =>
     const signuppage = await ejs.renderFile(global.path + '/views/user/signup.ejs',{captcha: captchaSVG})
     res.render('outline',
     {
-        title: 'Sign up',
+        title: '회원 가입',
         content: signuppage,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -253,7 +253,7 @@ app.get('/login', csrfProtection, async (req,res) =>
         }
         res.render('outline',
         {
-            title: 'Login',
+            title: '로그인',
             content: html,
             //notification: r,
             username: username,
@@ -286,7 +286,7 @@ app.get('/settings', csrfProtection, async (req, res) =>
     const username = req.session.username
     if (!username)
     {
-        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+        require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
     }
     const sR = await settings.findOne({
@@ -311,7 +311,7 @@ app.get('/settings', csrfProtection, async (req, res) =>
         }
         res.render('outline',
         {
-            title: 'User Settings',
+            title: '설정',
             content: html,
             //notification: r,
             username: username,
@@ -335,7 +335,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
     req.params.name = req.params.name
     if (req.params.name.length > 255)
     {
-        require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 255 characters long at most.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서명이 너무 깁니다. 문서명의 최대 길이는 255자입니다.`, '/', '메인 페이지', 200, 'ko')
         return
     }
     const target = await pages.findOne({where: {title: req.params.name}})
@@ -343,7 +343,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
     {
         if (req.params.name.toLowerCase().startsWith('file:'))
         {
-            require(global.path + '/error.js')(req, res, username, 'Illegal page name. Page names cannot start with \'File:\'.', '/', 'the main page')
+            require(global.path + '/error.js')(req, res, null, `일반 문서명은 'File:'로 시작할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
             return
         }
     }
@@ -373,7 +373,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
 
                 if (req.query.section + offset > splits)
                 {
-                    require(global.path + '/error.js')(req, res, null, 'No such section found. Are you trying to edit as section the page from an old revision?', '/login', 'the login page')
+                    require(global.path + '/error.js')(req, res, null, `요청하신 문단을 찾을 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
                     return
                 }
                 for (let i = 0; i < req.query.section + offset; i++) prefix += splits[i]
@@ -400,7 +400,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
             }
             res.render('outline',
             {
-                title: 'Edit ' + req.params.name,
+                title: req.params.name + ' 편집',
                 content: html,
                 isPage: true,
                 pagename: req.params.name,
@@ -428,7 +428,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
             }
             res.render('outline',
             {
-                title: 'Edit ' + req.params.name,
+                title: req.params.name + ' 편집',
                 content: html,
                 isPage: true,
                 notification: r,
@@ -447,7 +447,7 @@ app.post('/edit/:name', csrfProtection, async (req, res) =>
     const username = req.session.username
     if (req.params.name.length > 255)
     {
-        require(global.path + '/error.js')(req, res, username, 'The page name given is too long. Pages can be 256 characters long at most.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서명이 너무 깁니다. 문서명의 최대 길이는 255자입니다.`, '/', '메인 페이지', 200, 'ko')
         return
     }
     await require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block, category, settings) //actually no need to separately pass on username (in req)
@@ -455,6 +455,11 @@ app.post('/edit/:name', csrfProtection, async (req, res) =>
 
 app.get('/move/:name', async (req, res) =>
 {
+    if (req.params.name.toLowerCase().startsWith('file:'))
+    {
+        require(global.path + '/error.js')(req, res, null, `파일 문서는 이동할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
+        return
+    }
     const pro = await protect.findOne({where: {title: req.params.name, task: 'move'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
     const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
@@ -468,14 +473,14 @@ app.get('/move/:name', async (req, res) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서의 읽기 권한이 ${acl}이기 때문에 읽을 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
         return
     }
     pages.findOne({where: {title: req.params.name}}).then(async (target) =>
     {
         if (!target)
         {
-            require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', 404)
+            require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
             return
         }
         const username = req.session.username
@@ -490,7 +495,7 @@ app.get('/move/:name', async (req, res) =>
         {
             res.render('outline',
             {
-                title: 'Move ' + req.params.name,
+                title: req.params.name + ' 이동',
                 content: html,
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -508,7 +513,7 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
     const username = req.session.username
     if (username === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
+        require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
     }
     perm.findOne({where: {username: username, perm: 'deletepage'}}).then(p =>
@@ -524,7 +529,7 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
                     {
                         res.render('outline',
                         {
-                            title: 'Delete ' + req.params.name,
+                            title: req.params.name + ' 삭제',
                             isPage: true,
                             pagename: target.title,
                             content: html,
@@ -536,19 +541,20 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
                 }
                 else
                 {
-                    require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page')
+                    require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+                    return
                 }
             })
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, 'You do not have permission to delete page.', '/login', 'the login page')
+            require(global.path + '/error.js')(req, res, null, `문서 삭제 권한이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
         }
     })
 })
 app.post('/delete/:name', csrfProtection, async (req, res) =>
 {
-    await require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm, mfile)
+    await require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm, mfile, category)
 })
 app.get('/revert/:name', async (req, res) =>
 {
@@ -566,13 +572,13 @@ app.get('/revert/:name', async (req, res) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, username, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서의 읽기 권한이 ${acl}이기 때문에 이동할 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
         return
     }
     const p = await pages.findOne({where: {title: req.params.name}})
     if (!p)
     {
-        require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', 404)
+        require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
         return
     }
     const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
@@ -592,7 +598,7 @@ app.get('/revert/:name', async (req, res) =>
         }
         res.render('outline',
         {
-            title: 'Revert ' + req.params.name + ' to r' + req.query.rev,
+            title: req.params.name + '를 r' + req.query.rev + '(으)로 되돌리기',
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -642,7 +648,7 @@ app.get('/history/:name', (req, res) =>
 })
 app.get('/RecentChanges', async (req, res) =>
 {
-    await require(global.path + '/sendfile.js')(req, res, 'RecentChanges', '/views/pages/recentchanges.html')
+    await require(global.path + '/sendfile.js')(req, res, '최근 변경', '/views/pages/recentchanges.html')
 })
 app.get('/PageList', (req, res) =>
 {
@@ -661,7 +667,7 @@ app.get('/Upload', async (req, res) =>
     {
         res.render('outline',
         {
-            title: 'Upload',
+            title: '업로드',
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -684,7 +690,7 @@ function checkFileType(file, cb)
     }
     else
     {
-        cb('You can only upload JPEG, JPG, PNG, GIF and WebP files. File names should also obey this rule.')
+        cb('JPEG, JPG, PNG, GIF, WebP만 업로드 할 수 있습니다.')
     }
 }
 var storage = multer.diskStorage({
@@ -702,7 +708,7 @@ var storage = multer.diskStorage({
             //todo: refuse comma
             if (fs.existsSync(__dirname + '/public/uploads/' + req.body.filename))
             {
-                let e = new Error('File already exists')
+                let e = new Error('파일이 이미 존재합니다.')
                 e.code = 'FILEEXISTS'
                 return cb(e)
             }
@@ -731,7 +737,7 @@ var upload = multer({
         const username = req.session.username
         if (username === undefined)
         {
-            require(global.path + '/error.js')(req, res, null, 'You need to be logged in.', '/login', 'the login page')
+            require(global.path + '/error.js')(req, res, null, `로그인이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
             return
         }
         const b = await block.findOne({where: {target: username, targetType: 'user'}})
@@ -739,12 +745,12 @@ var upload = multer({
         {
             if (b.isForever)
             {
-                require(global.path + '/error.js')(req, res, null, `You are blocked forever by ${b.doneBy} - ${b.comment}`, '/', 'FrontPage')
+                require(global.path + '/error.js')(req, res, null, `${b.doneBy}에 의해 영구적으로 차단된 상태입니다. (사유: ${b.comment})`, '/', '메인 페이지', 403, 'ko')
                 return
             }
             else
             {
-                require(global.path + '/error.js')(req, res, null, `You are blocked until ${dateandtime.format(b.until, global.dtFormat)} by ${b.doneBy} - ${b.comment}`, '/', 'FrontPage')
+                require(global.path + '/error.js')(req, res, null, `${b.doneBy}에 의해 ${dateandtime.format(b.until, global.dtFormat)}까지 차단된 상태입니다. (사유: ${b.comment})`, '/', '메인 페이지', 403, 'ko')
                 return
             }
         }
@@ -757,7 +763,7 @@ var upload = multer({
         {
             if (req.body.captcha !== req.session.captcha)
             {
-                let e = new Error('Captcha Error')
+                let e = new Error('캡챠 오류')
                 e.code = 'INVALIDCAPTCHA'
                 return cb(e)
             }
@@ -768,11 +774,11 @@ var upload = multer({
         }
         if (!req.body.filename.match(/^.*\.(jpeg|jpg|png|gif|webp)$/i))
         {
-            cb('You can only upload JPEG, JPG, PNG, GIF and WebP files. File names should also obey this rule.')
+            cb('JPEG, JPG, PNG, GIF, WebP만 업로드할 수 있습니다.')
         }
         if (!req.body.filename.match(/^[^\#\?\\\/\<\>\:\*\|\"]*$/i))
         {
-            cb('The filename may not contain: #, ?, /, \\, &lt;, &gt;, :, *, |, ".')
+            cb('파일명은 다음 문자를 포함할 수 없습니다: #, ?, /, \\, &lt;, &gt;, :, *, |, ".')
         }
         checkFileType(file, cb)
     }
@@ -800,7 +806,7 @@ app.post('/Upload', upload.single('inputFile'), async (req, res) =>
             content: req.body.explanation,
             bytechange: req.body.explanation.length,
             editedby: req.session.username,
-            comment: `Uploaded ${req.body.filename}`,
+            comment: `${req.body.filename} 업로드`,
             type: 'edit'
         })
     await recentchanges.create(
@@ -808,7 +814,7 @@ app.post('/Upload', upload.single('inputFile'), async (req, res) =>
         page: filepgname,
         rev: 1,
         doneBy: req.session.username,
-        comment: `Uploaded ${req.body.filename}`,
+        comment: `${req.body.filename} 업로드`,
         bytechange: req.body.explanation.length,
         type: 'upload'
     })
@@ -818,53 +824,6 @@ app.get('/diff/:name', async (req, res) =>
 {
     //usage example: /diff/FrontPage?rev1=20&rev2=30 (compare r20 and r30)
     await require(global.path + '/pages/diff.js')(req, res, history, protect, perm, block)
-})
-app.get('/file/:name', async (req, res) => 
-{
-    await require(global.path + '/files/viewfile.js')(req, res, mfile, pages)
-})
-app.get('/deletefile/:name', csrfProtection, (req, res) =>
-{
-    const username = req.session.username
-    if (username === undefined)
-    {
-        require(global.path + '/error.js')(req, res, null, 'Please login.', '/login', 'the login page')
-        return
-    }
-    perm.findOne({where: {username: username, perm: 'deletefile'}}).then(p =>
-    {
-        if (!p)
-        {
-            require(global.path + '/error.js')(req, res, null, 'You do not have permission to delete file.', '/login', 'the login page')
-            return
-        }
-        mfile.findOne({where: {filename: req.params.name}}).then(target =>
-            {
-                if (target)
-                {
-                    const username = req.session.username
-                    ejs.renderFile(global.path + '/views/files/delete.ejs',{title: req.params.name, username: username, csrfToken: req.csrfToken()}, (err, html) => 
-                    {
-                        res.render('outline',
-                        {
-                            title: 'Delete ' + req.params.name,
-                            content: html,
-                            username: username,
-                            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                            wikiname: global.appname
-                        })
-                    })
-                }
-                else
-                {
-                    require(global.path + '/error.js')(req, res, null, 'The file requested is not found. Would you like to <a href="/upload/'+req.params.name+'">upload one?</a>', '/', 'the main page')
-                }
-            })
-    })
-})
-app.post('/deletefile/:name', csrfProtection, (req, res) =>
-{
-    require(global.path + '/files/deletefile.js')(req, res, mfile, history, recentchanges, perm)
 })
 app.get('/RandomPage', async (req, res) =>
 {
@@ -878,7 +837,7 @@ app.get('/admin', async (req, res) =>
     //todo: check admin perm
     if (!req.session.username)
     {
-        await require(global.path + '/error.js')(req, res, null, 'Please Login.', '/login', 'the login page')
+        await require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
     }
     if (await perm.findOne({where:{username: req.session.username, perm: 'admin'}}))
@@ -887,7 +846,7 @@ app.get('/admin', async (req, res) =>
     }
     else
     {
-        await require(global.path + '/error.js')(req, res, null, 'You need admin permission.', '/', 'the main page')
+        await require(global.path + '/error.js')(req, res, null, `Admin 권한이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
     }
 })
 app.get('/admin/developer', csrfProtection, async (req, res) =>
@@ -1020,24 +979,24 @@ app.use((err, req, res, next) =>
         case 'EBADCSRFTOKEN':
             {
                 //Send CSRF Error message
-                require(__dirname + '/sendfile.js')(req, res, 'CSRF token error', '/csrfError.html')
+                require(__dirname + '/sendfile.js')(req, res, 'CSRF 토큰 오류', '/csrfError.html')
             }
             break
         case 'FILENAMENULL':
             {
-                require(global.path + '/error.js')(req, res, null, 'File name cannot be blank.', 'javascript:window.history.back()', 'the previous page')
+                require(global.path + '/error.js')(req, res, null, `파일 이름이 비어 있습니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
             }
             break
         case 'FILEEXISTS':
             {
-                require(global.path + '/error.js')(req, res, null, 'File already exists. Please change the file name.', 'javascript:window.history.back()', 'the previous page')
+                require(global.path + '/error.js')(req, res, null, `파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
             }
             break
         case 'PROCESSED':
             break
         case 'INVALIDCAPTCHA':
             {
-                require(global.path + '/error.js')(req, res, null, 'Please complete CAPTCHA correctly.', 'javascript:window.history.back()', 'the previous page')
+                require(global.path + '/error.js')(req, res, null, `CAPTCHA를 수행해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
             }
             break
         case 'BOARD_LIMIT_FILE_SIZE':
@@ -1064,7 +1023,7 @@ app.use((err, req, res, next) =>
             break
         case 'LIMIT_FILE_SIZE':
             {
-                require(global.path + '/error.js')(req, res, null, 'Sorry. The file selected is too large. It should be less than 4MB or less.', 'javascript:window.history.back()', 'the upload page')
+                require(global.path + '/error.js')(req, res, null, `선택된 파일의 크기가 너무 큽니다. 파일은 최대 4MB여야 합니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
             }
             break
         default:
@@ -1161,6 +1120,6 @@ io.on('connection', async socket =>
     })
     socket.on('input', async data =>
     {
-        await require(global.path + '/admin/command.js')(io, socket, data.command, {perm: perm, file: mfile, pages: pages, history: history})
+        await require(global.path + '/admin/command.js')(io, socket, data.command, {perm: perm, file: mfile, pages: pages, history: history, category: category})
     })
 })

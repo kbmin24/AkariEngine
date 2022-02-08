@@ -43,10 +43,10 @@ module.exports = async (req, res, pages, files, category) =>
     let opt = await getOptions(req.body.content)
     let content = await require(global.path + '/pages/render.js')(req.body.title, req.body.content, true, pages, files, req, res, false, true, {}, opt)
     content = await getCategory(req.body.title, category, opt['category']) + content
-    content = `<div class='alert alert-warning' role='alert'>The page has <b>not</b> been saved yet. Make sure to return to the edit page and save your changes.</div>` + content
+    content = `<div class='alert alert-warning' role='alert'>문서가 아직 저장되지 않았습니다. 편집 내용을 저장하려면 편집 창으로 돌아가세요.</div>` + content
     let renderOpt = {
         title: req.body.title,
-        titleInfo: '(<i>Preview</i>)',
+        titleInfo: '(<i>미리보기</i>)',
         content: content,
         isPage: true,
         pagename: req.body.title,
@@ -54,5 +54,5 @@ module.exports = async (req, res, pages, files, category) =>
         username: req.session.username,
         wikiname: global.appname
     }
-    res.render('outline',renderOpt)
+    res.render('outline', renderOpt)
 }

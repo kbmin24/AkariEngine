@@ -1,14 +1,12 @@
 <div class="w-auto btn-group mt-2" id='pageTools' role="group">
-  <a href='/w/<%= pagename %>' class='btn btn-outline-primary'>Page</a>
-  <a href='/edit/<%= pagename %>' class="btn btn-outline-primary">Edit</a>
-  <a href="/threads/<%= pagename %>" class="btn btn-outline-primary">Discuss</a>
-  <a href='/history/<%= pagename %>' class='btn btn-outline-primary'>History</a>
-  <a class='btn btn-outline-primary dropdown-toggle rounded-end' style='-webkit-appearance: none' type='button' id="pageToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-    More
-  </a>
+  <a href='/w/<%= pagename %>' class='btn btn-outline-primary'>문서</a>
+  <a href='/edit/<%= pagename %>' class="btn btn-outline-primary">편집</a>
+  <a href="/threads/<%= pagename %>" class="btn btn-outline-primary">토론</a>
+  <a href='/history/<%= pagename %>' class='btn btn-outline-primary'>역사</a>
+  <a class='btn btn-outline-primary dropdown-toggle rounded-end' style='-webkit-appearance: none' type='button' id="pageToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false"></a>
   <ul class='dropdown-menu dropdown-menu-macos shadow dropdown-menu-end' aria-labelledby="pageToolsDropdown">
-    <li><a href='/move/<%= pagename %>' class='dropdown-item'>Move</a></li>
-    <li><a href='/delete/<%= pagename %>' class='dropdown-item'>Delete</a></li>
-    <li><a href='/protect/<%= pagename %>' class='dropdown-item'>Protection</a></li>
+    <li><a href='/move/<%= pagename %>' class='dropdown-item'>이동</a></li>
+    <li><a href='/protect/<%= pagename %>' class='dropdown-item'>보호</a></li>
+    <li><a href='/delete/<%= pagename %>' class='dropdown-item'>삭제</a></li>
   </ul>
 </div>

@@ -50,13 +50,6 @@ body
         padding-right: 0.5rem !important;
     }
 }
-@media (max-width: 400px)
-{
-    #pageTools
-    {
-        margin-right: -20px;
-    }
-}
 .pageToolItem > a
 {
     text-decoration: none;

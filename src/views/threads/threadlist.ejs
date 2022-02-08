@@ -1,11 +1,11 @@
-<h3>Open Discussions</h3>
+<h3>열린 토론</h3>
 <ul>
     <% openThreads.forEach(t => { %>
         <li><a href='/thread/<%= t.threadID %>'><%= t.threadTitle %></a></li>
     <% }) %>
 </ul>
 <hr>
-<h3>Closed Discussions</h3>
+<h3>닫힌 토론</h3>
 <ul>
     <% closedThreads.forEach(t => { %>
         <li><a href='/thread/<%= t.threadID %>'><%= t.threadTitle %></a></li>
@@ -17,9 +17,9 @@
     <div class="form-group mt-2 mb-2 row">
         <label for='title' class='col-sm-2 col-form-label'>Title</label>
         <div class="col-sm-10">
-            <input class="form-control" id='title' maxlength=255 name='title' type="text" placeholder="Max 255 characters" <% if (r !== true) { %> disabled <% }%>>
+            <input class="form-control" id='title' maxlength=255 name='title' type="text" placeholder="토론 주제 (최대 255자)" <% if (r !== true) { %> disabled <% }%>>
         </div>
     </div>
-    <textarea class="form-control" id="comment" name="comment" placeholder='Please type some text to start off a discussion.' <% if (r !== true) { %> disabled <% }%>><% if (r !== true) { %> <%= r %> <% }%></textarea>
-    <button role='submit' class="btn btn-primary mt-3">Send</button>
+    <textarea class="form-control" id="comment" name="comment" placeholder='첫 발언의 내용을 적어 주세요.' <% if (r !== true) { %> disabled <% }%>><% if (r !== true) { %> <%= r %> <% }%></textarea>
+    <button role='submit' class="btn btn-primary mt-3">토론 열기</button>
 </form>

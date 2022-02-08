@@ -18,7 +18,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+            require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
             return
         }
         //from & to is nth entry in history (NOT nth revision)
@@ -42,7 +42,7 @@ module.exports = (req, res, histories) =>
             const username = req.session.username
             res.render('outline',
             {
-                title: 'History of ' + req.params.name,
+                title: req.params.name + '의 역사',
                 content: html,
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

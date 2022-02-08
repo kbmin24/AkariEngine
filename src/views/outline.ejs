@@ -16,7 +16,7 @@
                     </div>
                 <% } %>
                 <div class='alert alert-info' id='satobox' style='display: none' role="alert">
-                    An <a id='satoboxlink'>user page discussion</a> is open.
+                    <a id='satoboxlink'>사용자 토론</a>이 열려 있습니다.
                 </div>
                 <div class='pb-2 mt-2 mb-3 border-bottom titleArea'>
                     <h1 class='pgTitle'><% if (locals.titleLink) { %><a class='pgTitleLink' href='<%= locals.titleLink %>'><% } %><%= title %><% if (locals.titleLink) { %></a><% } %><% if (locals.titleInfo) { %><h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5><% } %></h1>
@@ -28,7 +28,7 @@
                     <% } %>
                     <% if (locals.updatedAt) { %>
                         <div style='clear: both'></div>
-                        <span style='float:right;'>Last updated: <%= locals.updatedAt %></span>
+                        <span style='float:right;'>최근 편집 시각: <%= locals.updatedAt %></span>
                     <% } %>
                 </div>
                 <div style='clear: both'></div>

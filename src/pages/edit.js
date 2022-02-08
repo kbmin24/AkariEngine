@@ -68,12 +68,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 
     if (!req.params.name)
     {
-        require(global.path + '/error.js')(req, res, username, 'Title is required.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서 제목이 필요합니다.`, '/', '메인 페이지', 200, 'ko')
         return
     }
     if (!req.body.content)
     {
-        require(global.path + '/error.js')(req, res, username, 'Content is required.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서 내용이 필요합니다.`, '/', '메인 페이지', 200, 'ko')
         return
     }
     
@@ -106,7 +106,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            require(global.path + '/error.js')(req, res, username, 'You cannot edit because the protection level for this page is ' + acl + '.', '/', 'the main page')
+            require(global.path + '/error.js')(req, res, null, `문서의 편집 권한이 ${acl}이기 때문에 편집할 수 없습니다.`, '/', '메인 페이지', 403, 'ko')
             return
         }
 
@@ -143,7 +143,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             req.params.name = req.params.name
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
-                require(global.path + '/error.js')(req, res, username, 'Illegal page name. Page names cannot start with \'File:\'.', '/', 'the main page')
+                require(global.path + '/error.js')(req, res, null, `페이지 이름은 'File:'로 시작할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
                 return
             }
 

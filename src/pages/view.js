@@ -4,13 +4,13 @@ async function getCategory(title, category, categorys)
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='category'>Categories: `
+    const cardBeginning = `<div class='category'>분류: `
     const cardEnd = `</div>`
 
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + '<i>None</i>' + cardEnd
+        return cardBeginning + '<i>없음</i>' + cardEnd
     }
 
     var res = cardBeginning
@@ -94,7 +94,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
     }
     else
     {
-        require(global.path + '/error.js')(req, res, username, 'You cannot view because the protection level for this page is ' + acl + '.', '/', 'the main page')
+        require(global.path + '/error.js')(req, res, null, `문서의 열람 권한이 ${acl}이기 때문에 이동할 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
         return
     }
     let titleSuffix = ''
@@ -109,7 +109,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         {
             if (await (perm.findOne({where: {username: username, perm: 'admin'}})))
             {
-                titleSuffix += '(<i>admin</i>)'
+                titleSuffix += '(<i>관리자</i>)'
             }
         }
     }
@@ -131,7 +131,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
                 if (req.query.from)
                 {
-                    titleSuffix = `<i>redirected from <a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a></i>&nbsp;` + titleSuffix
+                    titleSuffix = `<i><a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a>에서 넘어옴</i>&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
@@ -159,12 +159,12 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 {
                     let content
                     if (req.params.name.split(':')[1] == req.session.username)
-                        content = `<h3>The user page requested is not found.</h3><p>However, you can create your own user page to introduce yourself!</p><p><a href='/edit/${req.params.name}'>Create one</a></p>`
+                        content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>하지만, 직접 생성할 수 있습니다!</p><p><a href='/edit/${req.params.name}'>사용자 문서 생성</a></p>`
                     else
-                        content = `<h3>The user page requested is not found.</h3><p>The user did not make a user page.</p><p><a href='javascript:window.history.back()'>Go back</a></p>`
+                        content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>사용자가 사용자 문서를 만들지 않았습니다.</p><p><a href='javascript:window.history.back()'>뒤로가기</a></p>`
                     res.render('outline',
                     {
-                        title: 'Error!',
+                        title: '오류',
                         content: content,
                         isPage: false,
                         username: req.session.username,
@@ -173,7 +173,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     })
                     return
                 }
-                require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
             }
         })
     }
@@ -210,7 +210,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             }
             else
             {
-                require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
             }
         })
     }
