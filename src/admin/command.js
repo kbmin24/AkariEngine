@@ -27,7 +27,7 @@ module.exports = async (io, socket, command, options) =>
                     }
                     else
                     {
-                        options.pages.destroy({where: {title: val.page}})
+                        options.category.destroy({where: {page: val.page}})
                     }
                 })
                 break
