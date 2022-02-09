@@ -64,7 +64,8 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 {
 
     //check CAPTCHA
-    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return //CAPTCHA error
+    let captchaSuccess = await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm)
+    if (!captchaSuccess) return //CAPTCHA error
 
     if (!req.params.name)
     {

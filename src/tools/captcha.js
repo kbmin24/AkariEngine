@@ -1,4 +1,5 @@
 const svgCaptcha = require('svg-captcha')
+const axios = require('axios')
 
 function genArbitaryString(len)
 {
@@ -15,52 +16,33 @@ function genArbitaryString(len)
 exports.genArbitaryString = genArbitaryString
 exports.genCaptcha = async (req) =>
 {
-    //check ignorecaptcha
-    const c = svgCaptcha.create(
-        {
-            size: 4,
-            noise: 3,
-            ignoreChars: '0o1iI5SsvuVUCcGg',
-            color: false
-        }
-    )
-    const svg = c.data
-    const text = c.text
-    req.session.captcha = text
-    return svg
+    return `<div class="g-recaptcha" data-sitekey="${global.conf.reCAPTCHA}"></div>`
 }
 exports.chkCaptcha = async (req, res, perm) =>
 {
     //check if the user has bypasscaptcha perm
     if (req.session.username && (await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})))
         return true //dont check
-    if (req.body.captcha !== req.session.captcha)
+    const resKey = req.body['g-recaptcha-response']
+    const url = `https://www.google.com/recaptcha/api/siteverify?secret=${global.conf.reCAPTCHA_prv}&response=${resKey}`
+    
+    try
     {
-        //raise error
-        require(global.path + '/error.js')(req, res, null, `CAPTCHA를 올바르게 완성해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+        const verRes = await axios.post(url)
+        const data = verRes.data || {}
+        if (data.success === true)
+        {
+            return true
+        }
+        else
+        {
+            require(global.path + '/error.js')(req, res, null, `CAPTCHA를 올바르게 완성해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+            return false
+        }
+    }
+    catch (err)
+    {
+        require(global.path + '/error.js')(req, res, null, `reCAPTCHA를 확인하는 도중 오류가 발생하였습니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
         return false
     }
-    else
-    {
-        //assign arbitary value to CAPTCHA session
-        req.session.captcha = genArbitaryString(16)
-        return true
-    }
-}
-exports.chkCaptchaUpload = (req, perm) =>
-{
-    perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}}).then(p =>
-        {
-            if (p) return true
-            if (req.body.captcha !== req.session.captcha)
-            {
-                return false
-            }
-            else
-            {
-                //assign arbitary value to CAPTCHA session
-                req.session.captcha = genArbitaryString(16)
-                return true
-            }
-        })
 }

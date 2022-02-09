@@ -14,7 +14,7 @@ global.dtFormat = global.conf.dateTimeFormat
 global.path = __dirname
 
 //(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
-global.copyrightNotice = `이 문서를 편집함으로써 당신은 ${global.appname}이(가) 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.`
+global.copyrightNotice = `이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.`
 global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
@@ -724,6 +724,9 @@ var storage = multer.diskStorage({
         }
     }
 })
+
+const axios = require('axios')
+
 var upload = multer({
     storage: storage,
     limits:
@@ -754,24 +757,34 @@ var upload = multer({
                 return
             }
         }
-        const p = await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})
-        if (p)
+        if (req.session.username && (await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})))
         {
-            //do nothing
+
         }
         else
         {
-            if (req.body.captcha !== req.session.captcha)
+            const resKey = req.body['g-recaptcha-response']
+            const url = `https://www.google.com/recaptcha/api/siteverify?secret=${global.conf.reCAPTCHA_prv}&response=${resKey}`
+            
+            try
+            {
+                const verRes = await axios.post(url)
+                const data = verRes.data || {}
+                if (data.success !== true)
+                {
+                    let e = new Error('캡챠 오류')
+                    e.code = 'INVALIDCAPTCHA'
+                    return cb(e)
+                }
+            }
+            catch (err)
             {
                 let e = new Error('캡챠 오류')
                 e.code = 'INVALIDCAPTCHA'
                 return cb(e)
             }
-            else
-            {
-                req.session.captcha = require(global.path + '/tools/captcha.js').genArbitaryString(16)
-            }
         }
+
         if (!req.body.filename.match(/^.*\.(jpeg|jpg|png|gif|webp)$/i))
         {
             cb('JPEG, JPG, PNG, GIF, WebP만 업로드할 수 있습니다.')
@@ -899,7 +912,8 @@ app.post('/threads/:name', async (req, res) =>
         'thread': thread,
         'threadcomment': threadcomment,
         'recentdiscuss': recentdiscuss,
-        'block': block
+        'block': block,
+        'perm': perm
     })
 })
 

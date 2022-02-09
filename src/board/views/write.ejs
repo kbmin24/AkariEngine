@@ -18,13 +18,6 @@
     </div>
     <div class='mt-2 mb-2'>
         <div class='captcha'><%- captcha %></div>
-        <div class='row'>
-            <label for='captchaIn' class='col-form-label col-sm-2'>CAPTCHA</b></label>
-            <div class='col-sm-10'>
-                <input class="form-control" maxlength=4 id='captchaIn' name='captcha' type="text" style='width:100px' autocomplete='off'>
-            </div>
-        </div>
-        <small class='form-text text-muted'>스팸 방지를 위해 위에 표시된 <b>네 글자</b>를 써 주세요.</small>
     </div>
     <% if (locals.username === undefined) { %>
     <p><span class='text-danger fw-bold'>WARNING!</span>    비로그인 상태로 글을 작성하면 IP가 일부 공개될 수 있습니다.</p>

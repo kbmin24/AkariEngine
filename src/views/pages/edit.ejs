@@ -21,13 +21,6 @@
     </div>
     <div class='mt-2 mb-2'>
         <div class='captcha'><%- captcha %></div>
-        <div class='row'>
-            <label for='captchaIn' class='col-form-label col-sm-2'>CAPTCHA</b></label>
-            <div class='col-sm-10'>
-                <input class="form-control" maxlength=4 id='captchaIn' name='captcha' type="text" style='width:100px' autocomplete='off'>
-            </div>
-        </div>
-        <small class='form-text text-muted'>For spam protection, please type <b>four</b> characters shown above.</small>
     </div>
     <% if (locals.username === undefined) { %>
     <p><span class='text-danger fw-bold'>경고!</span>    비로그인 상태로 편집하면 IP가 영구히 기록되어 공개됩니다.</p>

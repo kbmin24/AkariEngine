@@ -21,5 +21,8 @@
         </div>
     </div>
     <textarea class="form-control" id="comment" name="comment" placeholder='첫 발언의 내용을 적어 주세요.' <% if (r !== true) { %> disabled <% }%>><% if (r !== true) { %> <%= r %> <% }%></textarea>
+    <div class='mt-2'>
+        <div class='captcha'><%- captcha %></div>
+    </div>
     <button role='submit' class="btn btn-primary mt-3">토론 열기</button>
 </form>
