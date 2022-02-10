@@ -30,6 +30,9 @@
                         <div style='clear: both'></div>
                         <span style='float:right;'>최근 편집 시각: <%= locals.updatedAt %></span>
                     <% } %>
+                    <% if (locals.description) { %>
+                        <div class='text-muted'><%= locals.description %></div>
+                    <% } %>
                 </div>
                 <div style='clear: both'></div>
                 <article id='article'>

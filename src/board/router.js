@@ -60,6 +60,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             {
                 title: boardNow.boardTitle,
                 titleLink: `/board/${boardNow.boardID}`,
+                description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
                 content: html,
                 username: req.session.username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

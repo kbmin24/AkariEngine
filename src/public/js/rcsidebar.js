@@ -55,22 +55,4 @@ function loadRC() {
         }
     })
 }
-var registered = false
-function regLoadRC()
-{
-    if (registered === true) return
-    if ($('#rcsidebar').css('display') !== 'none') 
-    {
-        registered = true
-        loadRC()
-        setInterval(() => {loadRC()}, 60000)
-    }
-}
-$(() =>
-{
-    regLoadRC()
-})
-$( window ).resize(() =>
-{
-    regLoadRC()
-})
+loadRC()

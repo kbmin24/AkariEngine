@@ -158,6 +158,63 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                             .replace(/\n/gi, '') //linebreak dosent' matter in latex
                 return `<span class='math'>${args}</span>`
             }
+        case 'map':
+            {
+                args = args.split('|')
+                let datax = null
+                let datay = null
+                let dataz = null
+                let dataloc = null
+                let width = null
+                let height = null
+                for (let arg of args)
+                {
+                    let as = arg.split('=')
+                    if (as.length != 2) continue
+                    switch (as[0])
+                    {
+                        case 'x':
+                            {
+                                datax = parseFloat(as[1])
+                                break
+                            }
+                        case 'y':
+                            {
+                                datay = parseFloat(as[1])
+                                break
+                            }
+                        case 'z':
+                            {
+                                let tmp = parseInt(as[1])
+                                if (1 <= tmp && tmp <= 14)
+                                {
+                                    dataz = tmp
+                                }
+                                break
+                            }
+                        case 'width':
+                            {
+                                width = as[1]
+                                break
+                            }
+                        case 'height':
+                            {
+                                height = as[1]
+                                break
+                            }
+                    }
+                }
+                let opt = ''
+                if (datax) opt += ` data-x="${datax}"`
+                if (datay) opt += ` data-y="${datay}"`
+                opt += ` data-z="${dataz || 5}"` //3 is the default
+
+                let style = ''
+                style += `width:${width || '300px'};`
+                style += `height:${height || '300px'};`
+                
+                return `<div class='map' ${opt}' style='${style}'></div>`
+            }
         default:
             return match
             //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'

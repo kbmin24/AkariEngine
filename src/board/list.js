@@ -141,6 +141,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     {
         title: boardNow.boardTitle,
         titleLink: `/board/${boardNow.boardID}`,
+        description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
         content: html,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
