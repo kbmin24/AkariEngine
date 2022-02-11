@@ -398,6 +398,10 @@ function renderTable(data)
         {
             tableStyle += `height:${firstCellOptFound[1].split('=')[1].trim()};`
         }
+        else if (firstCellOptFound[1].trim() == 'nomargin')
+        {
+            tableStyle += 'margin: 0;'
+        }
     }
     res += `style='${tableStyle}'>`
 
