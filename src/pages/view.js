@@ -10,7 +10,7 @@ async function getCategory(title, category, categorys)
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + '<i>없음</i>' + cardEnd
+        return cardBeginning + '없음' + cardEnd
     }
 
     var res = cardBeginning
@@ -109,7 +109,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         {
             if (await (perm.findOne({where: {username: username, perm: 'admin'}})))
             {
-                titleSuffix += '(<i>관리자</i>)'
+                titleSuffix += '(관리자)'
             }
         }
     }
@@ -136,7 +136,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
                 let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, redirect, true, {}, opt)
-                if (content === undefined) return
+                if (content === true) return
                 content = await getCategory(req.params.name, category, opt['category']) + content
                 let renderOpt = {
                     title: page.title,
@@ -195,7 +195,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 //show the page
                 //(pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={})
                 let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
-                if (content === undefined) return
+                if (content === true) return
                 let renderOpt = {
                     title: page.page,
                     content: content,

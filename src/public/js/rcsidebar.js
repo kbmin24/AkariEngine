@@ -13,7 +13,7 @@ function loadRC() {
         {
             $.each(data, (rc) =>
             {
-                var ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '' : '<em>(삭제)</em>'}`
+                var ln = `<a href='/w/${data[rc].page}'>${data[rc].page}</a> ${data[rc].rev ? '' : '<em>(삭제)</em>'}`
                 let dt = ''
                 if (moment(data[rc].createdAt).isSame(moment(), 'day'))
                 {

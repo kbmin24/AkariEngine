@@ -121,6 +121,7 @@ global.sanitiseOptions =
         p: ['class', 'id', 'style'],
         del: ['class', 'id', 'style'],
         pre: ['class', 'id', 'style'],
+        hr: ['class', 'id', 'style'],
         h1: ['class', 'id', 'style'],
         h2: ['class', 'id', 'style'],
         h3: ['class', 'id', 'style'],

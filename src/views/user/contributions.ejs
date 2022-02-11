@@ -17,7 +17,7 @@
                     <% } else if (item.type == 'delete') { %>
                         <span><%= item.page %></span>
                     <% } else { %>
-                        <a href='/w/<%= item.page %>?redirect=false'><%= item.page %></a> (r<%= item.rev %>)
+                        <a href='/w/<%= item.page %>'><%= item.page %></a> (r<%= item.rev %>)
                     <% } %>
                 </td>
                 <td><%= item.type %> (<% if (item.bytechange > 0) { %><span class='text-success fw-bold'>+<%= item.bytechange %></span><% } else if (item.bytechange == 0) { %><span class='text-secondary fw-bold'><%= item.bytechange %></span><% } else { %><span class='text-danger fw-bold'><%= item.bytechange %></span><% } %>)</td>

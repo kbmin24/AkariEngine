@@ -9,7 +9,7 @@ async function getCategory(title, category, categorys)
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + '<i>None</i>' + cardEnd
+        return cardBeginning + '<i>없음</i>' + cardEnd
     }
 
     var res = cardBeginning

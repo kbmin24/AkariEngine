@@ -1,10 +1,7 @@
-*
-{
-    font-family: "Apple SD Gothic Neo", 나눔고딕, NanumGothic, "Noto Sans CJK KR", "Noto Sans KR", "Noto Sans", 맑은고딕, "Malgun Gothic", arial, sans-serif;
-}
 body
 {
     background-color: #f5f5f5;
+    font-family: "Apple SD Gothic Neo", 나눔고딕, NanumGothic, "Noto Sans CJK KR", "Noto Sans KR", "Noto Sans", 맑은고딕, "Malgun Gothic", arial, sans-serif;
 }
 .article-wrapper
 {

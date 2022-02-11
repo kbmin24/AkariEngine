@@ -333,7 +333,7 @@ function fredirect(orgname, pagename, paragraph, text, res, redirect)
             return `<p>${text}</p>`
         }
         res.redirect(`/w/${pagename}?from=${orgname}${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
-        return undefined
+        return true
     }
     else return '<p><span class="fw-bold text-danger">리다이렉트 오류</span>: 리다이렉트는 일반 문서에서만 할 수 있습니다.</p>'
 }
@@ -552,7 +552,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     currentSection = 1
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
     latestHeading = 7
-    toc = 'Table of Contents<hr>'
+    toc = '<div style="font-weight:bold;margin-bottom: 1rem;">목차</div>'
 
     if (renderOptions.showSectionEditButton == 'on')
     {
@@ -576,16 +576,18 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //deprecated
 
     //Redirect
+    let doRedr = false
     const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
     {
-        if (undefined === fredirect(pagename, p1, p2, string, res, redirect))
+        if (true === fredirect(pagename, p1, p2, string, res, redirect))
         {
-            return undefined;
+            doRedr = true
+            return true
         }
     })
-    if (redr === undefined)
+    if (doRedr === true)
     {
-        return undefined
+        return true
     } //escape
     
     //args
@@ -726,7 +728,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
 
     //footnote
     footnotes = []
-    footnote = '<hr><b>Footnotes</b><br>'
+    footnote = '<hr><b>각주</b><br>'
     footnotecount = 0
     data = data.replace(/\[\* (.*?)\]/igm, (_match, p1, _offset, _string, _groups) => regFootnote(p1))
 
