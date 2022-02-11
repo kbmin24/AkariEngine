@@ -160,6 +160,8 @@ global.sanitiseOptions =
             'margin-bottom': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
             'margin-left': [/^ *(-|\+)?(\d|.)+(?:px|em|%) *$/],
             'margin-right': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
+            'max-width': [/^.*?$/],
+            'max-height': [/^.*?$/],
             'padding': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
             'padding-left': [/^ *(-|\+)?(\d|.)+(?:px|em|%) *$/],
             'padding-right': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
