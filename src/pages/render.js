@@ -400,7 +400,7 @@ function renderTable(data)
         }
         else if (firstCellOptFound[1].trim() == 'nomargin')
         {
-            tableStyle += 'margin: 0;'
+            tableStyle += 'margin: 0px;'
         }
     }
     res += `style='${tableStyle}'>`
