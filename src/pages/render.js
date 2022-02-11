@@ -307,7 +307,7 @@ function renderHeading(text, depth)
 }
 function buildTOC()
 {
-    return `<div id='toc' class='border m-3 ms-0 p-3 ren-toc'>${toc}</div>`
+    return `<div id='toc' class='border m-3 ms-0 me-0 p-3 ren-toc'>${toc}</div>`
 }
 function regFootnote(text)
 {
