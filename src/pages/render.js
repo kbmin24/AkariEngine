@@ -394,6 +394,10 @@ function renderTable(data)
         {
             tableStyle += `width:${firstCellOptFound[1].split('=')[1].trim()};`
         }
+        else if (/tablemaxwidth *?= *?(.+?)/i.test(firstCellOptFound[1]))
+        {
+            tableStyle += `max-width:${firstCellOptFound[1].split('=')[1].trim()};`
+        }
         else if (/tableheight *?= *?(.+?)/i.test(firstCellOptFound[1]))
         {
             tableStyle += `height:${firstCellOptFound[1].split('=')[1].trim()};`
