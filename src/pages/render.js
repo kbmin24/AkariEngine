@@ -171,6 +171,8 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 {
                     let as = arg.split('=')
                     if (as.length != 2) continue
+                    as[0] = as[0].trim()
+                    as[1] = as[1].trim()
                     switch (as[0])
                     {
                         case 'x':
