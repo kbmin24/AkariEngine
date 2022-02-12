@@ -11,7 +11,7 @@ $(function() {
             $.each(data, (rc) =>
             {
                 var ln;
-                ln = `<a href='/w/${data[rc].page}?redirect=false'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(삭제)</em>'}`
+                ln = `<a href='/w/${data[rc].page}'>${data[rc].page}</a> ${data[rc].rev ? '(r' + data[rc].rev + ')' : '<em>(삭제)</em>'}`
 
                 var bytechange
                 if (data[rc].bytechange > 0)
