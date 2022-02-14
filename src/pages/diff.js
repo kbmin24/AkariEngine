@@ -106,6 +106,8 @@ module.exports = async (req, res, history, protect, perm, block) =>
     {
         title: `${req.params.name} r${rev1}, r${rev2} 비교`,
         content: html,
+        isPage: true,
+        pagename: pro1.title,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         wikiname: global.appname

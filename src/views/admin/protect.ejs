@@ -1,17 +1,17 @@
 <form action='/protect/<%= title %>' class='p-3' method='POST'>
     <% ['read', 'edit', 'move'].forEach((item, i, arr) => { %>
         <div class='form-group mb-2 row'>
-            <label for='<%= item %>Select' class='col-sm-2 col-form-label'><%= item%></label>
+            <label for='<%= item %>Select' class='col-sm-2 col-form-label'><%= {'read': '읽기', 'edit': '편집', 'move': '이동'}[item] %></label>
             <select class='w-auto form-select' id='<%= item %>Select' name='<%= item %>'aria-label='Protections for <%= item %>' <% if (locals.hasACL === false) { %> disabled <% } %>>
-                <option value='everyone'>Everyone (Except blocked users)</option>
-                <option value='blocked' <% if (item == 'read') { %> selected <% } %>>Everyone (Including blocked users)</option>
-                <option value='login'>Logged in users only</option>
-                <option value='admin'>Admins only</option>
+                <option value='everyone'>모두 (차단된 사용자 제외, everyone)</option>
+                <option value='blocked' <% if (item == 'read') { %> selected <% } %>>모두 (차단된 사용자 포함, blocked)</option>
+                <option value='login'>로그인 사용자만 (login)</option>
+                <option value='admin'>관리자만 (admin)</option>
             </select>
         </div>
     <% }) %>
     <% if (locals.hasACL === true) { %>
-        <button type='submit' class='btn btn-primary'>Save</button>
+        <button type='submit' class='btn btn-primary'>저장</button>
     <% } %>
 </form>
 <div style='display:none' id='perms'>

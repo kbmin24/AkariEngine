@@ -16,7 +16,7 @@ module.exports = async (req, res, perm, protect, block) =>
     {
         res.render('outline',
         {
-            title: 'Protect ' + req.params.name,
+            title: req.params.name + ' 보호',
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
