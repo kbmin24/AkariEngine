@@ -550,7 +550,7 @@ var footnotecount
 var renderSectionEditButton = true
 
 const ulRegex = /(^|<\/h\d>)((?:\*+ (?:.+(?:\r?\n|$)))+)/igm
-const olRegex = /(^|<\/h\d>)((?:#+ (?:.+(?:\r?\n|$)))+)/igm
+const olRegex = /(^|<\/h\d>)((?:\#+ (?:.+(?:\r?\n|$)))+)/igm
 const blockquoteRegex = /^(>.*(\r?\n|$))+/igm
 
 module.exports = async (pagename, data, _renderInclude, pages = undefined, files = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
@@ -618,7 +618,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     data = data.replace(/\r/g, '')
 
     //comments
-    data = data.replace(/^##.*?\r?\n/igm, '')
+    data = data.replace(/^\/\/.*?\r?\n/igm, '')
     
     //headings
     data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
