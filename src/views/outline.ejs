@@ -6,39 +6,42 @@
     <body class='d-flex flex-column min-vh-100'>
         <%- include('nav') %>
         <div class='container container-fluid'>
-            <%- include('rc') %>
-            <div class='article-wrapper h-75 border rounded-top row'>
-                <!-- Notifications-->
-                <%- include('IEalert') %>
-                <% if (locals.notification) { %>
-                    <div class="alert alert-danger" role="alert">
-                        <%= notification %>
+            <div class='articleRCWrapper'>
+                <div class='article-wrapper h-75 border rounded-top row'>
+                    <!-- Notifications-->
+                    <%- include('IEalert') %>
+                    <% if (locals.notification) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= notification %>
+                        </div>
+                    <% } %>
+                    <div class='alert alert-info' id='satobox' style='display: none' role="alert">
+                        <a id='satoboxlink'>사용자 토론</a>이 열려 있습니다.
                     </div>
-                <% } %>
-                <div class='alert alert-info' id='satobox' style='display: none' role="alert">
-                    <a id='satoboxlink'>사용자 토론</a>이 열려 있습니다.
+                    <div class='pb-2 mt-2 mb-3 border-bottom titleArea'>
+                        <h1 class='pgTitle'><% if (locals.titleLink) { %><a class='pgTitleLink' href='<%= locals.titleLink %>'><% } %><%= title %><% if (locals.titleLink) { %></a><% } %><% if (locals.titleInfo) { %><h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5><% } %></h1>
+                        <% if (locals.isPage) { %>
+                            <%- include('pageTools') %>
+                        <% } %>
+                        <% if (locals.isFile) { %>
+                            <%- include('fileTools') %>
+                        <% } %>
+                        <% if (locals.updatedAt) { %>
+                            <div style='clear: both'></div>
+                            <span style='float:right;'>최근 편집 시각: <%= locals.updatedAt %></span>
+                        <% } %>
+                        <% if (locals.description) { %>
+                            <div class='text-muted'><%= locals.description %></div>
+                        <% } %>
+                    </div>
+                    <div style='clear: both'></div>
+                    <article id='article'>
+                        <%- content %>
+                    </article>
                 </div>
-                <div class='pb-2 mt-2 mb-3 border-bottom titleArea'>
-                    <h1 class='pgTitle'><% if (locals.titleLink) { %><a class='pgTitleLink' href='<%= locals.titleLink %>'><% } %><%= title %><% if (locals.titleLink) { %></a><% } %><% if (locals.titleInfo) { %><h5 style='display: inline;margin-left:10px;'><%- locals.titleInfo %></h5><% } %></h1>
-                    <% if (locals.isPage) { %>
-                        <%- include('pageTools') %>
-                    <% } %>
-                    <% if (locals.isFile) { %>
-                        <%- include('fileTools') %>
-                    <% } %>
-                    <% if (locals.updatedAt) { %>
-                        <div style='clear: both'></div>
-                        <span style='float:right;'>최근 편집 시각: <%= locals.updatedAt %></span>
-                    <% } %>
-                    <% if (locals.description) { %>
-                        <div class='text-muted'><%= locals.description %></div>
-                    <% } %>
-                </div>
-                <div style='clear: both'></div>
-                <article id='article'>
-                    <%- content %>
-                </article>
+                <%- include('rc') %>
             </div>
+
         </div>
         <div style='display: none' id='hdusername'><%= locals.username %></div>
         <%- include('footer') %>
