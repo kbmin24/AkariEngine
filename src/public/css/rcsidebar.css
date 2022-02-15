@@ -24,19 +24,4 @@
     {
         display: none
     }
-    .article-wrapper
-    {
-        margin-right: 0;
-    }
-}
-    #rcsidebar
-    {
-        margin-right: 0;
-    }
-@media (max-width: 575px)
-{
-    .article-wrapper
-    {
-        margin-right: -12px;
-    }
 }

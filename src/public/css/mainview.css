@@ -12,6 +12,7 @@ body
 .article-wrapper
 {
     background-color: white;
+    overflow: auto;
 }
 @media (max-width: 1200px)
 {
