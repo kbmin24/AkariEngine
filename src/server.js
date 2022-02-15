@@ -323,7 +323,7 @@ app.get('/settings', csrfProtection, async (req, res) =>
         })
     })
 })
-app.post('/settings/:name', csrfProtection, async (req, res) =>
+app.post('/settings/:name(*)', csrfProtection, async (req, res) =>
 {
     require(__dirname + '/user/settings.js')(req, res,
         {
@@ -332,7 +332,7 @@ app.post('/settings/:name', csrfProtection, async (req, res) =>
         })
 })
 
-app.get('/edit/:name', csrfProtection, async (req, res) =>
+app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
 {
     let username = req.session.username
     req.params.name = req.params.name
@@ -445,7 +445,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
     }
 })
 
-app.post('/edit/:name', csrfProtection, async (req, res) =>
+app.post('/edit/:name(*)', csrfProtection, async (req, res) =>
 {
     const username = req.session.username
     if (req.params.name.length > 255)
@@ -456,7 +456,7 @@ app.post('/edit/:name', csrfProtection, async (req, res) =>
     await require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block, category, settings) //actually no need to separately pass on username (in req)
 })
 
-app.get('/move/:name', async (req, res) =>
+app.get('/move/:name(*)', async (req, res) =>
 {
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
@@ -507,11 +507,11 @@ app.get('/move/:name', async (req, res) =>
         })
     })
 })
-app.post('/move/:name', async (req, res) =>
+app.post('/move/:name(*)', async (req, res) =>
 {
     await require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history, thread, perm, block, protect)
 })
-app.get('/delete/:name', csrfProtection, (req, res) =>
+app.get('/delete/:name(*)', csrfProtection, (req, res) =>
 {
     const username = req.session.username
     if (username === undefined)
@@ -555,11 +555,11 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
         }
     })
 })
-app.post('/delete/:name', csrfProtection, async (req, res) =>
+app.post('/delete/:name(*)', csrfProtection, async (req, res) =>
 {
     await require(global.path + '/pages/delete.js')(req,res,req.session.username,users,pages,recentchanges,history, perm, mfile, category)
 })
-app.get('/revert/:name', async (req, res) =>
+app.get('/revert/:name(*)', async (req, res) =>
 {
     const username = req.session.username
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
@@ -609,11 +609,11 @@ app.get('/revert/:name', async (req, res) =>
         })
     })
 })
-app.post('/revert/:name', async (req, res) =>
+app.post('/revert/:name(*)', async (req, res) =>
 {
     await require(global.path + '/pages/revert.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block)
 })
-app.get('/w/:name', async (req, res) =>
+app.get('/w/:name(*)', async (req, res) =>
 {
     await require(global.path + '/pages/view.js')(req, res, pages, mfile, history, protect, perm, block, category, viewcount, updateTime)
 })
@@ -633,19 +633,19 @@ app.post('/search', async (req, res) =>
 {
     await require(global.path + '/pages/navSearch.js')(req, res, pages)
 })
-app.get('/protect/:name', async (req, res) =>
+app.get('/protect/:name(*)', async (req, res) =>
 {
     await require(global.path + '/admin/protectGet.js')(req, res, perm, protect, block)
 })
-app.post('/protect/:name', async (req, res) =>
+app.post('/protect/:name(*)', async (req, res) =>
 {
     await require(global.path + '/admin/protectPost.js')(req, res, perm, protect, pages, history, recentchanges, block)
 })
-app.get('/raw/:name', async (req, res) =>
+app.get('/raw/:name(*)', async (req, res) =>
 {
     await require(global.path + '/pages/raw.js')(req, res, pages, history, protect, perm, block)
 })
-app.get('/history/:name', (req, res) =>
+app.get('/history/:name(*)', (req, res) =>
 {
     require(global.path + '/pages/history.js')(req, res, history)
 })
@@ -653,9 +653,9 @@ app.get('/RecentChanges', async (req, res) =>
 {
     await require(global.path + '/sendfile.js')(req, res, '최근 변경', '/views/pages/recentchanges.html')
 })
-app.get('/PageList', (req, res) =>
+app.get('/PageList', async (req, res) =>
 {
-    require(global.path + '/pages/pagelist.js')(req, res, pages)
+    await require(global.path + '/pages/pagelist.js')(req, res, pages)
 })
 
 app.get('/Upload', async (req, res) =>
@@ -836,7 +836,7 @@ app.post('/Upload', upload.single('inputFile'), async (req, res) =>
     })
     res.redirect('/w/' + filepgname)
 })
-app.get('/diff/:name', async (req, res) =>
+app.get('/diff/:name(*)', async (req, res) =>
 {
     //usage example: /diff/FrontPage?rev1=20&rev2=30 (compare r20 and r30)
     await require(global.path + '/pages/diff.js')(req, res, history, protect, perm, block)
@@ -869,12 +869,12 @@ app.get('/admin/developer', csrfProtection, async (req, res) =>
 {
     await require(global.path + '/admin/developerGetHandler.js')(req, res, {perm: perm})
 })
-app.get('/admin/:name', csrfProtection, async (req, res) =>
+app.get('/admin/:name(*)', csrfProtection, async (req, res) =>
 {
     //handler
     await require(global.path + '/admin/adminGetHandler.js')(req, res, users, perm, loginhistory, adminlog)
 })
-app.post('/admin/:name', csrfProtection, async (req, res) =>
+app.post('/admin/:name(*)', csrfProtection, async (req, res) =>
 {
     await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread, gongji)
 })
@@ -883,12 +883,12 @@ app.get('/adminlog', async (req, res) =>
     await require(global.path + '/admin/adminlog.js')(req, res, adminlog)
 })
 
-app.get('/category/:name', async (req, res) =>
+app.get('/category/:name(*)', async (req, res) =>
 {
     await require(global.path + '/pages/category.js')(req, res, category)
 })
 
-app.get('/contribution/:name', async (req, res) =>
+app.get('/contribution/:name(*)', async (req, res) =>
 {
     await require(global.path + '/user/contribution.js')(req, res, history)
 })
@@ -898,7 +898,7 @@ app.get('/viewrank', async (req, res) =>
     await require(global.path + '/pages/viewrank.js')(req, res, viewcount)
 })
 
-app.get('/threads/:name', async (req, res) =>
+app.get('/threads/:name(*)', async (req, res) =>
 {
     await require(global.path + '/threads/threadList.js')(req, res,
     {
@@ -907,7 +907,7 @@ app.get('/threads/:name', async (req, res) =>
         'block': block
     })
 })
-app.post('/threads/:name', async (req, res) =>
+app.post('/threads/:name(*)', async (req, res) =>
 {
     await require(global.path + '/threads/createThread.js')(req, res,
     {
@@ -920,7 +920,7 @@ app.post('/threads/:name', async (req, res) =>
     })
 })
 
-app.get('/thread/:name', csrfProtection, async (req, res) =>
+app.get('/thread/:name(*)', csrfProtection, async (req, res) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
     await require(global.path + '/threads/thread.js')(req, res,

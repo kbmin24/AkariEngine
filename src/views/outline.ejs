@@ -6,9 +6,8 @@
     <body class='d-flex flex-column min-vh-100'>
         <%- include('nav') %>
         <div class='container container-fluid'>
-            <%- include('rc') %>
-            <div class='articleRCWrapper'>
-                <div class='article-wrapper h-75 border rounded-top row'>
+            <div class='articleRCWrapper d-flex'>
+                <div class='article-wrapper h-75 border rounded-top row flex-grow-1'>
                     <!-- Notifications-->
                     <%- include('IEalert') %>
                     <% if (locals.notification) { %>
@@ -40,6 +39,7 @@
                         <%- content %>
                     </article>
                 </div>
+                <%- include('rc') %>
             </div>
 
         </div>

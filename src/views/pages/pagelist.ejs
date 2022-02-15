@@ -1,6 +1,17 @@
 문서 <%= count %>개가 있습니다.
 <ul>
-    <% for(let i = 0; i < count; i++) { %>
+    <% for(let i = 0; i < pages.length; i++) { %>
         <li><a href='/w/<%= pages[i].title %>'><%= pages[i].title %></a></li>
     <% } %>
 </ul>
+<nav class='pagination-sm mt-2' aria-label="페이지 탐색">
+    <ul class="pagination">
+        <% if (currentPage > 1) { %>
+            <li class="page-item"><a class="page-link" href='/PageList?page=<%= currentPage - 1 %>'>이전</a></li>
+        <% } %>
+    
+        <% if (Math.ceil(count / 50) > currentPage) { %>
+            <li class="page-item"><a class="page-link" href='/PageList?page=<%= currentPage + 1 %>'>다음</a></li>
+        <% } %>
+    </ul>
+</nav>

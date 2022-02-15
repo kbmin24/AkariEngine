@@ -1,25 +1,33 @@
 const ejs = require('ejs')
-module.exports = (req, res, pages) =>
+const pageLength = 50
+module.exports = async (req, res, pages) =>
 {
-    pages.findAndCountAll(
+    let page = req.query.page * 1 || 1
+    let pagelist = await pages.findAndCountAll(
     {
         order:
         [
             ['title', 'ASC']
-        ]
-    }).then( pagelist =>
+        ],
+        offset: (page - 1) * pageLength,
+        limit: pageLength
+    })
+    ejs.renderFile(global.path + '/views/pages/pagelist.ejs',{pages: pagelist.rows, count: pagelist.count, currentPage: page}, (err, html) => 
     {
-        ejs.renderFile(global.path + '/views/pages/pagelist.ejs',{pages: pagelist.rows, count: pagelist.count}, (err, html) => 
+        if (err)
         {
-            const username = req.session.username
-            require(global.path + '/view.js')(req, res,
-            {
-                title: '문서 목록',
-                content: html,
-                username: username,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
-            })
+            console.error(err)
+            res.status(500).send('Internal Server Error<br>')
+            return
+        }
+        const username = req.session.username
+        require(global.path + '/view.js')(req, res,
+        {
+            title: '문서 목록',
+            content: html,
+            username: username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            wikiname: global.appname
         })
     })
 }

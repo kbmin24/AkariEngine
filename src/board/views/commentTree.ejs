@@ -24,7 +24,7 @@
                 <div class='p-2 pt-1 commentContextMenu'>
                     <% if (!v.isDeleted) { %>
                     <% if (depth <= 5) { %>
-                    <a class='commentDaedaetgul' data-depth="<%= depth %>" data-id="<%= k %>">대댓글</a>
+                    <a class='commentDaedaetgul' data-depth="<%= depth %>" data-id="<%= k %>">답장</a>
                     <% } %>
                     
                     <% if (v.doneBy === username || v.writtenIP || isAdmin) { %>

@@ -1,19 +1,13 @@
 #rcsidebar
 {
-    float: right;
-    position: relative;
+    min-width: 250px;
+    max-width: 250px;
     width: 250px;
-    margin-top: 75px;
-    margin-bottom: 12px;
     word-break: break-all;
 }
 .rcTitle
 {
     color: #212529;
-}
-.article-wrapper
-{
-    margin-right: 260px;
 }
 
 @media (max-width: 1200px)
