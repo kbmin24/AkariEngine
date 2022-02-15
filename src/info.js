@@ -5,7 +5,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
     res.status(code)
     if (lang=='ko')
     {
-        res.render('outline',{
+        require(global.path + '/view.js')(req, res,{
             title: '정보',
             content: description + '<br>' + '<a href="' + returnlink + '">' + returnname + '</a>으로 돌아갑니다.',
             username: username,
@@ -15,7 +15,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
     }
     else
     {
-        res.render('outline',{
+        require(global.path + '/view.js')(req, res,{
             title: 'Information',
             content: description + '<br>Return to ' + '<a href="' + returnlink + '">' + returnname + '</a>.',
             username: username,

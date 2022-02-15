@@ -10,7 +10,7 @@ module.exports = async (req, res, title, filename) =>
         }
         else
         {
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: title,
                 content: data,

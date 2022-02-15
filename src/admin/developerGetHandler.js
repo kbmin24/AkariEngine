@@ -23,7 +23,7 @@ module.exports = async (req, res, options) =>
             res.status(500).send('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: 'Developer console',
             content: html,

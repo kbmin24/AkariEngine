@@ -137,10 +137,11 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         isRecommended: req.query.recommended === 'yes'
     })
     if (isHTML) return html
-    res.render('outline',
+    require(global.path + '/view.js')(req, res,
     {
         title: boardNow.boardTitle,
         titleLink: `/board/${boardNow.boardID}`,
+        canonical: `/board/${boardNow.boardID}`,
         description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
         content: html,
         username: req.session.username,

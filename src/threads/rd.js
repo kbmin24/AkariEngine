@@ -53,7 +53,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: '최근 토론',
             content: html,

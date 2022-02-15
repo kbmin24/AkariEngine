@@ -22,7 +22,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         {},
                         (err, html) => 
                         {
-                            res.render('outline',
+                            require(global.path + '/view.js')(req, res,
                             {
                                 title: 'Select username to grant to',
                                 content: html,
@@ -57,7 +57,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                             res.status(500).send('Internal Server Error')
                                             return
                                         }
-                                        res.render('outline',
+                                        require(global.path + '/view.js')(req, res,
                                         {
                                             title: 'Grant to ' + req.query.grantTo,
                                             content: html,
@@ -98,7 +98,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         res.writeHead(500).write('Internal Server Error')
                         return
                     }
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: 'Block user',
                         content: html,
@@ -127,7 +127,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         res.writeHead(500).write('Internal Server Error')
                         return
                     }
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: 'Block IP address',
                         content: html,
@@ -168,7 +168,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                     )
                     const lgIns = await loginhistory.findAll({where: {username: req.query.user}, order: [['createdAt', 'DESC']]})
                     const lgInHTML = await ejs.renderFile(global.path + '/views/admin/loginhistory.ejs', {records: lgIns, date: date})
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: 'Login history of ' + req.query.user,
                         content: lgInHTML,
@@ -181,7 +181,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 else
                 {
                     const gr = await ejs.renderFile(global.path + '/views/admin/loginhistoryName.ejs', {})
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: 'Select username view login history',
                         content: gr,
@@ -207,7 +207,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 {
                     //give form
                     const html = await ejs.renderFile(global.path + '/views/admin/hiderev.ejs', {csrfToken: req.csrfToken()})
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: 'Hide specific revision of a page',
                         content: html,
@@ -230,7 +230,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 {
                     //give form
                     const html = await ejs.renderFile(global.path + '/views/admin/gongji.ejs', {csrfToken: req.csrfToken()})
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: '게시판 공지 변경',
                         content: html,

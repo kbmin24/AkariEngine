@@ -54,5 +54,5 @@ module.exports = async (req, res, pages, files, category) =>
         username: req.session.username,
         wikiname: global.appname
     }
-    res.render('outline', renderOpt)
+    require(global.path + '/view.js')(req, res, renderOpt)
 }

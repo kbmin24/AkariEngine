@@ -12,7 +12,7 @@ module.exports = (req, res, pages) =>
         ejs.renderFile(global.path + '/views/pages/pagelist.ejs',{pages: pagelist.rows, count: pagelist.count}, (err, html) => 
         {
             const username = req.session.username
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: '문서 목록',
                 content: html,

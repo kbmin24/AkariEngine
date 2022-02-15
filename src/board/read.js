@@ -146,11 +146,12 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: boardNow.boardTitle,
             titleLink: `/board/${boardNow.boardID}`,
             content: html,
+            canonical: `/board/read/${boardNow.boardID}?no=${req.query.no}`,
             username: req.session.username,
             description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

@@ -14,7 +14,7 @@ module.exports = async (req, res, perm, protect, block) =>
     }
     ejs.renderFile(global.path + '/views/admin/protect.ejs', {title: req.params.name, hasACL: r, perms: JSON.stringify(permsPresent)}, (err, html) => 
     {
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: req.params.name + ' 보호',
             content: html,

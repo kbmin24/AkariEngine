@@ -25,7 +25,7 @@ module.exports = async (req, res, history) =>
         from: showfrom,
         date: date
     })
-    res.render('outline',
+    require(global.path + '/view.js')(req, res,
     {
         title: `${name}의 기여 목록`,
         content: html,

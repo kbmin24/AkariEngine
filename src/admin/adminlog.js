@@ -33,7 +33,7 @@ module.exports = async (req, res, adminlog) =>
         job: req.query.job,
         date: date
     })
-    res.render('outline',
+    require(global.path + '/view.js')(req, res,
     {
         title: 'Admin Log',
         content: html,

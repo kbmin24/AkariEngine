@@ -102,7 +102,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     <div class='row'><div class='col m-2'><span class='text-danger'>red</span>: Removed in r${rev2}</div></div>
     </div><br><br>` + html
     */
-    res.render('outline',
+    require(global.path + '/view.js')(req, res,
     {
         title: `${req.params.name} r${rev1}, r${rev2} 비교`,
         content: html,

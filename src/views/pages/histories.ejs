@@ -46,7 +46,7 @@
                     <td>
                         <% let lnk = '/raw/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
                         <% let lnk2 = '/revert/' + encodeURI(changes[i].page) + '?rev=' + changes[i].rev.toString() %>
-                        <a href="<%= lnk %>">RAW</a><%if (changes[i].type == 'edit' || changes[i].type == 'create' || changes[i].type == 'revert') { %> | <a href='<%= lnk2 %>'>Revert</a><% } %><% if (changes[i].rev > 1) { %> | <a href ='/diff/<%= changes[i].page %>?rev1=<%= changes[i].rev %>&rev2=<%= changes[i].rev - 1%>'>diff</a><% } %>
+                        <a href="<%= lnk %>" rel="nofollow">RAW</a><%if (changes[i].type == 'edit' || changes[i].type == 'create' || changes[i].type == 'revert') { %> | <a href='<%= lnk2 %>' rel="nofollow" >Revert</a><% } %><% if (changes[i].rev > 1) { %> | <a href ='/diff/<%= changes[i].page %>?rev1=<%= changes[i].rev %>&rev2=<%= changes[i].rev - 1%>' rel="nofollow">diff</a><% } %>
                     </td>
                 </tr>
                 <% if (changes[i].comment) { %>

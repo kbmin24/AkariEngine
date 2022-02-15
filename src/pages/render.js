@@ -659,14 +659,14 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     {
         p1 = linkfix(p1)
         let p1Tooltip = p1.replace(/'/g,`&apos;`)
-        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
+        return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
     })
     //external link with different text
     data = data.replace(/\[\[(https?:.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
         p2 = linkfix(p2)
         let p1Tooltip = p1.replace(/'/g,`&apos;`)
-        return `<a href='${p1}' target='_blank' rel='noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
+        return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
     })
     //category
     data = data.replace(/\[\[category:(.*?)\]\]/igm, '')

@@ -32,7 +32,7 @@ module.exports = async (req, res, pages) =>
         resultContent: searchres2
     })
     const username = req.session.username
-    res.render('outline',
+    require(global.path + '/view.js')(req, res,
     {
         title: sanitiseHtml(query, {disallowedTagsMode: escape}) + '의 검색 결과',
         content: searchHTML,

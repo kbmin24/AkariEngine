@@ -56,7 +56,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: boardNow.boardTitle,
                 titleLink: `/board/${boardNow.boardID}`,
@@ -162,7 +162,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: '정말로 글을 삭제하시겠습니까?',
                 content: html,
@@ -251,7 +251,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: '정말로 댓글을 삭제하시겠습니까?',
                 content: html,

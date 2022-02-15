@@ -11,7 +11,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
         content = description + '<br>Return to ' + '<a href="' + returnlink + '">' + returnname + '</a>.'
     }
     res.status(code)
-    res.render('outline',{
+    require(global.path + '/view.js')(req, res,{
         title: 'Error!',
         content: content,
         username: req.session.username,

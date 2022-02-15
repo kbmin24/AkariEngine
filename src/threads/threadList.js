@@ -35,7 +35,7 @@ module.exports = async (req, res, dbs = {}) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: `Discussions of ${title}`,
             content: html,

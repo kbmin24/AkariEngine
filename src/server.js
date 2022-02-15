@@ -228,7 +228,7 @@ app.get('/signup', async (req, res) =>
 {
     const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
     const signuppage = await ejs.renderFile(global.path + '/views/user/signup.ejs',{captcha: captchaSVG})
-    res.render('outline',
+    require(global.path + '/view.js')(req, res,
     {
         title: '회원 가입',
         content: signuppage,
@@ -254,7 +254,7 @@ app.get('/login', csrfProtection, async (req,res) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: '로그인',
             content: html,
@@ -276,7 +276,7 @@ app.get('/logout', (req, res) =>
 })
 app.get('/whoami', (req, res) =>
 {
-    res.render('outline',{
+    require(global.path + '/view.js')(req, res,{
         title: 'You are',
         content: `${req.session.username}<br>IP Address: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`,
         username: req.session.username,
@@ -312,7 +312,7 @@ app.get('/settings', csrfProtection, async (req, res) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: '설정',
             content: html,
@@ -401,7 +401,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: req.params.name + ' 편집',
                 content: html,
@@ -429,7 +429,7 @@ app.get('/edit/:name', csrfProtection, async (req, res) =>
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: req.params.name + ' 편집',
                 content: html,
@@ -496,7 +496,7 @@ app.get('/move/:name', async (req, res) =>
             captcha: captchaSVG
         }, (err, html) => 
         {
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: req.params.name + ' 이동',
                 content: html,
@@ -530,7 +530,7 @@ app.get('/delete/:name', csrfProtection, (req, res) =>
                     const username = req.session.username
                     ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username, csrfToken: req.csrfToken()}, (err, html) => 
                     {
-                        res.render('outline',
+                        require(global.path + '/view.js')(req, res,
                         {
                             title: req.params.name + ' 삭제',
                             isPage: true,
@@ -599,7 +599,7 @@ app.get('/revert/:name', async (req, res) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: req.params.name + '를 r' + req.query.rev + '(으)로 되돌리기',
             content: html,
@@ -668,7 +668,7 @@ app.get('/Upload', async (req, res) =>
         captcha: captchaSVG
     }, (err, html) => 
     {
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: '업로드',
             content: html,

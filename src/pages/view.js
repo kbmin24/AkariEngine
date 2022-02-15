@@ -143,13 +143,14 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     content: content,
                     isPage: true,
                     pagename: page.title,
+                    canonical: `/w/${page.title}`,
                     updatedAt: date.format(page.updatedAt, global.dtFormat),
                     username: req.session.username,
                     ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                     wikiname: global.appname
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                res.render('outline',renderOpt)
+                require(global.path + '/view.js')(req, res,renderOpt)
             }
             else
             {
@@ -162,7 +163,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                         content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>하지만, 직접 생성할 수 있습니다!</p><p><a href='/edit/${req.params.name}'>사용자 문서 생성</a></p>`
                     else
                         content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>사용자가 사용자 문서를 만들지 않았습니다.</p><p><a href='javascript:window.history.back()'>뒤로가기</a></p>`
-                    res.render('outline',
+                    require(global.path + '/view.js')(req, res,
                     {
                         title: '오류',
                         content: content,
@@ -199,6 +200,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 let renderOpt = {
                     title: page.page,
                     content: content,
+                    canonical: `/w/${page.page}?rev=${rev}`,
                     isPage: true,
                     pagename: page.page,
                     username: req.session.username,
@@ -206,7 +208,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     wikiname: global.appname
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                res.render('outline', renderOpt)
+                require(global.path + '/view.js')(req, res, renderOpt)
             }
             else
             {

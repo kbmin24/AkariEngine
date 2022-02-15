@@ -20,7 +20,7 @@ module.exports = async (req, res, category) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: '분류 ' + req.params.name,
             content: html,

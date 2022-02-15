@@ -39,10 +39,11 @@ module.exports = async (req, res, boards, posts) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        res.render('outline',
+        require(global.path + '/view.js')(req, res,
         {
             title: "게시판 홈",
             titleLink: "/board/",
+            canonical: "/board/",
             content: html,
             username: req.session.username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

@@ -40,7 +40,7 @@ module.exports = (req, res, histories) =>
         }, (err, html) => 
         {
             const username = req.session.username
-            res.render('outline',
+            require(global.path + '/view.js')(req, res,
             {
                 title: req.params.name + '의 역사',
                 content: html,
