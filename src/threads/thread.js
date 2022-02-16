@@ -35,7 +35,7 @@ module.exports = async (req, res, dbs = {}) =>
         }
         require(global.path + '/view.js')(req, res,
         {
-            title: `Discussion of ${t.pagename} - ${t.threadTitle}`,
+            title: `${t.pagename} 토론 - ${t.threadTitle}`,
             content: html,
             isPage: true,
             pagename: t.pagename,

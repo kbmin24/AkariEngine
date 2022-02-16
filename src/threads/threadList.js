@@ -37,7 +37,7 @@ module.exports = async (req, res, dbs = {}) =>
         }
         require(global.path + '/view.js')(req, res,
         {
-            title: `Discussions of ${title}`,
+            title: `${title}의 토론`,
             content: html,
             isPage: true,
             pagename: title,
