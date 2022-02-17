@@ -84,8 +84,18 @@ module.exports = async (io, socket, command, options) =>
             }
             case 'help':
             {
-                let help = `cleancategories\nfilemigration\nhelp\npermissions (username)\nwhoami\n`
+                let help = `cleancategories\nfilemigration\nhelp\npermissions (username)\ngenpassword (pw) (salt)\nwhoami\n`
                 stdout(socket, help)
+                break
+            }
+            case 'genpassword':
+            {
+                const crypto = require('crypto')
+                crypto.pbkdf2(cmdSplit[1], cmdSplit[2], 10000, 64, 'sha512', (err, hashedPW) =>
+                {
+                    if (err) throw new err
+                    stdout(socket, hashedPW.toString('base64'))
+                })
                 break
             }
             case 'whoami':
