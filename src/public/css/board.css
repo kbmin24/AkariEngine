@@ -222,3 +222,33 @@ img
     padding: 1px 6px;
     text-align: center;
 }
+.boardRecentVisit
+{
+    background-color: #f8f9fa;
+    display: flex;
+    font-size: 0.8rem;
+}
+#boardVisitList
+{
+    list-style-type: none;
+    margin-bottom: 0;
+    overflow: hidden;
+    height: 1.4rem;
+}
+#boardVisitList > li
+{
+    float: left;
+    margin-right: 1rem;
+}
+#boardVisitList > li > a
+{
+    color: inherit;
+}
+#boardVisitList > li > a:hover
+{
+    color: inherit;
+}
+.rboard-close
+{
+    margin-left: 0.5rem;
+}

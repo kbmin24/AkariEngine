@@ -55,4 +55,7 @@ function loadRC() {
         }
     })
 }
-loadRC()
+$(() =>
+{
+    loadRC()
+})

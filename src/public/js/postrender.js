@@ -21,12 +21,17 @@ window.onload = () =>
             center: new kakao.maps.LatLng(x, y),
             level: z
         }
-        let map = new kakao.maps.Map(element, options)
+    let map = new kakao.maps.Map(element, options)
 
         let mapTypeControl = new kakao.maps.MapTypeControl()
         map.addControl(mapTypeControl, kakao.maps.ControlPosition.TOPRIGHT)
 
         let zoomControl = new kakao.maps.ZoomControl()
         map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT)
+
+        let marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(x, y)
+        })
+        marker.setMap(map)
     })
 }
