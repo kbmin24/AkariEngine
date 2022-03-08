@@ -21,7 +21,8 @@ module.exports = async (req, res, recentchanges) =>
     changes.forEach((value, index, array) =>
     {
         if (show <= 0) return
-        if (excludefile && value.page.toLowerCase().startsWith('file:')) return
+        if (excludefile && value.page.toLowerCase().startsWith('File:')) return
+        if (excludefile && value.page.toLowerCase().startsWith('User:')) return
         if (editOnly && value.type !== 'edit') return
         if (!isUnique || !uniqueNames.has(value.page))
         {
