@@ -987,6 +987,12 @@ app.get('/lovelive', (req, res) =>
     return
 })
 
+app.get('/short/logo', (req, res) =>
+{
+    res.redirect('/w/GECWiki:%EB%A1%9C%EA%B3%A0%20%EA%B3%B5%EB%AA%A8%EC%A0%84')
+    return
+})
+
 //error handler
 app.use((err, req, res, next) =>
 {
