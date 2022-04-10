@@ -37,7 +37,8 @@ $(function() {
                     'delete': '삭제',
                     'create': '생성',
                     'upload': '업로드',
-                    'move': '이동'
+                    'move': '이동',
+                    'revert': '되돌림'
                 }
                 let type = typeMap[data[rc].type] || data[rc].type
                 entry += `

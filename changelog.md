@@ -1,3 +1,6 @@
+v2.2
+* flicker
+v2.1
 v2.0
 * board
 * full-text search

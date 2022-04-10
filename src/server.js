@@ -38,7 +38,7 @@ else if (global.conf.database.type == 'mariadb')
 else
 {
     console.error('[ERROR!] Invalid DB type.')
-    return
+    exit()
 }
 
 //session
@@ -729,6 +729,7 @@ var storage = multer.diskStorage({
 })
 
 const axios = require('axios')
+const { exit } = require('process')
 
 var upload = multer({
     storage: storage,
