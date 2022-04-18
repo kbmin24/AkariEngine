@@ -684,7 +684,7 @@ const e = require('express')
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
-    const filetypes = /jpeg|jpg|jfif|png|gif|webp/i
+    const filetypes = /jpeg|jpg|jfif|png|gif|webp|svg/i
     const ext = filetypes.test(path.extname(file.originalname).toLowerCase())
     const mime = filetypes.test(file.mimetype)
     if (mime && ext)
@@ -693,7 +693,7 @@ function checkFileType(file, cb)
     }
     else
     {
-        cb('JPEG, JPG, PNG, GIF, WebP만 업로드 할 수 있습니다.')
+        cb('JPEG, JPG, PNG, GIF, WebP, svg만 업로드 할 수 있습니다.')
     }
 }
 var storage = multer.diskStorage({
@@ -789,9 +789,9 @@ var upload = multer({
             }
         }
 
-        if (!req.body.filename.match(/^.*\.(jpeg|jpg|png|gif|webp)$/i))
+        if (!req.body.filename.match(/^.*\.(jpeg|jpg|png|gif|webp|svg)$/i))
         {
-            cb('JPEG, JPG, PNG, GIF, WebP만 업로드할 수 있습니다.')
+            cb('JPEG, JPG, PNG, GIF, WebP, svg만 업로드할 수 있습니다.')
         }
         if (!req.body.filename.match(/^[^\#\?\\\/\<\>\:\*\|\"]*$/i))
         {

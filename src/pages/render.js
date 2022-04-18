@@ -23,7 +23,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             var res = ''
             var filename = ''
             const properties = [
-                /^(.*?\.(?:png|jpg|jpeg|gif|webp))$/gi,
+                /^(.*?\.(?:png|jpg|jpeg|gif|webp|svg))$/gi,
                 /^width ?= ?(.*?)$/ig,
                 /^height ?= ?(.*?)$/ig
             ]
