@@ -22,8 +22,11 @@ body
 {
     background-color: var(--dark-background);
     color:  var(--dark-foreground);
-    border: 1px solid var(--dark-border) !important;
     border-bottom: none !important;
+}
+.border
+{
+    border: 1px solid var(--dark-border) !important;
 }
 .navbar
 {
