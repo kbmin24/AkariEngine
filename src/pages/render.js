@@ -587,7 +587,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
 
     //Redirect
     let doRedr = false
-    const redr = data.replace(/^#redirect (.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
+    const redr = data.replace(/^#redirect +(.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
     {
         if (true === fredirect(pagename, p1, p2, string, res, redirect))
         {

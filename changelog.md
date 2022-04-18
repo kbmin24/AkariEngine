@@ -1,3 +1,6 @@
+v2.3 (2022-04-17)
+* Reintroduced dark mode
+
 v2.2
 * flicker
 v2.1
@@ -5,6 +8,7 @@ v2.0
 * board
 * full-text search
 * indexing
+* Removed dark mode
 
 v1.5b (2022-01-26)
 * Better DIFF
