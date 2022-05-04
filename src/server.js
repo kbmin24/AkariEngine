@@ -286,16 +286,16 @@ app.get('/whoami', (req, res) =>
 })
 app.get('/settings', csrfProtection, async (req, res) =>
 {
-    const username = req.session.username
-    if (!username)
+    const username = req.session.username ? req.session.username : null
+    /*if (!username)
     {
         require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
-    }
+    }*/
     const sR = await settings.findOne({
         where:
         {
-            user: req.session.username,
+            user: username,
             key: 'sign'
         }
     })
@@ -303,7 +303,8 @@ app.get('/settings', csrfProtection, async (req, res) =>
     ejs.renderFile(global.path + '/views/user/settings.ejs',
     {
         csrfToken: req.csrfToken(),
-        sign: sign
+        sign: sign,
+        username: username
     }, (err, html) => 
     {
         if (err)
