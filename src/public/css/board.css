@@ -9,7 +9,6 @@ img
 }
 .board-infoBar
 {
-    font-size: 0.90rem;
     display: flex;
     justify-content: flex-end;
     min-width: 0;
@@ -44,7 +43,6 @@ img
 {
     display: flex;
     justify-content: flex-end;
-    font-size: 0.9rem;
     opacity: 70%;
 }
 .postDelete > a, .postDelete > a:hover
@@ -120,7 +118,6 @@ img
 .commentContentHead
 {
     display: flex;
-    font-size: 0.9rem;
     justify-content: flex-end;
     min-width: 0;
 }
@@ -128,7 +125,6 @@ img
 {
     display: flex;
     justify-content: flex-end;
-    font-size: 0.9rem;
 }
 .commentDaedaetgul
 {
@@ -153,10 +149,12 @@ img
     cursor: pointer;
 }
 
+
 .boardHomeTable
 {
-    font-size: 0.80rem;
+    font-size: 0.90rem;
 }
+
 .boardHomeBoardNameWrapper
 {
     display: flex;
@@ -199,7 +197,7 @@ img
 }
 .articleCommentCount
 {
-    /*font-size: 0.80em;*/
+    font-size: 0.80em;
     opacity: 80%;
 }
 .boardHomePostTitle
@@ -215,7 +213,7 @@ img
 {
     display: inline-block;
     min-width: 22px;
-    font-size: 11px;
+    /*font-size: 11px;*/
     line-height: 14px;
     background-color: #007bff; /* #7aa7d6 */
     color: white;
@@ -225,7 +223,6 @@ img
 .boardRecentVisit
 {
     display: flex;
-    font-size: 0.8rem;
 }
 #boardVisitList
 {

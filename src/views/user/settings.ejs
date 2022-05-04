@@ -1,5 +1,35 @@
 <div class="card mb-3">
     <div class="card-body">
+        <h5 class="card-title">테마</h5>
+        <p class="card-text">라이트 테마 및 다크 테마 중 사용할 테마를 선택할 수 있습니다.</p>
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+        <div class='form-group mb-2'>
+            <div class='row'>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeLight" value='light'>
+                    <label class="form-check-label" for="radioThemeLight">
+                        라이트 테마
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeDark" value='dark'>
+                    <label class="form-check-label" for="radioThemeDark">
+                        다크 테마
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeSystem" value='system'>
+                    <label class="form-check-label" for="radioThemeSystem">
+                        시스템 설정 사용
+                    </label>
+                </div>
+            </div>
+        </div>
+        <button class='btn btn-primary' onClick='setThemePref()'>Save</button>
+    </div>
+</div>
+<div class="card mb-3">
+    <div class="card-body">
         <h5 class="card-title">비밀번호 변경</h5>
         <p class="card-text">비밀번호를 변경할 수 있습니다.</p>
         <form method='POST' action='/settings/changePassword'>
