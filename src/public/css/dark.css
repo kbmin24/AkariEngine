@@ -175,3 +175,9 @@ textarea, input[type=text], input[type=number], input[type=password]
 {
     background-color: var(--dark-nav) !important;
 }
+
+.ck-editor__editable, .ck-source-editing-area > textarea
+{
+    background-color: white !important;
+    color: black !important;
+}

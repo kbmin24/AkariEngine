@@ -11,3 +11,18 @@
     min-height: 400px;
     max-height: calc(100vh - 500px);
 }
+.editMacro
+{
+    display: inline-block;
+    text-align: center;
+    font-size: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+}
+.editMacro-drp
+{
+    display: inline-block;
+    font-size: 1.5rem;
+    height: 2rem;
+    color: inherit;
+}
