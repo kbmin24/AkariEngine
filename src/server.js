@@ -162,6 +162,8 @@ global.sanitiseOptions =
             'margin-right': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
             'max-width': [/^.*?$/],
             'max-height': [/^.*?$/],
+            'min-width': [/^.*?$/],
+            'min-height': [/^.*?$/],
             'padding': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
             'padding-left': [/^ *(-|\+)?(\d|.)+(?:px|em|%) *$/],
             'padding-right': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
