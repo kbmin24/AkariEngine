@@ -94,6 +94,8 @@ const thread = require(__dirname + '/models/thread.model.js')(sequelize)
 const threadcomment = require(__dirname + '/models/threadcomment.model.js')(sequelize)
 const recentdiscuss = require(__dirname + '/models/recentdiscuss.model.js')(sequelize)
 const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)
+const posts = require(global.path + '/models/boardPost.model.js')(sequelize)
+const boards = require(global.path + '/models/boardBoard.model.js')(sequelize)
 sequelize.sync()
 
 global.sanitiseOptions =
@@ -630,7 +632,7 @@ app.post('/preview', async (req, res) =>
 })
 app.get('/search', async (req, res) =>
 {
-    await require(global.path + '/pages/search.js')(req, res, pages)
+    await require(global.path + '/pages/search.js')(req, res, pages, boards, posts)
 })
 app.post('/search', async (req, res) =>
 {
