@@ -32,7 +32,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     let page = 1
     if (currentPost !== null)
     {
-        page = 0//Math.floor((boardNow.postCount - currentPost + 1) / global.pageLength) + 1
+        page = 1 //Math.floor((boardNow.postCount - currentPost + 1) / global.pageLength) + 1
     }
     else
     {
