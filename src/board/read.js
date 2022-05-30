@@ -119,7 +119,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
 
     let commentTree = await readComments(boardNow.boardID, post.idAtBoard, comments)
 
-    let lst = '' await require(__dirname + '/list.js')(true, req, res, boards, posts, block, perm, gongji, post.idAtBoard)
+    let lst = await require(__dirname + '/list.js')(true, req, res, boards, posts, block, perm, gongji, post.idAtBoard)
     
     //check if admin
     let isAdmin = (req.session.username && await perm.findOne({where:
