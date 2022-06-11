@@ -33,7 +33,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     if (currentPost !== null)
     {
         page = Math.floor((boardNow.postCount - currentPost + 1) / global.pageLength) + 1
-        if (page < 1) page == 1
+        if (page < 1) page = 1
     }
     else
     {
