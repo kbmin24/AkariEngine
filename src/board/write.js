@@ -50,8 +50,16 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
     req.body.content = req.body.content.replace(/\r\n/g, '\n')
     let doneby = req.session.username
     if (doneby === undefined) req.body.nickname
+    
+    let latestPost = await posts.findAll({
+        where: {boardID: boardNow.boardID},
+        order:
+        [
+            ['idAtBoard', 'DESC']
+        ],})
+
     let postOptions = {
-        idAtBoard: boardNow.postCount + 1,
+        idAtBoard: latestPost[0].idAtBoard + 1,
         boardID: boardNow.boardID,
         title: req.body.title,
         writtenBy: req.session.username,
