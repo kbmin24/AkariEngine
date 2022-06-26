@@ -16,12 +16,20 @@
             <div class='editMacro bg-light' onclick="editMacro(`''`,`기울임`,`''`)"><i class="fas fa-italic"></i></div>
             <div class='editMacro bg-light' onclick="editMacro(`__`,`밑줄`,`__`)"><i class="fas fa-underline"></i></div>
             <div class='editMacro bg-light' onclick="editMacro(`--`,`취소선`,`--`)"><i class="fas fa-strikethrough"></i></div>
-            <div class='editMacro bg-light' onclick="editMacro(`[file(`,`filename.jpg`,`)]`)"><i class="fas fa-image"></i></div>
+            <div class="dropdown editMacro-drp">
+                <button class='editMacro-drp bg-light dropdown-toggle' type="button" id='drpFile' data-bs-toggle="dropdown" aria-expanded="false" style="border: none">
+                    <i class="fas fa-image"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="/Upload" target='_blank'>파일 업로드</a></li>
+                  <li><a class="dropdown-item" href="editMacro(`[file(`,`filename.jpg`,`)]`)">파일 삽입</a></li>
+                </ul>
+            </div>
             <div class="dropdown editMacro-drp">
                 <button class='editMacro-drp bg-light dropdown-toggle' type="button" id='drpHeader' data-bs-toggle="dropdown" aria-expanded="false" style="border: none">
                     <i class="fas fa-heading"></i>
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="javascript:editMacro(``,``,`[toc]`)">목차</a></li>
                   <li><a class="dropdown-item" href="javascript:editMacro(`\n= `,`내용`,` =\n`)">1단계</a></li>
                   <li><a class="dropdown-item" href="javascript:editMacro(`\n== `,`내용`,` ==\n`)">2단계</a></li>
