@@ -57,6 +57,11 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
         [
             ['idAtBoard', 'DESC']
         ],})
+    
+    if (latestPost.length == 0)
+    {
+        latestPost = [{'idAtBoard': 0}]
+    }
 
     let postOptions = {
         idAtBoard: latestPost[0].idAtBoard + 1,
