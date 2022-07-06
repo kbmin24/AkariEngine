@@ -37,11 +37,11 @@
             <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
             <div class='form-group mb-2'>
                 <label for='oldpassword'>현재 비밀번호</label>
-                <input type='password' name='oldpassword' class='form-control' id='oldpassword' placeholder='Enter Current Password' required>
+                <input type='password' name='oldpassword' class='form-control' id='oldpassword' placeholder='현재 비밀번호 입력' required>
             </div>
             <div class='form-group mb-2'>
                 <label for='passwordInputbox'>새 비밀번호</label>
-                <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='Enter New Password' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
+                <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='새 비밀번호 입력' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
                 pattern='^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$'>
                 <small class='form-text text-muted'>비밀번호는 최소 8자 이상이어야 합니다.</small>
                 <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'>비밀번호는 8자 이상 255자 이하여야 합니다.</small>
@@ -49,7 +49,7 @@
             </div>
             <div class='form-group mb-2'>
                 <label for='passwordConfirmInputbox'>비밀번호 확인</label>
-                <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='Re-enter password' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
+                <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='비밀번호 재입력' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
                 <p>
                     <small id='passwordmatch' class='text-success fw-bold' style='display: none'>비밀번호 일치</small>
                     <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>비밀번호 불일치</small>

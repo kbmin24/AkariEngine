@@ -118,7 +118,7 @@ global.sanitiseOptions =
         i: ['class', 'id', 'aria-hidden', 'style'],
         font: ['class', 'id', 'size', 'color', 'face', 'style'],
         div: ['class', 'id', 'style', 'data-x', 'data-y', 'data-z', 'data-a'],
-        span: ['class', 'id', 'style'],
+        span: ['class', 'id', 'style', 'data-x', 'data-y', 'data-z'],
         caption: ['class', 'id', 'style'],
         p: ['class', 'id', 'style'],
         del: ['class', 'id', 'style'],

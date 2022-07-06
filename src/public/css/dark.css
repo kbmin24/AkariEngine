@@ -181,3 +181,15 @@ textarea, input[type=text], input[type=number], input[type=password]
     background-color: white !important;
     color: black !important;
 }
+.modal-dialog
+{
+    background-color: var(--dark-background);
+}
+.modal-content
+{
+    background-color: inherit;
+}
+.btn-close
+{
+    filter: invert(100%);
+}

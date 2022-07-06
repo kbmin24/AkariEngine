@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
-//This function:
+
 //gets markup and returns HTML.
 
 const dateandtime = require('date-and-time')
-const katex = require('katex');
-var sanitiseHtml = require('sanitize-html')
+const sanitiseHtml = require('sanitize-html')
+
 async function renderMacro(match, macro, args, pages = undefined, files, incl = true)
 {
     //switch?
@@ -313,7 +313,7 @@ function regFootnote(text)
 {
     const f = [++footnotecount, text]
     footnotes.push(f)
-    return `<sup><a href='#foot_${footnotecount}' id='foot_source${footnotecount}' title='${sanitiseHtml(text, {allowedTags: [], allowedAttributes: {}})}'>[${footnotecount}]</a></sup>`
+    return `<span class='fn_origin' data-x='${footnotecount}' data-y='${sanitiseHtml(text, {allowedTags: [], allowedAttributes: {}})}'>${text}</span>`
 }
 function generateFootnote()
 {
@@ -738,12 +738,13 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
 
     //footnote
     footnotes = []
-    footnote = '<hr><b>각주</b><br>'
+    footnote = '<hr><b>각주</b><br><div id="footnotes">'
     footnotecount = 0
     data = data.replace(/\[\* (.*?)\]/igm, (_match, p1, _offset, _string, _groups) => regFootnote(p1))
 
     //build footnote
     data += footnotes.length == 0 ? '' : generateFootnote()
+    data += '</div>'
 
     /*
     //replace \n

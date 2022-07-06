@@ -17,5 +17,6 @@ $(() =>
 function setThemePref()
 {
     localStorage.setItem('theme',$('input[name=radioTheme]:checked').val())
-    alert('저장되었습니다. 새로고침해 주세요.')
+    alert('저장되었습니다. 새로고침합니다.')
+    location.reload()
 }
