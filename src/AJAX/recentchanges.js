@@ -23,7 +23,7 @@ module.exports = async (req, res, recentchanges) =>
         if (show <= 0) return
         if (excludefile && value.page.toLowerCase().startsWith('file:')) return
         if (value.page.toLowerCase().startsWith('user:')) return
-        if (editOnly && value.type !== 'edit') return
+        if (editOnly && (value.type !== 'edit' && value.type !== 'create')) return
         if (!isUnique || !uniqueNames.has(value.page))
         {
             array[index].page = sanitiseHtml(value.page, {allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape})
