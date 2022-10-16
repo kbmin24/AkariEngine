@@ -12,4 +12,5 @@ Please refer to [installation page on the wiki](https://github.com/kbmin24/Akari
 AkariEngine is distributed under GNU AGPL 3.0.
 
 ## Disclaimer
-AkariEngine is designed specifically for [GECWiki](https://gecwiki.kr); therefore, it may __not__ be suitable for general use.
+ * AkariEngine is designed specifically for [GECWiki](https://gecwiki.kr); therefore, it may __not__ be suitable for general use.
+ * All interfaces are in Korean. (If looking for english interface, please check [this version](https://github.com/kbmin24/AkariEngine/tree/a3c8afb6d532ca2704456efe13e19a8fb531f0fe) or older.
