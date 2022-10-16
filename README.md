@@ -3,7 +3,7 @@
 
 ![Screenshot](wikiscreenshot.png)
 
-AkariEngine is a nodejs based wiki engine. It was started as a toy project when I was 15, but it was then developed for use in [GECWiki](https://gecwiki.kr).
+AkariEngine is a nodejs based wiki engine. When I was 15, I started this as a toy project and then developed for use in [GECWiki](https://gecwiki.kr).
 
 ## Getting Started
 Please refer to [installation page on the wiki](https://github.com/kbmin24/AkariEngine/wiki/Installation).
