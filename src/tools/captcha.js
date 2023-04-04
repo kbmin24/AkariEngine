@@ -16,6 +16,7 @@ function genArbitaryString(len)
 exports.genArbitaryString = genArbitaryString
 exports.genCaptcha = async (req) =>
 {
+    if (!global.conf.reCAPTCHA) return ""
     return `<div class="g-recaptcha" data-sitekey="${global.conf.reCAPTCHA}"></div>`
 }
 exports.chkCaptcha = async (req, res, perm) =>

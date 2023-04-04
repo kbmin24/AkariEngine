@@ -158,6 +158,12 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                             .replace(/\n/gi, '') //linebreak dosent' matter in latex
                 return `<span class='math'>${args}</span>`
             }
+        case 'mathd':
+            {
+                args = args.replace(/\\/gi, '\\\\') //backslash,
+                            .replace(/\n/gi, '') //linebreak dosent' matter in latex
+                return `<span class='mathd'>${args}</span>`
+            }
         case 'map':
             {
                 args = args.split('|')

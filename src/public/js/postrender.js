@@ -42,6 +42,14 @@ window.onload = () =>
                 .replace(/\&amp;/gi, '&')
         katex.render(org, element, {throwOnErrorL: false})
     })
+    document.querySelectorAll('.mathd').forEach(element =>
+    {
+        let org = element.innerHTML
+        org = org.replace(/\&lt;/gi, '<')
+                .replace(/\&gt;/gi, '>')
+                .replace(/\&amp;/gi, '&')
+        katex.render(org, element, {throwOnErrorL: false, displayMode: true})
+    })
     document.querySelectorAll('.map').forEach(element =>
     {
         let x = parseFloat(element.getAttribute('data-x'))

@@ -94,7 +94,7 @@ module.exports = async (io, socket, command, options) =>
                 crypto.pbkdf2(cmdSplit[1], cmdSplit[2], 10000, 64, 'sha512', (err, hashedPW) =>
                 {
                     if (err) throw new err
-                    stdout(socket, hashedPW.toString('base64'))
+                    stdout(socket, hashedPW.toString('base64') + '\n')
                 })
                 break
             }

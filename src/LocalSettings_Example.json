@@ -7,6 +7,8 @@
     "licence": "CC BY-SA 4.0",
     "session_secret": "secret for encrypting sessions. This must NOT be exposed.",
     "adminEmail": "admin@localhost",
+    "reCAPTCHA": "your captcha secret",
+    "reCAPTCHA_prv": "captcha secret",
     "database": {
         "_comment": "This section is concerned with database connections. Database type can either be mariadb OR sqlite.",
         "type": "mariadb",

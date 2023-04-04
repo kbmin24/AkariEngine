@@ -1087,7 +1087,7 @@ io.on('connection', async socket =>
             {
                 await socket.join('developerconsole')
                 await socket.emit('joinok')
-                socket.emit('output', 'AkariEngine 1.4c\nCopyright GECWiki 2021-2022. All rights reserved.\n\nType \'help\' for instructions.\n')
+                socket.emit('output', 'AkariEngine 2.5b\nCopyright Kyubin Min 2021-2023. Distributed under GNU AGPL.\n\nType \'help\' for instructions.\n')
             }
         }
         else
