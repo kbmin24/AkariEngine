@@ -3,7 +3,7 @@
 <meta name='mobile-web-app-capable' content='yes'>
 <meta name='generator' content='AkariEngine'>
 <meta name='application-name' content='GECWiki'>
-<meta name='theme-color' content='#7aa7d6'>
+<meta name='theme-color' content='#43739F'>
 <meta http-equv='x-ua-compatible' content='ie=edge'>
 <meta name='google' content='notranslate'>
 <meta name='googlebot' content='noarchive'>
@@ -26,13 +26,17 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=<%= global.conf.gtag %>"></script>
 <script async src='/js/gtag.js'></script>
 <% } %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css" integrity="sha512-hasIneQUHlh06VNBe7f6ZcHmeRTLIaQWFd43YriJ0UND19bvYRauxthDg8E4eVNPm9bRUhr5JGeqH7FRFXQu5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <link rel="stylesheet" href="//fonts.googleapis.com/earlyaccess/nanumgothic.css">
 <link rel='stylesheet' href='/css/mainview.css'>
 <link rel='stylesheet' href='/css/ren.css'>
 <link rel='stylesheet' href='/css/rcsidebar.css'>
 <link rel='stylesheet' href='/css/floatingToolbox.css'>
 <link rel='stylesheet' href='/css/board.css'>
-<script src='/js/readTheme.js'></script>
+<% if (global.conf.disableDarkMode === true) { %>
+    <script src='/js/readTheme.js'></script>
+<% } %>
 <script src='/js/replacedate.js'></script>
 <script src='/js/toolbar.js'></script>
 <script src='/js/identicon.js'></script>

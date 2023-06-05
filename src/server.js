@@ -201,7 +201,9 @@ global.sanitiseOptions =
         return !(/^\/(board)?uploads\/.*$/.test(img.attribs['src']))
     },
     disallowedTagsMode: 'escape',
-    allowedIframeHostnames: ['www.youtube.com', 'www.youtube-nocookie.com']
+    allowedIframeHostnames: (global.conf.security === undefined
+        || global.conf.security.allowedIframeHostnames === undefined ?
+         ['www.youtube.com', 'www.youtube-nocookie.com'] : global.conf.security.allowedIframeHostnames)
 }
 
 const path = require('path')
@@ -514,7 +516,7 @@ app.get('/move/:name(*)', async (req, res) =>
 })
 app.post('/move/:name(*)', async (req, res) =>
 {
-    await require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history, thread, perm, block, protect)
+    await require(global.path + '/pages/move.js')(req, res, req.session.username, users, pages, recentchanges, history, thread, perm, block, protect, category)
 })
 app.get('/delete/:name(*)', csrfProtection, (req, res) =>
 {
@@ -670,7 +672,9 @@ app.get('/Upload', async (req, res) =>
     ejs.renderFile(global.path + '/views/files/upload.ejs',
     {
         username: username,
-        captcha: captchaSVG
+        captcha: captchaSVG,
+        filetypes: getFileTypes().join(', '),
+        fileLimit: fileLimit
     }, (err, html) => 
     {
         require(global.path + '/view.js')(req, res,
@@ -686,19 +690,31 @@ app.get('/Upload', async (req, res) =>
 const multer = require('multer')
 const fs = require('fs')
 const e = require('express')
+const default_filetypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
+function getFileTypes()
+{
+    if (global.conf.upload_types) return global.conf.upload_types
+    else return default_filetypes
+}
+function getMimeTypes()
+{
+    //only returns the LAST PART of mime (after slash)
+    if (global.conf.upload_mimes) return global.conf.upload_mimes
+    else return getFileTypes()
+}
+
 function checkFileType(file, cb)
 {
     //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
-    const filetypes = /jpeg|jpg|jfif|png|gif|webp|svg/i
-    const ext = filetypes.test(path.extname(file.originalname).toLowerCase())
-    const mime = filetypes.test(file.mimetype)
+    const ext = getFileTypes().includes(file.originalname.split(/\./).pop().toLowerCase())
+    const mime = getMimeTypes().includes(file.mimetype.split(/\//).pop().toLowerCase())
     if (mime && ext)
     {
         return cb(null,true)
     }
     else
     {
-        cb('JPEG, JPG, PNG, GIF, WebP, svg만 업로드 할 수 있습니다.')
+        cb(`${getFileTypes().join(', ')}만 업로드 할 수 있습니다.`)
     }
 }
 var storage = multer.diskStorage({
@@ -736,13 +752,15 @@ var storage = multer.diskStorage({
 const axios = require('axios')
 const { exit } = require('process')
 
+var fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
+
 var upload = multer({
     storage: storage,
     limits:
     {
         fields: 3,
         fieldNameSize: 255,
-        fileSize: 4 * 1024 * 1024
+        fileSize: fileLimit * 1024 * 1024
     },
     fileFilter: async (req, file, cb) =>
     {
@@ -794,9 +812,10 @@ var upload = multer({
             }
         }
 
-        if (!req.body.filename.match(/^.*\.(jpeg|jpg|png|gif|webp|svg)$/i))
+        let ext = req.body.filename.split(/\./).pop().toLowerCase();
+        if (!(getFileTypes().includes(ext)))
         {
-            cb('JPEG, JPG, PNG, GIF, WebP, svg만 업로드할 수 있습니다.')
+            cb(`${getFileTypes().join(', ')}만 업로드할 수 있습니다.`)
         }
         if (!req.body.filename.match(/^[^\#\?\\\/\<\>\:\*\|\"]*$/i))
         {
@@ -821,6 +840,22 @@ app.post('/Upload', upload.single('inputFile'), async (req, res) =>
             content: req.body.explanation,
             currentRev: 1
         })
+
+    //분류 등록
+    {
+        const categoryRegex = /\[\[(?:Category|분류):(.*?)\]\]/igm
+        let e
+        while ((e = categoryRegex.exec(req.body.explanation)) !== null)
+        {
+            if (!e[1]) continue
+            category.create(
+                {
+                    page: filepgname,
+                    category: e[1]
+                }
+            )
+        }
+    }
     await history.create(
         {
             page: filepgname,
@@ -1052,7 +1087,7 @@ app.use((err, req, res, next) =>
             break
         case 'LIMIT_FILE_SIZE':
             {
-                require(global.path + '/error.js')(req, res, null, `선택된 파일의 크기가 너무 큽니다. 파일은 최대 4MB여야 합니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+                require(global.path + '/error.js')(req, res, null, `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
             }
             break
         default:

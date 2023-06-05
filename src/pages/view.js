@@ -64,6 +64,19 @@ async function updViewCount(title, viewcount, updateTime)
     if (p) p.update({count: p.count + 1})
     else viewcount.create({title: title, count: 1})
 }
+function escapeHtml( text )
+{
+    //https://lifefun.tistory.com/85
+    var map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
 module.exports = async (req, res, pages, files, history, protect, perm, block, category, viewcount, updateTime) =>
 {
     //check read ACL
@@ -116,7 +129,15 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
         const filename = /File:(.*)/.exec(req.params.name)[1]
-        contentPrefix = `[file(${filename})]\n`
+        if (/^(.*?\.(?:png|jpg|jpeg|gif|webp|svg))$/gi.test(filename))
+        {
+            contentPrefix = `[file(${filename})]\n`
+        }
+        else
+        {
+            contentPrefix = `<p><span class="fw-bold text-danger">오류:</span> 이 파일은 브라우저에서 표시할 수 없습니다. <a target='_blank' href="/uploads/${escapeHtml(filename)}">새 탭에서 여세요.</a></p>`
+        }
+        
     }
 
     if (rev === undefined)
@@ -131,7 +152,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
                 if (req.query.from)
                 {
-                    titleSuffix = `<i><a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a>에서 넘어옴</i>&nbsp;` + titleSuffix
+                    titleSuffix = `<a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a>에서 넘어옴&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'

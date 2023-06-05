@@ -4,9 +4,22 @@
 
 const dateandtime = require('date-and-time')
 const sanitiseHtml = require('sanitize-html')
+const hljs = require('highlight.js')
+
+function errMessege(name, reason)
+{
+    return `<p class="fw-bold text-danger">${name}: ${reason}</p>`
+}
+
+function isString(args)
+{
+    return args instanceof String || typeof args == 'string'
+}
 
 async function renderMacro(match, macro, args, pages = undefined, files, incl = true)
 {
+    macro = macro.trim()
+    if (isString(args)) args = args.trim()
     //switch?
     switch (macro)
     {
@@ -18,6 +31,10 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             return buildTOC()
         case 'file':
         {
+            if (!isString(args))
+            {
+                return errMessege('FILE 매크로 오류', '매개 변수가 없습니다.')
+            }
             //todo: change to random file name
             var options = args.split('|')
             var res = ''
@@ -64,6 +81,10 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             {
                 return ''//`[${macro}(${args})]`
             }
+            if (!isString(args))
+            {
+                return errMessege('INCLUDE 매크로 오류', '매개 변수가 없습니다.')
+            }
             //let's fetch the data
             args = args.split('|')
             const p = await pages.findOne({where: {title: args[0]}})
@@ -80,18 +101,23 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                     const eqSign = args[i].indexOf('=')
                     if (eqSign === undefined)
                     {
-                        return `<p class="fw-bold text-danger">INCLUDE 매크로 오류: 인수 ${args[i]}의 값이 없습니다.</p>`
+                        return errMessege('INCLUDE 매크로 오류',`인수 ${args[i]}의 값이 없습니다.`)
                     }
                     const k = args[i].substring(0,eqSign).trim()
                     const v = args[i].substring(eqSign + 1).trim()
                     temArgs[k] = v
                 }
-                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs)
+                const opt = await require(global.path + '/pages/view.js').getOptions(p.content)
+                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
                 return res
             }
         }
         case 'color':
         {
+            if (!isString(args))
+            {
+                return errMessege('COLOR 매크로 오류', '매개 변수 형식이 올바르지 않습니다.')
+            }
             const lastComma = args.lastIndexOf('|')
             const color = args.substring(lastComma + 1, args.length)
             const text = args.substring(0, lastComma)
@@ -109,6 +135,10 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
         }
         case 'dday':
         {
+            if (!isString(args))
+            {
+                return errMessege('DDAY 매크로 오류', '매개 변수가 없습니다.')
+            }
             try
             {
                 if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
@@ -120,7 +150,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             }
             catch (e)
             {
-                return '<p class="fw-bold text-danger">DDAY 오류: 잘못된 날짜 형식</p>'
+                return errMessege('DDAY 매크로 오류', '매개 변수 형식이 올바르지 않습니다.')
             }
         }
         case 'agek':
@@ -133,7 +163,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             }
             catch (e)
             {
-                return '<p class="fw-bold text-danger">AGEK 오류: 잘못된 날짜 형식</p>'
+                return errMessege('AGEK 매크로 오류', '날짜 형식이 잘못되었습니다.')
             }
         }
         case 'age':
@@ -149,23 +179,35 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 }
                 catch (e)
                 {
-                    return '<p class="fw-bold text-danger">AGE 오류: 잘못된 날짜 형식</p>'
+                    return errMessege('AGEK 매크로 오류', '날짜 형식이 잘못되었습니다.')
                 }
             }
         case 'math':
             {
+                if (!isString(args))
+                {
+                    return errMessege('MATH 매크로 오류', '매개 변수가 없습니다.')
+                }
                 args = args.replace(/\\/gi, '\\\\') //backslash,
-                            .replace(/\n/gi, '') //linebreak dosent' matter in latex
+                            .replace(/\n/gi, ' ') //stop <br>
                 return `<span class='math'>${args}</span>`
             }
         case 'mathd':
             {
+                if (!isString(args))
+                {
+                    return errMessege('MATHD 매크로 오류', '매개 변수가 없습니다.')
+                }
                 args = args.replace(/\\/gi, '\\\\') //backslash,
-                            .replace(/\n/gi, '') //linebreak dosent' matter in latex
+                            .replace(/\n/gi, ' ') //stop <br>
                 return `<span class='mathd'>${args}</span>`
             }
         case 'map':
             {
+                if (!isString(args))
+                {
+                    return errMessege('MAP 매크로 오류', '매개 변수가 없습니다.')
+                }
                 args = args.split('|')
                 let datax = null
                 let datay = null
@@ -222,6 +264,26 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 style += `height:${height || '300px'};`
                 
                 return `<div class='map' ${opt}' style='${style}'></div>`
+            }
+        case 'syntax':
+            {
+                if (!isString(args))
+                {
+                    return errMessege('SYNTAX 매크로 오류', '매개 변수가 없습니다.')
+                }
+
+                try
+                {
+                    let [language, ...rest] = args.split('|')
+                    language = language.toLowerCase().trim()
+                    let code = rest.join('|').trim().replace(/\\/gi, '\\\\')
+                    let res = hljs.highlight(code, {language: language, ignoreIllegals: true}).value;
+                    return `<pre>${res}</pre>`
+                }
+                catch (e)
+                {
+                    return errMessege('SYNTAX 매크로 오류', '알 수 없는 에러가 발생하였습니다.')
+                }
             }
         default:
             return match
@@ -456,7 +518,6 @@ function renderTable(data)
             if (borderWidth) cellStyle += 'border-width:' +  borderWidth + ';'
             while (((cellOptFound = cellOptRegex.exec(found[1].trim())) !== null))
             {
-                if (cellOptFound.length < 2) continue
                 cellOptFound[1] = cellOptFound[1].trim()
                 if (/-(.*?)/.test(cellOptFound[1])) //[-3]
                 {
@@ -509,6 +570,11 @@ function renderTable(data)
                 else if (/height *?= *?(.+?)/i.test(cellOptFound[1]))
                 {
                     cellStyle += `height:${cellOptFound[1].split('=')[1].trim()};`
+                }
+                else
+                {
+                    //same as bgcolor
+                    cellStyle += `background-color:${cellOptFound[1].trim()};`
                 }
             }
             cell += `style='${cellStyle}'>${found[2].trim() || ''}</td>`
@@ -564,6 +630,8 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
     //deprecated options: _renderInclude, redirect
     //initialise
+    data = data.trimEnd()
+
     pgname = pagename
     currentSection = 1
     currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
@@ -637,8 +705,12 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
 
     //macro
-    //asyncMacro(str, regex, fn, pages)
+    //multiline macro
+    data = await asyncMacro(data, /\[(\w*)\]{{((?:.|\r|\n)*?)}}/igms, renderMacro, pages, files, incl)
+
+    //singleline macro
     data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igms, renderMacro, pages, files, incl)
+
     //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
 
     //ul
@@ -675,7 +747,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
     })
     //category
-    data = data.replace(/\[\[category:(.*?)\]\]/igm, '')
+    data = data.replace(/\[\[(?:Category|분류):(.*?)\]\]/igm, '')
     //anchor
     data = data.replace(/\[\[#([^|\r\n]*?)\]\]/igm, `<a href='#$1'>$1</a>`)
     //anchor with different text
@@ -791,9 +863,10 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //data = data.replace(/^\n/igm, '<br>')
     //data = data.replace('\n', '')
     //escape things
-    data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
+    if (renderOptions['escaperslash'] != 'off')
+        data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
     //sanitising things
     data = sanitiseHtml(data, global.sanitiseOptions)
-
+    
     return data
 }

@@ -45,7 +45,7 @@ async function regCategory(title, content, category)
     //erase existing categories
     await category.destroy({where: {page: title}})
 
-    const categoryRegex = /\[\[Category:(.*?)\]\]/igm
+    const categoryRegex = /\[\[(?:Category|분류):(.*?)\]\]/igm
     let e
     while ((e = categoryRegex.exec(content)) !== null)
     {
@@ -57,7 +57,6 @@ async function regCategory(title, content, category)
             }
         )
     }
-
 }
 
 module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block, category, settings) =>

@@ -1,3 +1,19 @@
+v2.8 (2023-06-05)
+* Added "global.conf.security.allowedIframeHostnames"
+* Added "hiderc" settings
+
+v2.7 (2023-04-06)
+* Added [macroname]{{arguments}} multiline macro (note: [:], [(] and [)] work the same as before)
+* 분류:로 분류 가능
+* 문서 이동, 파일 업로드 시 분류 처리
+* 코드 하이라이트 기능 추가
+* 다크모드 disable 스위치 추가
+* 업로드 파일 최대 사이즈 및 확장자 선택 기능 추가
+* 브라우저에서 볼 수 없는 파일 핸들링 추가 (pdf etc)
+
+v2.6 (2023-04-05)
+* design reform
+
 v2.5b (2023-04-04)
 * mathd 매크로 추가
 * 관리 콘솔 메시지 변경
@@ -20,7 +36,7 @@ v2.3 (2022-04-17)
 * Reintroduced dark mode
 
 v2.2
-* flicker
+* fixed flicker issue
 v2.1
 v2.0
 * board
@@ -37,7 +53,7 @@ v1.5a (2022-01-21)
 * fixed some dark mode bugs
 * changed history page ui
 
-v.1.5 (2022-01-15)
+v1.5 (2022-01-15)
 * Dark theme
 
 v1.4c (2022-01-15)
@@ -166,8 +182,8 @@ v0.4 (2021-07-31)
 * Changed misbehaving #redirect problem
 * Included Korean edit notice
 * Parser now returns an empty string for template in template
-* Solved problem which ul after heading is regarded as part of the heading
-* solved problem which a header is not rendered when it is succeeded by a blank
+* Solved problem in which ul after a heading is regarded as the part of the heading
+* solved problem in which a header is not rendered when it is succeeded by a blank
 
 v0.3a (2021-07-29)
 * CSRF Issue Hotfix
@@ -181,5 +197,5 @@ v0.3 (2021-07-28)
 * Changed various texts to point to user pages when relavent
 
 v0.2 (2021-07-27)
-* Changed DB to Mariadb
+* Changed DB to Mariadb (NB: sqlite can still be used)
 * Resolved RecentChanges issue

@@ -23,6 +23,21 @@
             "storage": "/db.sqlite"
         }
     },
+    "boardHome":
+    {
+        "boards": [{"id": "free"}],
+        "postCount": 5
+    },
+    "boardDescriptions":
+    {
+        "free": "주저리주저리절절"
+    },
+    "mapKey": "Kakao map key",
+    "gaenyumThreshold": 5,
+    "disableDarkMode": false,
+    "upload_types": ["jpeg", "jpg", "jfif", "png", "gif", "webp", "svg"],
+    "upload_mimes": ["jpeg", "jpg", "jfif", "png", "gif", "webp", "svg"],
+    "upload_maxsize_mb": 10,
     "specialPages": [
         {
             "title": "Contact",
@@ -36,5 +51,9 @@
             "title": "anther entry",
             "link": "another link"
         }
-    ]
+    ],
+    "security":
+    {
+        "allowedIframeHostnames": ["www.youtube.com", "www.youtube-nocookie.com"]
+    }
 }

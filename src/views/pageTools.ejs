@@ -1,10 +1,12 @@
-<div class="w-auto btn-group mt-2" id='pageTools' role="group">
-  <a href='/w/<%= pagename %>' class='btn btn-outline-primary'>문서</a>
-  <a href='/edit/<%= pagename %>' class="btn btn-outline-primary" rel="nofollow">편집</a>
-  <a href="/threads/<%= pagename %>" class="btn btn-outline-primary">토론</a>
-  <a href='/history/<%= pagename %>' class='btn btn-outline-primary'>역사</a>
-  <a class='btn btn-outline-primary dropdown-toggle rounded-end' style='-webkit-appearance: none' type='button' id="pageToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false"></a>
+<div id="pageTools" class="w0auto mt-2" role="group">
+  <a href='/w/<%= pagename %>' class='btn btn-slideopen'>
+    문서
+  </a>
+  <a href='/edit/<%= pagename %>' class="btn btn-slideopen" rel="nofollow">편집</a>
+  <a class='btn btn-outline-primary dropdown-toggle' style='-webkit-appearance: none;' type='button' id="pageToolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">더보기</a>
   <ul class='dropdown-menu dropdown-menu-macos shadow dropdown-menu-end' aria-labelledby="pageToolsDropdown">
+    <li><a href='/threads/<%= pagename %>' class='dropdown-item' rel="nofollow">토론</a></li>
+    <li><a href='/history/<%= pagename %>' class='dropdown-item' rel="nofollow">역사</a></li>
     <li><a href='/move/<%= pagename %>' class='dropdown-item' rel="nofollow">이동</a></li>
     <li><a href='/protect/<%= pagename %>' class='dropdown-item' rel="nofollow">보호</a></li>
     <li><a href='/delete/<%= pagename %>' class='dropdown-item' rel="nofollow">삭제</a></li>

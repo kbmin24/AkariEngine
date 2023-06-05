@@ -57,5 +57,9 @@ function loadRC() {
 }
 $(() =>
 {
-    loadRC()
+    if (localStorage.getItem('RC') !== 'false')
+    {
+        loadRC()
+    }
+    
 })

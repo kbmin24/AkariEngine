@@ -193,3 +193,25 @@ textarea, input[type=text], input[type=number], input[type=password]
 {
     filter: invert(100%);
 }
+.btn-slideopen
+{
+    color: var(--dark-foreground) !important;
+    transition: ease-out 0.2s;
+    box-shadow: inset 0 0 0 0 #244b75;
+    border: 1px solid #244b75;
+}
+.btn-slideopen:hover
+{
+    box-shadow: inset 55px 0 0 0 #244b75;
+    color: white
+}
+.btn-outline-primary
+{
+    color: var(--dark-foreground) !important;
+    border: 1px solid #244b75 !important;
+}
+.btn-outline-primary:hover
+{
+    background-color: #244b75 !important;
+    border-color: #244b75 !important;
+}

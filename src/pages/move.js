@@ -1,4 +1,28 @@
-module.exports = async (req, res, username, users, pages, recentchanges, history, thread, perm, block, protect) =>
+function regCategory(title, content, category)
+{
+    /*
+        Algorithm:
+        1. erase all
+        2. insert all found ones
+        Time Complexity: O(P+N+K) (P: Length of page, N: # of records in the table, K: # to register)
+    */
+    //erase existing categories
+    const categoryRegex = /\[\[(?:Category|분류):(.*?)\]\]/igm
+    let e
+    while ((e = categoryRegex.exec(content)) !== null)
+    {
+        if (!e[1]) continue
+        category.create(
+            {
+                page: title,
+                category: e[1]
+            }
+        )
+    }
+}
+
+
+module.exports = async (req, res, username, users, pages, recentchanges, history, thread, perm, block, protect, category) =>
 {
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
@@ -78,6 +102,10 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                         bytechange: redrPageContent.length,
                         type: 'create'
                     })
+
+                    //category
+                    category.destroy({where: {page: req.params.name}})
+                    regCategory(req.body.newName, page.content, category)
                     
                     //deal with the main page
                     recentchanges.create(

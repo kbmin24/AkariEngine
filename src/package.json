@@ -22,7 +22,6 @@
     "html-minifier": "^4.0.0",
     "ip-address": "^8.1.0",
     "ip-range-check": "^0.2.0",
-    "katex": "^0.15.1",
     "levdist": "^2.2.10",
     "mariadb": "^2.5.4",
     "multer": "^1.4.3",

@@ -3,7 +3,7 @@ async function getCategory(title, category, categorys)
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='card mb-2'><div class='card-body'>Categories: `
+    const cardBeginning = `<div class='card mb-2'><div class='card-body'>분류: `
     const cardEnd = `</div></div>`
 
     if (categories.length == 0)

@@ -13,10 +13,25 @@ $(() =>
             $('#radioThemeSystem').prop('checked', true)
             break
     }
+    switch (localStorage.getItem('RC'))
+    {
+        case 'false':
+            $('#radioRCfalse').prop('checked', true)
+            break
+        default:
+            $('#radioRCtrue').prop('checked', true)
+            break
+    }
 })
 function setThemePref()
 {
     localStorage.setItem('theme',$('input[name=radioTheme]:checked').val())
+    alert('저장되었습니다. 새로고침합니다.')
+    location.reload()
+}
+function setRCPref()
+{
+    localStorage.setItem('RC',$('input[name=radioRC]:checked').val())
     alert('저장되었습니다. 새로고침합니다.')
     location.reload()
 }
