@@ -9,26 +9,26 @@
 }
 body
 {
-    background-color: var(--dark-background);
-    color:  var(--dark-foreground);
+    background-color: var(--dark-background) !important;
+    color:  var(--dark-foreground) !important;
 }
 .article-wrapper
 {
-    background-color:  var(--dark-background);
-    color:  var(--dark-foreground);
+    background-color:  var(--dark-background) !important;
+    color:  var(--dark-foreground) !important;
     border: 1px solid var(--dark-border) !important;
 }
 #rcsidebar
 {
-    background-color: var(--dark-background);
-    color:  var(--dark-foreground);
+    background-color: var(--dark-background) !important;
+    color:  var(--dark-foreground) !important;
     border-bottom: none !important;
 }
 .border
 {
     border: 1px solid var(--dark-border) !important;
 }
-.navbar
+body .navbar
 {
     background-color:  var(--dark-nav) !important;
 }
@@ -42,16 +42,16 @@ body
 }
 .ui-autocomplete > li
 {
-    color:  var(--dark-foreground);
+    color:  var(--dark-foreground) !important;
 }
 #searchBox
 {
-    background-color: #9badbf;
+    background-color: #9badbf !important;
 }
 #searchinput
 {
-    background-color: var(--dark-background);
-    color: #b1b1b1;
+    background-color: var(--dark-background) !important;
+    color: #b1b1b1 !important;
 }
 #searchSubmit
 {
@@ -68,15 +68,15 @@ body
 }
 .list-group-item
 {
-    background-color: var(--dark-background);
-    color: var(--dark-foreground);
+    background-color: var(--dark-background) !important;
+    color: var(--dark-foreground) !important;
     border-bottom: 1px solid rgba(250, 250, 250, 0.250) !important;
 }
 #footer
 {
     background-color:  var(--dark-background) !important;
-    color:  var(--dark-foreground);
-    border-top: 1px solid  var(--dark-border);
+    color:  var(--dark-foreground) !important;
+    border-top: 1px solid  var(--dark-border) !important;
 }
 
 .border-bottom
@@ -89,7 +89,7 @@ body
 }
 .rcTitle
 {
-    color:  var(--dark-foreground);
+    color:  var(--dark-foreground) !important;
 }
 a
 {
@@ -205,12 +205,12 @@ textarea, input[type=text], input[type=number], input[type=password]
     box-shadow: inset 55px 0 0 0 #244b75;
     color: white
 }
-.btn-outline-primary
+div .btn-outline-primary
 {
     color: var(--dark-foreground) !important;
     border: 1px solid #244b75 !important;
 }
-.btn-outline-primary:hover
+div .btn-outline-primary:hover
 {
     background-color: #244b75 !important;
     border-color: #244b75 !important;

@@ -3,7 +3,9 @@ const { Router } = require('express')
 const express = require('express')
 const app = express()
 
-global.conf = require(__dirname + '/LocalSettings.json')
+global.path = __dirname
+
+global.conf = require(global.path + '/LocalSettings.json')
 
 const port = global.conf.port
 
@@ -11,10 +13,8 @@ const port = global.conf.port
 global.appname = global.conf.appname
 global.licence = global.conf.licence
 global.dtFormat = global.conf.dateTimeFormat
-global.path = __dirname
 
-//(이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다)
-global.copyrightNotice = `이 문서를 편집함으로써 당신은 ${global.appname}가 당신의 기여를 ${global.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.`
+global.copyrightNotice = `이 문서를 편집함으로써 당신은 ${global.conf.appname}가 당신의 기여를 ${global.conf.licence} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.`
 global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
@@ -24,7 +24,7 @@ if (global.conf.database.type == 'sqlite')
 {
     sequelize = new Sequelize({
         dialect: 'sqlite',
-        storage: __dirname + global.conf.database.sqlite_options.storage,
+        storage: global.path + global.conf.database.sqlite_options.storage,
         logging: false
     })
 }
@@ -69,6 +69,7 @@ app.use(sess)
 //CSRF
 const csurf = require('csurf')
 const csrfProtection = csurf({})
+global.csrfProtection = csrfProtection
 
 app.use(express.json({limit : "1mb"}))
 app.use(express.urlencoded({limit : "1mb", extended: false}))
@@ -76,27 +77,52 @@ app.use(express.urlencoded({limit : "1mb", extended: false}))
 app.disable('x-powered-by')
 
 //db
-const users = require(__dirname + '/models/user.model.js')(sequelize)
-const pages = require(__dirname + '/models/page.model.js')(sequelize)
-const recentchanges = require(__dirname + '/models/recentchanges.model.js')(sequelize)
-const history = require(__dirname + '/models/history.model.js')(sequelize)
-const mfile = require(__dirname + '/models/file.model.js')(sequelize)
-const perm = require(__dirname + '/models/perm.model.js')(sequelize)
-const protect = require(__dirname + '/models/protect.model.js')(sequelize)
-const adminlog = require(__dirname + '/models/adminlog.model.js')(sequelize)
-const block = require(__dirname + '/models/block.model.js')(sequelize)
-const loginhistory = require(__dirname + '/models/loginhistory.model.js')(sequelize)
-const category = require(__dirname + '/models/category.model.js')(sequelize)
-const settings = require(__dirname + '/models/setting.model.js')(sequelize)
-const viewcount = require(__dirname + '/models/viewcount.model.js')(sequelize)
-const updateTime = require(__dirname + '/models/updateTime.model.js')(sequelize)
-const thread = require(__dirname + '/models/thread.model.js')(sequelize)
-const threadcomment = require(__dirname + '/models/threadcomment.model.js')(sequelize)
-const recentdiscuss = require(__dirname + '/models/recentdiscuss.model.js')(sequelize)
-const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)
-const posts = require(global.path + '/models/boardPost.model.js')(sequelize)
-const boards = require(global.path + '/models/boardBoard.model.js')(sequelize)
+const users = require(global.path + '/models/user.model.js')(sequelize)
+const pages = require(global.path + '/models/page.model.js')(sequelize)
+const recentchanges = require(global.path + '/models/recentchanges.model.js')(sequelize)
+const history = require(global.path + '/models/history.model.js')(sequelize)
+const mfile = require(global.path + '/models/file.model.js')(sequelize)
+const perm = require(global.path + '/models/perm.model.js')(sequelize)
+const protect = require(global.path + '/models/protect.model.js')(sequelize)
+const adminlog = require(global.path + '/models/adminlog.model.js')(sequelize)
+const block = require(global.path + '/models/block.model.js')(sequelize)
+const loginhistory = require(global.path + '/models/loginhistory.model.js')(sequelize)
+const category = require(global.path + '/models/category.model.js')(sequelize)
+const settings = require(global.path + '/models/setting.model.js')(sequelize)
+const viewcount = require(global.path + '/models/viewcount.model.js')(sequelize)
+const updateTime = require(global.path + '/models/updateTime.model.js')(sequelize)
+const thread = require(global.path + '/models/thread.model.js')(sequelize)
+const threadcomment = require(global.path + '/models/threadcomment.model.js')(sequelize)
+const recentdiscuss = require(global.path + '/models/recentdiscuss.model.js')(sequelize)
+const links = require(global.path + '/models/links.model.js')(sequelize)
 sequelize.sync()
+
+global.db = 
+{
+    users: users,
+    pages: pages,
+    recentchanges: recentchanges,
+    history: history,
+    mfile: mfile,
+    perm: perm,
+    protect: protect,
+    adminlog: adminlog,
+    block: block,
+    loginhistory: loginhistory,
+    category: category,
+    settings: settings,
+    viewcount: viewcount,
+    updateTime: updateTime,
+    thread: thread,
+    threadcomment: threadcomment,
+    recentdiscuss: recentdiscuss,
+    links: links
+}
+
+global.sequelize = sequelize
+
+//task scheduler
+require(global.path + '/taskScheduler.js')()
 
 global.sanitiseOptions =
 {
@@ -197,7 +223,8 @@ global.sanitiseOptions =
     exclusiveFilter: (img) =>
     {
         if (img.tag !== 'img') return false
-        if (!img.attribs['src']) return false 
+        if (!img.attribs['src']) return false
+        //TODO: extension can add filter?
         return !(/^\/(board)?uploads\/.*$/.test(img.attribs['src']))
     },
     disallowedTagsMode: 'escape',
@@ -206,16 +233,33 @@ global.sanitiseOptions =
          ['www.youtube.com', 'www.youtube-nocookie.com'] : global.conf.security.allowedIframeHostnames)
 }
 
+//regex for testing whether page title is legal or not
+global.legalTitleRegex = /^[^\[\]\{\}\|#\n]*$/m
+
+//load global tools
+global.escapeHTML = require(global.path + '/tools/escapeHTML.js')
+
 const path = require('path')
 const dateandtime = require('date-and-time')
 
 //views
 const ejs = require('ejs')
 app.set('view engine', 'ejs')
-app.set('views',__dirname + '/views')
-app.use(express.static(__dirname + '/public'))
+app.set('views',global.path + '/views')
+app.use(express.static(global.path + '/public'))
 
-require(__dirname + '/board/router.js')(app, sequelize, csrfProtection)
+//skins
+global.skins = []
+global.conf.skins.forEach(e => {
+    app.use(`/skins/${e}`, express.static(`${global.path}/skins/${e}/public`));
+    let skinSettings = require(`${global.path}/skins/${e}/skinSettings.json`)
+    let skinManifest = require(`${global.path}/skins/${e}/manifest.json`)
+    global.skins.push({'name': e, 'settings': skinSettings, 'manifest': skinManifest})
+})
+
+//Extension
+let ext = require(global.path + '/extensionManager.js')
+ext(app, ext)
 
 app.get('/', (req, res) =>
 {
@@ -224,11 +268,16 @@ app.get('/', (req, res) =>
 
 app.get('/Licence', async (req, res) =>
 {
-    await require(__dirname + '/sendfile.js')(req, res, 'Licence', '/license.html')
+    const licencePage = await ejs.renderFile(global.path + '/views/license.ejs')
+    require(global.path + '/view.js')(req, res,
+        {
+            title: 'Licence',
+            content: licencePage
+        })
 })
 app.get('/noEmail', async (req, res) =>
 {
-    await require(__dirname + '/sendfile.js')(req, res, '이메일 주소 무단 수집 거부', '/views/etc/noEmail.html')
+    await require(global.path + '/sendfile.js')(req, res, '이메일 주소 무단 수집 거부', '/views/etc/noEmail.html')
 })
 app.get('/signup', async (req, res) =>
 {
@@ -240,12 +289,12 @@ app.get('/signup', async (req, res) =>
         content: signuppage,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        
     })
 })
 app.post('/signup', (req, res) =>
 {
-    require(__dirname + '/user/signup.js')(req, res, sequelize, users, perm)
+    require(global.path + '/user/signup.js')(req, res, sequelize, users, perm)
 })
 
 app.get('/login', csrfProtection, async (req,res) =>
@@ -267,17 +316,17 @@ app.get('/login', csrfProtection, async (req,res) =>
             //notification: r,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 })
 app.post('/login', csrfProtection, async (req, res) =>
 {
-    require(__dirname + '/user/login.js')(req, res, users, loginhistory)
+    require(global.path + '/user/login.js')(req, res, users, loginhistory)
 })
 app.get('/logout', (req, res) =>
 {
-    req.session.destroy()
+    req.session.regenerate(() => {});
     res.redirect('/')
 })
 app.get('/whoami', (req, res) =>
@@ -286,8 +335,7 @@ app.get('/whoami', (req, res) =>
         title: 'You are',
         content: `${req.session.username}<br>IP Address: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`,
         username: req.session.username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
     })
 })
 app.get('/settings', csrfProtection, async (req, res) =>
@@ -326,13 +374,13 @@ app.get('/settings', csrfProtection, async (req, res) =>
             //notification: r,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 })
 app.post('/settings/:name(*)', csrfProtection, async (req, res) =>
 {
-    require(__dirname + '/user/settings.js')(req, res,
+    require(global.path + '/user/settings.js')(req, res,
         {
             settings: settings,
             users: users
@@ -346,6 +394,11 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
     if (req.params.name.length > 255)
     {
         require(global.path + '/error.js')(req, res, null, `문서명이 너무 깁니다. 문서명의 최대 길이는 255자입니다.`, '/', '메인 페이지', 200, 'ko')
+        return
+    }
+    if (!global.legalTitleRegex.test(req.params.name))
+    {
+        require(global.path + '/error.js')(req, res, null, `문서명이 부적절한 특수문자를 포함하고 있습니다.`, '/', '메인 페이지', 200, 'ko')
         return
     }
     const target = await pages.findOne({where: {title: req.params.name}})
@@ -413,10 +466,11 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
                 title: req.params.name + ' 편집',
                 content: html,
                 isPage: true,
+                pageMode: "edit",
                 pagename: req.params.name,
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
+                
             })
         })
     }
@@ -445,7 +499,7 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
                 pagename: req.params.name,
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
+                
             })
         })
         //require(global.path + '/error.js')(req, res, username, 'You cannot edit because the protection level for this page is ' + acl + '.', '/', 'the main page')
@@ -507,9 +561,12 @@ app.get('/move/:name(*)', async (req, res) =>
             {
                 title: req.params.name + ' 이동',
                 content: html,
+                isPage: true,
+                pagename: req.params.name,
+                pageMode: "move",
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
+                
             })
         })
     })
@@ -541,11 +598,12 @@ app.get('/delete/:name(*)', csrfProtection, (req, res) =>
                         {
                             title: req.params.name + ' 삭제',
                             isPage: true,
+                            pageMode: "delete",
                             pagename: target.title,
                             content: html,
                             username: username,
                             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                            wikiname: global.appname
+                            
                         })
                     })
                 }
@@ -612,7 +670,7 @@ app.get('/revert/:name(*)', async (req, res) =>
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 })
@@ -634,7 +692,7 @@ app.post('/preview', async (req, res) =>
 })
 app.get('/search', async (req, res) =>
 {
-    await require(global.path + '/pages/search.js')(req, res, pages, boards, posts)
+    await require(global.path + '/pages/search.js')(req, res, pages)
 })
 app.post('/search', async (req, res) =>
 {
@@ -683,7 +741,7 @@ app.get('/Upload', async (req, res) =>
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 })
@@ -730,7 +788,7 @@ var storage = multer.diskStorage({
         try
         {
             //todo: refuse comma
-            if (fs.existsSync(__dirname + '/public/uploads/' + req.body.filename))
+            if (fs.existsSync(global.path + '/public/uploads/' + req.body.filename))
             {
                 let e = new Error('파일이 이미 존재합니다.')
                 e.code = 'FILEEXISTS'
@@ -899,7 +957,12 @@ app.get('/admin', async (req, res) =>
     }
     if (await perm.findOne({where:{username: req.session.username, perm: 'admin'}}))
     {
-        await require(__dirname + '/sendfile.js')(req, res, 'Admin tools', '/views/admin/index.html')
+        const adminPage = await ejs.renderFile(global.path + '/views/admin/index.ejs')
+        require(global.path + '/view.js')(req, res,
+            {
+                title: 'Admin tools',
+                content: adminPage
+            })
     }
     else
     {
@@ -917,7 +980,7 @@ app.get('/admin/:name(*)', csrfProtection, async (req, res) =>
 })
 app.post('/admin/:name(*)', csrfProtection, async (req, res) =>
 {
-    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread, gongji)
+    await require(global.path + '/admin/adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread)
 })
 app.get('/adminlog', async (req, res) =>
 {
@@ -932,6 +995,16 @@ app.get('/category/:name(*)', async (req, res) =>
 app.get('/contribution/:name(*)', async (req, res) =>
 {
     await require(global.path + '/user/contribution.js')(req, res, history)
+})
+
+app.get('/orphaned', async (req, res) =>
+{
+    const orph = await ejs.renderFile(global.path + '/views/pages/orphaned.ejs')
+    require(global.path + '/view.js')(req, res,
+    {
+        title: '고립된 문서',
+        content: orph
+    })
 })
 
 app.get('/viewrank', async (req, res) =>
@@ -971,6 +1044,10 @@ app.get('/thread/:name(*)', csrfProtection, async (req, res) =>
         'threadcomment': threadcomment,
         'perm': perm
     })
+})
+
+app.get('/xref/:name(*)', async (req, res) => {
+    await require(global.path + '/pages/xref.js')(req, res)
 })
 
 app.get('/RecentDiscuss',  async (req, res) =>
@@ -1043,7 +1120,7 @@ app.use((err, req, res, next) =>
         case 'EBADCSRFTOKEN':
             {
                 //Send CSRF Error message
-                require(__dirname + '/sendfile.js')(req, res, 'CSRF 토큰 오류', '/csrfError.html')
+                require(global.path + '/sendfile.js')(req, res, 'CSRF 토큰 오류', '/csrfError.html')
             }
             break
         case 'FILENAMENULL':
@@ -1100,6 +1177,7 @@ app.use((err, req, res, next) =>
     }
 })
 
+//Put server on
 const server = app.listen(port, '0.0.0.0', () =>
 {
     const host = server.address().address
@@ -1107,6 +1185,7 @@ const server = app.listen(port, '0.0.0.0', () =>
     console.log("App listening at http://%s:%s",host,port)
 })
 
+//Console
 const io = require('socket.io')(server)
 io.use(require('express-socket.io-session')(sess, {autoSave: true}))
 
@@ -1122,7 +1201,7 @@ io.on('connection', async socket =>
             {
                 await socket.join('developerconsole')
                 await socket.emit('joinok')
-                socket.emit('output', 'AkariEngine 2.5b\nCopyright Kyubin Min 2021-2023. Distributed under GNU AGPL.\n\nType \'help\' for instructions.\n')
+                socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2023. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
             }
         }
         else

@@ -8,6 +8,6 @@ else
     let link = document.createElement('link')
     link.rel = 'stylesheet'
     link.type = 'text/css'
-    link.href = '/css/dark.css'
+    link.href = '/skins/' + document.head.querySelector("[name~=wikiskin][content]").content + '/css/dark.css'
     head.appendChild(link)
 }

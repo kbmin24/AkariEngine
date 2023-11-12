@@ -23,38 +23,6 @@
     <p>결과 없음</p>
 <% } %>
 <br>
-<h5>게시물 제목 또는 내용 일치</h5>
-<ul class="list-group list-group-flush">
-    <% for (let i = 0; i < posts.length; i++) { %>
-        <%
-            let boardname = posts[i].boardID
-            let hidden = false
-            for (let i = 0; i < bdlist.length; i++)
-            {
-                if (bdlist[i].boardID == boardname)
-                {
-                    if (bdlist[i].readACL != 'blocked')
-                    {
-                        hidden = true
-                    }
-                    boardname = bdlist[i].boardTitle
-                }
-            }
-        %>
-        <li class="list-group-item">
-        <% if (!hidden) { %>
-            <a href='/board/<%= posts[i].boardID %>' style='font-weight: bold'>[<%= boardname %>]</a>
-            <a href='/board/read/<%= posts[i].boardID %>?no=<%= posts[i].idAtBoard %>'><%= posts[i].title %></a>
-        <% } else { %>
-            <em>숨겨진 게시물입니다.</em>
-        <% } %>
-        </li>
-    <% } %>
-</ul>
-<% if (posts.length == 0) { %>
-    <p>결과 없음</p>
-<% } %>
-<br>
 <ul class="pagination">
     <% if (0 < from) { %>
         <% var prevlink = `/search/?q=${searchtitle}&from=${Math.max(0, from - 10)}` %>

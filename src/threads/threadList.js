@@ -40,10 +40,11 @@ module.exports = async (req, res, dbs = {}) =>
             title: `${title}의 토론`,
             content: html,
             isPage: true,
+            pageMode: "threads",
             pagename: title,
             username: req.session.username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 }

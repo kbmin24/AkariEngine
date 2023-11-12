@@ -52,7 +52,7 @@ module.exports = async (req, res, pages, files, category) =>
         pagename: req.body.title,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
         username: req.session.username,
-        wikiname: global.appname
+        
     }
     require(global.path + '/view.js')(req, res, renderOpt)
 }

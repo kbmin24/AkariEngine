@@ -1,3 +1,52 @@
+async function regLink(title, content)
+{
+    //delete existing links
+    await global.db.links.destroy({
+        where: {source: title}
+    })
+    let res = []
+    let found = new Set()
+    {
+        let r = /\[\[([^|\r\n]*?)\]\]/igm
+        content = content.replace(r, (_match, p1, _offset, _string, _groups) =>
+        {
+            if (p1.toLowerCase().startsWith('category') ||
+            p1.toLowerCase().startsWith('분류') ||
+            p1.toLowerCase().startsWith('http://') ||
+            p1.toLowerCase().startsWith('https://'))
+                return ''
+            if (found.has(p1)) return ''
+
+            found.add(p1)
+
+            res.push({source: title, dest: p1})
+
+            return ''
+        })
+    }
+
+    //w separate label
+    {
+        let r = /\[\[(.*?)\|(.*?)\]\]/igm
+        content = content.replace(r, (_match, p1, _offset, _string, _groups) =>
+        {
+            if (p1.toLowerCase().startsWith('category') ||
+            p1.toLowerCase().startsWith('분류') ||
+            p1.toLowerCase().startsWith('http://') ||
+            p1.toLowerCase().startsWith('https://'))
+                return ''
+            if (found.has(p1)) return ''
+
+            found.add(p1)
+
+            res.push({source: title, dest: p1})
+
+            return ''
+        })
+    }
+    await global.db.links.bulkCreate(res)
+}
+
 module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block) =>
 {
     if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
@@ -39,9 +88,10 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                 {
                     oldcontent = oldrev.content
                     const comment = 'r' + req.body.rev + '로 되돌림 - ' + req.body.comment
-                    page.update({content: oldcontent, currentRev: page.currentRev + 1})
+                    page.update({content: oldcontent, deleted: false, currentRev: page.currentRev + 1})
                     .then(() =>
                     {
+                        regLink(req.params.name, oldcontent)
                         recentchanges.create(
                         {
                             page: decodeURI(req.params.name),

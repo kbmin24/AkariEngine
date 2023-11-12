@@ -59,6 +59,55 @@ async function regCategory(title, content, category)
     }
 }
 
+async function regLink(title, content)
+{
+    //delete existing links
+    await global.db.links.destroy({
+        where: {source: title}
+    })
+    let res = []
+    let found = new Set()
+    {
+        let r = /\[\[([^|\r\n]*?)\]\]/igm
+        content = content.replace(r, (_match, p1, _offset, _string, _groups) =>
+        {
+            if (p1.toLowerCase().startsWith('category') ||
+            p1.toLowerCase().startsWith('분류') ||
+            p1.toLowerCase().startsWith('http://') ||
+            p1.toLowerCase().startsWith('https://'))
+                return ''
+            if (found.has(p1)) return ''
+
+            found.add(p1)
+
+            res.push({source: title, dest: p1})
+
+            return ''
+        })
+    }
+
+    //w separate label
+    {
+        let r = /\[\[(.*?)\|(.*?)\]\]/igm
+        content = content.replace(r, (_match, p1, _offset, _string, _groups) =>
+        {
+            if (p1.toLowerCase().startsWith('category') ||
+            p1.toLowerCase().startsWith('분류') ||
+            p1.toLowerCase().startsWith('http://') ||
+            p1.toLowerCase().startsWith('https://'))
+                return ''
+            if (found.has(p1)) return ''
+
+            found.add(p1)
+
+            res.push({source: title, dest: p1})
+
+            return ''
+        })
+    }
+    await global.db.links.bulkCreate(res)
+}
+
 module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block, category, settings) =>
 {
 
@@ -89,6 +138,9 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         //category
         await regCategory(req.params.name, req.body.content, category)
 
+        //xref
+        await regLink(req.params.name, req.body.content)
+
         var doneby = req.session.username
         if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
@@ -113,7 +165,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         if (page) //if page exists
         {
             const oldLength = page.content.length
-            page.update({content: req.body.content, currentRev: page.currentRev + 1})
+            page.update({content: req.body.content, deleted: false, currentRev: page.currentRev + 1})
             .then(() =>
             {
                 recentchanges.create(
@@ -140,7 +192,6 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            req.params.name = req.params.name
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
                 require(global.path + '/error.js')(req, res, null, `페이지 이름은 'File:'로 시작할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
@@ -150,12 +201,16 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             //category
             await regCategory(req.params.name, req.body.content, category)
 
+            //xref
+            await regLink(req.params.name, req.body.content)
+
             //add one
             pages.create(
             {
                 title: req.params.name,
                 content: req.body.content,
-                currentRev: 1
+                currentRev: 1,
+                deleted: false
             })
             .then(() =>
             {

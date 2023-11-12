@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <%- commonHead %>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        <style>
+            body
+            {
+                font-family: serif;
+                margin: 5px 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <center>
+                <h1><a href="/" style="color: black"><%= global.conf.appname %></a></h1>
+                <a href="/RecentChanges">최근 변경</a> |
+                <a href="/RecentDiscuss">최근 토론</a> |
+                <a href="/RandomPage">랜덤 문서</a> |
+                <a href="/PageList">문서 목록</a> |
+                <a href="/Upload">업로드</a> |
+                <a href="/adminlog">관리 로그</a> |
+                <a href="/viewrank">문서 조회수 랭킹</a> |
+                <a href="/Licence">라이센스</a>
+            </center>
+            <% if (locals.username) {%>
+                <a href="/w/User:<%= username %>"></a><%= username %>님</a>, 안녕하세요. (<a href="/logout">로그아웃</a> |
+            <% } else {%>
+                <a href="/w/User:<%= ipaddr %>"></a><%= ipaddr %>님</a>, 안녕하세요. (<a href="/login">로그인</a> |
+            <% } %>
+            <a href="/contribution/<%= locals.username ? username :  ipaddr %>">기여 목록 </a> |
+            <a href="/settings">설정</a>)
+
+            <form method="post" action="/search" role="search">
+                <input name="pagename" placeholder="검색" id="searchInput" autocomplete="off" type="text">
+                <input type="submit" value="검색" />
+            </form>
+        </div>
+        <hr>
+        <div id='satobox' style='display: none'>
+            <b><a id='satoboxlink'>사용자 토론</a>이 열려 있습니다.</b>
+            <hr>
+        </div>
+        <div>
+            <h2><% if (locals.titleLink) { %><a class='pgTitleLink' href='<%= locals.titleLink %>'><% } %><%= title %><% if (locals.titleLink) { %></a><% } %></h1>
+            <h6>
+                <% if (locals.updatedAt) { %>
+                    <% if (locals.titleInfo) { %><%- locals.titleInfo %> / <% } %><%= locals.updatedAt %>에 마지막으로 수정됐습니다.
+                <% } %>
+            </h2>
+            <% if (locals.isPage) { %>
+                <a href="/w/<%= pagename %>">
+                    읽기
+                </a> |
+                <a href="/edit/<%= pagename %>">
+                    편집
+                </a> |
+                <a href="/xref/<%= pagename %>">
+                    역링크
+                </a> |
+                <a href="/threads/<%= pagename %>">
+                    토론
+                </a> |
+                <a href="/history/<%= pagename %>">
+                    역사
+                </a> |
+                <a href="/move/<%= pagename %>">
+                    이동
+                </a> |
+                <a href="/protect/<%= pagename %>">
+                    보호
+                </a> |
+                <a href="/delete/<%= pagename %>">
+                    삭제
+                </a>
+            <% } %>
+        </div>
+        <hr>
+        <div>
+            <%- content %>
+        </div>
+        <div>
+            <center>
+                <p>
+                    <div>Powered by <a href='/Licence'>AkariEngine</a></div>
+                    <div>본 웹사이트의 내용은 별도로 명시된 경우를 제외하고 <%= global.conf.licence %> 라이선스 하에 배포됩니다.</div>
+                    <div>Contents are licensed under <%= global.conf.licence %> unless otherwise specified.</div>
+                    <div>
+                        <% for (let i = 0; i < global.conf.specialPages.length; i++) { %>
+                        <a href='<%= global.conf.specialPages[i].link %>'><%= global.conf.specialPages[i].title %></a> <%= (i < global.conf.specialPages.length - 1) ? ' | ' : '' %>
+                        <% } %>
+                    </div>
+                </p>
+            </center>
+        </div>
+    </body>
+</html>

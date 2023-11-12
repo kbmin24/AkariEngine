@@ -38,10 +38,11 @@ module.exports = async (req, res, dbs = {}) =>
             title: `${t.pagename} 토론 - ${t.threadTitle}`,
             content: html,
             isPage: true,
+            pageMode: "threads",
             pagename: t.pagename,
             username: req.session.username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 }

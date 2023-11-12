@@ -1,12 +1,12 @@
+<!-- common head -->
 <meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'>
-<meta name='mobile-web-app-capable' content='yes'>
 <meta name='generator' content='AkariEngine'>
-<meta name='application-name' content='GECWiki'>
+<meta name='application-name' content='<%= global.conf.appname %>'>
 <meta name='theme-color' content='#43739F'>
 <meta http-equv='x-ua-compatible' content='ie=edge'>
 <meta name='google' content='notranslate'>
 <meta name='googlebot' content='noarchive'>
+<meta name='wikiskin' content='<%= locals.skinName %>'>
 <link rel='copyright' href='//creativecommons.org/licenses/by-sa/4.0/'>
 <% if (locals.canonical) { %><link rel="canonical" href="<%= global.conf.address %><%= locals.canonical %>"><% } %>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -20,6 +20,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css" integrity="sha512-vJqxkZ+Sugf/6WRlpcxN01qVfX/29hF6qc33eHF1va3NgoV+U+wCi+uTAsQ10sDoGyBxHLdaHvGwDlV3yVYboA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css" integrity="sha512-usVBAd66/NpVNfBge19gws2j6JZinnca12rAe2l+d+QkLU9fiG02O1X8Q6hepIpr/EYKZvKx/I9WsnujJuOmBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" integrity="sha512-aOG0c6nPNzGk+5zjwyJaoRUgCdOrfSDhmMID2u4+OIslr0GjpLKo7Xm0Ao3xmpM4T8AmIouRkqwj1nrdVsLKEQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="/css/ui.css">
+<link rel='stylesheet' href='/css/ren.css'>
+<link rel='stylesheet' href='/css/board.css'>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=<%= global.conf.mapKey %>"></script>
 <% if (global.conf.gtag) { %>
@@ -28,15 +31,6 @@
 <% } %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css" integrity="sha512-hasIneQUHlh06VNBe7f6ZcHmeRTLIaQWFd43YriJ0UND19bvYRauxthDg8E4eVNPm9bRUhr5JGeqH7FRFXQu5g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js" integrity="sha512-bgHRAiTjGrzHzLyKOnpFvaEpGzJet3z4tZnXGjpsCcqOnAH6VGUx9frc5bcIhKTVLEiCO6vEhNAgx5jtLUYrfA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<link rel="stylesheet" href="//fonts.googleapis.com/earlyaccess/nanumgothic.css">
-<link rel='stylesheet' href='/css/mainview.css'>
-<link rel='stylesheet' href='/css/ren.css'>
-<link rel='stylesheet' href='/css/rcsidebar.css'>
-<link rel='stylesheet' href='/css/floatingToolbox.css'>
-<link rel='stylesheet' href='/css/board.css'>
-<% if (global.conf.disableDarkMode === true) { %>
-    <script src='/js/readTheme.js'></script>
-<% } %>
 <script src='/js/replacedate.js'></script>
 <script src='/js/toolbar.js'></script>
 <script src='/js/identicon.js'></script>
@@ -47,4 +41,5 @@
 <script src='/js/sato.js'></script>
 <script src='/js/board.js'></script>
 <script src='/js/iealert.js'></script>
-<title><%= title %> - <%= global.appname %></title>
+<script src='/js/readTheme.js'></script>
+<title><%= title %> - <%= global.conf.appname %></title>

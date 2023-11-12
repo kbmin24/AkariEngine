@@ -84,8 +84,75 @@ module.exports = async (io, socket, command, options) =>
             }
             case 'help':
             {
-                let help = `cleancategories\nfilemigration\nhelp\npermissions (username)\ngenpassword (pw) (salt)\nwhoami\n`
+                let help = `cleancategories\nfilemigration\nhelp\npermissions (username)\ngenbacklinks\ngenpassword (pw) (salt)\nwhoami\n`
                 stdout(socket, help)
+                break
+            }
+            case 'genbacklinks':
+            {
+                //May be slow!
+
+                //get list of pages
+
+                await global.db.links.destroy({
+                    where: {},
+                    truncate: true
+                })
+
+                let pages = await global.db.pages.findAll()
+                let res = []
+                stdout(socket, `${pages.length} pages found.\n`)
+
+                
+                for (let i = 0; i < pages.length; i++)
+                {
+                    let found = new Set()
+
+                    //wout separate label
+                    //use actual logic of renderer
+                    {
+                        let r = /\[\[([^|\r\n]*?)\]\]/igm
+                        pages[i].content = pages[i].content.replace(r, (_match, p1, _offset, _string, _groups) =>
+                        {
+                            if (p1.toLowerCase().startsWith('category') ||
+                            p1.toLowerCase().startsWith('분류') ||
+                            p1.toLowerCase().startsWith('http://') ||
+                            p1.toLowerCase().startsWith('https://'))
+                                return ''
+                            if (found.has(p1)) return ''
+    
+                            found.add(p1)
+    
+                            res.push({source: pages[i].title, dest: p1})
+    
+                            return ''
+                        })
+                    }
+
+                    //w separate label
+                    {
+                        let r = /\[\[(.*?)\|(.*?)\]\]/igm
+                        pages[i].content = pages[i].content.replace(r, (_match, p1, _offset, _string, _groups) =>
+                        {
+                            if (p1.toLowerCase().startsWith('category') ||
+                            p1.toLowerCase().startsWith('분류') ||
+                            p1.toLowerCase().startsWith('http://') ||
+                            p1.toLowerCase().startsWith('https://'))
+                                return ''
+                            if (found.has(p1)) return ''
+
+                            found.add(p1)
+
+                            res.push({source: pages[i].title, dest: p1})
+
+                            return ''
+                        })
+                    }
+                }
+
+                stdout(socket, `Committing changes (${res.length} entries)...\n`)
+                await global.db.links.bulkCreate(res)
+                stdout(socket, "Done.")
                 break
             }
             case 'genpassword':

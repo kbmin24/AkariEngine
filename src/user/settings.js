@@ -20,6 +20,25 @@ module.exports = async (req, res, tables = {}) =>
             require(global.path + '/info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
             return
             }
+        case "changeSkin":
+                {
+                    const user = await tables['users'].findOne({where: {username: req.session.username}})
+                    const skinName = req.body.skin
+                    tables['settings'].destroy({
+                        where:
+                        {
+                            user: req.session.username,
+                            key: 'skin'
+                        }
+                    })
+                    tables['settings'].create({
+                            user: req.session.username,
+                            key: 'skin',
+                            value: skinName
+                    })
+                }
+                require(global.path + '/info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+                return
         case 'changePassword':
             {
                 const user = await tables['users'].findOne({where: {username: req.session.username}})

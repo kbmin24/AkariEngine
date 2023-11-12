@@ -7,7 +7,9 @@
     <li><a href='/admin/hiderev'>Hide specific revision of a page</a></li>
     <li><a href='/admin/developer'>Developer menu</a></li>
 </ul>
+<% if ('Board' in global.extensions) { %>
 <h4>게시판 관리 도구</h4>
 <ul>
     <li><a href='/admin/gongji'>공지 변경</a></li>
 </ul>
+<% } %>

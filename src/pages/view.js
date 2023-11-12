@@ -77,6 +77,7 @@ function escapeHtml( text )
     
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
+
 module.exports = async (req, res, pages, files, history, protect, perm, block, category, viewcount, updateTime) =>
 {
     //check read ACL
@@ -145,7 +146,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         //get the newest ver.
         await pages.findOne({where: {title: req.params.name}}).then(async page =>
         {
-            if (page) //if page exists
+            if (page && !page.deleted) //if page exists
             {
                 await updViewCount(req.params.name, viewcount, updateTime)
                 //show the page
@@ -163,12 +164,13 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     title: page.title,
                     content: content,
                     isPage: true,
+                    pageMode: "view",
                     pagename: page.title,
                     canonical: `/w/${page.title}`,
                     updatedAt: date.format(page.updatedAt, global.dtFormat),
                     username: req.session.username,
                     ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                    wikiname: global.appname
+                    
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
                 require(global.path + '/view.js')(req, res,renderOpt)
@@ -181,7 +183,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 {
                     let content
                     if (req.params.name.split(':')[1] == req.session.username)
-                        content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>하지만, 직접 생성할 수 있습니다!</p><p><a href='/edit/${req.params.name}'>사용자 문서 생성</a></p>`
+                        content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>하지만, 직접 생성할 수 있습니다!</p><p><a href='/edit/${escapeHtml(req.params.name)}'>사용자 문서 생성</a></p>`
                     else
                         content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>사용자가 사용자 문서를 만들지 않았습니다.</p><p><a href='javascript:window.history.back()'>뒤로가기</a></p>`
                     require(global.path + '/view.js')(req, res,
@@ -191,11 +193,16 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                         isPage: false,
                         username: req.session.username,
                         ipaddr: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-                        wikiname: global.appname
+                        
                     })
                     return
                 }
-                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+                let hisText = ''
+                if (page)
+                {
+                    hisText = `<br>${escapeHtml(req.params.name)}의 <a href='/history/${escapeHtml(req.params.name)}'>문서 역사</a>를 볼 수 있습니다.`
+                }
+                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${escapeHtml(req.params.name)}">새로 만드시겠습니까?</a>${hisText}`, '/', '메인 페이지', 404, 'ko')
             }
         })
     }
@@ -215,7 +222,6 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             if (page)
             {
                 //show the page
-                //(pagename, data, renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={})
                 let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
                 if (content === true) return
                 let renderOpt = {
@@ -223,10 +229,11 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     content: content,
                     canonical: `/w/${page.page}?rev=${rev}`,
                     isPage: true,
+                    pageMode: "view",
                     pagename: page.page,
                     username: req.session.username,
                     ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                    wikiname: global.appname
+                    
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
                 require(global.path + '/view.js')(req, res, renderOpt)

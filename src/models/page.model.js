@@ -16,6 +16,10 @@ module.exports = (sequelize) =>
         currentRev:
         {
             type: DataTypes.INTEGER
+        },
+        deleted:
+        {
+            type: DataTypes.BOOLEAN
         }
     },
     {

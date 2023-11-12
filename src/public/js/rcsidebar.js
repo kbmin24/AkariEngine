@@ -28,32 +28,6 @@ function loadRC() {
             })
         }
     })
-    $('#rcsidebarposts').empty()
-    $.ajax({
-        url: '/board/AJAX/recentposts',
-        type: 'GET',
-        data: {
-            show: 10,
-        },
-        success: (data) =>
-        {
-            $.each(data, (rp) =>
-            {
-                var ln = `<a href='/board/read/${data[rp].boardID}?no=${data[rp].idAtBoard}'>${data[rp].title}</a>`
-                let dt = ''
-                if (moment(data[rp].createdAt).isSame(moment(), 'day'))
-                {
-                    dt = moment(data[rp].createdAt).utcOffset('+0900').format('HH:mm')
-                }
-                else
-                {
-                    dt = moment(data[rp].createdAt).utcOffset('+0900').format('MM/DD')
-                }
-                res = `<li class='list-group-item' style='overflow: hidden; text-overflow : ellipsis;white-space: nowrap;'>${dt} ${ln}</li>`
-                $('#rcsidebarposts').append(res)
-            })
-        }
-    })
 }
 $(() =>
 {

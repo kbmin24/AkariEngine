@@ -40,9 +40,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                 if (page) //if page exists
                 {
                     const oldLength = page.content.length
-                    pages.destroy({where: {title: req.params.name}})
-                    history.destroy({where: {page: req.params.name}})
+                    //pages.destroy({where: {title: req.params.name}})
+                    //history.destroy({where: {page: req.params.name}})
+                    await page.update({content: '', currentRev: page.currentRev + 1, deleted: true})
                     await category.destroy({where: {page: req.params.name}})
+                    await global.db.links.destroy({
+                        where: {source: req.params.name}
+                    })
                     recentchanges.create(
                     {
                         page: req.params.name,
@@ -54,7 +58,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                     history.create(
                     {
                         page: req.params.name,
-                        rev: 0,
+                        rev: page.currentRev + 1,
                         bytechange: -oldLength,
                         editedby: doneby,
                         comment: req.body.comment,

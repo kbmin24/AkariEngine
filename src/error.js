@@ -15,7 +15,6 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
         title: 'Error!',
         content: content,
         username: req.session.username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
     })
 }

@@ -1,0 +1,17 @@
+#floatingToolbox
+{
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    z-index: 256;
+}
+#btnTop
+{
+    border-bottom-left-radius: 0;
+}
+#btnTOC
+{
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+    display: none;
+}

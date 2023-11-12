@@ -1,0 +1,6 @@
+<p>총 <%= count %>개의 역링크가 있습니다.</p>
+<ul>
+<% entries.forEach(i => { %>
+    <li><a href='/w/<%= i.source %>'><%= i.source %></a></li>
+<% }) %>
+</ul>

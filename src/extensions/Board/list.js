@@ -147,6 +147,6 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         content: html,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        
     })
 }

@@ -28,7 +28,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                 content: html,
                                 username: username,
                                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                                wikiname: global.appname
+                                
                             })
                         })
                         return
@@ -63,7 +63,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                             content: html,
                                             username: username,
                                             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                                            wikiname: global.appname
+                                            
                                         })
                                     })
                                 })
@@ -104,7 +104,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         content: html,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                        wikiname: global.appname
+                        
                     })
                 })
                 //await require(global.path + '/sendfile.js')(req, res, 'Block User', '/views/admin/blockuser.html')
@@ -133,7 +133,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         content: html,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                        wikiname: global.appname
+                        
                     })
                 })
                 //await require(global.path + '/sendfile.js')(req, res, 'Block IP address', '/views/admin/blockIP.html')
@@ -174,7 +174,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         content: lgInHTML,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                        wikiname: global.appname
+                        
                     })
                     return
                 }
@@ -187,7 +187,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         content: gr,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                        wikiname: global.appname
+                        
                     })
                     return
                 }
@@ -213,7 +213,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         content: html,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                        wikiname: global.appname
+                        
                     })
                 }
                 else
@@ -236,7 +236,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         content: html,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                        wikiname: global.appname
+                        
                     })
                 }
                 else

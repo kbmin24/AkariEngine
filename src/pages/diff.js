@@ -110,7 +110,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
         pagename: pagev1.page,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        
     })        
 
 }

@@ -31,6 +31,6 @@ module.exports = async (req, res, history) =>
         content: html,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        
     })
 }

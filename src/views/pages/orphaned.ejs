@@ -1,0 +1,7 @@
+<p><a href='/w/FrontPage'>FrontPage</a>에서 링크로 도달할 수 없는 문서를 모두 표시합니다.</p>
+<p>이 페이지는 매일 자정 업데이트됩니다.</p>
+<ul>
+    <% for (let o of global.orphaned) { %>
+        <li><a href="/w/<%= o %>"><%= o %></a></li>
+    <% } %>
+</ul>

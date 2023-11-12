@@ -1,39 +1,60 @@
-<% if (global.conf.disableDarkMode !== true) { %>
+<% if (username) { %>
 <div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">테마</h5>
-        <p class="card-text">다크 모드 사용 여부를 설정할 수 있습니다.</p>
+        <p class="card-text">사용할 테마를 고를 수 있습니다. 이 설정은 계정에 귀속됩니다.</p>
+        <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+        <form method='POST' action='/settings/changeSkin'>
+            <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
+            <div class='form-group mb-2'>
+                <label for='oldpassword'>테마 선택</label>
+                <select class="form-select" aria-label="테마를 선택하세요." name="skin" required>
+                    <% global.skins.forEach(e =>{ %>
+                        <option value="<%= e.name %>"><%= e.manifest.name %></option>
+                    <% }) %>
+                  </select>
+            </div>
+            <button type='submit' class='btn btn-primary'>저장</button>
+        </form>
+    </div>
+</div>
+<% } %>
+<% if (global.conf.disableDarkMode !== true) { %>
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">다크 모드</h5>
+        <p class="card-text">다크 모드 사용 여부를 설정할 수 있습니다(지원하는 테마에 한함). 이 설정은 기기에 귀속됩니다.</p>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <div class='form-group mb-2'>
             <div class='row'>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeLight" value='light'>
-                    <label class="form-check-label" for="radioThemeLight">
+                    <input class="form-check-input" type="radio" name="radioDark" id="radioDarkLight" value='light'>
+                    <label class="form-check-label" for="radioDarkLight">
                         라이트 테마
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeDark" value='dark'>
-                    <label class="form-check-label" for="radioThemeDark">
+                    <input class="form-check-input" type="radio" name="radioDark" id="radioDarkDark" value='dark'>
+                    <label class="form-check-label" for="radioDarkDark">
                         다크 테마
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="radioTheme" id="radioThemeSystem" value='system'>
-                    <label class="form-check-label" for="radioThemeSystem">
+                    <input class="form-check-input" type="radio" name="radioDark" id="radioDarkSystem" value='system'>
+                    <label class="form-check-label" for="radioDarkSystem">
                         시스템 설정 사용
                     </label>
                 </div>
             </div>
         </div>
-        <button class='btn btn-primary' onClick='setThemePref()'>저장</button>
+        <button class='btn btn-primary' onClick='setDarkPref()'>저장</button>
     </div>
 </div>
 <% } %>
 <div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">최근 변경 사이드바 사용</h5>
-        <p class="card-text">최근 변경 사이드바 사용 여부를 설정할 수 있습니다.</p>
+        <p class="card-text">최근 변경 사이드바 사용 여부를 설정할 수 있습니다. 이 설정은 기기에 귀속됩니다.</p>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <div class='form-group mb-2'>
             <div class='row'>
@@ -59,7 +80,7 @@
 <div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">비밀번호 변경</h5>
-        <p class="card-text">비밀번호를 변경할 수 있습니다.</p>
+        <p class="card-text">비밀번호를 변경할 수 있습니다. 이 설정은 계정에 귀속됩니다.</p>
         <form method='POST' action='/settings/changePassword'>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
             <div class='form-group mb-2'>

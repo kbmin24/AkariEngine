@@ -100,7 +100,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
+        require(__dirname + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
         return
     }
     const post = await posts.findOne({where: {idAtBoard: req.query.no, boardID: boardNow.boardID}})
@@ -155,7 +155,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
             username: req.session.username,
             description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            
         })
     })
 }

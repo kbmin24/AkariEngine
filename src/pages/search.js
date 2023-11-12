@@ -2,7 +2,7 @@ const {Op} = require('sequelize')
 const arraywrap = require('arraywrap')
 const sanitiseHtml = require('sanitize-html')
 const ejs = require('ejs')
-module.exports = async (req, res, pages, boards, posts) =>
+module.exports = async (req, res, pages) =>
 {
     //just search
     const query = arraywrap(req.query.q)[0].trim()
@@ -47,31 +47,11 @@ module.exports = async (req, res, pages, boards, posts) =>
             offset: from
         }
     )
-    const searchres3 = await posts.findAll(
-        {
-            where:
-            {
-                [Op.or]: [
-                    {title: {[Op.like]: `%${req.query.q}%`}},
-                    {content: {[Op.like]: `%${req.query.q}%`}}
-                ]
-            },
-            order:
-            [
-                ['updatedAt', 'DESC']
-            ],
-            limit: 10,
-            offset: from
-        }
-    )
-    const bdlist = await boards.findAll()
     const searchHTML = await ejs.renderFile(global.path + '/views/pages/search.ejs',
     {
         searchtitle: query,
         resultTitle: searchres,
         resultContent: searchres2,
-        posts: searchres3,
-        bdlist: bdlist,
         from: from
     })
     const username = req.session.username
@@ -81,7 +61,7 @@ module.exports = async (req, res, pages, boards, posts) =>
         content: searchHTML,
         username: username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        wikiname: global.appname
+        wikiname: global.conf.appname
     })
     return
 }

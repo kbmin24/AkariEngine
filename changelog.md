@@ -1,3 +1,7 @@
+v3.0 (2023-06-11)
+* Added skin system
+* Added Buma skin
+
 v2.8 (2023-06-05)
 * Added "global.conf.security.allowedIframeHostnames"
 * Added "hiderc" settings

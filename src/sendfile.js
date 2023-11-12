@@ -1,7 +1,7 @@
 module.exports = async (req, res, title, filename) =>
 {
     const fs = require('fs')
-    await fs.readFile(__dirname + filename, (err,data) =>
+    await fs.readFile(global.path + filename, 'utf8', (err,data) =>
     {
         if (err)
         {
@@ -10,11 +10,11 @@ module.exports = async (req, res, title, filename) =>
         }
         else
         {
+            console.log(data)
             require(global.path + '/view.js')(req, res,
             {
                 title: title,
                 content: data,
-                wikiname: global.appname,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
                 username: req.session.username
             })

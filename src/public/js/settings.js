@@ -3,14 +3,14 @@ $(() =>
     switch (localStorage.getItem('theme'))
     {
         case 'light':
-            $('#radioThemeLight').prop('checked', true)
+            $('#radioDarkLight').prop('checked', true)
             break
         case 'dark':
-            $('#radioThemeDark').prop('checked', true)
+            $('#radioDarkDark').prop('checked', true)
             break
         default:
         //system r else
-            $('#radioThemeSystem').prop('checked', true)
+            $('#radioDarkSystem').prop('checked', true)
             break
     }
     switch (localStorage.getItem('RC'))
@@ -23,9 +23,9 @@ $(() =>
             break
     }
 })
-function setThemePref()
+function setDarkPref()
 {
-    localStorage.setItem('theme',$('input[name=radioTheme]:checked').val())
+    localStorage.setItem('theme',$('input[name=radioDark]:checked').val())
     alert('저장되었습니다. 새로고침합니다.')
     location.reload()
 }

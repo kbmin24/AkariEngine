@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 module.exports = async (app, sequelize, csrfProtection) => {
-    const users = require(global.path + '/models/user.model.js')(sequelize)
+    /*const users = require(global.path + '/models/user.model.js')(sequelize)
     const boards = require(global.path + '/models/boardBoard.model.js')(sequelize)
     const posts = require(global.path + '/models/boardPost.model.js')(sequelize)
     const block = require(global.path + '/models/block.model.js')(sequelize)
@@ -9,8 +9,18 @@ module.exports = async (app, sequelize, csrfProtection) => {
     const boardbichu = require(global.path + '/models/boardbichu.model.js')(sequelize)
     const boardcomment = require(global.path + '/models/boardcomment.model.js')(sequelize)
     const boardfiles = require(global.path + '/models/boardfiles.model.js')(sequelize)
-    const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)
-    sequelize.sync()
+    const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)*/
+
+    let users = global.db.users
+    let boards = global.db.boards
+    let posts = global.db.boardPosts
+    let block = global.db.block
+    let perm = global.db.perm
+    let boardgechu = global.db.boardgechu //upvote
+    let boardbichu = global.db.boardbichu //downvote
+    let boardcomment = global.db.boardcomment
+    let boardfiles = global.db.boardfiles
+    let gongji = global.db.boardgongji
 
     app.get('/board/', async (req, res) =>
     {
@@ -64,7 +74,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 content: html,
                 username: req.session.username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
+                
             })
         })
     })
@@ -168,7 +178,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 content: html,
                 username: req.session.username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
+                
             })
         })
     })
@@ -257,7 +267,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 content: html,
                 username: req.session.username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-                wikiname: global.appname
+                
             })
         })
     })
@@ -326,10 +336,10 @@ module.exports = async (app, sequelize, csrfProtection) => {
     {
         require(__dirname + '/AJAX/bichu.js')(req, res, boards, posts, perm, block, boardbichu)
     })
-    app.get('/board/AJAX/recentposts', async (req, res) =>
+    /*app.get('/board/AJAX/recentposts', async (req, res) =>
     {
         require(__dirname + '/AJAX/recentPosts.js')(req, res, posts)
-    })
+    })*/
     app.get('/board/AJAX/gongji', async (req, res) =>
     {
         require(__dirname + '/AJAX/getgongjilist.js')(req, res, gongji)

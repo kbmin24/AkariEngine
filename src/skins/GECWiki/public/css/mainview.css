@@ -67,10 +67,6 @@ body
     overflow-x: hidden;
     overflow-y: hidden;
 }
-.navbar
-{
-    /*box-shadow: 0 2px 4px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);*/
-}
 .nav-icon
 {
     margin-right: 5px;
@@ -187,11 +183,6 @@ body
 .dropdown-item.active, .dropdown-item:active
 {
     background-color: #43739F !important;
-}
-
-.blackln
-{
-    color: #212529;
 }
 .page-link
 {

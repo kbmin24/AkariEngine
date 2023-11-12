@@ -285,6 +285,10 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                     return errMessege('SYNTAX 매크로 오류', '알 수 없는 에러가 발생하였습니다.')
                 }
             }
+        case 'pagecount':
+            {
+                return await global.db.pages.count()
+            }
         default:
             return match
             //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
@@ -650,15 +654,6 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
 
     data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/igm, '')
 
-    /*
-    const redrFrom = req === undefined ? undefined : req.query.from
-    if (redrFrom !== undefined)
-    {
-        redirect = false;
-        data = `<i>Redirected from <a href="/w/${redrFrom}?redirect=false">${redrFrom}</a></i><br>` + data
-    }*/
-    //deprecated
-
     //Redirect
     let doRedr = false
     const redr = data.replace(/^#redirect +(.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
@@ -687,6 +682,13 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
             return res
         }
     })
+
+    //beginRender hook
+    for (let f of global.hooks.beginRender)
+    {
+        let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
+        pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
+    }
     
     //\r\n issue
     data = data.replace(/\r/g, '')
@@ -733,14 +735,14 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
     
     //external link
-    data = data.replace(/\[\[(https?:([^|\r\n]*?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
+    data = data.replace(/\[\[(https?:\/\/([^|\r\n]+?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
     {
         p1 = linkfix(p1)
         let p1Tooltip = p1.replace(/'/g,`&apos;`)
         return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
     })
     //external link with different text
-    data = data.replace(/\[\[(https?:.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
+    data = data.replace(/\[\[(https?:\/\/[^|\r\n]+?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
     {
         p2 = linkfix(p2)
         let p1Tooltip = p1.replace(/'/g,`&apos;`)
@@ -865,6 +867,14 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //escape things
     if (renderOptions['escaperslash'] != 'off')
         data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
+
+    //endRender hook
+    for (let f of global.hooks.endRender)
+    {
+        let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
+        pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
+    }
+    
     //sanitising things
     data = sanitiseHtml(data, global.sanitiseOptions)
     

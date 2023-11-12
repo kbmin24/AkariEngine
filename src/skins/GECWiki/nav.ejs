@@ -1,7 +1,7 @@
 <nav class="navbar navbar-dark bg-primary fixed-top">
     <div class="container-fluid nav-contents">
         <!-- logo -->
-        <a class="navbar-brand" href="/"><%= wikiname %></a>
+        <a class="navbar-brand" href="/"><%= global.conf.appname %></a>
         <ul class="navbar-nav me-auto mb-lg-0" style='flex-direction: row;'>
             <!-- rc -->
             <li class="nav-item">
@@ -42,6 +42,13 @@
                         <a class="dropdown-item" href="/PageList">
                             <i class="fa fa-list-ul nav-icon"></i>
                             <span>문서 목록</span>
+                        </a>
+                    </li>
+                    <li>
+                        <!-- orpahned -->
+                        <a class="dropdown-item" href="/orphaned">
+                            <i class="fa fa-link nav-icon"></i>
+                            <span>고립된 문서</span>
                         </a>
                     </li>
                     <li>
@@ -110,7 +117,7 @@
             </div>
         </div>
         <!-- search box -->
-        <form class="input-group d-flex" action='/search' method='POST' id='searchBox'>
+        <form class="input-group d-flex" action='/search' method='POST' id='searchBox' role="search">
             <input class="form-control" id='searchinput' name='pagename' type="search" placeholder="검색" aria-label="검색">
             <button class="btn btn-outline-light bg-primary" id='searchSubmit' type="submit"><i class="fa fa-arrow-right text-light"></i></button>
             <!-- <button class="btn btn-outline-light" type="submit">Open</button> -->

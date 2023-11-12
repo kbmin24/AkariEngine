@@ -9,8 +9,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
             title: '정보',
             content: description + '<br>' + '<a href="' + returnlink + '">' + returnname + '</a>으로 돌아갑니다.',
             username: username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
         })
     }
     else
@@ -19,8 +18,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
             title: 'Information',
             content: description + '<br>Return to ' + '<a href="' + returnlink + '">' + returnname + '</a>.',
             username: username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            wikiname: global.appname
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
         })
     }
 }
