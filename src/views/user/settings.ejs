@@ -1,20 +1,20 @@
 <% if (username) { %>
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="card-title">테마</h5>
-        <p class="card-text">사용할 테마를 고를 수 있습니다. 이 설정은 계정에 귀속됩니다.</p>
+        <h5 class="card-title"><%= l('theme') %></h5>
+        <p class="card-text"><%= l('theme_themeDesc') %></p>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <form method='POST' action='/settings/changeSkin'>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
             <div class='form-group mb-2'>
-                <label for='oldpassword'>테마 선택</label>
-                <select class="form-select" aria-label="테마를 선택하세요." name="skin" required>
+                <label for='oldpassword'><%= l('theme_choose') %></label>
+                <select class="form-select" aria-label="<%= l('theme_choose_please') %>" name="skin" required>
                     <% global.skins.forEach(e =>{ %>
                         <option value="<%= e.name %>"><%= e.manifest.name %></option>
                     <% }) %>
                   </select>
             </div>
-            <button type='submit' class='btn btn-primary'>저장</button>
+            <button type='submit' class='btn btn-primary'><%= l('save') %></button>
         </form>
     </div>
 </div>
@@ -22,90 +22,90 @@
 <% if (global.conf.disableDarkMode !== true) { %>
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="card-title">다크 모드</h5>
-        <p class="card-text">다크 모드 사용 여부를 설정할 수 있습니다(지원하는 테마에 한함). 이 설정은 기기에 귀속됩니다.</p>
+        <h5 class="card-title"><%= l('darkmode') %></h5>
+        <p class="card-text"><%= l('darkmode_desc') %></p>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <div class='form-group mb-2'>
             <div class='row'>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="radioDark" id="radioDarkLight" value='light'>
                     <label class="form-check-label" for="radioDarkLight">
-                        라이트 테마
+                        <%= l('lightmode') %>
                     </label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="radioDark" id="radioDarkDark" value='dark'>
                     <label class="form-check-label" for="radioDarkDark">
-                        다크 테마
+                        <%= l('darkmode') %>
                     </label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="radioDark" id="radioDarkSystem" value='system'>
                     <label class="form-check-label" for="radioDarkSystem">
-                        시스템 설정 사용
+                        <%= l('useSystemSettings') %>
                     </label>
                 </div>
             </div>
         </div>
-        <button class='btn btn-primary' onClick='setDarkPref()'>저장</button>
+        <button class='btn btn-primary' onClick='setDarkPref()'><%= l('save') %></button>
     </div>
 </div>
 <% } %>
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="card-title">최근 변경 사이드바 사용</h5>
-        <p class="card-text">최근 변경 사이드바 사용 여부를 설정할 수 있습니다. 이 설정은 기기에 귀속됩니다.</p>
+        <h5 class="card-title"><%= l('useRCBar') %></h5>
+        <p class="card-text"><%= l('useRCBar_Desc') %></p>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <div class='form-group mb-2'>
             <div class='row'>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="radioRC" id="radioRCtrue" value='true'>
                     <label class="form-check-label" for="radioRCtrue">
-                        사용
+                        <%= l('use') %>
                     </label>
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="radioRC" id="radioRCfalse" value='false'>
                     <label class="form-check-label" for="radioRCfalse">
-                        사용하지 않음
+                        <%= l('dontuse') %>
                     </label>
                 </div>
             </div>
         </div>
-        <button class='btn btn-primary' onClick='setRCPref()'>저장</button>
+        <button class='btn btn-primary' onClick='setRCPref()'><%= l('save') %></button>
     </div>
 </div>
 
 <% if (username) { %>
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="card-title">비밀번호 변경</h5>
-        <p class="card-text">비밀번호를 변경할 수 있습니다. 이 설정은 계정에 귀속됩니다.</p>
+        <h5 class="card-title"><%= l('changepw') %></h5>
+        <p class="card-text"><%= l('changepw_Desc') %></p>
         <form method='POST' action='/settings/changePassword'>
             <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
             <div class='form-group mb-2'>
-                <label for='oldpassword'>현재 비밀번호</label>
-                <input type='password' name='oldpassword' class='form-control' id='oldpassword' placeholder='현재 비밀번호 입력' required>
+                <label for='oldpassword'><%= l('currentpw') %></label>
+                <input type='password' name='oldpassword' class='form-control' id='oldpassword' placeholder='<%= l('currentpw_inp') %>' required>
             </div>
             <div class='form-group mb-2'>
-                <label for='passwordInputbox'>새 비밀번호</label>
-                <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='새 비밀번호 입력' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
+                <label for='passwordInputbox'><%= l('newpw') %></label>
+                <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='<%= l('newpw_inp') %>' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
                 pattern='^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$'>
-                <small class='form-text text-muted'>비밀번호는 최소 8자 이상이어야 합니다.</small>
-                <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'>비밀번호는 8자 이상 255자 이하여야 합니다.</small>
-                <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'>비밀번호에 잘못된 문자가 포함되어 있습니다: <small id='passwordbadcharlist'></small></small>
+                <small class='form-text text-muted'><%= l('register_p8up') %>></small>
+                <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'><%= l('register_illegalpwlength') %></small>
+                <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'><%= l('register_illegalpwchar') %> <small id='passwordbadcharlist'></small></small>
             </div>
             <div class='form-group mb-2'>
-                <label for='passwordConfirmInputbox'>비밀번호 확인</label>
-                <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='비밀번호 재입력' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
+                <label for='passwordConfirmInputbox'><%= l('register_confirmpw')%></label>
+                <input type='password' name='passwordConfirm' class='form-control' id='passwordConfirmInputbox' area-describedby='passwordConfirmDesc' placeholder='<%= l('newpw_inp') %>' required minlength='9' maxlength='255' onkeyup='pwMatchCheck()'>
                 <p>
-                    <small id='passwordmatch' class='text-success fw-bold' style='display: none'>비밀번호 일치</small>
-                    <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'>비밀번호 불일치</small>
+                    <small id='passwordmatch' class='text-success fw-bold' style='display: none'><%= l('register_pwMatch') %></small>
+                    <small id='passwordnotmatch' class='text-danger fw-bold' style='display: none'><%= l('register_pwNotMatch') %></small>
                 </p>
-                <small id='passwordConfirmDesc' class='form-text text-muted'>비밀번호가 제대로 입력되었는지 확인하기 위해 한 번 더 입력해 주세요.</small>
+                <small id='passwordConfirmDesc' class='form-text text-muted'><%= l('register_confirmPwDesc') %></small>
             </div>
             <script src='/js/signupPasswordCheck.js'></script>
-            <button type='submit' class='btn btn-primary'>비밀번호 변경</button>
+            <button type='submit' class='btn btn-primary'><%= l('changepw') %></button>
         </form>
     </div>
 </div>

@@ -49,6 +49,10 @@
                                 <i class="fas fa-random nav-icon"></i>
                                 <span>랜덤 문서</span>
                             </a>
+                            <a class="dropdown-item" href="/orphaned">
+                                <i class="fas fa-link nav-icon"></i>
+                                <span>고립된 문서</span>
+                            </a>
                             <a class="dropdown-item" href="/PageList">
                                 <i class="fas fa-list-ul nav-icon"></i>
                                 <span>문서 목록</span>
@@ -114,6 +118,14 @@
                                 </span>
                                 설정
                             </a>
+                            <% if (locals.isAdmin) { %>
+                                <a class="navbar-item" href="/admin">
+                                    <span class="icon">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    관리 메뉴
+                                </a>
+                            <% } %>
                             <% if (locals.username) { %>
                                 <a class="navbar-item" href="/logout">
                                     <span class="icon">
@@ -131,28 +143,6 @@
                             <% } %>
                         </div>
                     </div>
-                    <!--<div class="navbar-item has-dropdown is-hoverable">
-                        <a href="/user" class="navbar-item">
-                            {% if imp[2][2] == 1 %}
-                                <span class="icon">
-                                    <i class="fas fa-user-circle"></i>
-                                </span>
-                            {% elif imp[2][2] == 0 %}
-                                <span class="icon">
-                                    <i class="fas fa-user-times"></i>
-                                </span>
-                            {% else %}
-                                <span class="icon">
-                                    <i class="fas fa-user-secret"></i>
-                                </span>
-                            {% endif %}
-                            {% if imp[2][4] != '' %}
-                                <img src="https://www.gravatar.com/avatar/{{imp[2][4]|md5_replace}}?s=30">
-                            {% else %}
-                                {{imp[2][5]}}
-                            {% endif %}
-                        </a>
-                    </div>-->
                 </div>
             </div>
         </div>

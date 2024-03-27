@@ -25,7 +25,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, `문서의 읽기 권한이 ${acl}이기 때문에 편집할 수 없습니다.`, '/', '메인 페이지', 403, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_nocal', {acl: acl}), '/', '메인 페이지', 403, 'ko')
         return
     }
 
@@ -41,7 +41,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
             else
             {
                 //404!
-                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+                require(global.path + '/error.js')(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
             }
         })
     }
@@ -65,7 +65,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
                 }
                 else
                 {
-                    require(global.path + '/error.js')(req, res, null, `요청하신 문서나 리비전을 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+                    require(global.path + '/error.js')(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404, 'ko')
                 }
             })
     }

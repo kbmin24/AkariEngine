@@ -66,7 +66,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     else
     {
         
-        require(global.path + '/error.js')(req, res, null, `문서의 편집 권한이 ${acl}이기 때문에 이동할 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     pages.findOne({where: {title: decodeURI(req.params.name)}}).then(page =>
@@ -81,13 +81,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             {
                 if (oldrev === undefined)
                 {
-                    require(global.path + '/error.js')(req, res, null, `리비전이 존재하지 않습니다.`, '/', '메인 페이지', 404, 'ko')
+                    require(global.path + '/error.js')(req, res, null, global.i18n.__('revision404'), '/', global.i18n.__('mainpage'), 404, 'ko')
                     return
                 }
                 else
                 {
                     oldcontent = oldrev.content
-                    const comment = 'r' + req.body.rev + '로 되돌림 - ' + req.body.comment
+                    const comment = 'Revert to r' + req.body.rev + ' - ' + req.body.comment
                     page.update({content: oldcontent, deleted: false, currentRev: page.currentRev + 1})
                     .then(() =>
                     {
@@ -120,7 +120,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         else
         {
             //error!
-            require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
             return
         }
     })

@@ -4,13 +4,13 @@ async function getCategory(title, category, categorys)
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='category'>분류: `
+    const cardBeginning = `<div class='category'>${global.i18n.__('category')}: `
     const cardEnd = `</div>`
 
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + '없음' + cardEnd
+        return cardBeginning + global.i18n.__('none') + cardEnd
     }
 
     var res = cardBeginning
@@ -108,7 +108,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, `문서의 열람 권한이 ${acl}이기 때문에 이동할 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('view_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     let titleSuffix = ''
@@ -123,7 +123,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         {
             if (await (perm.findOne({where: {username: username, perm: 'admin'}})))
             {
-                titleSuffix += '(관리자)'
+                titleSuffix += `(${global.i18n.__('admin')})`
             }
         }
     }
@@ -134,9 +134,13 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         {
             contentPrefix = `[file(${filename})]\n`
         }
+        else if (/^(.*?\.pdf)$/gi.test(filename))
+        {
+            contentPrefix = `[file(${filename}|width=100%|height=500px)]\n<a href='/uploads/${filename}'>Download</a>`
+        }
         else
         {
-            contentPrefix = `<p><span class="fw-bold text-danger">오류:</span> 이 파일은 브라우저에서 표시할 수 없습니다. <a target='_blank' href="/uploads/${escapeHtml(filename)}">새 탭에서 여세요.</a></p>`
+            contentPrefix = `<p><span class="fw-bold text-danger">${global.i18n.__('error')}:</span> ${global.i18n.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${global.i18n.__('file_innewtab')}</a></p>`
         }
         
     }
@@ -153,7 +157,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
                 if (req.query.from)
                 {
-                    titleSuffix = `<a href='/w/${req.query.from}?redirect=true'>${req.query.from}</a>에서 넘어옴&nbsp;` + titleSuffix
+                    titleSuffix = global.i18n.__('page_redirectedfrom', {page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>`}), `&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
@@ -183,12 +187,12 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 {
                     let content
                     if (req.params.name.split(':')[1] == req.session.username)
-                        content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>하지만, 직접 생성할 수 있습니다!</p><p><a href='/edit/${escapeHtml(req.params.name)}'>사용자 문서 생성</a></p>`
+                        content = global.i18n.__("noUserPage_user", {link: escapeHtml(req.params.name)})
                     else
-                        content = `<h3>사용자 문서를 찾을 수 없습니다.</h3><p>사용자가 사용자 문서를 만들지 않았습니다.</p><p><a href='javascript:window.history.back()'>뒤로가기</a></p>`
+                        content = global.i18n.__("noUserPage")
                     require(global.path + '/view.js')(req, res,
                     {
-                        title: '오류',
+                        title: global.i18n.__("error"),
                         content: content,
                         isPage: false,
                         username: req.session.username,
@@ -200,9 +204,9 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 let hisText = ''
                 if (page)
                 {
-                    hisText = `<br>${escapeHtml(req.params.name)}의 <a href='/history/${escapeHtml(req.params.name)}'>문서 역사</a>를 볼 수 있습니다.`
+                    hisText = global.i18n.__("seeHistory", {link: escapeHtml(req.params.name)})
                 }
-                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${escapeHtml(req.params.name)}">새로 만드시겠습니까?</a>${hisText}`, '/', '메인 페이지', 404, 'ko')
+                require(global.path + '/error.js')(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
             }
         })
     }
@@ -240,7 +244,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             }
             else
             {
-                require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+                require(global.path + '/error.js')(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
             }
         })
     }

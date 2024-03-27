@@ -3,13 +3,13 @@ async function getCategory(title, category, categorys)
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='card mb-2'><div class='card-body'>분류: `
+    const cardBeginning = `<div class='card mb-2'><div class='category'>${global.i18n.__('category')}: `
     const cardEnd = `</div></div>`
 
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + '<i>없음</i>' + cardEnd
+        return cardBeginning + global.i18n.__('none') + cardEnd
     }
 
     var res = cardBeginning
@@ -43,7 +43,7 @@ module.exports = async (req, res, pages, files, category) =>
     let opt = await getOptions(req.body.content)
     let content = await require(global.path + '/pages/render.js')(req.body.title, req.body.content, true, pages, files, req, res, false, true, {}, opt)
     content = await getCategory(req.body.title, category, opt['category']) + content
-    content = `<div class='alert alert-warning' role='alert'>문서가 아직 저장되지 않았습니다. 편집 내용을 저장하려면 편집 창으로 돌아가세요.</div>` + content
+    content = `<div class='alert alert-warning' role='alert'>${global.i18n.__('previewWarning')}</div>` + content
     let renderOpt = {
         title: req.body.title,
         titleInfo: '(<i>미리보기</i>)',

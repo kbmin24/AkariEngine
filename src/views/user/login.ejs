@@ -2,18 +2,17 @@
     <form action='/login' method='POST'>
         <input type='hidden' name='_csrf' value='<%= csrfToken %>'>
         <div class='form-group mb-2'>
-            <label for='idInputbox'>ID</label>
-            <input type='text' name='id' class='form-control' id='idInputbox' placeholder='아이디 (유저명) 입력' required>
+            <label for='idInputbox'><%= l('id') %></label>
+            <input type='text' name='id' class='form-control' id='idInputbox' placeholder='<%= l("login_inputID") %>' required>
         </div>
         <div class='form-group mb-2'>
-            <label for='passwordInputbox'>비밀번호</label>
-            <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='비밀번호 입력' required>
+            <label for='passwordInputbox'><%= l('password') %></label>
+            <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='<%= l("login_inputPW") %>' required>
         </div>
-        <div class='mb-2'>계정이 없나요? <a href='/signup'>지금 만드세요!</a></div>
+        <div class='mb-2'><%= l('login_noAccount')%> <a href='/signup'><%= l('login_accountNow') %></a></div>
         <div class='mb-2'>
-            비밀번호를 까먹었다면 <a href='mailto:<%= global.conf.adminEmail %>'>관리자에게 이메일을 보내 주세요</a>. <br>
-            <small class='form-text text-muted'>대부분의 문서는 로그인하지 않아도 편집할 수 있습니다.</small>
+            <%= l('login_pwforgot') %><a href='mailto:<%= global.conf.adminEmail %>'><%= l("login_adminEmail") %></a><br>
         </div>
-        <button type='submit' class='btn btn-primary'>Login</button>
+        <button type='submit' class='btn btn-primary'><%= l('login') %></button>
     </form>
 </div>

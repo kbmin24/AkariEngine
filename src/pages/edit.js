@@ -117,12 +117,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 
     if (!req.params.name)
     {
-        require(global.path + '/error.js')(req, res, null, `문서 제목이 필요합니다.`, '/', '메인 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     if (!req.body.content)
     {
-        require(global.path + '/error.js')(req, res, null, `문서 내용이 필요합니다.`, '/', '메인 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     
@@ -158,7 +158,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, `문서의 편집 권한이 ${acl}이기 때문에 편집할 수 없습니다.`, '/', '메인 페이지', 403, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_noacl', {acl: acl}), '/', global.i18n.__('mainpage'), 403)
             return
         }
 
@@ -194,7 +194,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
-                require(global.path + '/error.js')(req, res, null, `페이지 이름은 'File:'로 시작할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
+                require(global.path + '/error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
                 return
             }
 

@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-const { Router } = require('express')
 const express = require('express')
 const app = express()
 
@@ -220,18 +219,45 @@ global.sanitiseOptions =
             'clear': [/^.*?$/]
         },
     },
-    exclusiveFilter: (img) =>
+    exclusiveFilter: (tag) =>
     {
-        if (img.tag !== 'img') return false
-        if (!img.attribs['src']) return false
-        //TODO: extension can add filter?
-        return !(/^\/(board)?uploads\/.*$/.test(img.attribs['src']))
+        //true면 지운다
+        if (tag.tag === 'img')
+        {
+            if (!tag.attribs['src']) return false
+            //TODO: extension can add filter?
+            return !(/^\/(board)?uploads\/.*$/.test(tag.attribs['src']))
+        }
+        else if (tag.tag === 'iframe')
+        {
+            if (!tag.attribs['src']) return true
+            if (tag.attribs['src'].startsWith('/'))
+            {
+                if (tag.attribs['src'].includes('../')) return true
+                if (tag.attribs['src'].includes('..\\')) return true
+                return !tag.attribs['src'].startsWith('/uploads/')
+            }
+        }
+        else
+        {
+            return false
+        }
     },
     disallowedTagsMode: 'escape',
     allowedIframeHostnames: (global.conf.security === undefined
         || global.conf.security.allowedIframeHostnames === undefined ?
-         ['www.youtube.com', 'www.youtube-nocookie.com'] : global.conf.security.allowedIframeHostnames)
+         ['www.youtube.com', 'www.youtube-nocookie.com'] : global.conf.security.allowedIframeHostnames),
+    allowIframeRelativeUrls: true
 }
+
+//i18n -- Global (Non-skin)
+global.i18n = require("i18n");
+global.i18n.configure({
+    locales: ['ko_KR', 'en_GB'],
+    defaultLocale: global.conf.defaultLocale ? global.conf.defaultLocale : "en_GB",
+    directory: global.path + "/locales",
+    objectNotation: true
+  });
 
 //regex for testing whether page title is legal or not
 global.legalTitleRegex = /^[^\[\]\{\}\|#\n]*$/m
@@ -261,6 +287,18 @@ global.conf.skins.forEach(e => {
 let ext = require(global.path + '/extensionManager.js')
 ext(app, ext)
 
+
+//Master router---handle i18n.
+app.use((req, res, next) => {
+    i18n.init(req, res);
+    /*if (req.session.locale) {
+      i18n.setLocale(req, req.session.locale);
+    }*/
+    next();
+  })
+
+//Page router
+
 app.get('/', (req, res) =>
 {
     res.redirect('/w/FrontPage')
@@ -277,15 +315,20 @@ app.get('/Licence', async (req, res) =>
 })
 app.get('/noEmail', async (req, res) =>
 {
-    await require(global.path + '/sendfile.js')(req, res, '이메일 주소 무단 수집 거부', '/views/etc/noEmail.html')
+    const noEmailPage = await ejs.renderFile(global.path + '/views/etc/noEmail.ejs', {l: res.__,})
+    require(global.path + '/view.js')(req, res,
+        {
+            title:  global.i18n.__('noEmail'),
+            content: noEmailPage
+        })
 })
 app.get('/signup', async (req, res) =>
 {
     const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
-    const signuppage = await ejs.renderFile(global.path + '/views/user/signup.ejs',{captcha: captchaSVG})
+    const signuppage = await ejs.renderFile(global.path + '/views/user/signup.ejs',{captcha: captchaSVG, l: global.i18n.__})
     require(global.path + '/view.js')(req, res,
     {
-        title: '회원 가입',
+        title: global.i18n.__('register'),
         content: signuppage,
         username: req.session.username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -301,7 +344,7 @@ app.get('/login', csrfProtection, async (req,res) =>
 {
     //render page
     const username = req.session.username
-    ejs.renderFile(global.path + '/views/user/login.ejs',{csrfToken: req.csrfToken()}, (err, html) => 
+    ejs.renderFile(global.path + '/views/user/login.ejs',{csrfToken: req.csrfToken(), l: global.i18n.__}, (err, html) => 
     {
         if (err)
         {
@@ -311,7 +354,7 @@ app.get('/login', csrfProtection, async (req,res) =>
         }
         require(global.path + '/view.js')(req, res,
         {
-            title: '로그인',
+            title: global.i18n.__('login'),
             content: html,
             //notification: r,
             username: username,
@@ -358,7 +401,8 @@ app.get('/settings', csrfProtection, async (req, res) =>
     {
         csrfToken: req.csrfToken(),
         sign: sign,
-        username: username
+        username: username,
+        l: global.i18n.__
     }, (err, html) => 
     {
         if (err)
@@ -369,7 +413,7 @@ app.get('/settings', csrfProtection, async (req, res) =>
         }
         require(global.path + '/view.js')(req, res,
         {
-            title: '설정',
+            title: global.i18n.__('settings'),
             content: html,
             //notification: r,
             username: username,
@@ -393,12 +437,12 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
     req.params.name = req.params.name
     if (req.params.name.length > 255)
     {
-        require(global.path + '/error.js')(req, res, null, `문서명이 너무 깁니다. 문서명의 최대 길이는 255자입니다.`, '/', '메인 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('pagename_toolong'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     if (!global.legalTitleRegex.test(req.params.name))
     {
-        require(global.path + '/error.js')(req, res, null, `문서명이 부적절한 특수문자를 포함하고 있습니다.`, '/', '메인 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('pagename_specialchar'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     const target = await pages.findOne({where: {title: req.params.name}})
@@ -406,7 +450,7 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
     {
         if (req.params.name.toLowerCase().startsWith('file:'))
         {
-            require(global.path + '/error.js')(req, res, null, `일반 문서명은 'File:'로 시작할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
             return
         }
     }
@@ -436,7 +480,7 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
 
                 if (req.query.section + offset > splits)
                 {
-                    require(global.path + '/error.js')(req, res, null, `요청하신 문단을 찾을 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
+                    require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_noparagraph'), '/', global.i18n.__('mainpage'), 200)
                     return
                 }
                 for (let i = 0; i < req.query.section + offset; i++) prefix += splits[i]
@@ -452,6 +496,7 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
             suffix: suffix,
             username: username,
             captcha: captchaSVG,
+            l: global.i18n.__,
             csrfToken: req.csrfToken()
         }, (err, html) => 
         {
@@ -463,7 +508,7 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
             }
             require(global.path + '/view.js')(req, res,
             {
-                title: req.params.name + ' 편집',
+                title: global.i18n.__('edit_pg', {name: req.params.name}),
                 content: html,
                 isPage: true,
                 pageMode: "edit",
@@ -482,7 +527,18 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
     {
         let content = ''
         if (target) content = target.content
-        ejs.renderFile(global.path + '/views/pages/edit.ejs',{title: req.params.name, content: content, username: username, prefix: prefix, suffix: suffix, disabled: true, csrfToken: req.csrfToken()}, (err, html) => 
+        ejs.renderFile(global.path + '/views/pages/edit.ejs',
+        {
+            title: req.params.name,
+            content: content,
+            username: username,
+            l: global.i18n.__,
+            prefix: prefix,
+            suffix: suffix,
+            disabled: true,
+            csrfToken: req.csrfToken()
+        },
+        (err, html) => 
         {
             if (err)
             {
@@ -492,7 +548,7 @@ app.get('/edit/:name(*)', csrfProtection, async (req, res) =>
             }
             require(global.path + '/view.js')(req, res,
             {
-                title: req.params.name + ' 편집',
+                title: global.i18n.__('edit_pg', {name: req.params.name}),
                 content: html,
                 isPage: true,
                 notification: r,
@@ -511,7 +567,7 @@ app.post('/edit/:name(*)', csrfProtection, async (req, res) =>
     const username = req.session.username
     if (req.params.name.length > 255)
     {
-        require(global.path + '/error.js')(req, res, null, `문서명이 너무 깁니다. 문서명의 최대 길이는 255자입니다.`, '/', '메인 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('pagename_toolong'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     await require(global.path + '/pages/edit.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block, category, settings) //actually no need to separately pass on username (in req)
@@ -521,7 +577,7 @@ app.get('/move/:name(*)', async (req, res) =>
 {
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require(global.path + '/error.js')(req, res, null, `파일 문서는 이동할 수 없습니다.`, '/', '메인 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('pagename_toolong'), 200)
         return
     }
     const pro = await protect.findOne({where: {title: req.params.name, task: 'move'}})
@@ -537,14 +593,14 @@ app.get('/move/:name(*)', async (req, res) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, `문서의 읽기 권한이 ${acl}이기 때문에 읽을 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('view_noacl'), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     pages.findOne({where: {title: req.params.name}}).then(async (target) =>
     {
         if (!target)
         {
-            require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+            require(global.path + '/error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}"> ${global.i18n__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404)
             return
         }
         const username = req.session.username
@@ -553,13 +609,14 @@ app.get('/move/:name(*)', async (req, res) =>
         ejs.renderFile(global.path + '/views/pages/move.ejs',
         {
             originalName: req.params.name,
+            l: global.i18n.__,
             username: username,
             captcha: captchaSVG
         }, (err, html) => 
         {
             require(global.path + '/view.js')(req, res,
             {
-                title: req.params.name + ' 이동',
+                title: global.i18n.__('movepg', {name: req.params.name}),
                 content: html,
                 isPage: true,
                 pagename: req.params.name,
@@ -580,7 +637,7 @@ app.get('/delete/:name(*)', csrfProtection, (req, res) =>
     const username = req.session.username
     if (username === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 404, 'ko')
         return
     }
     perm.findOne({where: {username: username, perm: 'deletepage'}}).then(p =>
@@ -592,11 +649,11 @@ app.get('/delete/:name(*)', csrfProtection, (req, res) =>
                 if (target)
                 {
                     const username = req.session.username
-                    ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, username: username, csrfToken: req.csrfToken()}, (err, html) => 
+                    ejs.renderFile(global.path + '/views/pages/delete.ejs',{title: req.params.name, l: global.i18n.__, username: username, csrfToken: req.csrfToken()}, (err, html) => 
                     {
                         require(global.path + '/view.js')(req, res,
                         {
-                            title: req.params.name + ' 삭제',
+                            title: global.i18n.__('deletepg', {name: req.params.name}),
                             isPage: true,
                             pageMode: "delete",
                             pagename: target.title,
@@ -609,14 +666,14 @@ app.get('/delete/:name(*)', csrfProtection, (req, res) =>
                 }
                 else
                 {
-                    require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+                    require(global.path + '/error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
                     return
                 }
             })
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, `문서 삭제 권한이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
         }
     })
 })
@@ -640,19 +697,20 @@ app.get('/revert/:name(*)', async (req, res) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, `문서의 읽기 권한이 ${acl}이기 때문에 이동할 수 없습니다.`, '/login', '로그인 페이지', 403, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     const p = await pages.findOne({where: {title: req.params.name}})
     if (!p)
     {
-        require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+        require(global.path + '/error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
         return
     }
     const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
     ejs.renderFile(global.path + '/views/pages/revert.ejs',
     {
         pagename: req.params.name,
+        l: global.i18n.__,
         username: username,
         rev: req.query.rev,
         captcha: captchaSVG
@@ -666,7 +724,7 @@ app.get('/revert/:name(*)', async (req, res) =>
         }
         require(global.path + '/view.js')(req, res,
         {
-            title: req.params.name + '를 r' + req.query.rev + '(으)로 되돌리기',
+            title: global.i18n.__('revert_title', {page: req.params.name, rev: req.query.rev}),
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -716,7 +774,27 @@ app.get('/history/:name(*)', (req, res) =>
 })
 app.get('/RecentChanges', async (req, res) =>
 {
-    await require(global.path + '/sendfile.js')(req, res, '최근 변경', '/views/pages/recentchanges.html')
+    ejs.renderFile(global.path + '/views/pages/recentchanges.ejs',
+    {
+        l: global.i18n.__
+    }, (err, html) => 
+    {
+        if (err)
+        {
+            console.error(err)
+            res.writeHead(500).write('Internal Server Error')
+            return
+        }
+        require(global.path + '/view.js')(req, res,
+        {
+            title: global.i18n.__('recentChanges'),
+            content: html,
+            isPage: false,
+            username: req.session.username,
+            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            
+        })
+    })
 })
 app.get('/PageList', async (req, res) =>
 {
@@ -737,7 +815,7 @@ app.get('/Upload', async (req, res) =>
     {
         require(global.path + '/view.js')(req, res,
         {
-            title: '업로드',
+            title: global.i18n.__('upload'),
             content: html,
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
@@ -825,7 +903,7 @@ var upload = multer({
         const username = req.session.username
         if (username === undefined)
         {
-            require(global.path + '/error.js')(req, res, null, `로그인이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
             return
         }
         const b = await block.findOne({where: {target: username, targetType: 'user'}})

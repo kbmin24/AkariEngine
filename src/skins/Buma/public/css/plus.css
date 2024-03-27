@@ -214,3 +214,8 @@ select {
 {
     margin-right: 0.5em;
 }
+
+.modal-backdrop
+{
+    z-index: 0;
+}

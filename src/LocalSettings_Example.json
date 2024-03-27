@@ -57,5 +57,6 @@
         "allowedIframeHostnames": ["www.youtube.com", "www.youtube-nocookie.com"]
     },
     "skins": ["GECWiki"],
-    "extensions": ["Interwiki", "Board"]
+    "extensions": ["Interwiki", "Board"],
+    "defaultLocale": "ko_KR"
 }

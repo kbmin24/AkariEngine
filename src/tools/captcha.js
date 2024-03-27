@@ -37,13 +37,13 @@ exports.chkCaptcha = async (req, res, perm) =>
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, `CAPTCHA를 올바르게 완성해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('captcha_notdone'), 'javascript:window.history.back()', global.i18n.__('previousPage'), 200)
             return false
         }
     }
     catch (err)
     {
-        require(global.path + '/error.js')(req, res, null, `reCAPTCHA를 확인하는 도중 오류가 발생하였습니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('captcha_verifyfail'), 'javascript:window.history.back()', global.i18n.__('previousPage'), 200)
         return false
     }
 }

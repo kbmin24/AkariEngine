@@ -103,6 +103,7 @@ p:empty
 
     padding-right: 16px;
     padding-left: 16px;
+    border: none;
 }
 .ren-quote-icon
 {
@@ -111,6 +112,7 @@ p:empty
     font-size: 28px;
 
     padding-right: 16px;
+    border: none;
 }
 .blackln
 {

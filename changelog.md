@@ -1,3 +1,8 @@
+v3.1 (2024-??-??)
+* Added internationalisation
+* \[:\]{{}}, \[(\]{{}},  and \[)\]{{}} macros are now multiline
+* Introduced Option maths on/off
+
 v3.0 (2023-06-11)
 * Added skin system
 * Added Buma skin

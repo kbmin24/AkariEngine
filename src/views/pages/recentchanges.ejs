@@ -1,12 +1,12 @@
 <div class="dropstart">
     <button class="btn btn-secondary dropdown-toggle float-end" type="button" id="rcshowNDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-      옵션
+      <%= l('options') %>
     </button>
     <ul class="dropdown-menu dropdown-menu-macos shadow" aria-labelledby="rcshowNDropdown">
-      <li><a class="dropdown-item" href="/RecentChanges?show=5">5개 보이기</a></li>
-      <li><a class="dropdown-item" href="/RecentChanges?show=10">10개 보이기</a></li>
-      <li><a class="dropdown-item" href="/RecentChanges?show=30">30개 보이기</a></li>
-      <li><a class="dropdown-item" href="/RecentChanges?show=100">100개 보이기</a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=5"><%= l('show5') %></a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=10"><%= l('show10') %></a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=30"><%= l('show30') %></a></li>
+      <li><a class="dropdown-item" href="/RecentChanges?show=100"><%= l('show100') %></a></li>
     </ul>
 </div>
 <div style='clear:both'></div>
@@ -20,16 +20,16 @@
         </colgroup>
         <thead>
             <tr>
-                <th scope='col'>문서명</th>
-                <th scope='col'>사용자명</th>
-                <th scope='col'>수정 사항</th>
-                <th scope='col'>일시</th>
+                <th scope='col'><%= l('pagename') %></th>
+                <th scope='col'><%= l('username') %></th>
+                <th scope='col'><%= l('editMade') %></th>
+                <th scope='col'><%= l('datetime') %></th>
             </tr>
         </thead>
         <tbody id = 'rclist'>
         </tbody>
     </table>
-    <div id='rcplaceholder'>로딩 중...</div>
+    <div id='rcplaceholder'>Loading...</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src='/js/readRC.js'></script>

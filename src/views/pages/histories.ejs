@@ -1,18 +1,18 @@
 <form action='/diff/<%= changes[0].page%>' method='GET' style='width:350px'>
     <div class="mb-3 row">
-        <label for="rev1" class="col-sm-2 col-form-label" style='width: 250px'>비교할 버전 1 (r 다음만 입력)</label>
+        <label for="rev1" class="col-sm-2 col-form-label" style='width: 250px'><%= l('historyv1') %> </label>
         <div class="col-sm-10" style='width: 120px'>
             <input type="number" class="form-control" id='rev1' name='rev1' min='1'>
         </div>
     </div>
     <div class="mb-3 row">
-        <label for="rev2" class="col-sm-2 col-form-label" style='width: 250px'>비교할 버전 2 (r 다음만 입력)</label>
+        <label for="rev2" class="col-sm-2 col-form-label" style='width: 250px'><%= l('historyv2') %></label>
         <div class="col-sm-10" style='width: 120px'>
             <input type="number" class="form-control" id='rev2' name='rev2' min='1'>
         </div>
     </div>
     <div class="mb-3 row">
-        <button type='submit' class='btn btn-primary' style='width: 100px;margin: auto'>비교</button>
+        <button type='submit' class='btn btn-primary' style='width: 100px;margin: auto'><%= l('compare') %></button>
     </div>
 </form>
 
@@ -20,10 +20,10 @@
     <table class="table">
         <thead>
             <tr>
-                <th scope='col'>리비전</th>
-                <th scope='col'>사용자명</th>
-                <th scope='col'>수정 사항</th>
-                <th scope='col'>일시</th>
+                <th scope='col'><%= l('revision') %></th>
+                <th scope='col'><%= l('username') %></th>
+                <th scope='col'><%= l('editMade') %></th>
+                <th scope='col'><%= l('datetime') %></th>
                 <th scope='col' style='width: 180px'></th>
             </tr>
         </thead>
@@ -62,7 +62,7 @@
             <% var prevlink = '/history/' + encodeURI(title) + '?from=' + (from * 1 - pgSize * 1).toString() + '&to=' + (from * 1 - 1).toString() %>
             <li class="page-item">
                 <a class="page-link" href=<%= prevlink %> aria-label="Previous">
-                    이전
+                    <%= l('previous') %>
                 </a>
             </li>
         <% } %>
@@ -79,7 +79,7 @@
             <% var nextlink = '/history/' + encodeURI(title) + '?from=' + (to * 1 + 1) + '&to=' + (to * 1+ pgSize * 1)%>
             <li class="page-item">
                 <a class="page-link" href=<%= nextlink %> aria-label="Next">
-                    다음
+                    <%= l('next') %>
                 </a>
             </li>
         <% } %>

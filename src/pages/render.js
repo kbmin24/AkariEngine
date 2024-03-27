@@ -40,7 +40,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             var res = ''
             var filename = ''
             const properties = [
-                /^(.*?\.(?:png|jpg|jpeg|gif|webp|svg))$/gi,
+                /^(.*?\.(?:png|jpg|jpeg|gif|webp|svg|pdf))$/gi,
                 /^width ?= ?(.*?)$/ig,
                 /^height ?= ?(.*?)$/ig
             ]
@@ -73,7 +73,24 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 }
             }
             if (!ok) return match
-            return `<a href='/w/File:${filename}'><img ${res} class='ren-img img-fluid'></a>`
+
+            if (filename.toLowerCase().endsWith('pdf'))
+            {
+                //pdf
+                if (!res.toLowerCase().includes("width"))
+                {
+                    res += " width=500px "
+                }
+                if (!res.toLowerCase().includes("height"))
+                {
+                    res += " height=500px "
+                }
+                return `<a href='/w/File:${filename}'><iframe ${res}></a>`
+            }
+            else
+            {
+                return `<a href='/w/File:${filename}'><img ${res} class='ren-img img-fluid'></a>`
+            }
         }
         case 'include':
         {
@@ -634,249 +651,279 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
     //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
     //deprecated options: _renderInclude, redirect
     //initialise
-    data = data.trimEnd()
-
-    pgname = pagename
-    currentSection = 1
-    currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
-    latestHeading = 7
-    toc = '<div style="font-weight:bold;margin-bottom: 1rem;">목차</div>'
-
-    if (renderOptions.showSectionEditButton == 'on')
+    try
     {
-        renderSectionEditButton = true
-    }
-    else
-    {
-        renderSectionEditButton = false
-    }
+        pgname = pagename
+        currentSection = 1
+        currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
+        latestHeading = 7
+        toc = '<div style="font-weight:bold;margin-bottom: 1rem;">목차</div>'
 
-
-    data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/igm, '')
-
-    //Redirect
-    let doRedr = false
-    const redr = data.replace(/^#redirect +(.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
-    {
-        if (true === fredirect(pagename, p1, p2, string, res, redirect))
+        if (renderOptions.showSectionEditButton == 'on')
         {
-            doRedr = true
-            return true
-        }
-    })
-    if (doRedr === true)
-    {
-        return true
-    } //escape
-    
-    //args
-    data = data.replace(/{{{(.+?)}}}/igm, (_match, p1, _offset, _string, _groups) =>
-    {
-        const res = args[p1.trim()]
-        if (res === undefined)
-        {
-            return `{{{${p1}}}}` //no change
+            renderSectionEditButton = true
         }
         else
         {
-            return res
+            renderSectionEditButton = false
         }
-    })
 
-    //beginRender hook
-    for (let f of global.hooks.beginRender)
-    {
-        let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
-        pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
-    }
-    
-    //\r\n issue
-    data = data.replace(/\r/g, '')
 
-    //comments
-    data = data.replace(/^\/\/.*?\r?\n/igm, '')
-    
-    //headings
-    data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
+        data = data.replace(/^((?:Option \w+ \w+\r?\n)+)/igm, '')
 
-    //centred text
-    data = data.replace(/\[:\]{{(.*)}}/igm, '<div class="ren-center">$1</div>')
-    //left aligned text
-    data = data.replace(/\[\(\]{{(.*)}}/igm, '<div class="ren-left">$1</div>')
-    //right aligned text
-    data = data.replace(/\[\)\]{{(.*)}}/igm, '<div class="ren-right">$1</div>')
+        //Redirect
+        let doRedr = false
+        const redr = data.replace(/^#redirect +(.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
+        {
+            if (true === fredirect(pagename, p1, p2, string, res, redirect))
+            {
+                doRedr = true
+                return true
+            }
+        })
+        if (doRedr === true)
+        {
+            return true
+        } //escape
+        
+        //args
+        data = data.replace(/{{{(.+?)}}}/igm, (_match, p1, _offset, _string, _groups) =>
+        {
+            const res = args[p1.trim()]
+            if (res === undefined)
+            {
+                return `{{{${p1}}}}` //no change
+            }
+            else
+            {
+                return res
+            }
+        })
 
-    //macro
-    //multiline macro
-    data = await asyncMacro(data, /\[(\w*)\]{{((?:.|\r|\n)*?)}}/igms, renderMacro, pages, files, incl)
+        //beginRender hook
+        for (let f of global.hooks.beginRender)
+        {
+            let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
+            pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
+        }
+        
+        //\r\n issue
+        data = data.replace(/\r/g, '')
 
-    //singleline macro
-    data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igms, renderMacro, pages, files, incl)
+        //comments
+        data = data.replace(/^\/\/.*?\r?\n/igm, '')
+        
+        //headings
+        data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
-    //data = data.replace(/\[(.*?)\((.*?)\)\]/igm, (match, p1, p2, offset, string, groups) => {renderMacro(p1, p2, pages)})]
+        //centred text
+        data = data.replace(/\[:\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) =>
+        {
+            return `<div class="ren-center">${p1.trim()}</div>`
+        })
+        //left aligned text
+        data = data.replace(/\[\(\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) =>
+        {
+            return `<div class="ren-left">${p1.trim()}</div>`
+        })
+        //right aligned text
+        data = data.replace(/\[\)\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) =>
+        {
+            return `<div class="ren-right">${p1.trim()}</div>`
+        })
 
-    //ul
-    data = data.replace(ulRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ul'))) //NOTE: must have /n at the end
-    //ol
-    data = data.replace(olRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ol')))
-    //big text
-    data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
-    //bold
-    data = data.replace(/'''(.*?)'''/gim, '<b>$1</b>')
-    //italic
-    data = data.replace(/''(.*?)''/igm, '<i>$1</i>')
-    //underline
-    data = data.replace(/__(.*?)__/igm, '<u>$1</u>')
-    //strike
-    data = data.replace(/--(.*?)--/igm, '<del class="text-secondary">$1</del>')
-    //superscript
-    data = data.replace(/\^\^(.*?)\^\^/igm, '<sup>$1</sup>')
-    //subscript
-    data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
-    
-    //external link
-    data = data.replace(/\[\[(https?:\/\/([^|\r\n]+?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
-    {
-        p1 = linkfix(p1)
-        let p1Tooltip = p1.replace(/'/g,`&apos;`)
-        return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
-    })
-    //external link with different text
-    data = data.replace(/\[\[(https?:\/\/[^|\r\n]+?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
-    {
-        p2 = linkfix(p2)
-        let p1Tooltip = p1.replace(/'/g,`&apos;`)
-        return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
-    })
-    //category
-    data = data.replace(/\[\[(?:Category|분류):(.*?)\]\]/igm, '')
-    //anchor
-    data = data.replace(/\[\[#([^|\r\n]*?)\]\]/igm, `<a href='#$1'>$1</a>`)
-    //anchor with different text
-    data = data.replace(/\[\[(#.*?)\|(.*?)\]\]/igm, `<a href='$1'>$2</a>`)
-    //Internal Link
-    {
-        let r = /\[\[([^|\r\n]*?)\]\]/igm
-        const promises = []
-        data.replace(r, (_match, p1, _offset, _string, _groups) =>
+        //macro
+        //multiline macro
+        data = await asyncMacro(data, /\[(\w*)\]{{((?:.|\r|\n)*?)}}/igms, renderMacro, pages, files, incl)
+
+        //singleline macro
+        data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igms, renderMacro, pages, files, incl)
+
+        //inline maths
+        if (renderOptions['maths'] == 'on')
+        {
+            data = data.replace(/\$(.*?)\$/gi, (match, p1, _offset, _string, _groups) =>
+            {
+                let S = p1.replace(/\\/gi, '\\\\') //backslash,
+                .replace(/\n/gi, ' ') //stop <br>
+                return `<span class='math'>${S}</span>`
+            })
+
+            data = data.replace(/\\\[(.*?)\\\]/gims, (match, p1, _offset, _string, _groups) =>
+            {
+                let S = p1.replace(/\\/gi, '\\\\') //backslash,
+                .replace(/\n/gi, ' ') //stop <br>
+                return `<span class='mathd'>\\\\begin{equation*} ${S} \\\\end{equation*}</span>`
+            })
+        }
+
+        //ul
+        data = data.replace(ulRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ul'))) //NOTE: must have /n at the end
+        //ol
+        data = data.replace(olRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ol')))
+        //big text
+        data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
+        //bold
+        data = data.replace(/'''(.*?)'''/gim, '<b>$1</b>')
+        //italic
+        data = data.replace(/''(.*?)''/igm, '<i>$1</i>')
+        //underline
+        data = data.replace(/__(.*?)__/igm, '<u>$1</u>')
+        //strike
+        data = data.replace(/--(.*?)--/igm, '<del class="text-secondary">$1</del>')
+        //superscript
+        data = data.replace(/\^\^(.*?)\^\^/igm, '<sup>$1</sup>')
+        //subscript
+        data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
+        
+        //external link
+        data = data.replace(/\[\[(https?:\/\/([^|\r\n]+?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
         {
             p1 = linkfix(p1)
-            let f = async (p1) =>
-            {
-                let p = await pages.findOne({where: {title: p1}})
-                let p1Esc = encodeURIComponent(p1)
-                p1Esc = p1Esc.replace(/'/g, '%27')
-                let p1Tooltip = p1.replace(/'/g,`&apos;`)
-
-                let p_me = (pagename == p1) ? 'ren_thispage' : ''
-                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p1}</a>`
-                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage ${p_me}'>${p1}</a>`
-            }
-            const promise = f(p1)
-            promises.push(promise)
+            let p1Tooltip = p1.replace(/'/g,`&apos;`)
+            return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
         })
-        const pData = await Promise.all(promises)
-        data = data.replace(r, () => pData.shift())
-    }
-    /*
-    data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, (_match, p1, _offset, _string, _groups) =>
-    {
-        return `<a href='/w/${p1}'>${p1}</a>`
-    })
-    */
-   
-    //Internal Link with different text
-    {
-        let r = /\[\[(.*?)\|(.*?)\]\]/igm
-        const promises = []
-        data.replace(r, (_match, p1, p2, _offset, _string, _groups) =>
+        //external link with different text
+        data = data.replace(/\[\[(https?:\/\/[^|\r\n]+?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
         {
             p2 = linkfix(p2)
-            let f = async (p1, p2) =>
-            {
-                let p = await pages.findOne({where: {title: p1}})
-                let p1Esc = encodeURIComponent(p1)
-                p1Esc = p1Esc.replace(/'/g, '%27')
-                let p1Tooltip = p1.replace(/'/g,`&apos;`)
-                let p_me = (pagename == p1) ? 'ren_thispage' : ''
-                if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p2}</a>`
-                else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (존재하지 않는 페이지)' class='ren_nosuchpage ${p_me}'>${p2}</a>`
-            }
-            const promise = f(p1, p2)
-            promises.push(promise)
+            let p1Tooltip = p1.replace(/'/g,`&apos;`)
+            return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
         })
-        const pData = await Promise.all(promises)
-        data = data.replace(r, () => pData.shift())
-    }
-    /*
-    data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
-    {
-        p2 = linkFix(p2)
-        return `<a href='/w/${p1}'>${p2}</a>`
-    })
-    */
-
-    //footnote
-    footnotes = []
-    footnote = '<hr><b>각주</b><br><div id="footnotes">'
-    footnotecount = 0
-    data = data.replace(/\[\* (.*?)\]/igm, (_match, p1, _offset, _string, _groups) => regFootnote(p1))
-
-    //build footnote
-    data += footnotes.length == 0 ? '' : generateFootnote()
-    data += '</div>'
-
-    /*
-    //replace \n
-    data = data.replace(/\r?\n/igm, '<br>')
-    */
-   
-    //make into paragraphs
-    /*data = data.replace(/^( *)(.*?)(?:\r?\n)(?:\r?\n)?/igm, (match, p1, p2, offset, string, groups) =>
-    {
-        if (/^<(ul|ol)>(.*?)<\/ul|ol>/ig.test(p2) || p2 == '<hr>' || /^<h\d>(.*?)<\/h\d>$/) return p2
-        var ind = ''
-        return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
-    })*/
-    //table
-    data = data.replace(/(^\|\|(.*?\|\|)+(\r?\n|$))+/igm, (match) =>
-    {
-        return renderTable(match)
-    })
-    data = data.replace(/(?:^|>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, _offset, _string, _groups) =>
-    {
-        return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`
-    })
-
-    //blockquote
-    data = data.replace(blockquoteRegex, match => {return blockquote(match, blockquoteRegex, 1)})
-
-    data = data.replace(/```(.*?)```/igms, (match, p1, _offset, _string, _groups) =>
-    {
-        return p1.replace(/\n/igm, '')
-    })
-    //remove \r?\n
-    data = data.replace(/(<\/h\d>)\n/igm, (match, p1, offset, input) =>
+        //category
+        data = data.replace(/\[\[(?:Category|분류):(.*?)\]\]/igm, '')
+        //anchor
+        data = data.replace(/\[\[#([^|\r\n]*?)\]\]/igm, `<a href='#$1'>$1</a>`)
+        //anchor with different text
+        data = data.replace(/\[\[(#.*?)\|(.*?)\]\]/igm, `<a href='$1'>$2</a>`)
+        //Internal Link
         {
-            return p1
-        })
-    data = data.replace(/\n/igm, '<br>')
-    data = data.replace(/(<br>)?<hr>(<br>)?/igm, '<hr>')
-    //data = data.replace(/^\n/igm, '<br>')
-    //data = data.replace('\n', '')
-    //escape things
-    if (renderOptions['escaperslash'] != 'off')
-        data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
+            let r = /\[\[([^|\r\n]*?)\]\]/igm
+            const promises = []
+            data.replace(r, (_match, p1, _offset, _string, _groups) =>
+            {
+                p1 = linkfix(p1)
+                let f = async (p1) =>
+                {
+                    let p = await pages.findOne({where: {title: p1}})
+                    let p1Esc = encodeURIComponent(p1)
+                    p1Esc = p1Esc.replace(/'/g, '%27')
+                    let p1Tooltip = p1.replace(/'/g,`&apos;`)
 
-    //endRender hook
-    for (let f of global.hooks.endRender)
-    {
-        let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
-        pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
+                    let p_me = (pagename == p1) ? 'ren_thispage' : ''
+                    if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p1}</a>`
+                    else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (No Such Page)' class='ren_nosuchpage ${p_me}'>${p1}</a>`
+                }
+                const promise = f(p1)
+                promises.push(promise)
+            })
+            const pData = await Promise.all(promises)
+            data = data.replace(r, () => pData.shift())
+        }
+        /*
+        data = data.replace(/\[\[([^|\r\n]*?)\]\]/igm, (_match, p1, _offset, _string, _groups) =>
+        {
+            return `<a href='/w/${p1}'>${p1}</a>`
+        })
+        */
+    
+        //Internal Link with different text
+        {
+            let r = /\[\[(.*?)\|(.*?)\]\]/igm
+            const promises = []
+            data.replace(r, (_match, p1, p2, _offset, _string, _groups) =>
+            {
+                p2 = linkfix(p2)
+                let f = async (p1, p2) =>
+                {
+                    let p = await pages.findOne({where: {title: p1}})
+                    let p1Esc = encodeURIComponent(p1)
+                    p1Esc = p1Esc.replace(/'/g, '%27')
+                    let p1Tooltip = p1.replace(/'/g,`&apos;`)
+                    let p_me = (pagename == p1) ? 'ren_thispage' : ''
+                    if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p2}</a>`
+                    else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (존재하지 않는 페이지)' class='ren_nosuchpage ${p_me}'>${p2}</a>`
+                }
+                const promise = f(p1, p2)
+                promises.push(promise)
+            })
+            const pData = await Promise.all(promises)
+            data = data.replace(r, () => pData.shift())
+        }
+        /*
+        data = data.replace(/\[\[(.*?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
+        {
+            p2 = linkFix(p2)
+            return `<a href='/w/${p1}'>${p2}</a>`
+        })
+        */
+
+        //footnote
+        footnotes = []
+        footnote = '<hr><b>각주</b><br><div id="footnotes">'
+        footnotecount = 0
+        data = data.replace(/\[\* (.*?)\]/igm, (_match, p1, _offset, _string, _groups) => regFootnote(p1))
+
+        //build footnote
+        data += footnotes.length == 0 ? '' : generateFootnote()
+        data += '</div>'
+
+        /*
+        //replace \n
+        data = data.replace(/\r?\n/igm, '<br>')
+        */
+    
+        //make into paragraphs
+        /*data = data.replace(/^( *)(.*?)(?:\r?\n)(?:\r?\n)?/igm, (match, p1, p2, offset, string, groups) =>
+        {
+            if (/^<(ul|ol)>(.*?)<\/ul|ol>/ig.test(p2) || p2 == '<hr>' || /^<h\d>(.*?)<\/h\d>$/) return p2
+            var ind = ''
+            return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
+        })*/
+        //table
+        data = data.replace(/(^\|\|(.*?\|\|)+(\r?\n|$))+/igm, (match) =>
+        {
+            return renderTable(match)
+        })
+        data = data.replace(/(?:^|>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, _offset, _string, _groups) =>
+        {
+            return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`
+        })
+
+        //blockquote
+        data = data.replace(blockquoteRegex, match => {return blockquote(match, blockquoteRegex, 1)})
+
+        data = data.replace(/```(.*?)```/igms, (match, p1, _offset, _string, _groups) =>
+        {
+            return p1.replace(/\n/igm, '')
+        })
+        //remove \r?\n
+        data = data.replace(/(<\/h\d>)\n/igm, (match, p1, offset, input) =>
+            {
+                return p1
+            })
+        data = data.replace(/\n/igm, '<br>')
+        data = data.replace(/(<br>)?<hr>(<br>)?/igm, '<hr>')
+        //data = data.replace(/^\n/igm, '<br>')
+        //data = data.replace('\n', '')
+        //escape things
+        if (renderOptions['escaperslash'] != 'off')
+            data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
+
+        //endRender hook
+        for (let f of global.hooks.endRender)
+        {
+            let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
+            pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
+        }
+        
+        //sanitising things
+        data = sanitiseHtml(data, global.sanitiseOptions)
+        
+        return data
     }
-    
-    //sanitising things
-    data = sanitiseHtml(data, global.sanitiseOptions)
-    
-    return data
+    catch (exception)
+    {
+        return `<div class="alert alert-danger" role="alert">The parser crashed. Consider reading the page RAW to diagnose the error.</div>`
+    }
 }

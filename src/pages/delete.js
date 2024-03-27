@@ -3,12 +3,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 {
     if (username === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 403, 'ko')
+        require(global.path + '/error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     if (req.params.name === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '페이지가 지정되지 않았습니다.', '/', '메인 페이지', 404, 'ko')
+        require(global.path + '/error.js')(req, res, null, '페이지가 지정되지 않았습니다.', '/', global.i18n.__('mainpage'), 404, 'ko')
         return
     }
     let isaFile = req.params.name.toLowerCase().startsWith('file:')
@@ -17,13 +17,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     {
         if (!(perm.findOne({where: {username: username, perm: 'deletefile'}})))
         {
-            require(global.path + '/error.js')(req, res, null, '파일 삭제 권한이 필요합니다.', '/login', '로그인 페이지', 403, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
             return
         }
         filename = /File:(.*)/.exec(req.params.name)[1]
         if (!(filename.length > 0))
         {
-            require(global.path + '/error.js')(req, res, null, '파일 삭제 중 알 수 없는 오류가 발생하였습니다.', '/', '로그인 페이지', 500, 'ko')
+            require(global.path + '/error.js')(req, res, null, 'Unknown Error', '/', global.i18n.__('mainpage'), 500, 'ko')
             return
         }
         files.destroy({where: {filename: filename}})
@@ -69,13 +69,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                 else
                 {
                     //error!
-                    require(global.path + '/error.js')(req, res, null, '문서가 존재하지 않습니다.', '/', '메인 페이지', 404, 'ko')
+                    require(global.path + '/error.js')(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
                 }
             })
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, '문서 삭제 권한이 필요합니다.', '/login', '로그인 페이지', 403, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
         }
     })
 }

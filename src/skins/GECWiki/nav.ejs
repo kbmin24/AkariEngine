@@ -105,6 +105,11 @@
                     <li>
                         <a class='dropdown-item' href='/settings'>설정</a>
                     </li>
+                    <% if (locals.isAdmin) { %>
+                        <li>
+                            <a class='dropdown-item' href='/admin'>관리 메뉴</a>
+                        </li>
+                    <% } %>
                     <hr style='margin: 0.3rem 0'>
                     <li>
                         <% if (locals.username) { %>

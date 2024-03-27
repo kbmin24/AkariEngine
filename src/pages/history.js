@@ -18,7 +18,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require(global.path + '/error.js')(req, res, null, `요청하신 문서를 찾을 수 없습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+            require(global.path + '/error.js')(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
             return
         }
         //from & to is nth entry in history (NOT nth revision)
@@ -30,6 +30,7 @@ module.exports = (req, res, histories) =>
         if (to > changes.count) to = changes.count
         ejs.renderFile(global.path + '/views/pages/histories.ejs',
         {
+            l: global.i18n.__,
             changes: changes.rows,
             from: from,
             to: to,
@@ -42,7 +43,7 @@ module.exports = (req, res, histories) =>
             const username = req.session.username
             require(global.path + '/view.js')(req, res,
             {
-                title: req.params.name + '의 역사',
+                title: global.i18n.__('historyOf', {p: req.params.name}),
                 content: html,
                 username: username,
                 ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

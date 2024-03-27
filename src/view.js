@@ -25,10 +25,19 @@ module.exports = async (req, res, renderOpt) =>
             })
         }
     }
+
+    let isAdmin = false
+    //see if user is 
+    if (req.session.username)
+    {
+        const p = await global.db['perm'].findOne({where: {username: req.session.username, perm: 'admin'}})
+        if (p) isAdmin = true
+    }
     
     args.skinName = skin['name']
     args.publicPath= `/skins/${skin.name}/`
     args.skinPath = `${global.path}/skins/${skin.name}/`
+    args.isAdmin = isAdmin
 
     //render common head
     ejs.renderFile(global.path + '/views/head.ejs', args, (err, html) => 

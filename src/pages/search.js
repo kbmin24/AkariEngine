@@ -8,7 +8,7 @@ module.exports = async (req, res, pages) =>
     const query = arraywrap(req.query.q)[0].trim()
     if (query == '')
     {
-        res.status(400).send('검색어가 비어 있습니다.')
+        res.status(400).send('Empty search')
         return
     }
     let from = 0
@@ -16,7 +16,7 @@ module.exports = async (req, res, pages) =>
     {
         if (isNaN(req.query.from))
         {
-            res.status(400).send('쿼리는 숫자여야 합니다.')
+            res.status(400).send('The query must be a number.')
             return
         }
         from = req.query.from * 1
@@ -57,7 +57,7 @@ module.exports = async (req, res, pages) =>
     const username = req.session.username
     require(global.path + '/view.js')(req, res,
     {
-        title: sanitiseHtml(query, {disallowedTagsMode: escape}) + '의 검색 결과',
+        title: global.i18n.__('searchResults', {q: sanitiseHtml(query, {disallowedTagsMode: escape})}),
         content: searchHTML,
         username: username,
         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),

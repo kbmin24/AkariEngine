@@ -4,7 +4,7 @@
 <form action='/edit/<%= title %>' method='POST' class='editForm'>
     <% if (prefix || suffix) {%>
         <div class="alert alert-info" role="alert">
-            문서의 일부분을 편집하고 있습니다.
+            <%= l('edit_part') %>
         </div>
     <% } %>
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -12,17 +12,17 @@
     <textarea name='editSuffix' style='display:none'><%= suffix %></textarea>
     <div class='form-group'>
         <div class='mb-2'>
-            <div class='editMacro bg-light border' onclick="editMacro(`'''`,`볼드`,`'''`)"><i class="fas fa-bold"></i></div>
-            <div class='editMacro bg-light border ' onclick="editMacro(`''`,`기울임`,`''`)"><i class="fas fa-italic"></i></div>
-            <div class='editMacro bg-light border' onclick="editMacro(`__`,`밑줄`,`__`)"><i class="fas fa-underline"></i></div>
-            <div class='editMacro bg-light border' onclick="editMacro(`--`,`취소선`,`--`)"><i class="fas fa-strikethrough"></i></div>
+            <div class='editMacro bg-light border' onclick="editMacro(`'''`,`<%= l('bold') %>`,`'''`)"><i class="fas fa-bold"></i></div>
+            <div class='editMacro bg-light border ' onclick="editMacro(`''`,`<%= l('italic') %>`,`''`)"><i class="fas fa-italic"></i></div>
+            <div class='editMacro bg-light border' onclick="editMacro(`__`,`<%= l('underline') %>`,`__`)"><i class="fas fa-underline"></i></div>
+            <div class='editMacro bg-light border' onclick="editMacro(`--`,`<%= l('strikethrough') %>`,`--`)"><i class="fas fa-strikethrough"></i></div>
             <div class="dropdown editMacro-drp">
                 <button class='editMacro-drp bg-light border dropdown-toggle' type="button" id='drpFile' data-bs-toggle="dropdown" aria-expanded="false" style="border: none">
                     <i class="fas fa-image"></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Upload" target='_blank'>파일 업로드</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`[file(`,`filename.jpg`,`)]`)">파일 삽입</a></li>
+                    <li><a class="dropdown-item" href="/Upload" target='_blank'><%= l('upload') %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`[file(`,`filename.jpg`,`)]`)"><%= l('insert') %></a></li>
                 </ul>
             </div>
             <div class="dropdown editMacro-drp">
@@ -30,13 +30,13 @@
                     <i class="fas fa-heading"></i>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="javascript:editMacro(``,``,`[toc]`)">목차</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`\n= `,`내용`,` =\n`)">1단계</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`\n== `,`내용`,` ==\n`)">2단계</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`\n=== `,`내용`,` ===\n`)">3단계</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`\n==== `,`내용`,` ====\n`)">4단계</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`\n===== `,`내용`,` =====\n`)">5단계</a></li>
-                    <li><a class="dropdown-item" href="javascript:editMacro(`\n====== `,`내용`,` ======\n`)">6단계</a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(``,``,`[toc]`)"><%= l('toc') %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`\n= `,`<%= l('content') %>`,` =\n`)"><%= l('leveln', {level: 1}) %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`\n== `,`<%= l('content') %>`,` ==\n`)"><%= l('leveln', {level: 2}) %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`\n=== `,`<%= l('content') %>`,` ===\n`)"><%= l('leveln', {level: 3}) %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`\n==== `,`<%= l('content') %>`,` ====\n`)"><%= l('leveln', {level: 4}) %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`\n===== `,`<%= l('content') %>`,` =====\n`)"><%= l('leveln', {level: 5}) %></a></li>
+                    <li><a class="dropdown-item" href="javascript:editMacro(`\n====== `,`<%= l('content') %>`,` ======\n`)"><%= l('leveln', {level: 6}) %></a></li>
                 </ul>
             </div>
             <div class='editMacro bg-light border' onclick="window.open('/w/HelpOnEditing','_blank')"><i class="fas fa-question-circle"></i></div>
@@ -45,20 +45,20 @@
     </div>
     <% if (!locals.disabled) { %>
     <div class="form-group mt-2 mb-2 row">
-        <label for='comment' class='col-sm-2 col-form-label'>편집 요약</label>
+        <label for='comment' class='col-sm-2 col-form-label'><%= l('summary') %></label>
         <div class="col-sm-10">
-            <input class="form-control" id='comment' maxlength=255 name='comment' type="text" placeholder="최대 255자">
+            <input class="form-control" id='comment' maxlength=255 name='comment' type="text" placeholder="<%= l('edit_max255') %>">
         </div>
     </div>
     <div class='mt-2 mb-2'>
         <div class='captcha'><%- captcha %></div>
     </div>
     <% if (locals.username === undefined) { %>
-    <p><span class='text-danger fw-bold'>경고!</span>    비로그인 상태로 편집하면 IP가 영구히 기록되어 공개됩니다.</p>
+    <p><span class='text-danger fw-bold'><%= l('warning') %>!</span> <%= l('ipshown') %> </p>
     <% } %>
-    <p><span class='text-danger fw-bold'>경고!</span>    <%= global.copyrightNotice %></p>
-    <button type='submit' type='button' class='btn btn-primary mt-3'>저장</button>
-    <button type='button' class='btn btn-secondary mt-3' onclick='previewButtonClick()'>미리보기</button>
+    <p><span class='text-danger fw-bold'><%= l('warning') %>!</span>    <%= global.copyrightNotice %></p>
+    <button type='submit' type='button' class='btn btn-primary mt-3'><%= l('save') %></button>
+    <button type='button' class='btn btn-secondary mt-3' onclick='previewButtonClick()'><%= l('preview') %></button>
     <% } %>
 </form>
 <form action='/preview/' method='POST' target='_blank' id='previewForm' style='display:none'>

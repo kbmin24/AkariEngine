@@ -16,7 +16,7 @@ module.exports = async (req, res, perm, protect, block) =>
     {
         require(global.path + '/view.js')(req, res,
         {
-            title: req.params.name + ' 보호',
+            title: global.i18n.__('protectPage', {page: req.params.name}),
             content: html,
             isPage: true,
             pageMode: "protect",

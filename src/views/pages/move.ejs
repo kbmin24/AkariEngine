@@ -1,21 +1,21 @@
 <form action='/move/<%= originalName %>' method='POST' class='editForm'>
     <div class="form-group mt-2 mb-2 row">
-        <label for='comment' class='col-sm-2 col-form-label'>원 문서명</label>
+        <label for='comment' class='col-sm-2 col-form-label'><%= l('move_orgpage') %></label>
         <div class="col-sm-10">
-            <input class="form-control" id='originalName' maxlength=255 name='originalName' type="text" placeholder="최대 255자" value='<%= originalName %>' disabled readonly>
+            <input class="form-control" id='originalName' maxlength=255 name='originalName' type="text" placeholder="<%= l('edit_max255') %>" value='<%= originalName %>' disabled readonly>
         </div>
     </div>
     <div class="form-group mt-2 mb-2 row">
-        <label for='newName' class='col-sm-2 col-form-label'>이동할 문서명</label>
+        <label for='newName' class='col-sm-2 col-form-label'><%= l('move_newpage') %></label>
         <div class="col-sm-10">
-            <input class="form-control" id='newName' maxlength=255 name='newName' type="text" placeholder="최대 255자">
+            <input class="form-control" id='newName' maxlength=255 name='newName' type="text" placeholder="<%= l('edit_max255') %>">
         </div>
     </div>
     <div class='mt-2 mb-2'>
         <div class='captcha'><%- captcha %></div>
     </div>
     <% if (locals.username === undefined) { %>
-    <p><span class='text-danger fw-bold'>경고!</span>    비로그인 상태로 편집하면 IP가 영구히 기록되어 공개됩니다.</p>
+    <p><span class='text-danger fw-bold'><%= l('warning') %>!</span>    <%= l('ipshown') %></p>
     <% } %>
-    <button type='submit' type='button' class='btn btn-primary mt-3'>이동</button>
+    <button type='submit' type='button' class='btn btn-primary mt-3'><%= l('move') %></button>
 </form>
