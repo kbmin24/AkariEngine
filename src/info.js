@@ -7,7 +7,7 @@ module.exports = (req, res, username, description, returnlink, returnname, code=
     {
         require(global.path + '/view.js')(req, res,{
             title: '정보',
-            content: description + '<br>' + '<a href="' + returnlink + '">' + returnname + '</a>으로 돌아갑니다.',
+            content: description + '<br>' + '<a href="' + returnlink + '">' + returnname + '</a>(으)로 돌아갑니다.',
             username: username,
             ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
         })

@@ -1,3 +1,6 @@
+v3.1a (2025-05-30)
+* Fixed broken i18n in user settings
+
 v3.1 (2024-??-??)
 * Added internationalisation
 * \[:\]{{}}, \[(\]{{}},  and \[)\]{{}} macros are now multiline

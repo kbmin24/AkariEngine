@@ -91,7 +91,7 @@
                 <label for='passwordInputbox'><%= l('newpw') %></label>
                 <input type='password' name='password' class='form-control' id='passwordInputbox' placeholder='<%= l('newpw_inp') %>' required minlength='8' maxlength='255' onkeyup='pwMatchCheck();pwAppropriateCheck()'
                 pattern='^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$'>
-                <small class='form-text text-muted'><%= l('register_p8up') %>></small>
+                <small class='form-text text-muted'><%= l('register_p8up') %></small>
                 <small id='passwordbadlength' class='text-danger fw-bold' style='display: none'><%= l('register_illegalpwlength') %></small>
                 <small id='passwordbadchar' class='text-danger fw-bold' style='display: none'><%= l('register_illegalpwchar') %> <small id='passwordbadcharlist'></small></small>
             </div>

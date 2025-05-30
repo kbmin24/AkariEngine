@@ -288,7 +288,7 @@ let ext = require(global.path + '/extensionManager.js')
 ext(app, ext)
 
 
-//Master router---handle i18n.
+//Middlewares
 app.use((req, res, next) => {
     i18n.init(req, res);
     /*if (req.session.locale) {
@@ -297,8 +297,7 @@ app.use((req, res, next) => {
     next();
   })
 
-//Page router
-
+//Routes
 app.get('/', (req, res) =>
 {
     res.redirect('/w/FrontPage')
