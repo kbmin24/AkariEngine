@@ -58,5 +58,6 @@
     },
     "skins": ["GECWiki"],
     "extensions": ["Interwiki", "Board"],
-    "defaultLocale": "ko_KR"
+    "defaultLocale": "ko_KR",
+    "isPrivate": false
 }

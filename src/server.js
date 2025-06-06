@@ -272,6 +272,40 @@ const dateandtime = require('date-and-time')
 const ejs = require('ejs')
 app.set('view engine', 'ejs')
 app.set('views',global.path + '/views')
+
+// Private Mode?
+app.use((req, res, next) => {
+    const url = req.url.trim()
+
+    // Check whether private mode is enabled
+    if (!("isPrivate" in global.conf) || global.conf.isPrivate === false) return next()
+
+    if (req.session.username !== undefined)
+    {
+        //Logged in
+        return next()
+    }
+
+    if (url.startsWith('/login'))
+    {
+        //Login Route
+        return next()
+    }
+
+    if (url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/lib') || url.startsWith('robots.txt') || url.startsWith('/skins/') || url.startsWith('favicon.ico'))
+    {
+        // Required lib
+        return next()
+    }
+
+    if (url.startsWith('/signup'))
+    {
+        return require(global.path + '/error.js')(req, res, null, '계정 생성이 비활성화되어 있습니다.', '/login', '로그인 페이지', 403, 'ko')
+    }
+
+    return require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 403, 'ko')
+})
+
 app.use(express.static(global.path + '/public'))
 
 //skins

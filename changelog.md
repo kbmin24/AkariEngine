@@ -1,3 +1,6 @@
+v3.1b (2025-06-06)
+* Private mode
+
 v3.1a (2025-05-30)
 * Fixed broken i18n in user settings
 
