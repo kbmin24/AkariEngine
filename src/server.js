@@ -292,7 +292,7 @@ app.use((req, res, next) => {
         return next()
     }
 
-    if (url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/lib') || url.startsWith('robots.txt') || url.startsWith('/skins/') || url.startsWith('favicon.ico'))
+    if (url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/lib') || url.startsWith('/robots.txt') || url.startsWith('/skins/') || url.startsWith('favicon.ico'))
     {
         // Required lib
         return next()
