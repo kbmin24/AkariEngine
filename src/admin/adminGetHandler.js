@@ -183,7 +183,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                     const gr = await ejs.renderFile(global.path + '/views/admin/loginhistoryName.ejs', {})
                     require(global.path + '/view.js')(req, res,
                     {
-                        title: 'Select username view login history',
+                        title: 'Select username to view login history',
                         content: gr,
                         username: username,
                         ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
