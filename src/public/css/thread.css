@@ -3,6 +3,7 @@
     width: 100%;
     border: 1px solid grey;
     margin-bottom: 10px;
+    background-color: white;
 }
 .thTop
 {
@@ -11,6 +12,14 @@
 .thTopMe
 {
     background-color: #7aa7d6;
+}
+.thTop > td
+{
+    border: none;
+}
+.thMain
+{
+    border: 1px solid grey;
 }
 /*
 .thTopMe > td > a, .thTopMe > td > sup > a
