@@ -1,5 +1,6 @@
 <form action='/revert/<%= pagename %>' method='POST' class='editForm'>
     <div class="form-group mt-2 mb-2 row">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <label for='newName' class='col-sm-2 col-form-label'><%= l('summary') %></label>
         <div class="col-sm-10">
             <input class="form-control" id='newName' maxlength=230 name='comment' type="text" placeholder="Max 230 characters">

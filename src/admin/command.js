@@ -32,37 +32,6 @@ module.exports = async (io, socket, command, options) =>
                 })
                 break
             }
-            case 'filemigration':
-            {
-                //go thru the list of files
-                let files = await options.file.findAll()
-                files.forEach(async (val, i, arr) =>
-                {
-                    let filepgname = 'File:' + val.filename
-                    stdout(socket, `${val.filename}...`)
-                    
-                    await options.pages.create({
-                        title: filepgname,
-                        content: val.explanation,
-                        currentRev: 1
-                    })
-                    
-                   
-                    await options.history.create(
-                        {
-                            page: filepgname,
-                            rev: 1,
-                            content: val.explanation,
-                            bytechange: val.explanation.length,
-                            editedby: val.uploader,
-                            comment: `Uploaded ${val.filename}`,
-                            type: 'edit'
-                        })
-                    stdout(socket, `OK!\n`)
-                })
-                stdout(socket, '\n')
-                break
-            }
             case 'permissions':
             {
                 let searchOptions = {order: [['username', 'DESC']]}
@@ -84,7 +53,7 @@ module.exports = async (io, socket, command, options) =>
             }
             case 'help':
             {
-                let help = `cleancategories\nfilemigration\nhelp\npermissions (username)\ngenbacklinks\ngenpassword (pw) (salt)\nwhoami\n`
+                let help = `cleancategories\nhelp\npermissions (username)\ngenbacklinks\ngenpassword (pw) (salt)\nwhoami\n`
                 stdout(socket, help)
                 break
             }

@@ -6,6 +6,7 @@ const {
     AuthenticationRequiredError,
     ValidationError
 } = require('../services/errors')
+const { RouteAccessError } = require('./permission')
 
 // TODO call error.js instead of this
 
@@ -15,6 +16,19 @@ function errorHandler(err, req, res, next) {
     }
 
     logger.error('Request error', err)
+
+    if (err instanceof RouteAccessError) {
+        return require(paths.resolve('error.js'))(
+            req,
+            res,
+            null,
+            err.message,
+            err.returnLink,
+            global.i18n.__(err.returnName),
+            err.statusCode,
+            err.lang
+        )
+    }
 
     if (err instanceof PageNotFoundError) {
         return res.status(404).render('error', {

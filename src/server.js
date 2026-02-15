@@ -297,58 +297,6 @@ app.post('/settings/:name(*)', csrfProtection, asyncRoute(async (req, res) => {
 }))
 
 
-app.get('/revert/:name(*)', async (req, res) =>
-{
-    const username = req.session.username
-    const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
-    var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
-    const r = await load('pages', 'satisfyACL.js')(req, res, [acl], perm, block)
-    if (r)
-    {
-        //do nothing
-    }
-    else if (r === undefined)
-    {
-        return //error message already given out
-    }
-    else
-    {
-        load('error.js')(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
-        return
-    }
-    const p = await pages.findOne({where: {title: req.params.name}})
-    if (!p)
-    {
-        load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
-        return
-    }
-    const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
-    ejs.renderFile(paths.view('pages/revert.ejs'),
-    {
-        pagename: req.params.name,
-        l: global.i18n.__,
-        username: username,
-        rev: req.query.rev,
-        captcha: captchaSVG
-    }, (err, html) => 
-    {
-        if (err)
-        {
-            logger.error('Revert page rendering failed', err)
-            res.writeHead(500).write('Internal Server Error')
-            return
-        }
-        load('view.js')(req, res,
-        {
-            title: global.i18n.__('revert_title', {page: req.params.name, rev: req.query.rev}),
-            content: html,
-            username: username,
-            ipaddr: req.ipAddress,
-            
-        })
-    })
-})
-app.post('/revert/:name(*)', delegate(['pages', 'revert.js'], (req) => [req.session.username, users, pages, recentchanges, history, protect, perm, block]))
 app.post('/w', asyncRoute(async (req,res) => {
     await res.redirect('/w/' + req.body.pagename)
 }))
@@ -446,7 +394,6 @@ var storage = multer.diskStorage({
 })
 
 const axios = require('axios')
-const { exit } = require('process')
 
 var fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
 
@@ -581,7 +528,6 @@ app.get('/RandomPage', asyncRoute(async (req, res) => {
     res.redirect(`/w/${randomPage.title}`)
 }))
 app.get('/admin/developer', csrfProtection, delegate(['admin', 'developerGetHandler.js'], () => [{ perm }]))
-app.get('/admin/:name(*)', csrfProtection, delegate(['admin', 'adminGetHandler.js'], () => [users, perm, loginhistory, adminlog]))
 app.post('/admin/:name(*)', csrfProtection, delegate(['admin', 'adminPostHandler.js'], () => [users, perm, block, pages, protect, adminlog, threadcomment, thread]))
 app.get('/adminlog', delegate(['admin', 'adminlog.js'], () => [adminlog]))
 

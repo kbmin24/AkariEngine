@@ -27,8 +27,11 @@ class ValidationError extends AppError {
 }
 
 class PermissionDeniedError extends AppError {
-    constructor(action, resource = null) {
+    constructor(action, resource = null, details = {}) {
         super(`Permission denied: ${action}${resource ? ` on ${resource}` : ''}`, 403)
+        this.action = action
+        this.resource = resource
+        this.details = details
     }
 }
 

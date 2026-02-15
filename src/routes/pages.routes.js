@@ -2,9 +2,10 @@ const express = require('express')
 const paths = require('../utils/paths')
 const date = require('date-and-time')
 const ejs = require('ejs')
-const { param, query } = require('express-validator')
+const { param, query, body } = require('express-validator')
+const { requirePermission } = require('../middleware/permission')
 const { validateRequest } = require(paths.middleware('validation'))
-const { checkAcl } = require(paths.middleware('acl'))
+const { requirePageAccess } = require(paths.middleware('permission'))
 
 const router = express.Router()
 
@@ -90,7 +91,13 @@ module.exports = (services, options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
         validateRequest,
-        checkAcl({ task: 'view', fallback: 'blocked' }),
+        requirePageAccess('read', {
+            noAclMessageKey: 'view_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }),
         asyncRoute(async (req, res) => {
             const viewHandler = require(paths.resolve('pages', 'view.js'))
             await viewHandler(req, res)
@@ -99,7 +106,15 @@ module.exports = (services, options = {}) => {
 
     router.get('/edit/:name(*)',
         csrfProtection,
-        checkAcl({ task: 'edit', fallback: 'everyone', editErrorMsg: true, storeKey: 'editAcl', mode: 'store' }),
+        requirePageAccess('edit', {
+            noAclMessageKey: 'edit_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage',
+            mode: 'store',
+            storeKey: 'editAcl',
+        }),
         param('name').trim().notEmpty(),
         validateRequest,
         asyncRoute(async (req, res) => {
@@ -121,12 +136,13 @@ module.exports = (services, options = {}) => {
                 return
             }
 
-            const r = req.editAcl ? (req.editAcl.allowed ? true : req.editAcl.notification) : true
+            const actionAllowed = req.editAcl ? req.editAcl.allowed : true
             let prefix = ''
             let suffix = ''
             let content = target ? target.content : ''
 
-            if (r === true && target && req.query.section && !isNaN(req.query.section) && req.query.section * 1 > 0) {
+            // am i editing a secetion?
+            if (actionAllowed === true && target && req.query.section && !isNaN(req.query.section) && req.query.section * 1 > 0) {
                 req.query.section *= 1
                 let headLookupRegex = /(?=^(?:=+) (?:.*) =+(?: )*\r?\n)/gim
                 let splits = content.split(headLookupRegex)
@@ -153,10 +169,11 @@ module.exports = (services, options = {}) => {
                 csrfToken: req.csrfToken()
             }
 
-            if (r === true) {
+            if (actionAllowed === true) {
                 templateData.captcha = await load('tools', 'captcha.js').genCaptcha(req)
-            } else if (r !== undefined) {
+            } else if (actionAllowed !== undefined) {
                 templateData.disabled = true
+                templateData.captcha = ""
             }
 
             const html = await ejs.renderFile(paths.view('pages/edit.ejs'), templateData)
@@ -164,18 +181,22 @@ module.exports = (services, options = {}) => {
                 title: global.i18n.__('edit_pg', { name: req.params.name }),
                 content: html,
                 isPage: true,
-                pageMode: r === true ? 'edit' : undefined,
-                notification: r === true ? undefined : r,
-                pagename: req.params.name,
-                username,
-                ipaddr: req.ipAddress
+                pageMode: actionAllowed === true ? 'edit' : undefined,
+                notification: actionAllowed === true ? undefined : actionAllowed,
+                pagename: req.params.name
             })
         })
     )
 
     router.post('/edit/:name(*)',
         csrfProtection,
-        checkAcl({ task: 'edit', fallback: 'everyone' }),
+        requirePageAccess('edit', {
+            noAclMessageKey: 'edit_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }),
         asyncRoute(async (req, res) => {
             const captchaSuccess = await load('tools', 'captcha.js').chkCaptcha(req, res, global.db.perm)
             if (!captchaSuccess) return
@@ -263,7 +284,13 @@ module.exports = (services, options = {}) => {
 
     router.get('/move/:name(*)',
         csrfProtection,
-        checkAcl({ task: 'move', fallback: 'everyone' }),
+        requirePageAccess('move', {
+            noAclMessageKey: 'move_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }),
         asyncRoute(async (req, res) => {
             if (req.params.name.toLowerCase().startsWith('file:')) {
                 load('error.js')(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('pagename_toolong'), 200)
@@ -297,17 +324,11 @@ module.exports = (services, options = {}) => {
 
     router.get('/delete/:name(*)',
         csrfProtection,
+        requirePermission('delete', {
+            mode: 'enforce'
+        }),
         asyncRoute(async (req, res) => {
             const username = req.session.username
-            if (username === undefined) {
-                load('error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 404, 'ko')
-                return
-            }
-            const hasDeletePerm = await req.app.locals.repositories.permissions.hasPermission(username, 'deletepage')
-            if (!hasDeletePerm) {
-                load('error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
-                return
-            }
 
             const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
             if (!target) {
@@ -324,16 +345,97 @@ module.exports = (services, options = {}) => {
                 title: global.i18n.__('deletepg', { name: req.params.name }),
                 isPage: true,
                 pageMode: 'delete',
-                pagename: target.title,
-                username,
-                ipaddr: req.ipAddress
+                pagename: target.title
             })
+        })
+    )
+
+    router.get('/revert/:name(*)',
+        param('name').trim().notEmpty(),
+        query('rev').isInt(),
+        validateRequest,
+        requirePageAccess('read', {
+            noAclMessageKey: 'view_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }),
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            const username = req.session.username
+            const p = await req.app.locals.repositories.pages.findByTitle(req.params.name)
+            if (!p)
+            {
+                load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
+                return
+            }
+            const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
+            ejs.renderFile(paths.view('pages/revert.ejs'),
+            {
+                pagename: req.params.name,
+                l: global.i18n.__,
+                username: username,
+                rev: req.query.rev,
+                captcha: captchaSVG,
+                csrfToken: req.csrfToken()
+            }, (err, html) => 
+            {
+                if (err)
+                {
+                    logger.error('Revert page rendering failed', err)
+                    res.writeHead(500).write('Internal Server Error')
+                    return
+                }
+                load('view.js')(req, res,
+                {
+                    title: global.i18n.__('revert_title', {page: req.params.name, rev: req.query.rev}),
+                    content: html,
+                    username: username,
+                    ipaddr: req.ipAddress,
+                    
+                })
+            })
+        })
+    )
+
+    router.post('/revert/:name(*)',
+        param('name').trim().notEmpty(),
+        body('rev').isInt(),
+        validateRequest,
+        csrfProtection,
+        requirePageAccess('read', {
+            noAclMessageKey: 'view_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }),
+        asyncRoute(async (req, res) => {
+            await load('pages', 'revert.js')(
+                req,
+                res,
+                req.session.username,
+                global.db.users,
+                global.db.pages,
+                global.db.recentchanges,
+                global.db.history,
+                global.db.protect,
+                global.db.perm,
+                global.db.block
+            )
         })
     )
 
     router.post('/move/:name(*)',
         csrfProtection,
-        checkAcl({ task: 'move', fallback: 'everyone' }),
+        requirePageAccess('move', {
+            noAclMessageKey: 'move_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }),
         asyncRoute(async (req, res) => {
             await load('pages', 'move.js')(req, res)
         })
@@ -341,6 +443,9 @@ module.exports = (services, options = {}) => {
 
     router.post('/delete/:name(*)',
         csrfProtection,
+        requirePermission('delete', {
+            mode: 'enforce'
+        }),
         asyncRoute(async (req, res) => {
             await load('pages', 'delete.js')(req, res)
         })
