@@ -1,12 +1,12 @@
 const express = require('express')
 const paths = require('../utils/paths')
-const date = require('date-and-time')
 const ejs = require('ejs')
 const { param, query, body } = require('express-validator')
 const { requirePermission } = require('../middleware/permission')
 const { chkCaptcha } = require('../middleware/chkCaptcha')
 const { validateRequest } = require(paths.middleware('validation'))
 const { requirePageAccess } = require(paths.middleware('permission'))
+const { ValidationError, PageNotFoundError } = require(paths.resolve('services', 'errors.js'))
 
 const router = express.Router()
 
@@ -20,69 +20,6 @@ async function renderTemplateInLayout(req, res, templatePath, templateData, layo
         ...layoutData,
         content: html
     })
-}
-
-async function sign(req, settingsModel) {
-    const dtnow = date.format(new Date(), global.dtFormat)
-    if (req.session.username) {
-        const s = await settingsModel.findOne({
-            where: {
-                user: req.session.username,
-                key: 'sign'
-            }
-        })
-        const prefix = s ? s.value : `[[User:${req.session.username}]]`
-        return `${prefix} ${dtnow}`
-    }
-
-    return `${req.ipAddress} ${dtnow}`
-}
-
-async function signAsync(req, str, regex, settingsModel) {
-    const promises = []
-    str.replace(regex, () => {
-        promises.push(sign(req, settingsModel))
-    })
-    const data = await Promise.all(promises)
-    return str.replace(regex, () => data.shift())
-}
-
-async function regLink(title, content) {
-    await global.db.links.destroy({ where: { source: title } })
-    let res = []
-    let found = new Set()
-
-    {
-        let r = /\[\[([^|\r\n]*?)\]\]/igm
-        content = content.replace(r, (_match, p1) => {
-            if (p1.toLowerCase().startsWith('category') ||
-                p1.toLowerCase().startsWith('분류') ||
-                p1.toLowerCase().startsWith('http://') ||
-                p1.toLowerCase().startsWith('https://')) return ''
-            if (found.has(p1)) return ''
-
-            found.add(p1)
-            res.push({ source: title, dest: p1 })
-            return ''
-        })
-    }
-
-    {
-        let r = /\[\[(.*?)\|(.*?)\]\]/igm
-        content = content.replace(r, (_match, p1) => {
-            if (p1.toLowerCase().startsWith('category') ||
-                p1.toLowerCase().startsWith('분류') ||
-                p1.toLowerCase().startsWith('http://') ||
-                p1.toLowerCase().startsWith('https://')) return ''
-            if (found.has(p1)) return ''
-
-            found.add(p1)
-            res.push({ source: title, dest: p1 })
-            return ''
-        })
-    }
-
-    await global.db.links.bulkCreate(res)
 }
 
 module.exports = (services, options = {}) => {
@@ -107,6 +44,13 @@ module.exports = (services, options = {}) => {
 
     router.get('/edit/:name(*)',
         csrfProtection,
+        requirePageAccess('read', {
+            noAclMessageKey: 'view_noacl',
+            permissionReturnLink: '/login',
+            permissionReturnName: 'loginpage',
+            authReturnLink: '/login',
+            authReturnName: 'loginpage'
+        }), // We do this because not having edit access gives out the page's source code
         requirePageAccess('edit', {
             noAclMessageKey: 'edit_noacl',
             permissionReturnLink: '/login',
@@ -117,75 +61,51 @@ module.exports = (services, options = {}) => {
             storeKey: 'editAcl',
         }),
         param('name').trim().notEmpty(),
+        param('name').trim().isLength({ max: 255 }),
+        param('name').trim().matches(global.legalTitleRegex),
         validateRequest,
         asyncRoute(async (req, res) => {
-            let username = req.session.username
+            try {
+                const editModel = await req.app.locals.services.page.getEditViewModel({
+                    title: req.params.name,
+                    section: req.query.section,
+                    aclState: req.editAcl,
+                    username: req.session.username
+                })
 
-            if (req.params.name.length > 255) {
-                load('error.js')(req, res, null, global.i18n.__('pagename_toolong'), '/', global.i18n.__('mainpage'), 200)
-                return
-            }
-
-            if (!global.legalTitleRegex.test(req.params.name)) {
-                load('error.js')(req, res, null, global.i18n.__('pagename_specialchar'), '/', global.i18n.__('mainpage'), 200)
-                return
-            }
-
-            const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
-            if (!target && req.params.name.toLowerCase().startsWith('file:')) {
-                load('error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
-                return
-            }
-
-            const actionAllowed = req.editAcl ? req.editAcl.allowed : true
-            let prefix = ''
-            let suffix = ''
-            let content = target ? target.content : ''
-
-            // am i editing a secetion?
-            if (actionAllowed === true && target && req.query.section && !isNaN(req.query.section) && req.query.section * 1 > 0) {
-                req.query.section *= 1
-                let headLookupRegex = /(?=^(?:=+) (?:.*) =+(?: )*\r?\n)/gim
-                let splits = content.split(headLookupRegex)
-                let offset = 0
-                if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
-
-                if (req.query.section + offset > splits) {
-                    load('error.js')(req, res, null, global.i18n.__('edit_noparagraph'), '/', global.i18n.__('mainpage'), 200)
-                    return
+                const templateData = {
+                    title: editModel.title,
+                    content: editModel.content,
+                    prefix: editModel.prefix,
+                    suffix: editModel.suffix,
+                    username: editModel.username,
+                    l: global.i18n.__,
+                    csrfToken: req.csrfToken(),
+                    disabled: editModel.disabled
                 }
 
-                for (let i = 0; i < req.query.section + offset; i++) prefix += splits[i]
-                for (let i = req.query.section + offset + 1; i < splits.length; i++) suffix += splits[i]
-                content = splits[req.query.section + offset]
-            }
+                if (editModel.needsCaptcha) {
+                    templateData.captcha = await load('utils', 'captcha.js').genCaptcha(req)
+                } else {
+                    templateData.captcha = ''
+                }
 
-            const templateData = {
-                title: req.params.name,
-                content,
-                prefix,
-                suffix,
-                username,
-                l: global.i18n.__,
-                csrfToken: req.csrfToken()
+                const html = await ejs.renderFile(paths.view('pages/edit.ejs'), templateData)
+                renderLayout(req, res, {
+                    title: global.i18n.__('edit_pg', { name: req.params.name }),
+                    content: html,
+                    isPage: true,
+                    pageMode: editModel.disabled ? undefined : 'edit',
+                    notification: editModel.notification,
+                    pagename: req.params.name
+                })
+            } catch (error) {
+                if (error instanceof ValidationError && error.i18nKey) {
+                    load('error.js')(req, res, null, global.i18n.__(error.i18nKey), '/', global.i18n.__('mainpage'), error.statusCode || 200)
+                    return
+                }
+                throw error
             }
-
-            if (actionAllowed === true) {
-                templateData.captcha = await load('tools', 'captcha.js').genCaptcha(req)
-            } else if (actionAllowed !== undefined) {
-                templateData.disabled = true
-                templateData.captcha = ""
-            }
-
-            const html = await ejs.renderFile(paths.view('pages/edit.ejs'), templateData)
-            renderLayout(req, res, {
-                title: global.i18n.__('edit_pg', { name: req.params.name }),
-                content: html,
-                isPage: true,
-                pageMode: actionAllowed === true ? 'edit' : undefined,
-                notification: actionAllowed === true ? undefined : actionAllowed,
-                pagename: req.params.name
-            })
         })
     )
 
@@ -200,85 +120,29 @@ module.exports = (services, options = {}) => {
             authReturnName: 'loginpage'
         }),
         asyncRoute(async (req, res) => {
-
-            if (!req.params.name) {
-                load('error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
-                return
-            }
-
-            if (!req.body.content) {
-                load('error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
-                return
-            }
-
-            if (!req.body.content.endsWith('\n')) req.body.content += '\n'
-            req.body.content = (req.body.editPrefix || '') + req.body.content + (req.body.editSuffix || '')
-            req.body.content = req.body.content.replace(/\r/g, '')
-            req.body.content = await signAsync(req, req.body.content, /~~~~/igm, global.db.settings)
-
-            const page = await req.app.locals.repositories.pages.findByTitle(req.params.name)
-            const doneby = req.session.username || req.ipAddress
-
-            const categories = services.category.extractFromContent(req.body.content)
-            await services.category.registerForPage(req.params.name, categories)
-            await regLink(req.params.name, req.body.content)
-
-            if (page) {
-                const oldLength = page.content.length
-                const newRev = page.currentRev + 1
-                await req.app.locals.repositories.pages.upsertPage(
-                    req.params.name,
-                    req.body.content,
-                    newRev,
-                    false,
-                    {
-                        doneBy: doneby,
-                        bytechange: req.body.content.length - oldLength,
-                        comment: req.body.comment,
-                        type: 'edit'
-                    }
-                )
-
-                await req.app.locals.repositories.history.create({
-                    page: req.params.name,
-                    rev: newRev,
+            try {
+                await req.app.locals.services.page.editPage({
+                    title: req.params.name,
                     content: req.body.content,
-                    bytechange: req.body.content.length - oldLength,
-                    editedby: doneby,
-                    comment: req.body.comment,
-                    type: 'edit'
+                    req,
+                    editPrefix: req.body.editPrefix || '',
+                    editSuffix: req.body.editSuffix || '',
+                    user: req.session.username,
+                    ipAddress: req.ipAddress,
+                    comment: req.body.comment
                 })
-            } else {
-                if (req.params.name.toLowerCase().startsWith('file:')) {
+                res.redirect(`/w/${req.params.name}`)
+            } catch (error) {
+                if (error instanceof ValidationError && error.i18nKey === 'edit_titleneeded') {
+                    load('error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
+                    return
+                }
+                if (error instanceof ValidationError && error.i18nKey === 'pagename_illegalfile') {
                     load('error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
                     return
                 }
-
-                await req.app.locals.repositories.pages.upsertPage(
-                    req.params.name,
-                    req.body.content,
-                    1,
-                    false,
-                    {
-                        doneBy: doneby,
-                        bytechange: req.body.content.length,
-                        comment: req.body.comment,
-                        type: 'create'
-                    }
-                )
-
-                await req.app.locals.repositories.history.create({
-                    page: req.params.name,
-                    rev: 1,
-                    content: req.body.content,
-                    bytechange: req.body.content.length,
-                    editedby: doneby,
-                    comment: req.body.comment,
-                    type: 'create'
-                })
+                throw error
             }
-
-            res.redirect(`/w/${req.params.name}`)
         })
     )
 
@@ -292,33 +156,38 @@ module.exports = (services, options = {}) => {
             authReturnName: 'loginpage'
         }),
         asyncRoute(async (req, res) => {
-            if (req.params.name.toLowerCase().startsWith('file:')) {
-                load('error.js')(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('pagename_toolong'), 200)
-                return
-            }
+            try {
+                const model = await req.app.locals.services.page.getMoveViewModel({
+                    title: req.params.name,
+                    username: req.session.username
+                })
 
-            const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
-            if (!target) {
-                load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}"> ${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404)
-                return
+                const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
+                await renderTemplateInLayout(req, res, 'pages/move.ejs', {
+                    originalName: model.originalName,
+                    l: global.i18n.__,
+                    username: model.username,
+                    captcha: captchaSVG,
+                    csrfToken: req.csrfToken()
+                }, {
+                    title: global.i18n.__('movepg', { name: req.params.name }),
+                    isPage: true,
+                    pagename: req.params.name,
+                    pageMode: 'move',
+                    username: model.username,
+                    ipaddr: req.ipAddress
+                })
+            } catch (error) {
+                if (error instanceof ValidationError && error.i18nKey === 'move_nofile') {
+                    load('error.js')(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('pagename_toolong'), 200)
+                    return
+                }
+                if (error instanceof PageNotFoundError) {
+                    load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}"> ${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404)
+                    return
+                }
+                throw error
             }
-
-            const username = req.session.username
-            const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
-            await renderTemplateInLayout(req, res, 'pages/move.ejs', {
-                originalName: req.params.name,
-                l: global.i18n.__,
-                username,
-                captcha: captchaSVG,
-                csrfToken: req.csrfToken()
-            }, {
-                title: global.i18n.__('movepg', { name: req.params.name }),
-                isPage: true,
-                pagename: req.params.name,
-                pageMode: 'move',
-                username,
-                ipaddr: req.ipAddress
-            })
         })
     )
 
@@ -328,25 +197,30 @@ module.exports = (services, options = {}) => {
             mode: 'enforce'
         }),
         asyncRoute(async (req, res) => {
-            const username = req.session.username
+            try {
+                const model = await req.app.locals.services.page.getDeleteViewModel({
+                    title: req.params.name,
+                    username: req.session.username
+                })
 
-            const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
-            if (!target) {
-                load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
-                return
+                await renderTemplateInLayout(req, res, 'pages/delete.ejs', {
+                    title: model.title,
+                    l: global.i18n.__,
+                    username: model.username,
+                    csrfToken: req.csrfToken()
+                }, {
+                    title: global.i18n.__('deletepg', { name: req.params.name }),
+                    isPage: true,
+                    pageMode: 'delete',
+                    pagename: model.pagename
+                })
+            } catch (error) {
+                if (error instanceof PageNotFoundError) {
+                    load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
+                    return
+                }
+                throw error
             }
-
-            await renderTemplateInLayout(req, res, 'pages/delete.ejs', {
-                title: req.params.name,
-                l: global.i18n.__,
-                username,
-                csrfToken: req.csrfToken()
-            }, {
-                title: global.i18n.__('deletepg', { name: req.params.name }),
-                isPage: true,
-                pageMode: 'delete',
-                pagename: target.title
-            })
         })
     )
 
@@ -370,7 +244,7 @@ module.exports = (services, options = {}) => {
                 load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
                 return
             }
-            const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
+            const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
             ejs.renderFile(paths.view('pages/revert.ejs'),
             {
                 pagename: req.params.name,

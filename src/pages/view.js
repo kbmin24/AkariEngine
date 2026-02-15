@@ -1,5 +1,6 @@
 const date = require('date-and-time')
 const paths = require('../utils/paths')
+const escapeHtml = require(paths.utils('escapeHTML'))
 
 // TODO refactor to use PageService
 
@@ -67,19 +68,6 @@ async function updViewCount(title, viewcount, updateTime)
     const p = await viewcount.findOne({where: {title: title}})
     if (p) p.update({count: p.count + 1})
     else viewcount.create({title: title, count: 1})
-}
-function escapeHtml( text )
-{
-    //https://lifefun.tistory.com/85
-    var map = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;'
-    };
-    
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
 module.exports = async (req, res) =>

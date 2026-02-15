@@ -135,7 +135,7 @@ const i18n = global.i18n
 global.legalTitleRegex = /^[^\[\]\{\}\|#\n]*$/m
 
 //load global tools
-global.escapeHTML = require(paths.resolve('tools', 'escapeHTML.js'))
+global.escapeHTML = require(paths.utils('escapeHTML'))
 
 const dateandtime = require('date-and-time')
 
@@ -236,7 +236,7 @@ app.get('/noEmail', asyncRoute(async (req, res) => {
 }))
 
 app.get('/signup', asyncRoute(async (req, res) => {
-    const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
+    const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
     await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: global.i18n.__ }, {
         title: global.i18n.__('register'),
         username: req.session.username,
@@ -319,7 +319,7 @@ app.get('/PageList', delegate(['pages', 'pagelist.js'], () => [pages]))
 
 app.get('/Upload', asyncRoute(async (req, res) => {
     const username = req.session.username
-    const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
+    const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
     await renderTemplateInLayout(req, res, 'files/upload.ejs', {
         username: username,
         captcha: captchaSVG,

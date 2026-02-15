@@ -3,7 +3,7 @@ const paths = require('../utils/paths')
 module.exports = async (req, res, sequelize, users, perm) =>
 {
     //req.body.id,req.body.password,req.body.passwordConfirm
-    if (!(await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm))) return
+    if (!(await require(paths.resolve('utils', 'captcha.js')).chkCaptcha(req, res, perm))) return
     
     if (req.body.password != req.body.passwordConfirm)
     {

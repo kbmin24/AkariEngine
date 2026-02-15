@@ -20,7 +20,7 @@ module.exports = async (req, res, dbs = {}) =>
     let openThreads = await dbs['thread'].findAll({where: {pagename: title, isOpen: true}})
     let closedThreads = await dbs['thread'].findAll({where: {pagename: title, isOpen: false}})
 
-    let captcha = await require(paths.resolve('tools', 'captcha.js')).genCaptcha(req)
+    let captcha = await require(paths.resolve('utils', 'captcha.js')).genCaptcha(req)
 
     ejs.renderFile(paths.view('threads/threadlist.ejs'),
     {

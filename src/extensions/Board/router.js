@@ -38,7 +38,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             require(paths.resolve('error.js'))(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
             return
         }
-        const captchaSVG = await require(paths.resolve('tools', 'captcha.js')).genCaptcha(req)
+        const captchaSVG = await require(paths.resolve('utils', 'captcha.js')).genCaptcha(req)
         if (!(boardNow))
         {
             require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')

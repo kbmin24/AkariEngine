@@ -1,5 +1,6 @@
 const paths = require('../utils/paths')
 const fs = require('fs')
+const date = require('date-and-time')
 const logger = require(paths.utils('logger'))
 const {
     PageNotFoundError,
@@ -38,34 +39,205 @@ class PageService {
         return page
     }
 
-    async editPage({ title, content, user, comment }) {
-        if (!title || title.length > 255) throw new ValidationError('Invalid page title')
-        if (!content && content !== '') throw new ValidationError('Content is required')
+    splitEditSection(content, section) {
+        let prefix = ''
+        let suffix = ''
+        let body = content
 
-        await this.permissionService.requireWriteAccess(user, title)
+        if (!section || Number.isNaN(Number(section)) || Number(section) <= 0) {
+            return { prefix, suffix, content: body }
+        }
+
+        const sectionIndex = Number(section)
+        const headLookupRegex = /(?=^(?:=+) (?:.*) =+(?: )*\r?\n)/gim
+        const splits = body.split(headLookupRegex)
+        let offset = 0
+        if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
+
+        if (sectionIndex + offset > splits.length) {
+            throw new ValidationError({
+                i18nKey: 'edit_noparagraph',
+                statusCode: 200,
+                code: 'EDIT_NO_PARAGRAPH'
+            })
+        }
+
+        for (let i = 0; i < sectionIndex + offset; i++) prefix += splits[i]
+        for (let i = sectionIndex + offset + 1; i < splits.length; i++) suffix += splits[i]
+        body = splits[sectionIndex + offset]
+
+        return { prefix, suffix, content: body }
+    }
+
+    async getEditViewModel({ title, section, aclState, username }) {
+        title = title.trim()
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page && title.toLowerCase().startsWith('file:')) {
+            throw new ValidationError({
+                i18nKey: 'pagename_illegalfile',
+                statusCode: 200,
+                code: 'ILLEGAL_FILE_TITLE'
+            })
+        }
+
+        const actionAllowed = aclState ? aclState.allowed : true
+        const notification = (!actionAllowed && aclState && aclState.error)
+            ? aclState.error.message
+            : undefined
+
+        const rawContent = page ? page.content : ''
+        const sectionResult = actionAllowed
+            ? this.splitEditSection(rawContent, section)
+            : { prefix: '', suffix: '', content: rawContent }
+
+        return {
+            title,
+            username,
+            content: sectionResult.content,
+            prefix: sectionResult.prefix,
+            suffix: sectionResult.suffix,
+            disabled: actionAllowed !== true,
+            needsCaptcha: actionAllowed === true,
+            notification
+        }
+    }
+
+    async getMoveViewModel({ title, username }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 200,
+                code: 'MOVE_TITLE_NEEDED'
+            })
+        }
+
+        if (title.toLowerCase().startsWith('file:')) {
+            throw new ValidationError({
+                i18nKey: 'move_nofile',
+                statusCode: 200,
+                code: 'MOVE_NO_FILE'
+            })
+        }
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+
+        return {
+            originalName: title,
+            username
+        }
+    }
+
+    async getDeleteViewModel({ title, username }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 200,
+                code: 'DELETE_TITLE_NEEDED'
+            })
+        }
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+
+        return {
+            title,
+            username,
+            pagename: page.title
+        }
+    }
+
+    async sign(req, settingsModel) {
+        const dtnow = date.format(new Date(), global.dtFormat)
+        if (req.session.username) {
+            const s = await settingsModel.findOne({
+                where: {
+                    user: req.session.username,
+                    key: 'sign'
+                }
+            })
+            const prefix = s ? s.value : `[[User:${req.session.username}]]`
+            return `${prefix} ${dtnow}`
+        }
+
+        return `${req.ipAddress} ${dtnow}`
+    }
+
+    async signAsync(req, str, regex, settingsModel) {
+        const promises = []
+        str.replace(regex, () => {
+            promises.push(this.sign(req, settingsModel))
+        })
+        const data = await Promise.all(promises)
+        return str.replace(regex, () => data.shift())
+    }
+
+    async buildNormalizedEditContent({ req, content, editPrefix = '', editSuffix = '' }) {
+        const rawBody = content.endsWith('\n') ? content : `${content}\n`
+        const merged = `${editPrefix}${rawBody}${editSuffix}`.replace(/\r/g, '')
+        return this.signAsync(req, merged, /~~~~/igm, global.db.settings)
+    }
+
+    async editPage({ title, content, user, comment, req, editPrefix = '', editSuffix = '', ipAddress }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'edit_titleneeded',
+                statusCode: 200,
+                code: 'EDIT_TITLE_NEEDED'
+            })
+        }
+        if (!content && content !== '') {
+            throw new ValidationError({
+                i18nKey: 'edit_titleneeded',
+                statusCode: 200,
+                code: 'EDIT_CONTENT_NEEDED'
+            })
+        }
+
+        const normalizedContent = req
+            ? await this.buildNormalizedEditContent({ req, content, editPrefix, editSuffix })
+            : content
 
         const existingPage = await this.pageRepo.findByTitle(title)
+        if (!existingPage && title.toLowerCase().startsWith('file:')) {
+            throw new ValidationError({
+                i18nKey: 'pagename_illegalfile',
+                statusCode: 200,
+                code: 'ILLEGAL_FILE_TITLE'
+            })
+        }
+
+        await this.permissionService.requireWriteAccess(user, title, { ipAddress })
+
+        const doneBy = user || ipAddress
         const isNewPage = !existingPage
         const oldContent = existingPage ? existingPage.content : ''
-        const byteChange = content.length - oldContent.length
+        const byteChange = normalizedContent.length - oldContent.length
         const nextRev = (existingPage ? existingPage.currentRev : 0) + 1
 
-        const { page } = await this.pageRepo.upsertPage(title, content, nextRev, false)
+        const { page } = await this.pageRepo.upsertPage(title, normalizedContent, nextRev, false, {
+            doneBy,
+            bytechange: isNewPage ? normalizedContent.length : byteChange,
+            comment,
+            type: isNewPage ? 'create' : 'edit'
+        })
 
-        const categories = this.categoryService.extractFromContent(content)
+        const categories = this.categoryService.extractFromContent(normalizedContent)
         await this.categoryService.registerForPage(title, categories)
+        await this.pageRepo.replaceLinksForPage(title, normalizedContent)
 
         await this.historyRepo.create({
             page: title,
             rev: nextRev,
-            content,
-            bytechange: byteChange,
-            editedby: user,
+            content: normalizedContent,
+            bytechange: isNewPage ? normalizedContent.length : byteChange,
+            editedby: doneBy,
             comment: comment || '',
             type: isNewPage ? 'create' : 'edit'
         })
 
-        logger.info('Page edited', { title, user, rev: nextRev })
+        logger.info('Page edited', { title, user: doneBy, rev: nextRev })
         return page
     }
 

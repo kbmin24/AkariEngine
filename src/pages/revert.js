@@ -7,9 +7,6 @@ const {
 
 module.exports = async (req, res, perm) =>
 {
-    // TODO change this into middleware
-    if (!(await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm))) return
-
     try
     {
         const ipAddress = req.ipAddress

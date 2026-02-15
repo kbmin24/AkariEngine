@@ -16,7 +16,7 @@ module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
 
-    let captchaSuccess = await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, dbs['perm'])
+    let captchaSuccess = await require(paths.resolve('utils', 'captcha.js')).chkCaptcha(req, res, dbs['perm'])
     if (!captchaSuccess) return //CAPTCHA error
 
     const title = req.params.name

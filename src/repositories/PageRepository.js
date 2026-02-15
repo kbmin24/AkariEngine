@@ -97,6 +97,15 @@ class PageRepository extends BaseRepository {
         return res
     }
 
+    async replaceLinksForPage(title, content) {
+        if (!this.linkModel) return
+        await this.linkModel.destroy({ where: { source: title } })
+        const links = this.extractLinks(title, content)
+        if (links.length > 0) {
+            await this.linkModel.bulkCreate(links)
+        }
+    }
+
     async deletePageWithHistory({ title, doneBy, comment = '', isFile = false, filename = '' }) {
         const page = await this.findByTitle(title)
         if (!page) {
@@ -251,9 +260,7 @@ class PageRepository extends BaseRepository {
         await page.update({ content: newContent, deleted: false, currentRev: nextRev })
 
         if (this.linkModel) {
-            await this.linkModel.destroy({ where: { source: title } })
-            const links = this.extractLinks(title, newContent)
-            if (links.length > 0) await this.linkModel.bulkCreate(links)
+            await this.replaceLinksForPage(title, newContent)
         }
 
         if (this.recentChangesModel) {

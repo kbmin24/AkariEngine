@@ -75,8 +75,18 @@ class RevisionNotFoundError extends AppError {
 }
 
 class ValidationError extends AppError {
-    constructor(message) {
-        super(message, 400)
+    constructor(messageOrOptions) {
+        const options = typeof messageOrOptions === 'object' && messageOrOptions !== null
+            ? messageOrOptions
+            : { message: messageOrOptions }
+        super({
+            message: options.message || 'Validation failed',
+            i18nKey: options.i18nKey,
+            i18nParams: options.i18nParams,
+            statusCode: options.statusCode || 400
+        })
+        this.code = options.code
+        this.details = options.details || {}
     }
 }
 

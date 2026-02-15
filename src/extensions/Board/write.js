@@ -8,7 +8,7 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
         require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
-    if (!(await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm))) return
+    if (!(await require(paths.resolve('utils', 'captcha.js')).chkCaptcha(req, res, perm))) return
     if (!req.session.username)
     {
         if (req.body.nickname.trim() == "")

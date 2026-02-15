@@ -1,5 +1,5 @@
 const axios = require('axios')
-const paths = require('../utils/paths')
+const paths = require('./paths')
 const config = require(paths.resolve('/config/'))
 const { requirePermission } = require(paths.middleware('permission'))
 
