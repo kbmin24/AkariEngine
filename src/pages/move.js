@@ -1,3 +1,5 @@
+const paths = require('../utils/paths')
+
 function regCategory(title, content, category)
 {
     /*
@@ -26,16 +28,16 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 {
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('mainpage'), 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('mainpage'), 200, 'ko')
         return
     }
     
-    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
+    if (!(await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm))) return
 
     //check for protection 
     const pro = await protect.findOne({where: {title: req.params.name, task: 'move'}})
     var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -46,16 +48,16 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     pages.findOne({where: {title: req.body.newName}}).then(async oldpage =>
     {
         var doneby = req.session.username
-        if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        if (doneby === undefined) doneby = req.ipAddress
         if (oldpage) //if page exists
         {
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('move_alreadyexists'), '/', global.i18n.__('mainpage'), 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('move_alreadyexists'), '/', global.i18n.__('mainpage'), 200, 'ko')
         }
         else
         {
@@ -63,7 +65,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             {
                 if (!page)
                 {
-                    require(global.path + '/error.js')(req, res, null, global.i18n.__('illegalaccess'), '/', global.i18n.__('mainpage'), 200, 'ko')
+                    require(paths.resolve('error.js'))(req, res, null, global.i18n.__('illegalaccess'), '/', global.i18n.__('mainpage'), 200, 'ko')
                     return
                 }
                 //move protects

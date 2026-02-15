@@ -1,5 +1,6 @@
 const ejs = require('ejs')
 const date = require('date-and-time')
+const paths = require('../utils/paths')
 const pgSize = 30
 module.exports = (req, res, histories) =>
 {
@@ -18,7 +19,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
             return
         }
         //from & to is nth entry in history (NOT nth revision)
@@ -28,7 +29,7 @@ module.exports = (req, res, histories) =>
         if (from < 1) from = 1
         if (to === undefined) to = pgSize
         if (to > changes.count) to = changes.count
-        ejs.renderFile(global.path + '/views/pages/histories.ejs',
+        ejs.renderFile(paths.view('pages/histories.ejs'),
         {
             l: global.i18n.__,
             changes: changes.rows,
@@ -41,12 +42,12 @@ module.exports = (req, res, histories) =>
         }, (err, html) => 
         {
             const username = req.session.username
-            require(global.path + '/view.js')(req, res,
+            require(paths.resolve('view.js'))(req, res,
             {
                 title: global.i18n.__('historyOf', {p: req.params.name}),
                 content: html,
                 username: username,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                ipaddr: req.ipAddress,
                 isPage: true,
                 pageMode: "history",
                 pagename: req.params.name,

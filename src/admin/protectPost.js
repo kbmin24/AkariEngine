@@ -1,3 +1,5 @@
+const paths = require('../utils/paths')
+
 module.exports = async (req, res, perm, protect, pages, history, rc, block) =>
 {
     //todo: RC
@@ -16,13 +18,13 @@ module.exports = async (req, res, perm, protect, pages, history, rc, block) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, username, 'You need ACL permission.', '/', 'the main page')
+        require(paths.resolve('error.js'))(req, res, username, 'You need ACL permission.', '/', 'the main page')
     }
 
     const pg = await pages.findOne({where: {title: req.params.name}})
     if (pg === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, 'No such page.', '/', 'the main page')
+        require(paths.resolve('error.js'))(req, res, null, 'No such page.', '/', 'the main page')
         return
     }
     await protect.destroy({where: {title: req.params.name}})

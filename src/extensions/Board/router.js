@@ -1,15 +1,7 @@
 const ejs = require('ejs')
+const paths = require('../../utils/paths')
+const logger = require('../../utils/logger')
 module.exports = async (app, sequelize, csrfProtection) => {
-    /*const users = require(global.path + '/models/user.model.js')(sequelize)
-    const boards = require(global.path + '/models/boardBoard.model.js')(sequelize)
-    const posts = require(global.path + '/models/boardPost.model.js')(sequelize)
-    const block = require(global.path + '/models/block.model.js')(sequelize)
-    const perm = require(global.path + '/models/perm.model.js')(sequelize)
-    const boardgechu = require(global.path + '/models/boardgechu.model.js')(sequelize)
-    const boardbichu = require(global.path + '/models/boardbichu.model.js')(sequelize)
-    const boardcomment = require(global.path + '/models/boardcomment.model.js')(sequelize)
-    const boardfiles = require(global.path + '/models/boardfiles.model.js')(sequelize)
-    const gongji = require(global.path + '/models/boardgongji.model.js')(sequelize)*/
 
     let users = global.db.users
     let boards = global.db.boards
@@ -32,7 +24,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         const boardNow = await boards.findOne({where: {boardID: req.params.board}})
         const pro = boardNow.writeACL
         const acl = (pro == undefined ? 'everyone' : pro) //fallback
-        const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+        const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
         if (r)
         {
             //do nothing
@@ -43,13 +35,13 @@ module.exports = async (app, sequelize, csrfProtection) => {
         }
         else
         {
-            require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
             return
         }
-        const captchaSVG = await require(global.path + '/tools/captcha.js').genCaptcha(req)
+        const captchaSVG = await require(paths.resolve('tools', 'captcha.js')).genCaptcha(req)
         if (!(boardNow))
         {
-            require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
             return
         }
         ejs.renderFile(__dirname + '/views/write.ejs',
@@ -62,18 +54,18 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (err)
             {
-                console.error(err)
+                logger.error('Board write page rendering failed', err)
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            require(global.path + '/view.js')(req, res,
+            require(paths.resolve('view.js'))(req, res,
             {
                 title: boardNow.boardTitle,
                 titleLink: `/board/${boardNow.boardID}`,
                 description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
                 content: html,
                 username: req.session.username,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                ipaddr: req.ipAddress,
                 
             })
         })
@@ -87,7 +79,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
     let path = require('path')
     let storage = multer.diskStorage(
         {
-            destination: (req, file, cb) => {cb(null, global.path + '/public/boarduploads/')}
+            destination: (req, file, cb) => {cb(null, paths.resolve('public', 'boarduploads'))}
         }
     )
     function checkFileType(file, cb)
@@ -168,16 +160,16 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (err)
             {
-                console.error(err)
+                logger.error('Board delete post verify rendering failed', err)
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            require(global.path + '/view.js')(req, res,
+            require(paths.resolve('view.js'))(req, res,
             {
                 title: '정말로 글을 삭제하시겠습니까?',
                 content: html,
                 username: req.session.username,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                ipaddr: req.ipAddress,
                 
             })
         })
@@ -191,7 +183,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             }}) !== null ) === true
         if (!req.body.postid)
         {
-            require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
             return
         }
         const boardNow = await boards.findOne({where: {boardID: req.body.boardid}})
@@ -199,7 +191,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         let post = await posts.findOne({where: {boardID: req.body.boardid, idAtBoard: req.body.postid}})
         if (!post)
         {
-            require(global.path + '/error.js')(req, res, null, '이미 삭제된 글입니다.', '/board', '게시판 홈', 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '이미 삭제된 글입니다.', '/board', '게시판 홈', 403, 'ko')
             return
         }
         if (post.writtenIP && !isAdmin)
@@ -209,7 +201,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             const saltedPW = crypto.pbkdf2Sync(req.body.pw, post.ipPWsalt, 10000, 64, 'sha512')
             if (saltedPW.toString('base64') != post.ipPW)
             {
-                require(global.path + '/error.js')(req, res, null, '비밀번호가 틀렸습니다.', 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
+                require(paths.resolve('error.js'))(req, res, null, '비밀번호가 틀렸습니다.', 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
                 return
             }
         }
@@ -217,7 +209,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (!isAdmin && post.writtenBy != req.session.username)
             {
-                require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+                require(paths.resolve('error.js'))(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
                 return
             }
         }
@@ -226,7 +218,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             try
             {
-                fs.unlinkSync(global.path + '/public/boarduploads/' + f.fileName)
+                fs.unlinkSync(paths.resolve('public', 'boarduploads', f.fileName))
             }
             catch
             {
@@ -257,16 +249,16 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (err)
             {
-                console.error(err)
+                logger.error('Board delete comment verify rendering failed', err)
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            require(global.path + '/view.js')(req, res,
+            require(paths.resolve('view.js'))(req, res,
             {
                 title: '정말로 댓글을 삭제하시겠습니까?',
                 content: html,
                 username: req.session.username,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                ipaddr: req.ipAddress,
                 
             })
         })
@@ -280,13 +272,13 @@ module.exports = async (app, sequelize, csrfProtection) => {
             }}) !== null ) === true
         if (!req.body.commentid)
         {
-            require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
             return
         }
         let comment = await boardcomment.findOne({where: {id: req.body.commentid}})
         if (!comment || comment.isDeleted)
         {
-            require(global.path + '/error.js')(req, res, null, '이미 삭제된 댓글입니다.', '/board', '게시판 홈', 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '이미 삭제된 댓글입니다.', '/board', '게시판 홈', 403, 'ko')
             return
         }
         if (comment.doneIP && !isAdmin)
@@ -296,7 +288,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             const saltedPW = crypto.pbkdf2Sync(req.body.pw, comment.ipPWsalt, 10000, 64, 'sha512')
             if (saltedPW.toString('base64') != comment.ipPW)
             {
-                require(global.path + '/error.js')(req, res, null, '비밀번호가 틀렸습니다.', 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
+                require(paths.resolve('error.js'))(req, res, null, '비밀번호가 틀렸습니다.', 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
                 return
             }
         }
@@ -304,7 +296,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (!isAdmin && comment.doneBy != req.session.username)
             {
-                require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+                require(paths.resolve('error.js'))(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
                 return
             }
         }

@@ -1,6 +1,8 @@
 const ejs = require('ejs')
 const dt = require('date-and-time')
 const sanitiseHtml = require('sanitize-html')
+const paths = require('../../utils/paths')
+const logger = require('../../utils/logger')
 let readComments = async (boardID, postID, comments) =>
 {
     let allcomments = await comments.findAll(
@@ -79,17 +81,17 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
     if (!req.query.no)
     {
-        require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -100,13 +102,13 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     }
     else
     {
-        require(__dirname + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
         return
     }
     const post = await posts.findOne({where: {idAtBoard: req.query.no, boardID: boardNow.boardID}})
     if (!post)
     {
-        require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
     post.update({viewCount: post.viewCount + 1})
@@ -142,20 +144,18 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Board read rendering failed', err)
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(global.path + '/view.js')(req, res,
+        require(paths.resolve('view.js'))(req, res,
         {
             title: boardNow.boardTitle,
             titleLink: `/board/${boardNow.boardID}`,
             content: html,
             canonical: `/board/read/${boardNow.boardID}?no=${req.query.no}`,
             username: req.session.username,
-            description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-            
+            description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : ''            
         })
     })
 }

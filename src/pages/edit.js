@@ -1,4 +1,5 @@
 const date = require('date-and-time')
+const paths = require('../utils/paths')
 async function sign(req, settings)
 {
     const dtnow = date.format(new Date(), global.dtFormat)
@@ -16,7 +17,7 @@ async function sign(req, settings)
     }
     else
     {
-        return `${req.headers['x-forwarded-for'] || req.socket.remoteAddress} ${dtnow}`
+        return `${req.ipAddress} ${dtnow}`
     }
 }
 
@@ -112,17 +113,17 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 {
 
     //check CAPTCHA
-    let captchaSuccess = await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm)
+    let captchaSuccess = await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm)
     if (!captchaSuccess) return //CAPTCHA error
 
     if (!req.params.name)
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     if (!req.body.content)
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
         return
     }
     
@@ -142,12 +143,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         await regLink(req.params.name, req.body.content)
 
         var doneby = req.session.username
-        if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        if (doneby === undefined) doneby = req.ipAddress
 
         //check for protection 
         const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
         var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-        const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+        const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
         if (r)
         {
             //do nothing
@@ -158,7 +159,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_noacl', {acl: acl}), '/', global.i18n.__('mainpage'), 403)
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('edit_noacl', {acl: acl}), '/', global.i18n.__('mainpage'), 403)
             return
         }
 
@@ -194,7 +195,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
-                require(global.path + '/error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
+                require(paths.resolve('error.js'))(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
                 return
             }
 

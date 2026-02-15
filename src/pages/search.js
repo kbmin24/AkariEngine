@@ -2,6 +2,7 @@ const {Op} = require('sequelize')
 const arraywrap = require('arraywrap')
 const sanitiseHtml = require('sanitize-html')
 const ejs = require('ejs')
+const paths = require('../utils/paths')
 module.exports = async (req, res, pages) =>
 {
     //just search
@@ -47,7 +48,7 @@ module.exports = async (req, res, pages) =>
             offset: from
         }
     )
-    const searchHTML = await ejs.renderFile(global.path + '/views/pages/search.ejs',
+    const searchHTML = await ejs.renderFile(paths.view('pages/search.ejs'),
     {
         searchtitle: query,
         resultTitle: searchres,
@@ -55,12 +56,12 @@ module.exports = async (req, res, pages) =>
         from: from
     })
     const username = req.session.username
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: global.i18n.__('searchResults', {q: sanitiseHtml(query, {disallowedTagsMode: escape})}),
         content: searchHTML,
         username: username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+        ipaddr: req.ipAddress,
         wikiname: global.conf.appname
     })
     return

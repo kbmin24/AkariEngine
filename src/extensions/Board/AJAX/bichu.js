@@ -1,3 +1,5 @@
+const paths = require('../../../utils/paths')
+
 module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
 {
     let boardID = req.body.boardID
@@ -11,7 +13,7 @@ module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
 
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -35,7 +37,7 @@ module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
     let bichuSearchOptions = {
         boardID: boardID,
         postID: postID,
-        userIP: req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        userIP: req.ipAddress
     }
     if (req.session.username) bichuSearchOptions['userID'] = req.session.username
     if (await boardbichu.findOne({where: bichuSearchOptions}))
@@ -51,7 +53,7 @@ module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
     let boardBichuOptions = {
         boardID: boardID,
         postID: postID,
-        userIP: req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        userIP: req.ipAddress
     }
     if (req.session.username) boardBichuOptions['userID'] = req.session.username
 

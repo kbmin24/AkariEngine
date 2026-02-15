@@ -1,8 +1,12 @@
+// TODO rename this file
+
+const paths = require('../utils/paths')
+
 module.exports = async (req, res, gongji) =>
 {
     if (!req.body.boardname)
     {
-        require(global.path + '/error.js')(req, res, null, '게시판 ID가 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '게시판 ID가 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
         return
     }
     await gongji.destroy({

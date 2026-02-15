@@ -1,3 +1,5 @@
+const paths = require('../utils/paths')
+
 async function getCategory(title, category, categorys)
 {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
@@ -41,7 +43,7 @@ async function getOptions(content)
 module.exports = async (req, res, pages, files, category) =>
 {
     let opt = await getOptions(req.body.content)
-    let content = await require(global.path + '/pages/render.js')(req.body.title, req.body.content, true, pages, files, req, res, false, true, {}, opt)
+    let content = await require(paths.resolve('pages', 'render.js'))(req.body.title, req.body.content, true, pages, files, req, res, false, true, {}, opt)
     content = await getCategory(req.body.title, category, opt['category']) + content
     content = `<div class='alert alert-warning' role='alert'>${global.i18n.__('previewWarning')}</div>` + content
     let renderOpt = {
@@ -50,9 +52,9 @@ module.exports = async (req, res, pages, files, category) =>
         content: content,
         isPage: true,
         pagename: req.body.title,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+        ipaddr: req.ipAddress,
         username: req.session.username,
         
     }
-    require(global.path + '/view.js')(req, res, renderOpt)
+    require(paths.resolve('view.js'))(req, res, renderOpt)
 }

@@ -1,4 +1,6 @@
 const dateandtime = require('date-and-time')
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
 
 module.exports = async (req, res, users, perm, block, adminlog) =>
 {
@@ -6,8 +8,8 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     //first check whether the user has block permission or not
     if (!(await perm.findOne({where: {username: username, perm: 'block'}})))
     {
-        console.log('[ADMIN] Unauthorised block attempt: ' + username)
-        require(global.path + '/error.js')(req, res, null, 'You do not have a block permission', '/admin', 'the admin page')
+        logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
+        require(paths.resolve('error.js'))(req, res, null, 'You do not have a block permission', '/admin', 'the admin page')
         return
     }
     
@@ -15,7 +17,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     const u = users.findOne({where: {username: req.body.target}})
     if (!u)
     {
-        await require(global.path + '/error.js')(req, res, null, 'No such user.', '/admin/blockuser', 'blockuser page')
+        await require(paths.resolve('error.js'))(req, res, null, 'No such user.', '/admin/blockuser', 'blockuser page')
         return
     }
 
@@ -28,7 +30,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (!currentBlock)
                 {
-                    await require(global.path + '/error.js')(req, res, null, 'The user currently is not blocked.', '/admin/blockuser', 'blockuser page')
+                    await require(paths.resolve('error.js'))(req, res, null, 'The user currently is not blocked.', '/admin/blockuser', 'blockuser page')
                     return
                 }
                 await block.destroy({where: {target: req.body.target, targetType: 'user'}})
@@ -40,7 +42,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (currentBlock)
                 {
-                    await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
+                    await require(paths.resolve('error.js'))(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
                     return
                 }
                 await block.create({
@@ -58,13 +60,13 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 //other periods
                 if (isNaN(req.body.blockfor))
                 {
-                    await require(global.path + '/error.js')(req, res, null, 'Block period must be unblock, forever or an integer.', '/admin/blockuser', 'blockuser page')
+                    await require(paths.resolve('error.js'))(req, res, null, 'Block period must be unblock, forever or an integer.', '/admin/blockuser', 'blockuser page')
                     return
                 }
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (currentBlock)
                 {
-                    await require(global.path + '/error.js')(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
+                    await require(paths.resolve('error.js'))(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockuser', 'blockuser page')
                     return
                 }
                 const blockTill = new Date(Date.now() + req.body.blockfor * 1000)
@@ -84,5 +86,5 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
         username: username,
         job: description
     })
-    require(global.path + '/info.js')(req, res, null, 'Done.', '/admin', 'the admin page')
+    require(paths.resolve('info.js'))(req, res, null, 'Done.', '/admin', 'the admin page')
 }

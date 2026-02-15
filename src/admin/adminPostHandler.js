@@ -1,18 +1,20 @@
+const paths = require('../utils/paths')
+
 module.exports = async (req, res, users, perm, block, page, protect, adminlog, threadcomment, thread) =>
 {
     switch (req.params.name)
     {
         case 'grant':
-            await require(global.path + '/admin/grant.js')(req, res, users, perm, adminlog)
+            await require(paths.resolve('admin', 'grant.js'))(req, res, users, perm, adminlog)
             return
         case 'blockuser':
-            await require(global.path + '/admin/blockuser.js')(req, res, users, perm, block, adminlog)
+            await require(paths.resolve('admin', 'blockuser.js'))(req, res, users, perm, block, adminlog)
             return
         case 'blockip':
-            await require(global.path + '/admin/blockip.js')(req, res, users, perm, block, adminlog)
+            await require(paths.resolve('admin', 'blockip.js'))(req, res, users, perm, block, adminlog)
             return
         case 'hiderev':
-            await require(global.path + '/admin/protectRevision.js')(req, res, 
+            await require(paths.resolve('admin', 'protectRevision.js'))(req, res, 
                 {
                     'perm': perm,
                     'page': page,
@@ -21,14 +23,14 @@ module.exports = async (req, res, users, perm, block, page, protect, adminlog, t
                 })
             return
         case 'hidethread':
-            await require(global.path + '/admin/hidethreadcomment.js')(req, res,
+            await require(paths.resolve('admin', 'hidethreadcomment.js'))(req, res,
             {
                 'perm': perm,
                 'threadcomment': threadcomment
             })
             return
         case 'changethreadstatus':
-            await require(global.path + '/admin/changethreadstatus.js')(req, res,
+            await require(paths.resolve('admin', 'changethreadstatus.js'))(req, res,
                 {
                     'perm': perm,
                     'thread': thread,
@@ -36,7 +38,7 @@ module.exports = async (req, res, users, perm, block, page, protect, adminlog, t
                 })
             return
         case 'changethreadname':
-            await require(global.path + '/admin/changethreadtitle.js')(req, res,
+            await require(paths.resolve('admin', 'changethreadtitle.js'))(req, res,
                 {
                     'perm': perm,
                     'thread': thread,
@@ -45,7 +47,7 @@ module.exports = async (req, res, users, perm, block, page, protect, adminlog, t
             return
         case 'gongji':
             {
-                await require(global.path + '/admin/gongji.js')(req, res, gongji)
+                await require(paths.resolve('admin', 'gongji.js'))(req, res, gongji)
                 return
             }
         default:

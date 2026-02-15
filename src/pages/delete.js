@@ -1,14 +1,15 @@
 let fs = require('fs')
+const paths = require('../utils/paths')
 module.exports = async (req, res, username, users, pages, recentchanges, history, perm, files, category) =>
 {
     if (username === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     if (req.params.name === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '페이지가 지정되지 않았습니다.', '/', global.i18n.__('mainpage'), 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '페이지가 지정되지 않았습니다.', '/', global.i18n.__('mainpage'), 404, 'ko')
         return
     }
     let isaFile = req.params.name.toLowerCase().startsWith('file:')
@@ -17,17 +18,17 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     {
         if (!(perm.findOne({where: {username: username, perm: 'deletefile'}})))
         {
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
             return
         }
         filename = /File:(.*)/.exec(req.params.name)[1]
         if (!(filename.length > 0))
         {
-            require(global.path + '/error.js')(req, res, null, 'Unknown Error', '/', global.i18n.__('mainpage'), 500, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, 'Unknown Error', '/', global.i18n.__('mainpage'), 500, 'ko')
             return
         }
         files.destroy({where: {filename: filename}})
-        fs.unlinkSync(global.path + '/public/uploads/' + filename)
+        fs.unlinkSync(paths.resolve('public', 'uploads', filename))
     }
     perm.findOne({where: {username: username, perm: 'deletepage'}}).then(async p =>
     {
@@ -36,7 +37,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             pages.findOne({where: {title: req.params.name}}).then(async page =>
             {
                 var doneby = req.session.username
-                if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+                if (doneby === undefined) doneby = req.ipAddress
                 if (page) //if page exists
                 {
                     const oldLength = page.content.length
@@ -69,13 +70,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
                 else
                 {
                     //error!
-                    require(global.path + '/error.js')(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
+                    require(paths.resolve('error.js'))(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
                 }
             })
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
         }
     })
 }

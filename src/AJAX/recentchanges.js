@@ -1,5 +1,6 @@
 //const ejs = require('ejs')
 const sanitiseHtml = require('sanitize-html')
+const paths = require('../utils/paths')
 function sanitize(string) {
     const map = {
         '&': '&amp;',
@@ -14,7 +15,9 @@ function sanitize(string) {
   }
 module.exports = async (req, res, recentchanges) =>
 {
-    await require(global.path + '/pages/updRecentChanges.js')(recentchanges)
+    // update RecentChanges first
+    await require(paths.resolve('pages', 'updRecentChanges.js'))(recentchanges)
+    
     let show = Math.min((req.query.show ? req.query.show: 30) * 1, 100)
     const changes = await recentchanges.findAll(
     {

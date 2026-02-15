@@ -1,4 +1,5 @@
 const ejs = require('ejs')
+const paths = require('../utils/paths')
 module.exports = async (req, res, perm, protect, block) =>
 {
     const username = req.session.username
@@ -12,9 +13,9 @@ module.exports = async (req, res, perm, protect, block) =>
             r = r || (v.perm == 'acl')
         })
     }
-    ejs.renderFile(global.path + '/views/admin/protect.ejs', {title: req.params.name, hasACL: r, perms: JSON.stringify(permsPresent)}, (err, html) => 
+    ejs.renderFile(paths.view('admin/protect.ejs'), {title: req.params.name, hasACL: r, perms: JSON.stringify(permsPresent)}, (err, html) => 
     {
-        require(global.path + '/view.js')(req, res,
+        require(paths.resolve('view.js'))(req, res,
         {
             title: global.i18n.__('protectPage', {page: req.params.name}),
             content: html,
@@ -22,7 +23,7 @@ module.exports = async (req, res, perm, protect, block) =>
             pageMode: "protect",
             pagename: req.params.name,
             username: username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            ipaddr: req.ipAddress,
             
         })
     })

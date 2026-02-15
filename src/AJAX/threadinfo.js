@@ -1,3 +1,5 @@
+const paths = require('../utils/paths')
+
 module.exports = async (req, res, dbs = {}) =>
 {
     //TODO: check permission
@@ -16,7 +18,8 @@ module.exports = async (req, res, dbs = {}) =>
         }
     )
     if (!t) return
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ['everyone'], null, dbs['block'], true, true)
+    // TODO use middleware to check ACL instead of doing it here
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ['everyone'], null, dbs['block'], true, true)
     res.json({'isOpen': t.isOpen, 'r': r})
     return
 }

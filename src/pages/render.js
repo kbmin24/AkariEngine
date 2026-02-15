@@ -5,6 +5,7 @@
 const dateandtime = require('date-and-time')
 const sanitiseHtml = require('sanitize-html')
 const hljs = require('highlight.js')
+const paths = require('../utils/paths')
 
 function errMessege(name, reason)
 {
@@ -124,8 +125,8 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                     const v = args[i].substring(eqSign + 1).trim()
                     temArgs[k] = v
                 }
-                const opt = await require(global.path + '/pages/view.js').getOptions(p.content)
-                const res = await require(global.path + '/pages/render.js')(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
+                const opt = await require(paths.resolve('pages', 'view.js')).getOptions(p.content)
+                const res = await require(paths.resolve('pages', 'render.js'))(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
                 return res
             }
         }
@@ -143,7 +144,6 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
         case 'youtube':
         {
             const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
-            //console.log(ifr)
             return ifr
         }
         case 'anchor':

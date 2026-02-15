@@ -1,5 +1,6 @@
 const ejs = require('ejs')
 const date = require('date-and-time')
+const paths = require('../utils/paths')
 module.exports = async (req, res, history) =>
 {
     let name = req.params.name || ''
@@ -17,7 +18,7 @@ module.exports = async (req, res, history) =>
             offset: showfrom * 1
         }
     )
-    const html = await ejs.renderFile(global.path + '/views/user/contributions.ejs',
+    const html = await ejs.renderFile(paths.view('user/contributions.ejs'),
     {
         contributions: l.rows,
         count: l.count,
@@ -25,12 +26,9 @@ module.exports = async (req, res, history) =>
         from: showfrom,
         date: date
     })
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: `${name}의 기여 목록`,
-        content: html,
-        username: req.session.username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
-        
+        content: html        
     })
 }

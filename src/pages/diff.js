@@ -1,5 +1,6 @@
 const diff2html = require('diff2html')
 const diff = require('diff')
+const paths = require('../utils/paths')
 module.exports = async (req, res, history, protect, perm, block) =>
 {   
     //check read ACL
@@ -13,7 +14,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     var rev2 = req.query.rev2
     if (!rev1 || !rev2)
     {
-        require(global.path + '/error.js')(req, res, null, `리비전이 지정되지 않았습니다.`, '/', '메인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, `리비전이 지정되지 않았습니다.`, '/', '메인 페이지', 404, 'ko')
         return
     }
 
@@ -24,7 +25,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     const pro2 = await protect.findOne({where: {title: req.params.name, task: 'read', revision: rev2}})
     if (pro1) ACLList.push(pro1.protectionLevel)
     if (pro2) ACLList.push(pro2.protectionLevel)
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ACLList, perm, block, rev1)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ACLList, perm, block, rev1)
     if (r)
     {
         //do nothing
@@ -35,7 +36,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', '/login', '로그인 페이지', 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', '/login', '로그인 페이지', 403, 'ko')
         return
     }
 
@@ -49,7 +50,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev1)
     {
-        require(global.path + '/error.js')(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
         return
     }
 
@@ -63,7 +64,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev2)
     {
-        require(global.path + '/error.js')(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
         return
     }
 
@@ -83,7 +84,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     html += '<style>.d2h-moved-tag{display: none;}</style>'
     //var html = ''
     
-    //html = await ejs.renderFile(global.path + '/views/pages/diff.ejs',{})
+    //html = await ejs.renderFile(paths.view('pages/diff.ejs'),{})
     
     /*
     const diffResult = diff.diffChars(pagev1.content, pagev2.content)
@@ -102,14 +103,14 @@ module.exports = async (req, res, history, protect, perm, block) =>
     <div class='row'><div class='col m-2'><span class='text-danger'>red</span>: Removed in r${rev2}</div></div>
     </div><br><br>` + html
     */
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: `${req.params.name} r${rev1}, r${rev2} 비교`,
         content: html,
         isPage: true,
         pagename: pagev1.page,
         username: req.session.username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+        ipaddr: req.ipAddress,
         
     })        
 

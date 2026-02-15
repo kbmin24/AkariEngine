@@ -1,4 +1,6 @@
 const ejs = require('ejs')
+const paths = require('../../utils/paths')
+const logger = require('../../utils/logger')
 module.exports = async (req, res, boards, posts) =>
 {
     let boardMatome = [] //includes HTML
@@ -35,18 +37,18 @@ module.exports = async (req, res, boards, posts) =>
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Board home rendering failed', err)
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(global.path + '/view.js')(req, res,
+        require(paths.resolve('view.js'))(req, res,
         {
             title: "게시판 홈",
             titleLink: "/board/",
             canonical: "/board/",
             content: html,
             username: req.session.username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            ipaddr: req.ipAddress,
             
         })
     })

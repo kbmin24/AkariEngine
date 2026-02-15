@@ -1,4 +1,6 @@
 const ejs = require('ejs')
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res, category) =>
 {
     const searchRes = await category.findAndCountAll({
@@ -11,21 +13,21 @@ module.exports = async (req, res, category) =>
             ['page', 'ASC']
         ]
     })
-    ejs.renderFile(global.path + '/views/pages/category.ejs',
+    ejs.renderFile(paths.view('pages/category.ejs'),
     {category: searchRes}, (err, html) => 
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Category rendering failed', err)
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(global.path + '/view.js')(req, res,
+        require(paths.resolve('view.js'))(req, res,
         {
             title: '분류 ' + req.params.name,
             content: html,
             username: req.session.username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            ipaddr: req.ipAddress,
             
         })
     })

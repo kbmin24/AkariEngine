@@ -1,5 +1,6 @@
 const svgCaptcha = require('svg-captcha')
 const axios = require('axios')
+const paths = require('../utils/paths')
 
 function genArbitaryString(len)
 {
@@ -37,13 +38,13 @@ exports.chkCaptcha = async (req, res, perm) =>
         }
         else
         {
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('captcha_notdone'), 'javascript:window.history.back()', global.i18n.__('previousPage'), 200)
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('captcha_notdone'), 'javascript:window.history.back()', global.i18n.__('previousPage'), 200)
             return false
         }
     }
     catch (err)
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('captcha_verifyfail'), 'javascript:window.history.back()', global.i18n.__('previousPage'), 200)
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('captcha_verifyfail'), 'javascript:window.history.back()', global.i18n.__('previousPage'), 200)
         return false
     }
 }

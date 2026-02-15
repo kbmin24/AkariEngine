@@ -1,3 +1,5 @@
+const paths = require('../utils/paths')
+
 async function regLink(title, content)
 {
     //delete existing links
@@ -49,12 +51,12 @@ async function regLink(title, content)
 
 module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block) =>
 {
-    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
+    if (!(await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm))) return
     
     //check for protection 
     const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
     var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -66,13 +68,13 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
     else
     {
         
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('move_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     pages.findOne({where: {title: decodeURI(req.params.name)}}).then(page =>
     {
         var doneby = req.session.username
-        if (doneby === undefined) doneby = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        if (doneby === undefined) doneby = req.ipAddress
         if (page) //if page exists
         {
             const oldLength = page.content.length
@@ -81,7 +83,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
             {
                 if (oldrev === undefined)
                 {
-                    require(global.path + '/error.js')(req, res, null, global.i18n.__('revision404'), '/', global.i18n.__('mainpage'), 404, 'ko')
+                    require(paths.resolve('error.js'))(req, res, null, global.i18n.__('revision404'), '/', global.i18n.__('mainpage'), 404, 'ko')
                     return
                 }
                 else
@@ -120,7 +122,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         else
         {
             //error!
-            require(global.path + '/error.js')(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
             return
         }
     })

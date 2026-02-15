@@ -1,4 +1,8 @@
 const date = require('date-and-time')
+const paths = require('../utils/paths')
+
+// TODO refactor to use PageService
+
 async function getCategory(title, category, categorys)
 {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
@@ -97,7 +101,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
         }
     }
 
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ACLList, perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ACLList, perm, block)
     if (r)
     {
         //do nothing
@@ -108,7 +112,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('view_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('view_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
         return
     }
     let titleSuffix = ''
@@ -161,7 +165,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
-                let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, redirect, true, {}, opt)
+                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, pages, files, req, res, redirect, true, {}, opt)
                 if (content === true) return
                 content = await getCategory(req.params.name, category, opt['category']) + content
                 let renderOpt = {
@@ -173,11 +177,11 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     canonical: `/w/${page.title}`,
                     updatedAt: date.format(page.updatedAt, global.dtFormat),
                     username: req.session.username,
-                    ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                    ipaddr: req.ipAddress,
                     
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require(global.path + '/view.js')(req, res,renderOpt)
+                require(paths.resolve('view.js'))(req, res,renderOpt)
             }
             else
             {
@@ -190,13 +194,13 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                         content = global.i18n.__("noUserPage_user", {link: escapeHtml(req.params.name)})
                     else
                         content = global.i18n.__("noUserPage")
-                    require(global.path + '/view.js')(req, res,
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: global.i18n.__("error"),
                         content: content,
                         isPage: false,
                         username: req.session.username,
-                        ipaddr: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+                        ipaddr: req.ipAddress,
                         
                     })
                     return
@@ -206,7 +210,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 {
                     hisText = global.i18n.__("seeHistory", {link: escapeHtml(req.params.name)})
                 }
-                require(global.path + '/error.js')(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
+                require(paths.resolve('error.js'))(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
             }
         })
     }
@@ -226,7 +230,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             if (page)
             {
                 //show the page
-                let content = await require(global.path + '/pages/render.js')(req.params.name, contentPrefix + page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
+                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
                 if (content === true) return
                 let renderOpt = {
                     title: page.page,
@@ -236,15 +240,15 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     pageMode: "view",
                     pagename: page.page,
                     username: req.session.username,
-                    ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                    ipaddr: req.ipAddress,
                     
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require(global.path + '/view.js')(req, res, renderOpt)
+                require(paths.resolve('view.js'))(req, res, renderOpt)
             }
             else
             {
-                require(global.path + '/error.js')(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
+                require(paths.resolve('error.js'))(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
             }
         })
     }

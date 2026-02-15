@@ -1,5 +1,6 @@
 
 let ejs = require('ejs')
+const paths = require('../utils/paths')
 module.exports = async (req, res, viewcount) =>
 {
     let rank = await viewcount.findAll(
@@ -11,16 +12,16 @@ module.exports = async (req, res, viewcount) =>
             ],
         }
     )
-    const html = await ejs.renderFile(global.path + '/views/pages/viewcount.ejs',
+    const html = await ejs.renderFile(paths.view('pages/viewcount.ejs'),
     {
         rank: rank
     })
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: '오늘의 문서 조회수 랭킹',
         content: html,
         username: req.session.username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+        ipaddr: req.ipAddress,
         
     })
 }

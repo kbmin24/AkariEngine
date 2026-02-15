@@ -1,33 +1,35 @@
+const paths = require('../../utils/paths')
+
 module.exports = async (req, res, boards, posts, boardcomment, block, perm) =>
 {
     const boardNow = await boards.findOne({where: {boardID: req.body.boardid}})
     if (!boardNow)
     {
-        require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
     const articleNow = await posts.findOne({where: {boardID: boardNow.boardID, idAtBoard: req.body.postid}})
     if (!articleNow)
     {
-        require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시물입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
     if (!req.session.username)
     {
         if (req.body.nickname.trim() == "")
         {
-            require(global.path + '/error.js')(req, res, null, '닉네임이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '닉네임이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
             return
         }
         if (req.body.pw.trim() == "")
         {
-            require(global.path + '/error.js')(req, res, null, '비밀번호가 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, '비밀번호가 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
             return
         }
     }
     if (!req.body.content)
     {
-        require(global.path + '/error.js')(req, res, null, '내용이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '내용이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
         return
     }
     if (isNaN(req.body.depth) ||
@@ -42,13 +44,13 @@ module.exports = async (req, res, boards, posts, boardcomment, block, perm) =>
             ))
         )
     {
-        require(global.path + '/error.js')(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '잘못된 접근입니다.', '/board', '게시판 홈', 403, 'ko')
         return
     }
 
     const pro = boardNow.writeACL
     const acl = (pro == undefined ? 'everyone' : pro) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -59,7 +61,7 @@ module.exports = async (req, res, boards, posts, boardcomment, block, perm) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 댓글 작성이 불가합니다.', 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 댓글 작성이 불가합니다.', 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
         return
     }
     req.body.content = req.body.content.replace(/\r\n/g, '\n')
@@ -76,7 +78,7 @@ module.exports = async (req, res, boards, posts, boardcomment, block, perm) =>
     if (req.session.username === undefined)
     {
         postOptions['doneBy'] = req.body.nickname
-        postOptions['doneIP'] = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+        postOptions['doneIP'] = req.ipAddress
         
         //비밀번호 솔트화
         const crypto = require('crypto')

@@ -1,3 +1,5 @@
+const paths = require('../utils/paths')
+
 module.exports = async (req, res, pages, history, protect, perm, block) =>
 {
     //check read ACL
@@ -14,7 +16,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
             ACLList.push(proRev.protectionLevel)
         }
     }
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ACLList, perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ACLList, perm, block)
     if (r)
     {
         //do nothing
@@ -25,7 +27,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
     }
     else
     {
-        require(global.path + '/error.js')(req, res, null, global.i18n.__('edit_nocal', {acl: acl}), '/', '메인 페이지', 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('edit_nocal', {acl: acl}), '/', '메인 페이지', 403, 'ko')
         return
     }
 
@@ -41,7 +43,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
             else
             {
                 //404!
-                require(global.path + '/error.js')(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
+                require(paths.resolve('error.js'))(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
             }
         })
     }
@@ -65,7 +67,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
                 }
                 else
                 {
-                    require(global.path + '/error.js')(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404, 'ko')
+                    require(paths.resolve('error.js'))(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404, 'ko')
                 }
             })
     }

@@ -1,12 +1,14 @@
 const ejs = require('ejs')
 const date = require('date-and-time')
 const {Op} = require('sequelize')
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
 {
     const username = req.session.username
     if (username === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
     }
     switch (req.params.name)
@@ -18,16 +20,16 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 {
                     if (req.query.grantTo === undefined)
                     {
-                        ejs.renderFile(global.path + '/views/admin/grantName.ejs',
+                        ejs.renderFile(paths.view('admin/grantName.ejs'),
                         {},
                         (err, html) => 
                         {
-                            require(global.path + '/view.js')(req, res,
+                            require(paths.resolve('view.js'))(req, res,
                             {
                                 title: 'Select username to grant to',
                                 content: html,
                                 username: username,
-                                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                                ipaddr: req.ipAddress,
                                 
                             })
                         })
@@ -43,7 +45,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                 //fetch existing perms
                                 perm.findAll({where: {username: req.query.grantTo}}).then(permissions =>
                                 {
-                                    ejs.renderFile(global.path + '/views/admin/grant.ejs',
+                                    ejs.renderFile(paths.view('admin/grant.ejs'),
                                     {
                                         grantTo: req.query.grantTo,
                                         perms: JSON.stringify(permissions),
@@ -53,16 +55,16 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                                     {
                                         if (err)
                                         {
-                                            console.error(err)
+                                            logger.error('Admin grant rendering failed', err)
                                             res.status(500).send('Internal Server Error')
                                             return
                                         }
-                                        require(global.path + '/view.js')(req, res,
+                                        require(paths.resolve('view.js'))(req, res,
                                         {
                                             title: 'Grant to ' + req.query.grantTo,
                                             content: html,
                                             username: username,
-                                            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                                            ipaddr: req.ipAddress,
                                             
                                         })
                                     })
@@ -71,7 +73,7 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                             else
                             {
                                 //no such user.
-                                require(global.path + '/error.js')(req, res, null, 'No such user.', '/admin/grant', 'the grant page')
+                                require(paths.resolve('error.js'))(req, res, null, 'No such user.', '/admin/grant', 'the grant page')
                                 return
                             }
                         })
@@ -81,8 +83,8 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 else
                 {
                     //Unauthorised access
-                    console.log('[ADMIN] Unauthorised grant attempt: ' + username + ' ' + (req.headers['x-forwarded-for'] || req.socket.remoteAddress))
-                    require(global.path + '/error.js')(req, res, null, 'You do not have a grant permission.', '/admin', 'the admin page')
+                    logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
+                    require(paths.resolve('error.js'))(req, res, null, 'You do not have a grant permission.', '/admin', 'the admin page')
                     return
                 }
             })
@@ -90,58 +92,56 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
         case 'blockuser':
             if (await perm.findOne({where: {username: username, perm: 'block'}}))
             {
-                ejs.renderFile(global.path + '/views/admin/blockuser.ejs',{csrfToken: req.csrfToken()}, (err, html) => 
+                ejs.renderFile(paths.view('admin/blockuser.ejs'),{csrfToken: req.csrfToken()}, (err, html) => 
                 {
                     if (err)
                     {
-                        console.error(err)
+                        logger.error('Block user page rendering failed', err)
                         res.writeHead(500).write('Internal Server Error')
                         return
                     }
-                    require(global.path + '/view.js')(req, res,
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: 'Block user',
                         content: html,
                         username: username,
-                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        ipaddr: req.ipAddress,
                         
                     })
                 })
-                //await require(global.path + '/sendfile.js')(req, res, 'Block User', '/views/admin/blockuser.html')
             }
             else
             {
-                console.log('[ADMIN] Unauthorised block attempt: ' + username + ' ' + (req.headers['x-forwarded-for'] || req.socket.remoteAddress))
-                require(global.path + '/error.js')(req, res, null, 'You do not have a block permission.', '/admin', 'the admin page')
+                logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
+                require(paths.resolve('error.js'))(req, res, null, 'You do not have a block permission.', '/admin', 'the admin page')
             }
             return
         case 'blockip':
             if (await perm.findOne({where: {username: username, perm: 'block'}}))
             {
                 //csrfToken: req.csrfToken()
-                ejs.renderFile(global.path + '/views/admin/blockIP.ejs',{csrfToken: req.csrfToken()}, (err, html) => 
+                ejs.renderFile(paths.view('admin/blockIP.ejs'),{csrfToken: req.csrfToken()}, (err, html) => 
                 {
                     if (err)
                     {
-                        console.error(err)
+                        logger.error('Block IP page rendering failed', err)
                         res.writeHead(500).write('Internal Server Error')
                         return
                     }
-                    require(global.path + '/view.js')(req, res,
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: 'Block IP address',
                         content: html,
                         username: username,
-                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        ipaddr: req.ipAddress,
                         
                     })
                 })
-                //await require(global.path + '/sendfile.js')(req, res, 'Block IP address', '/views/admin/blockIP.html')
             }
             else
             {
-                console.log('[ADMIN] Unauthorised block attempt: ' + username + ' ' + (req.headers['x-forwarded-for'] || req.socket.remoteAddress))
-                require(global.path + '/error.js')(req, res, null, 'You do not have a block permission.', '/admin', 'the admin page')
+                logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
+                require(paths.resolve('error.js'))(req, res, null, 'You do not have a block permission.', '/admin', 'the admin page')
             }
             return
         case 'loginhistory':
@@ -167,26 +167,26 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                         }
                     )
                     const lgIns = await loginhistory.findAll({where: {username: req.query.user}, order: [['createdAt', 'DESC']]})
-                    const lgInHTML = await ejs.renderFile(global.path + '/views/admin/loginhistory.ejs', {records: lgIns, date: date})
-                    require(global.path + '/view.js')(req, res,
+                    const lgInHTML = await ejs.renderFile(paths.view('admin/loginhistory.ejs'), {records: lgIns, date: date})
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: 'Login history of ' + req.query.user,
                         content: lgInHTML,
                         username: username,
-                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        ipaddr: req.ipAddress,
                         
                     })
                     return
                 }
                 else
                 {
-                    const gr = await ejs.renderFile(global.path + '/views/admin/loginhistoryName.ejs', {})
-                    require(global.path + '/view.js')(req, res,
+                    const gr = await ejs.renderFile(paths.view('admin/loginhistoryName.ejs'), {})
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: 'Select username to view login history',
                         content: gr,
                         username: username,
-                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        ipaddr: req.ipAddress,
                         
                     })
                     return
@@ -195,8 +195,8 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
             else
             {
                 //Unauthorised access
-                console.log('[ADMIN] Unauthorised loginhistory attempt: ' + username + ' ' + (req.headers['x-forwarded-for'] || req.socket.remoteAddress))
-                require(global.path + '/error.js')(req, res, null, 'You do not have a loginhistory permission.', '/admin', 'the admin page')
+                logger.admin('Unauthorised loginhistory attempt', username, { ip: req.ipAddress })
+                require(paths.resolve('error.js'))(req, res, null, 'You do not have a loginhistory permission.', '/admin', 'the admin page')
                 return
             }
         }
@@ -206,20 +206,20 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 if (p)
                 {
                     //give form
-                    const html = await ejs.renderFile(global.path + '/views/admin/hiderev.ejs', {csrfToken: req.csrfToken()})
-                    require(global.path + '/view.js')(req, res,
+                    const html = await ejs.renderFile(paths.view('admin/hiderev.ejs'), {csrfToken: req.csrfToken()})
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: 'Hide specific revision of a page',
                         content: html,
                         username: username,
-                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        ipaddr: req.ipAddress,
                         
                     })
                 }
                 else
                 {
-                    console.log('[ADMIN] Unauthorised rev hide attempt: ' + username + ' ' + (req.headers['x-forwarded-for'] || req.socket.remoteAddress))
-                    require(global.path + '/error.js')(req, res, null, 'You do not have an acl permission.', '/admin', 'the admin page')
+                    logger.admin('Unauthorised rev hide attempt', username, { ip: req.ipAddress })
+                    require(paths.resolve('error.js'))(req, res, null, 'You do not have an acl permission.', '/admin', 'the admin page')
                 }
                 return
             }
@@ -229,19 +229,19 @@ module.exports = async (req, res, users, perm, loginhistory, adminlog) =>
                 if (p)
                 {
                     //give form
-                    const html = await ejs.renderFile(global.path + '/views/admin/gongji.ejs', {csrfToken: req.csrfToken()})
-                    require(global.path + '/view.js')(req, res,
+                    const html = await ejs.renderFile(paths.view('admin/gongji.ejs'), {csrfToken: req.csrfToken()})
+                    require(paths.resolve('view.js'))(req, res,
                     {
                         title: '게시판 공지 변경',
                         content: html,
                         username: username,
-                        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                        ipaddr: req.ipAddress,
                         
                     })
                 }
                 else
                 {
-                    require(global.path + '/error.js')(req, res, null, 'You do not have a board permission.', '/admin', 'the admin page')
+                    require(paths.resolve('error.js'))(req, res, null, 'You do not have a board permission.', '/admin', 'the admin page')
                 }
                 return
             }

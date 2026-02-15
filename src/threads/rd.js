@@ -1,6 +1,8 @@
 const { Op } = require('sequelize')
 const date = require('date-and-time')
 const ejs = require('ejs')
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res, recentdiscuss, thread) =>
 {
 
@@ -41,7 +43,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
         }   
     }
 
-    ejs.renderFile(global.path + '/views/threads/RecentDiscuss.ejs',
+    ejs.renderFile(paths.view('threads/RecentDiscuss.ejs'),
     {
         changes: filteredCh,
         date: date
@@ -49,17 +51,17 @@ module.exports = async (req, res, recentdiscuss, thread) =>
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Recent discuss rendering failed', err)
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(global.path + '/view.js')(req, res,
+        require(paths.resolve('view.js'))(req, res,
         {
             title: '최근 토론',
             content: html,
             isPage: false,
             username: req.session.username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            ipaddr: req.ipAddress,
             
         })
     })

@@ -1,4 +1,5 @@
 const sanitiseHtml = require('sanitize-html')
+const paths = require('../utils/paths')
 function genArbitaryString(len)
 {
     //https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
@@ -15,30 +16,30 @@ module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
 
-    let captchaSuccess = await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, dbs['perm'])
+    let captchaSuccess = await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, dbs['perm'])
     if (!captchaSuccess) return //CAPTCHA error
 
     const title = req.params.name
 
 
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, ['everyone'], null, dbs['block'])
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ['everyone'], null, dbs['block'])
     if (!r)
     {
-        require(global.path + '/error.js')(req, res, null, 'You cannot crate a thread because you are blocked' + '.', '/', 'the main page')
+        require(paths.resolve('error.js'))(req, res, null, 'You cannot crate a thread because you are blocked' + '.', '/', 'the main page')
         return
     }
 
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require(global.path + '/error.js')(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+        require(paths.resolve('error.js'))(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
         return
     }
 
     //And check whether datas are given
     if (!req.body.title)
     {
-        require(global.path + '/error.js')(req, res, null, 'Please enter a title.', '/', 'the main page', code=404)
+        require(paths.resolve('error.js'))(req, res, null, 'Please enter a title.', '/', 'the main page', code=404)
         return
     }
 
@@ -66,7 +67,7 @@ module.exports = async (req, res, dbs = {}) =>
         {
             type: 'comment',
             threadID: threadID,
-            doneBy: req.session.username || req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            doneBy: req.session.username || req.ipAddress,
             content: req.body.comment,
             isHidden: false
         }

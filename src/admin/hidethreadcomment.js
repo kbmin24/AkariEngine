@@ -1,11 +1,14 @@
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
+
 module.exports = async (req, res, dbs = {}) =>
 {
     const username = req.session.username
     //first check whether the user has block permission or not
     if (!(await dbs['perm'].findOne({where: {username: username, perm: 'thread'}})))
     {
-        console.log('[ADMIN] Unauthorised thread attempt: ' + username)
-        require(global.path + '/error.js')(req, res, null, 'You do not have a thread permission', '/admin', 'the admin page')
+        logger.admin('Unauthorised thread action', username, { ip: req.ipAddress })
+        require(paths.resolve('error.js'))(req, res, null, 'You do not have a thread permission', '/admin', 'the admin page')
         return
     }
 
@@ -23,7 +26,7 @@ module.exports = async (req, res, dbs = {}) =>
     })
     if (!t)
     {
-        require(global.path + '/error.js')(req, res, null, 'No such comment.', 'javascript:window.history.back()', 'the thread.')
+        require(paths.resolve('error.js'))(req, res, null, 'No such comment.', 'javascript:window.history.back()', 'the thread.')
         return
     }
     
@@ -32,5 +35,5 @@ module.exports = async (req, res, dbs = {}) =>
 
     await t.update({isHidden: !unhide})
 
-    require(global.path + '/info.js')(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
+    require(paths.resolve('info.js'))(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
 }

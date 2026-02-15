@@ -1,6 +1,7 @@
 const {Op} = require('sequelize')
 const dateandtime = require('date-and-time')
 const ipRangeCheck = require('ip-range-check')
+const paths = require('../utils/paths')
 
 module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErrorMsg=false) =>
 {
@@ -22,7 +23,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
         {
             if (autoredirect)
             {
-                require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                require(paths.resolve('error.js'))(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
                 return undefined
             }
             else
@@ -42,7 +43,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
             {
                 //we don't care if the user is logged in and the block allows login
                 if (val.allowLogin && username) continue
-                let newBlock = ipRangeCheck(req.headers['x-forwarded-for'] || req.socket.remoteAddress, val.target) //does this entry satisfy the user?
+                let newBlock = ipRangeCheck(req.ipAddress, val.target) //does this entry satisfy the user?
                 isBlocked = isBlocked || newBlock
                 if (isBlocked)
                 {

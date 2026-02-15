@@ -1,6 +1,7 @@
 const date = require('date-and-time')
 const ejs = require('ejs')
 const { Op } = require("sequelize")
+const paths = require('../utils/paths')
 module.exports = async (req, res, adminlog) =>
 {
     const username = req.session.username
@@ -24,7 +25,7 @@ module.exports = async (req, res, adminlog) =>
         limit: 30,
         offset: showfrom
     })
-    const html = await ejs.renderFile(global.path + '/views/admin/adminlog.ejs',
+    const html = await ejs.renderFile(paths.view('admin/adminlog.ejs'),
     {
         changes: log.rows,
         count: log.count,
@@ -33,12 +34,12 @@ module.exports = async (req, res, adminlog) =>
         job: req.query.job,
         date: date
     })
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: 'Admin Log',
         content: html,
         username: username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+        ipaddr: req.ipAddress,
         
     })
     return

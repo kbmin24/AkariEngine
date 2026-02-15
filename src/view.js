@@ -1,11 +1,13 @@
 // View.js: renderer
 var ejs = require('ejs')
+const paths = require('./utils/paths')
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res, renderOpt) =>
 {
     let args = structuredClone(renderOpt)
 
     args.username = req.session.username,
-    args.ipaddr = (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
+    args.ipaddr = req.ipAddress // TODO look at all references to this function and remove any ref to ipAddress (it's done here)
 
     //load skin
     let skin = global.skins[0]
@@ -36,12 +38,17 @@ module.exports = async (req, res, renderOpt) =>
     
     args.skinName = skin['name']
     args.publicPath= `/skins/${skin.name}/`
-    args.skinPath = `${global.path}/skins/${skin.name}/`
+    args.skinPath = paths.resolve('skins', skin.name) + '/'
     args.isAdmin = isAdmin
 
     //render common head
-    ejs.renderFile(global.path + '/views/head.ejs', args, (err, html) => 
+    ejs.renderFile(paths.view('head.ejs'), args, (err, html) => 
     {
+        if (err) {
+            logger.error('Head rendering failed', err)
+            // TODO make prettier 500 page (that doesn't use any ejs for obvious reasons)
+            return res.status(500).send('Internal Server Error')
+        }
         args.commonHead = html
         res.render(args.skinPath + 'outline.ejs', args)
     })

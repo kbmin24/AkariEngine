@@ -1,4 +1,6 @@
 const ejs = require('ejs')
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
 const pageLength = 50
 module.exports = async (req, res, pages) =>
 {
@@ -12,21 +14,21 @@ module.exports = async (req, res, pages) =>
         offset: (page - 1) * pageLength,
         limit: pageLength
     })
-    ejs.renderFile(global.path + '/views/pages/pagelist.ejs',{pages: pagelist.rows, count: pagelist.count, currentPage: page}, (err, html) => 
+    ejs.renderFile(paths.view('pages/pagelist.ejs'),{pages: pagelist.rows, count: pagelist.count, currentPage: page}, (err, html) => 
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Page list rendering failed', err)
             res.status(500).send('Internal Server Error<br>')
             return
         }
         const username = req.session.username
-        require(global.path + '/view.js')(req, res,
+        require(paths.resolve('view.js'))(req, res,
         {
             title: '문서 목록',
             content: html,
             username: username,
-            ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+            ipaddr: req.ipAddress,
             
         })
     })

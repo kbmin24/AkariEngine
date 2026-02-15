@@ -1,21 +1,23 @@
+const paths = require('./utils/paths')
+const logger = require('./utils/logger')
+
 module.exports = async (req, res, title, filename) =>
 {
     const fs = require('fs')
-    await fs.readFile(global.path + filename, 'utf8', (err,data) =>
+    await fs.readFile(paths.resolve(filename.replace(/^\//, '')), 'utf8', (err,data) =>
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Failed to read file for sendfile', err)
             res.status(500).send('Internal server error')
         }
         else
         {
-            console.log(data)
-            require(global.path + '/view.js')(req, res,
+            require(paths.resolve('view.js'))(req, res,
             {
                 title: title,
                 content: data,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                ipaddr: req.ipAddress,
                 username: req.session.username
             })
         }

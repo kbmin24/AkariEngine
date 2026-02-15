@@ -1,10 +1,13 @@
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
+
 module.exports = (req, res, users, perm, adminlog) =>
 {
     const username = req.session.username
     const grantTo = req.body.grantTo
     if (username === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
         return
     }
     perm.findOne({where: {username: username, perm: 'grant'}}).then(p =>
@@ -15,7 +18,7 @@ module.exports = (req, res, users, perm, adminlog) =>
             if (grantTo === undefined)
             {
                 //Error!
-                require(global.path + '/error.js')(req, res, null, 'Please specify username to grant to.', '/admin/grant', 'grant page')
+                require(paths.resolve('error.js'))(req, res, null, 'Please specify username to grant to.', '/admin/grant', 'grant page')
                 return
             }
             //does the username even exist?
@@ -48,23 +51,23 @@ module.exports = (req, res, users, perm, adminlog) =>
                         username: username,
                         job: `granted to ${grantTo}: ${permsLst}`
                     })
-                    console.log(`[ADMIN] ${username} granted to ${grantTo}: ${permsLst}`)
+                    logger.admin('Permissions granted', username, { grantTo, permissions: permsLst.trim() })
                     //res.write('<script>alert("Successfully finished granting. Returning to the admin page.");window.location.href = "/admin";</script>')
                     })
                 }
                 else
                 {
-                    require(global.path + '/error.js')(req, res, null, 'No such user.', '/admin', 'the admin page')
+                    require(paths.resolve('error.js'))(req, res, null, 'No such user.', '/admin', 'the admin page')
                 }
             })
         }
         else
         {
             //Unauthorised access
-            console.log('[ADMIN] Unauthorised grant attempt: ' + username)
-            require(global.path + '/error.js')(req, res, null, 'You do not have a grant permission', '/admin', 'the admin page')
+            logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
+            require(paths.resolve('error.js'))(req, res, null, 'You do not have a grant permission', '/admin', 'the admin page')
             return
         }
     })
-    require(global.path + '/info.js')(req, res, null, 'Done.', '/admin', 'the admin page')
+    require(paths.resolve('info.js'))(req, res, null, 'Done.', '/admin', 'the admin page')
 }

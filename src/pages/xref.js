@@ -1,24 +1,26 @@
 const ejs = require('ejs')
+const paths = require('../utils/paths')
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res) => {
     let pagename = req.params.name
     if (pagename === undefined)
     {
-        require(global.path + '/error.js')(req, res, null, '페이지 이름이 없습니다.', '/', '대문', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '페이지 이름이 없습니다.', '/', '대문', 404, 'ko')
         return
     }
-    console.log(pagename)
+    
     const lnk = await global.db.links.findAndCountAll(
         {
             where: {dest: pagename},
             order: [ ['source', 'ASC'] ]
         }
     )
-    const html = await ejs.renderFile(global.path + '/views/pages/xref.ejs',
+    const html = await ejs.renderFile(paths.view('pages/xref.ejs'),
     {
         entries: lnk.rows,
         count: lnk.count,
     })
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: `${pagename}의 역링크`,
         content: html,

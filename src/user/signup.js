@@ -1,11 +1,13 @@
+const paths = require('../utils/paths')
+
 module.exports = async (req, res, sequelize, users, perm) =>
 {
     //req.body.id,req.body.password,req.body.passwordConfirm
-    if (!(await require(global.path + '/tools/captcha.js').chkCaptcha(req, res, perm))) return
+    if (!(await require(paths.resolve('tools', 'captcha.js')).chkCaptcha(req, res, perm))) return
     
     if (req.body.password != req.body.passwordConfirm)
     {
-        require(global.path + '/info.js')(req, res, null, global.i18n.__('register_pwNotMatch'), '/signup', global.i18n.__('register'), 200, 'ko')
+        require(paths.resolve('info.js'))(req, res, null, global.i18n.__('register_pwNotMatch'), '/signup', global.i18n.__('register'), 200, 'ko')
         return
     }
     //create hashed PW
@@ -22,7 +24,7 @@ module.exports = async (req, res, sequelize, users, perm) =>
             password: hashedPW.toString('base64'),
             salt: salt
         })
-        .then(async () => await require(global.path + '/sendfile.js')(req, res, global.i18n.__('register_done'), '/views/user/signupnotify.html'))
-        .catch(err => require(global.path + '/error.js')(req, res, null, global.i18n.__('register_fail'), '/signup', global.i18n.__('register'), 500, 'ko'))
+        .then(async () => await require(paths.resolve('sendfile.js'))(req, res, global.i18n.__('register_done'), '/views/user/signupnotify.html'))
+        .catch(err => require(paths.resolve('error.js'))(req, res, null, global.i18n.__('register_fail'), '/signup', global.i18n.__('register'), 500, 'ko'))
     })
 }

@@ -1,6 +1,7 @@
 const ejs = require('ejs')
 const {Op} = require('sequelize')
 const dt = require('date-and-time')
+const paths = require('../../utils/paths')
 
 global.pageLength = 30
 const pageLength = global.pageLength
@@ -9,12 +10,12 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require(global.path + '/error.js')(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
         return
     }
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require(global.path + '/pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -25,7 +26,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     }
     else
     {
-        require(global.path + '/error.js')(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, req.session.username, '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', '/board', '게시판 홈', 200, 'ko')
         return
     }
 
@@ -138,7 +139,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         isRecommended: req.query.recommended === 'yes'
     })
     if (isHTML) return html
-    require(global.path + '/view.js')(req, res,
+    require(paths.resolve('view.js'))(req, res,
     {
         title: boardNow.boardTitle,
         titleLink: `/board/${boardNow.boardID}`,
@@ -146,7 +147,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
         content: html,
         username: req.session.username,
-        ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+        ipaddr: req.ipAddress,
         
     })
 }

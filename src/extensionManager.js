@@ -1,4 +1,6 @@
 //ext.js: extension manager
+const paths = require('./utils/paths')
+
 let extensions = {}
 global.extensions = extensions
 global.hooks = {
@@ -23,8 +25,8 @@ module.exports = async (app, ext) =>
     }
     for (let e of global.conf.extensions)
     {
-        let extManifest = require(`${global.path}/extensions/${e}/manifest.json`)
-        let obj = require(`${global.path}/extensions/${e}/main.js`)
+        let extManifest = require(paths.resolve('extensions', e, 'manifest.json'))
+        let obj = require(paths.resolve('extensions', e, 'main.js'))
         extensions[e] = {'manifest': extManifest, 'obj': obj}
     }
     for (let e of global.conf.extensions)
