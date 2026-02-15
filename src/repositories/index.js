@@ -8,7 +8,15 @@ const ProtectRepository = require('./ProtectRepository')
 
 class RepositoryFactory {
     constructor(db) {
-        this.pages = new PageRepository(db.pages)
+        this.pages = new PageRepository(db.pages, {
+            recentChangesModel: db.recentchanges,
+            historyModel: db.history,
+            categoryModel: db.category,
+            linkModel: db.links,
+            fileModel: db.mfile,
+            protectModel: db.protect,
+            threadModel: db.thread
+        })
         this.users = new UserRepository(db.users)
         this.permissions = new PermissionRepository(db.perm)
         this.categories = new CategoryRepository(db.category)

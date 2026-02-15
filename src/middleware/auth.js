@@ -1,5 +1,4 @@
-function verifyAuthentication(req, res, next) {
-    // request user to authenticate if not already authenticated.
+function verifyLoginStatus(req, res, next) {
     if (!req.session.username) {
         return res.redirect('/login')
     }
@@ -24,4 +23,4 @@ function requirePermission(permission) {
     }
 }
 
-module.exports = { verifyAuthentication, requirePermission }
+module.exports = { verifyLoginStatus, requirePermission }

@@ -25,6 +25,7 @@ class PathResolver {
     view(name) { return this.resolve('views', name) }
     middleware(name) { return this.resolve('middleware', `${name}.js`) }
     utils(name) { return this.resolve('utils', `${name}.js`) }
+    tools(name) { return this.resolve('tools', `${name}.js`) }
 }
 
 module.exports = new PathResolver(config.basePath)

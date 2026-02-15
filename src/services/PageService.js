@@ -1,9 +1,11 @@
 const paths = require('../utils/paths')
+const fs = require('fs')
 const logger = require(paths.utils('logger'))
 const {
     PageNotFoundError,
     PageExistsError,
-    ValidationError
+    ValidationError,
+    AuthenticationRequiredError
 } = require('./errors')
 
 class PageService {
@@ -58,7 +60,7 @@ class PageService {
             content,
             bytechange: byteChange,
             editedby: user,
-            comment: comment || (isNewPage ? 'Page created' : 'Page edited'),
+            comment: comment || '',
             type: isNewPage ? 'create' : 'edit'
         })
 
@@ -66,34 +68,89 @@ class PageService {
         return page
     }
 
-    async deletePage(title, user) {
+    async deletePage(arg1, arg2) {
+        const options = typeof arg1 === 'string'
+            ? { title: arg1, user: arg2 }
+            : (arg1 || {})
+
+        const title = options.title
+        const user = options.user
+        const ipAddress = options.ipAddress
+        const comment = options.comment || ''
+
+        if (!title) throw new ValidationError('Page title is required')
+
+        if (!user) throw new AuthenticationRequiredError()
+
+        const isFile = title.toLowerCase().startsWith('file:')
+        if (isFile) {
+            await this.permissionService.requirePermission(user, 'deletefile')
+        }
         await this.permissionService.requirePermission(user, 'deletepage')
 
         const page = await this.pageRepo.findByTitle(title)
-        if (!page || page.deleted) throw new PageNotFoundError(title)
+        if (!page) throw new PageNotFoundError(title)
 
-        await this.pageRepo.markDeleted(title)
-        logger.admin('Page deleted', user, { title })
+        let filename = ''
+        if (isFile) {
+            const m = /^File:(.*)$/i.exec(title)
+            filename = m && m[1] ? m[1] : ''
+            if (!filename) throw new ValidationError('Unknown Error')
+
+            const uploadPath = paths.resolve('public', 'uploads', filename)
+            if (fs.existsSync(uploadPath)) {
+                fs.unlinkSync(uploadPath)
+            }
+        }
+
+        const doneBy = user || ipAddress
+        await this.pageRepo.deletePageWithHistory({
+            title,
+            doneBy,
+            comment,
+            isFile,
+            filename
+        })
+
+        logger.admin('Page deleted', doneBy, { title, isFile })
         return true
     }
 
     async movePage(oldTitle, newTitle, user) {
-        if (!newTitle || newTitle.length > 255) throw new ValidationError('Invalid new title')
+        const options = typeof oldTitle === 'object'
+            ? oldTitle
+            : { oldTitle, newTitle, user }
 
-        await this.permissionService.requireMoveAccess(user, oldTitle)
+        const sourceTitle = options.oldTitle
+        const targetTitle = options.newTitle
+        const actor = options.user
+        const ipAddress = options.ipAddress
 
-        const targetExists = await this.pageRepo.findByTitle(newTitle)
-        if (targetExists && !targetExists.deleted) throw new PageExistsError(newTitle)
+        if (!sourceTitle || !targetTitle || targetTitle.length > 255) {
+            throw new ValidationError('Invalid new title')
+        }
 
-        const page = await this.pageRepo.findByTitle(oldTitle)
-        if (!page || page.deleted) throw new PageNotFoundError(oldTitle)
+        const sourcePage = await this.pageRepo.findByTitle(sourceTitle)
+        if (!sourcePage) throw new PageNotFoundError(sourceTitle)
 
-        await this.pageRepo.upsertPage(newTitle, page.content, 1, false)
-        await this.historyRepo.movePageHistory(oldTitle, newTitle)
-        await this.pageRepo.markDeleted(oldTitle)
+        const categories = this.categoryService.extractFromContent(sourcePage.content || '')
+        const doneBy = actor || ipAddress
+        const result = await this.pageRepo.movePageWithRedirect({
+            oldTitle: sourceTitle,
+            newTitle: targetTitle,
+            doneBy,
+            categories
+        })
 
-        logger.admin('Page moved', user, { from: oldTitle, to: newTitle })
-        return { oldTitle, newTitle }
+        if (!result.moved && result.reason === 'target_exists') {
+            throw new PageExistsError(targetTitle)
+        }
+        if (!result.moved && result.reason === 'not_found') {
+            throw new PageNotFoundError(sourceTitle)
+        }
+
+        logger.admin('Page moved', doneBy, { from: sourceTitle, to: targetTitle })
+        return { oldTitle: sourceTitle, newTitle: targetTitle }
     }
 
     async searchPages(query, limit = 10) {

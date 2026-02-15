@@ -82,39 +82,21 @@ function escapeHtml( text )
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
-module.exports = async (req, res, pages, files, history, protect, perm, block, category, viewcount, updateTime) =>
+module.exports = async (req, res) =>
 {
+    const repositories = req.app.locals.repositories
+    const pagesRepo = repositories.pages
+    const historyRepo = repositories.history
+    const permissionRepo = repositories.permissions
+    const categoryRepo = repositories.categories
+    const filesModel = global.db.mfile
+    const viewcountModel = global.db.viewcount
+    const updateTimeModel = global.db.updateTime
+
     //check read ACL
     req.params.name = req.params.name.trim()
     var rev = req.query.rev
-    const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
-    var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
-    var username = req.session.username
-
-    let ACLList = [acl]
-    if (rev)
-    {
-        const proRev = await protect.findOne({where: {title: req.params.name, task: 'read', revision: rev}})
-        if (proRev)
-        {
-            ACLList.push(proRev.protectionLevel)
-        }
-    }
-
-    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ACLList, perm, block)
-    if (r)
-    {
-        //do nothing
-    }
-    else if (r === undefined)
-    {
-        return //error message already given out
-    }
-    else
-    {
-        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('view_noacl', {acl: acl}), '/login', global.i18n.__('loginpage'), 403, 'ko')
-        return
-    }
+    
     let titleSuffix = ''
     let contentPrefix = ''
     //check if it's a user page AND it's an admin's one
@@ -123,12 +105,12 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
     if (usernameRegex.test(req.params.name))
     {
         const username = usernameRegex.exec(req.params.name)[1]
-        if (username)
-        {
-            if (await (perm.findOne({where: {username: username, perm: 'admin'}})))
+            if (username)
             {
-                titleSuffix += `(${global.i18n.__('admin')})`
-            }
+                if (await permissionRepo.hasPermission(username, 'admin'))
+                {
+                    titleSuffix += `(${global.i18n.__('admin')})`
+                }
         }
     }
     if (req.params.name.toLowerCase().startsWith('file:'))
@@ -152,11 +134,13 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
     if (rev === undefined)
     {
         //get the newest ver.
-        await pages.findOne({where: {title: req.params.name}}).then(async page =>
+        const page = await pagesRepo.findByTitle(req.params.name)
+
+        await (async () =>
         {
             if (page && !page.deleted) //if page exists
             {
-                await updViewCount(req.params.name, viewcount, updateTime)
+                await updViewCount(req.params.name, viewcountModel, updateTimeModel)
                 //show the page
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
                 if (req.query.from)
@@ -165,9 +149,9 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
-                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, pages, files, req, res, redirect, true, {}, opt)
+                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, redirect, true, {}, opt)
                 if (content === true) return
-                content = await getCategory(req.params.name, category, opt['category']) + content
+                content = await getCategory(req.params.name, categoryRepo, opt['category']) + content
                 let renderOpt = {
                     title: page.title,
                     content: content,
@@ -212,25 +196,18 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                 }
                 require(paths.resolve('error.js'))(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
             }
-        })
+        })()
     }
     else
     {
         //get the nth revision
-        await history.findOne(
-        {
-            where:
-            {
-                page: req.params.name,
-                rev: rev
-            }
-        }
-        ).then(async page =>
+        const page = await historyRepo.findByPageAndRev(req.params.name, rev)
+        await (async () =>
         {
             if (page)
             {
                 //show the page
-                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, pages, files, req, res, false, true, {}, await getOptions(page.content))
+                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
                 if (content === true) return
                 let renderOpt = {
                     title: page.page,
@@ -238,10 +215,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
                     canonical: `/w/${page.page}?rev=${rev}`,
                     isPage: true,
                     pageMode: "view",
-                    pagename: page.page,
-                    username: req.session.username,
-                    ipaddr: req.ipAddress,
-                    
+                    pagename: page.page
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
                 require(paths.resolve('view.js'))(req, res, renderOpt)
@@ -250,7 +224,7 @@ module.exports = async (req, res, pages, files, history, protect, perm, block, c
             {
                 require(paths.resolve('error.js'))(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
             }
-        })
+        })()
     }
 }
 module.exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)

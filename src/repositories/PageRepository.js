@@ -2,6 +2,17 @@ const { Op } = require('sequelize')
 const BaseRepository = require('./BaseRepository')
 
 class PageRepository extends BaseRepository {
+    constructor(pageModel, deps = {}) {
+        super(pageModel)
+        this.recentChangesModel = deps.recentChangesModel || null
+        this.historyModel = deps.historyModel || null
+        this.categoryModel = deps.categoryModel || null
+        this.linkModel = deps.linkModel || null
+        this.fileModel = deps.fileModel || null
+        this.protectModel = deps.protectModel || null
+        this.threadModel = deps.threadModel || null
+    }
+
     async findByTitle(title) {
         return this.model.findOne({ where: { title } })
     }
@@ -17,14 +28,35 @@ class PageRepository extends BaseRepository {
         })
     }
 
-    async upsertPage(title, content, currentRev, deleted = false) {
+    async upsertPage(title, content, currentRev, deleted = false, recentChange = null) {
         const existing = await this.findByTitle(title)
+        let page
         if (!existing) {
-            const page = await this.model.create({ title, content, currentRev, deleted })
+            page = await this.model.create({ title, content, currentRev, deleted })
+            if (this.recentChangesModel && recentChange) {
+                await this.recentChangesModel.create({
+                    page: title,
+                    rev: currentRev,
+                    doneBy: recentChange.doneBy,
+                    bytechange: recentChange.bytechange,
+                    comment: recentChange.comment,
+                    type: recentChange.type
+                })
+            }
             return { page, created: true }
         }
 
-        const page = await existing.update({ title, content, currentRev, deleted })
+        page = await existing.update({ title, content, currentRev, deleted })
+        if (this.recentChangesModel && recentChange) {
+            await this.recentChangesModel.create({
+                page: title,
+                rev: currentRev,
+                doneBy: recentChange.doneBy,
+                bytechange: recentChange.bytechange,
+                comment: recentChange.comment,
+                type: recentChange.type
+            })
+        }
         return { page, created: false }
     }
 
@@ -38,6 +70,145 @@ class PageRepository extends BaseRepository {
 
     async getAllTitles() {
         return this.model.findAll({ attributes: ['title'] })
+    }
+
+    async deletePageWithHistory({ title, doneBy, comment = '', isFile = false, filename = '' }) {
+        const page = await this.findByTitle(title)
+        if (!page) {
+            return { deleted: false, reason: 'not_found' }
+        }
+
+        const oldLength = page.content ? page.content.length : 0
+        const nextRev = (page.currentRev || 0) + 1
+
+        await this.model.destroy({ where: { title } })
+
+        if (this.categoryModel) {
+            await this.categoryModel.destroy({ where: { page: title } })
+        }
+
+        if (this.linkModel) {
+            await this.linkModel.destroy({ where: { source: title } })
+        }
+
+        if (isFile && filename && this.fileModel) {
+            await this.fileModel.destroy({ where: { filename } })
+        }
+
+        if (this.recentChangesModel) {
+            await this.recentChangesModel.create({
+                page: title,
+                rev: nextRev,
+                doneBy,
+                bytechange: -oldLength,
+                comment,
+                type: 'delete'
+            })
+        }
+
+        if (this.historyModel) {
+            await this.historyModel.create({
+                page: title,
+                rev: nextRev,
+                bytechange: -oldLength,
+                editedby: doneBy,
+                comment,
+                type: 'delete'
+            })
+        }
+
+        return { deleted: true, rev: nextRev, bytechange: -oldLength }
+    }
+
+    async movePageWithRedirect({ oldTitle, newTitle, doneBy, categories = [] }) {
+        const existingTarget = await this.findByTitle(newTitle)
+        if (existingTarget) {
+            return { moved: false, reason: 'target_exists' }
+        }
+
+        const page = await this.findByTitle(oldTitle)
+        if (!page) {
+            return { moved: false, reason: 'not_found' }
+        }
+
+        const oldContent = page.content || ''
+        const movedRev = (page.currentRev || 0) + 1
+        const redirectContent = `#redirect ${newTitle}`
+
+        await this.model.update(
+            { title: newTitle, currentRev: movedRev },
+            { where: { title: oldTitle } }
+        )
+
+        await this.model.create({
+            title: oldTitle,
+            content: redirectContent,
+            currentRev: 1,
+            deleted: false
+        })
+
+        if (this.protectModel) {
+            await this.protectModel.update({ title: newTitle }, { where: { title: oldTitle } })
+        }
+
+        if (this.categoryModel) {
+            await this.categoryModel.destroy({ where: { page: oldTitle } })
+            for (const category of categories) {
+                await this.categoryModel.create({ page: newTitle, category })
+            }
+        }
+
+        if (this.recentChangesModel) {
+            await this.recentChangesModel.create({
+                page: oldTitle,
+                rev: 1,
+                doneBy,
+                comment: 'Autogenerated by page move',
+                bytechange: redirectContent.length,
+                type: 'create'
+            })
+
+            await this.recentChangesModel.create({
+                page: newTitle,
+                rev: movedRev,
+                doneBy,
+                bytechange: 0,
+                comment: `Moved ${oldTitle} to ${newTitle}`,
+                type: 'move'
+            })
+        }
+
+        if (this.historyModel) {
+            await this.historyModel.update({ page: newTitle }, { where: { page: oldTitle } })
+
+            await this.historyModel.create({
+                page: oldTitle,
+                rev: 1,
+                content: redirectContent,
+                bytechange: redirectContent.length,
+                editedby: doneBy,
+                comment: 'Autogenerated by page move',
+                type: 'create'
+            })
+
+            await this.historyModel.create({
+                page: newTitle,
+                rev: movedRev,
+                content: oldContent,
+                bytechange: 0,
+                editedby: doneBy,
+                movedFrom: oldTitle,
+                movedTo: newTitle,
+                comment: `Moved ${oldTitle} to ${newTitle}`,
+                type: 'move'
+            })
+        }
+
+        if (this.threadModel) {
+            await this.threadModel.update({ pagename: newTitle }, { where: { pagename: oldTitle } })
+        }
+
+        return { moved: true, rev: movedRev }
     }
 }
 

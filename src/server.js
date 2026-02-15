@@ -1,9 +1,8 @@
 /* eslint-disable no-unused-vars */
 const express = require('express')
 const app = express()
-
-const config = require('./config')
 const paths = require('./utils/paths')
+const config = require('./config')
 const logger = require(paths.utils('logger'))
 const { createSequelizeInstance } = require('./config/database')
 const RepositoryFactory = require('./repositories')
@@ -57,6 +56,7 @@ const sess = session({
 app.use(sess)
 
 //CSRF
+// TODO deprecated package, replace it
 const csurf = require('csurf')
 const csrfProtection = csurf({})
 global.csrfProtection = csrfProtection
@@ -144,6 +144,21 @@ const ejs = require('ejs')
 app.set('view engine', 'ejs')
 app.set('views', paths.views)
 const load = (...segments) => require(paths.resolve(...segments))
+const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
+const renderLayout = (req, res, renderOpt) => load('view.js')(req, res, renderOpt)
+const delegate = (moduleSegments, argsFactory = () => []) => asyncRoute(async (req, res) => {
+    const handler = load(...moduleSegments)
+    const args = argsFactory(req, res)
+    await handler(req, res, ...args)
+})
+
+async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
+    const html = await ejs.renderFile(paths.view(templatePath), templateData)
+    renderLayout(req, res, {
+        ...layoutData,
+        content: html
+    })
+}
 
 // Private Mode?
 app.use((req, res, next) => {
@@ -200,7 +215,7 @@ app.use((req, res, next) => {
     i18n.init(req, res)
 
     // inject IP address, also considering for proxy...
-    req.ipAddress = req.ipAddress
+    req.ipAddress = (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
 
     next()
   })
@@ -208,87 +223,51 @@ app.use((req, res, next) => {
 //Register routes
 require('./routes')(app, services, { csrfProtection })
 
-app.get('/', (req, res) =>
-{
+app.get('/', (req, res) => {
     res.redirect('/w/FrontPage')
 })
 
-app.get('/Licence', async (req, res) =>
-{
-    const licencePage = await ejs.renderFile(paths.view('license.ejs'))
-    load('view.js')(req, res,
-        {
-            title: 'Licence',
-            content: licencePage
-        })
-})
-app.get('/noEmail', async (req, res) =>
-{
-    const noEmailPage = await ejs.renderFile(paths.view('etc/noEmail.ejs'), {l: res.__,})
-    load('view.js')(req, res,
-        {
-            title:  global.i18n.__('noEmail'),
-            content: noEmailPage
-        })
-})
-app.get('/signup', async (req, res) =>
-{
+app.get('/Licence', asyncRoute(async (req, res) => {
+    await renderTemplateInLayout(req, res, 'license.ejs', {}, { title: 'Licence' })
+}))
+
+app.get('/noEmail', asyncRoute(async (req, res) => {
+    await renderTemplateInLayout(req, res, 'etc/noEmail.ejs', { l: res.__ }, { title: global.i18n.__('noEmail') })
+}))
+
+app.get('/signup', asyncRoute(async (req, res) => {
     const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
-    const signuppage = await ejs.renderFile(paths.view('user/signup.ejs'),{captcha: captchaSVG, l: global.i18n.__})
-    load('view.js')(req, res,
-    {
+    await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: global.i18n.__ }, {
         title: global.i18n.__('register'),
-        content: signuppage,
         username: req.session.username,
-        ipaddr: req.ipAddress,
-        
+        ipaddr: req.ipAddress
     })
-})
-app.post('/signup', (req, res) =>
-{
+}))
+
+app.post('/signup', (req, res) => {
     load('user', 'signup.js')(req, res, sequelize, users, perm)
 })
 
-app.get('/login', csrfProtection, async (req,res) =>
-{
-    //render page
+app.get('/login', csrfProtection, asyncRoute(async (req, res) => {
     const username = req.session.username
-    ejs.renderFile(paths.view('user/login.ejs'),{csrfToken: req.csrfToken(), l: global.i18n.__}, (err, html) => 
-    {
-        if (err)
-        {
-            logger.error('Login page rendering failed', err)
-            res.writeHead(500).write('Internal Server Error')
-            return
-        }
-        load('view.js')(req, res,
-        {
-            title: global.i18n.__('login'),
-            content: html,
-            //notification: r,
-            username: username,
-            ipaddr: req.ipAddress,
-            
-        })
+    await renderTemplateInLayout(req, res, 'user/login.ejs', { csrfToken: req.csrfToken(), l: global.i18n.__ }, {
+        title: global.i18n.__('login'),
+        username,
+        ipaddr: req.ipAddress
     })
-})
-app.post('/login', csrfProtection, async (req, res) =>
-{
+}))
+
+app.post('/login', csrfProtection, asyncRoute(async (req, res) => {
     load('user', 'login.js')(req, res, users, loginhistory)
-})
-app.get('/logout', (req, res) =>
-{
-    req.session.regenerate(() => {});
+}))
+
+app.get('/logout', (req, res) => {
+    req.session.regenerate(() => {})
     res.redirect('/')
 })
-app.get('/settings', csrfProtection, async (req, res) =>
-{
+
+app.get('/settings', csrfProtection, asyncRoute(async (req, res) => {
     const username = req.session.username ? req.session.username : null
-    /*if (!username)
-    {
-        load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
-        return
-    }*/
     const sR = await settings.findOne({
         where:
         {
@@ -297,85 +276,27 @@ app.get('/settings', csrfProtection, async (req, res) =>
         }
     })
     const sign = sR ? sR.value : ''
-    ejs.renderFile(paths.view('user/settings.ejs'),
-    {
+    await renderTemplateInLayout(req, res, 'user/settings.ejs', {
         csrfToken: req.csrfToken(),
-        sign: sign,
-        username: username,
+        sign,
+        username,
         l: global.i18n.__
-    }, (err, html) => 
-    {
-        if (err)
-        {
-            logger.error('Settings page rendering failed', err)
-            res.writeHead(500).write('Internal Server Error')
-            return
-        }
-        load('view.js')(req, res,
-        {
-            title: global.i18n.__('settings'),
-            content: html,
-            //notification: r,
-            username: username,
-            ipaddr: req.ipAddress,
-            
-        })
+    }, {
+        title: global.i18n.__('settings'),
+        username,
+        ipaddr: req.ipAddress
     })
-})
-app.post('/settings/:name(*)', csrfProtection, async (req, res) =>
-{
+}))
+
+app.post('/settings/:name(*)', csrfProtection, asyncRoute(async (req, res) => {
     load('user', 'settings.js')(req, res,
         {
             settings: settings,
             users: users
         })
-})
+}))
 
-app.get('/delete/:name(*)', csrfProtection, (req, res) =>
-{
-    const username = req.session.username
-    if (username === undefined)
-    {
-        load('error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 404, 'ko')
-        return
-    }
-    perm.findOne({where: {username: username, perm: 'deletepage'}}).then(p =>
-    {
-        if (p)
-        {
-            pages.findOne({where: {title: req.params.name}}).then(target =>
-            {
-                if (target)
-                {
-                    const username = req.session.username
-                    ejs.renderFile(paths.view('pages/delete.ejs'),{title: req.params.name, l: global.i18n.__, username: username, csrfToken: req.csrfToken()}, (err, html) => 
-                    {
-                        load('view.js')(req, res,
-                        {
-                            title: global.i18n.__('deletepg', {name: req.params.name}),
-                            isPage: true,
-                            pageMode: "delete",
-                            pagename: target.title,
-                            content: html,
-                            username: username,
-                            ipaddr: req.ipAddress,
-                            
-                        })
-                    })
-                }
-                else
-                {
-                    load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
-                    return
-                }
-            })
-        }
-        else
-        {
-            load('error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
-        }
-    })
-})
+
 app.get('/revert/:name(*)', async (req, res) =>
 {
     const username = req.session.username
@@ -427,93 +348,41 @@ app.get('/revert/:name(*)', async (req, res) =>
         })
     })
 })
-app.post('/revert/:name(*)', async (req, res) =>
-{
-    await load('pages', 'revert.js')(req, res, req.session.username, users, pages, recentchanges, history, protect, perm, block)
-})
-app.post('/w', async (req,res) =>
-{
+app.post('/revert/:name(*)', delegate(['pages', 'revert.js'], (req) => [req.session.username, users, pages, recentchanges, history, protect, perm, block]))
+app.post('/w', asyncRoute(async (req,res) => {
     await res.redirect('/w/' + req.body.pagename)
-})
-app.post('/preview', async (req, res) =>
-{
-    await load('pages', 'preview.js')(req, res, pages, mfile, category)
-})
-app.get('/search', async (req, res) =>
-{
-    await load('pages', 'search.js')(req, res, pages)
-})
-app.post('/search', async (req, res) =>
-{
-    await load('pages', 'navSearch.js')(req, res, pages)
-})
-app.get('/protect/:name(*)', async (req, res) =>
-{
-    await load('admin', 'protectGet.js')(req, res, perm, protect, block)
-})
-app.post('/protect/:name(*)', async (req, res) =>
-{
-    await load('admin', 'protectPost.js')(req, res, perm, protect, pages, history, recentchanges, block)
-})
-app.get('/raw/:name(*)', async (req, res) =>
-{
-    await load('pages', 'raw.js')(req, res, pages, history, protect, perm, block)
-})
-app.get('/history/:name(*)', (req, res) =>
-{
-    load('pages', 'history.js')(req, res, history)
-})
-app.get('/RecentChanges', async (req, res) =>
-{
-    ejs.renderFile(paths.view('pages/recentchanges.ejs'),
-    {
-        l: global.i18n.__
-    }, (err, html) => 
-    {
-        if (err)
-        {
-            logger.error('Recent changes rendering failed', err)
-            res.writeHead(500).write('Internal Server Error')
-            return
-        }
-        load('view.js')(req, res,
-        {
-            title: global.i18n.__('recentChanges'),
-            content: html,
-            isPage: false,
-            username: req.session.username,
-            ipaddr: req.ipAddress,
-            
-        })
+}))
+app.post('/preview', delegate(['pages', 'preview.js'], () => [pages, mfile, category]))
+app.get('/search', delegate(['pages', 'search.js'], () => [pages]))
+app.post('/search', delegate(['pages', 'navSearch.js'], () => [pages]))
+app.get('/protect/:name(*)', delegate(['admin', 'protectGet.js'], () => [perm, protect, block]))
+app.post('/protect/:name(*)', delegate(['admin', 'protectPost.js'], () => [perm, protect, pages, history, recentchanges, block]))
+app.get('/raw/:name(*)', delegate(['pages', 'raw.js'], () => [pages, history, protect, perm, block]))
+app.get('/history/:name(*)', delegate(['pages', 'history.js'], () => [history]))
+app.get('/RecentChanges', asyncRoute(async (req, res) => {
+    await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: global.i18n.__ }, {
+        title: global.i18n.__('recentChanges'),
+        isPage: false,
+        username: req.session.username,
+        ipaddr: req.ipAddress
     })
-})
-app.get('/PageList', async (req, res) =>
-{
-    await load('pages', 'pagelist.js')(req, res, pages)
-})
+}))
+app.get('/PageList', delegate(['pages', 'pagelist.js'], () => [pages]))
 
-app.get('/Upload', async (req, res) =>
-{
+app.get('/Upload', asyncRoute(async (req, res) => {
     const username = req.session.username
     const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
-    ejs.renderFile(paths.view('files/upload.ejs'),
-    {
+    await renderTemplateInLayout(req, res, 'files/upload.ejs', {
         username: username,
         captcha: captchaSVG,
         filetypes: getFileTypes().join(', '),
         fileLimit: fileLimit
-    }, (err, html) => 
-    {
-        load('view.js')(req, res,
-        {
-            title: global.i18n.__('upload'),
-            content: html,
-            username: username,
-            ipaddr: req.ipAddress,
-            
-        })
+    }, {
+        title: global.i18n.__('upload'),
+        username: username,
+        ipaddr: req.ipAddress
     })
-})
+}))
 const multer = require('multer')
 const fs = require('fs')
 const e = require('express')
@@ -704,147 +573,44 @@ app.post('/Upload', upload.single('inputFile'), async (req, res) =>
     })
     res.redirect('/w/' + filepgname)
 })
-app.get('/diff/:name(*)', async (req, res) =>
-{
-    //usage example: /diff/FrontPage?rev1=20&rev2=30 (compare r20 and r30)
-    await load('pages', 'diff.js')(req, res, history, protect, perm, block)
-})
-app.get('/RandomPage', async (req, res) =>
-{
+app.get('/diff/:name(*)', delegate(['pages', 'diff.js'], () => [history, protect, perm, block]))
+app.get('/RandomPage', asyncRoute(async (req, res) => {
     const randomPage = await pages.findOne({ 
         order: sequelize.random() 
     })
     res.redirect(`/w/${randomPage.title}`)
-})
-app.get('/admin/developer', csrfProtection, async (req, res) =>
-{
-    await load('admin', 'developerGetHandler.js')(req, res, {perm: perm})
-})
-app.get('/admin/:name(*)', csrfProtection, async (req, res) =>
-{
-    //handler
-    await load('admin', 'adminGetHandler.js')(req, res, users, perm, loginhistory, adminlog)
-})
-app.post('/admin/:name(*)', csrfProtection, async (req, res) =>
-{
-    await load('admin', 'adminPostHandler.js')(req, res, users, perm, block, pages, protect, adminlog, threadcomment, thread)
-})
-app.get('/adminlog', async (req, res) =>
-{
-    await load('admin', 'adminlog.js')(req, res, adminlog)
-})
+}))
+app.get('/admin/developer', csrfProtection, delegate(['admin', 'developerGetHandler.js'], () => [{ perm }]))
+app.get('/admin/:name(*)', csrfProtection, delegate(['admin', 'adminGetHandler.js'], () => [users, perm, loginhistory, adminlog]))
+app.post('/admin/:name(*)', csrfProtection, delegate(['admin', 'adminPostHandler.js'], () => [users, perm, block, pages, protect, adminlog, threadcomment, thread]))
+app.get('/adminlog', delegate(['admin', 'adminlog.js'], () => [adminlog]))
 
-app.get('/category/:name(*)', async (req, res) =>
-{
-    await load('pages', 'category.js')(req, res, category)
-})
+app.get('/category/:name(*)', delegate(['pages', 'category.js'], () => [category]))
 
-app.get('/contribution/:name(*)', async (req, res) =>
-{
-    await load('user', 'contribution.js')(req, res, history)
-})
+app.get('/contribution/:name(*)', delegate(['user', 'contribution.js'], () => [history]))
 
-app.get('/orphaned', async (req, res) =>
-{
-    const orph = await ejs.renderFile(paths.view('pages/orphaned.ejs'))
-    load('view.js')(req, res,
-    {
-        title: '고립된 문서',
-        content: orph
-    })
-})
+app.get('/orphaned', asyncRoute(async (req, res) => {
+    await renderTemplateInLayout(req, res, 'pages/orphaned.ejs', {}, { title: '고립된 문서' })
+}))
 
-app.get('/viewrank', async (req, res) =>
-{
-    await load('pages', 'viewrank.js')(req, res, viewcount)
-})
+app.get('/viewrank', delegate(['pages', 'viewrank.js'], () => [viewcount]))
 
-app.get('/threads/:name(*)', async (req, res) =>
-{
-    await load('threads', 'threadList.js')(req, res,
-    {
-        'pages': pages,
-        'thread': thread,
-        'block': block
-    })
-})
-app.post('/threads/:name(*)', async (req, res) =>
-{
-    await load('threads', 'createThread.js')(req, res,
-    {
-        'pages': pages,
-        'thread': thread,
-        'threadcomment': threadcomment,
-        'recentdiscuss': recentdiscuss,
-        'block': block,
-        'perm': perm
-    })
-})
+app.get('/threads/:name(*)', delegate(['threads', 'threadList.js'], () => [{ pages, thread, block }]))
+app.post('/threads/:name(*)', delegate(['threads', 'createThread.js'], () => [{ pages, thread, threadcomment, recentdiscuss, block, perm }]))
 
-app.get('/thread/:name(*)', csrfProtection, async (req, res) =>
-{
-    //dbs: users, pages, recentdiscuss, protect, perm, block
-    await load('threads', 'thread.js')(req, res,
-    {
-        'pages': pages,
-        'thread': thread,
-        'threadcomment': threadcomment,
-        'perm': perm
-    })
-})
+app.get('/thread/:name(*)', csrfProtection, delegate(['threads', 'thread.js'], () => [{ pages, thread, threadcomment, perm }]))
 
-app.get('/xref/:name(*)', async (req, res) => {
-    await load('pages', 'xref.js')(req, res)
-})
+app.get('/xref/:name(*)', delegate(['pages', 'xref.js']))
 
-app.get('/RecentDiscuss',  async (req, res) =>
-{
-    //dbs: users, pages, recentdiscuss, protect, perm, block
-    await load('threads', 'rd.js')(req, res, recentdiscuss, thread)
-})
+app.get('/RecentDiscuss', delegate(['threads', 'rd.js'], () => [recentdiscuss, thread]))
 
 //AJAX routes
-app.get('/ajax/autocomplete', async (req, res) =>
-{
-    await load('AJAX', 'pageautocomplete.js')(req, res, pages)
-})
-
-app.get('/ajax/recentchanges', async (req, res) =>
-{
-    await load('AJAX', 'recentchanges.js')(req, res, recentchanges)
-})
-
-app.get('/ajax/username', async (req, res) =>
-{
-    await load('AJAX', 'username.js')(req, res, users)
-})
-
-app.get('/ajax/threadcomments', async (req, res) =>
-{
-    await load('AJAX', 'threadcomments.js')(req, res,
-    {
-        'pages': pages,
-        'thread': thread,
-        'threadcomment': threadcomment,
-        'file': mfile
-    })
-})
-
-app.get('/ajax/threadinfo', async (req, res) =>
-{
-    //user blocked
-    //thread current status
-    await load('AJAX', 'threadinfo.js')(req, res,
-        {
-            'thread': thread,
-            'block': block
-        })
-})
-
-app.get('/ajax/threadlist', async (req, res) =>
-{
-    await load('AJAX', 'threadlist.js')(req, res, thread)
-})
+app.get('/ajax/autocomplete', delegate(['AJAX', 'pageautocomplete.js'], () => [pages]))
+app.get('/ajax/recentchanges', delegate(['AJAX', 'recentchanges.js'], () => [recentchanges]))
+app.get('/ajax/username', delegate(['AJAX', 'username.js'], () => [users]))
+app.get('/ajax/threadcomments', delegate(['AJAX', 'threadcomments.js'], () => [{ pages, thread, threadcomment, file: mfile }]))
+app.get('/ajax/threadinfo', delegate(['AJAX', 'threadinfo.js'], () => [{ thread, block }]))
+app.get('/ajax/threadlist', delegate(['AJAX', 'threadlist.js'], () => [thread]))
 
 app.get('/lovelive', (req, res) =>
 {

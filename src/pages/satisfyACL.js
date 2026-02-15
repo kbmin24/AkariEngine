@@ -3,7 +3,7 @@ const dateandtime = require('date-and-time')
 const ipRangeCheck = require('ip-range-check')
 const paths = require('../utils/paths')
 
-module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErrorMsg=false) =>
+module.exports = async (req, res, ACLs, perms, block, editErrorMsg=false) =>
 {
     const username = req.session.username
     //remove any 'old' blocks
@@ -21,15 +21,7 @@ module.exports = async (req, res, ACLs, perms, block, autoredirect=true, editErr
         const notLoggedin = username === undefined && !(ACL == 'login' || ACL == 'everyone' || ACL == 'blocked')
         if (notLoggedin && !editErrorMsg)
         {
-            if (autoredirect)
-            {
-                require(paths.resolve('error.js'))(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
-                return undefined
-            }
-            else
-            {
-                return false
-            }
+            return false
         }
         
         //Check for ip

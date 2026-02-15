@@ -13,6 +13,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
     })
     .then(entries =>
     {
+        if (entries.length == 0) return
         const latestChange = entries[0].id
         recentdiscuss.destroy(
         {

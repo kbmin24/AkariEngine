@@ -1,10 +1,87 @@
 const express = require('express')
 const paths = require('../utils/paths')
-const { body, param, query } = require('express-validator')
+const date = require('date-and-time')
+const ejs = require('ejs')
+const { param, query } = require('express-validator')
 const { validateRequest } = require(paths.middleware('validation'))
-const { verifyAuthentication } = require(paths.middleware('auth'))
+const { checkAcl } = require(paths.middleware('acl'))
 
 const router = express.Router()
+
+const load = (...segments) => require(paths.resolve(...segments))
+const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
+const renderLayout = (req, res, renderOpt) => load('view.js')(req, res, renderOpt)
+
+async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
+    const html = await ejs.renderFile(paths.view(templatePath), templateData)
+    renderLayout(req, res, {
+        ...layoutData,
+        content: html
+    })
+}
+
+async function sign(req, settingsModel) {
+    const dtnow = date.format(new Date(), global.dtFormat)
+    if (req.session.username) {
+        const s = await settingsModel.findOne({
+            where: {
+                user: req.session.username,
+                key: 'sign'
+            }
+        })
+        const prefix = s ? s.value : `[[User:${req.session.username}]]`
+        return `${prefix} ${dtnow}`
+    }
+
+    return `${req.ipAddress} ${dtnow}`
+}
+
+async function signAsync(req, str, regex, settingsModel) {
+    const promises = []
+    str.replace(regex, () => {
+        promises.push(sign(req, settingsModel))
+    })
+    const data = await Promise.all(promises)
+    return str.replace(regex, () => data.shift())
+}
+
+async function regLink(title, content) {
+    await global.db.links.destroy({ where: { source: title } })
+    let res = []
+    let found = new Set()
+
+    {
+        let r = /\[\[([^|\r\n]*?)\]\]/igm
+        content = content.replace(r, (_match, p1) => {
+            if (p1.toLowerCase().startsWith('category') ||
+                p1.toLowerCase().startsWith('분류') ||
+                p1.toLowerCase().startsWith('http://') ||
+                p1.toLowerCase().startsWith('https://')) return ''
+            if (found.has(p1)) return ''
+
+            found.add(p1)
+            res.push({ source: title, dest: p1 })
+            return ''
+        })
+    }
+
+    {
+        let r = /\[\[(.*?)\|(.*?)\]\]/igm
+        content = content.replace(r, (_match, p1) => {
+            if (p1.toLowerCase().startsWith('category') ||
+                p1.toLowerCase().startsWith('분류') ||
+                p1.toLowerCase().startsWith('http://') ||
+                p1.toLowerCase().startsWith('https://')) return ''
+            if (found.has(p1)) return ''
+
+            found.add(p1)
+            res.push({ source: title, dest: p1 })
+            return ''
+        })
+    }
+
+    await global.db.links.bulkCreate(res)
+}
 
 module.exports = (services, options = {}) => {
     const csrfProtection = options.csrfProtection
@@ -13,112 +90,260 @@ module.exports = (services, options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
         validateRequest,
-        async (req, res, next) => {
-            try {
-                // TODO refactor this legacy view.js
-                const viewHandler = require(paths.resolve('pages', 'view.js'))
-                await viewHandler(
-                    req,
-                    res,
-                    global.db.pages,
-                    global.db.mfile,
-                    global.db.history,
-                    global.db.protect,
-                    global.db.perm,
-                    global.db.block,
-                    global.db.category,
-                    global.db.viewcount,
-                    global.db.updateTime
-                )
-            } catch (error) {
-                next(error)
-            }
-        }
+        checkAcl({ task: 'view', fallback: 'blocked' }),
+        asyncRoute(async (req, res) => {
+            const viewHandler = require(paths.resolve('pages', 'view.js'))
+            await viewHandler(req, res)
+        })
     )
 
     router.get('/edit/:name(*)',
         csrfProtection,
-        verifyAuthentication,
+        checkAcl({ task: 'edit', fallback: 'everyone', editErrorMsg: true, storeKey: 'editAcl', mode: 'store' }),
         param('name').trim().notEmpty(),
         validateRequest,
-        async (req, res, next) => {
-            try {
-                let content = ''
-                try {
-                    const page = await services.page.getPage(req.params.name, {
-                        user: req.session.username
-                    })
-                    content = page.content
-                } catch (_error) {
-                    content = ''
+        asyncRoute(async (req, res) => {
+            let username = req.session.username
+
+            if (req.params.name.length > 255) {
+                load('error.js')(req, res, null, global.i18n.__('pagename_toolong'), '/', global.i18n.__('mainpage'), 200)
+                return
+            }
+
+            if (!global.legalTitleRegex.test(req.params.name)) {
+                load('error.js')(req, res, null, global.i18n.__('pagename_specialchar'), '/', global.i18n.__('mainpage'), 200)
+                return
+            }
+
+            const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
+            if (!target && req.params.name.toLowerCase().startsWith('file:')) {
+                load('error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
+                return
+            }
+
+            const r = req.editAcl ? (req.editAcl.allowed ? true : req.editAcl.notification) : true
+            let prefix = ''
+            let suffix = ''
+            let content = target ? target.content : ''
+
+            if (r === true && target && req.query.section && !isNaN(req.query.section) && req.query.section * 1 > 0) {
+                req.query.section *= 1
+                let headLookupRegex = /(?=^(?:=+) (?:.*) =+(?: )*\r?\n)/gim
+                let splits = content.split(headLookupRegex)
+                let offset = 0
+                if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
+
+                if (req.query.section + offset > splits) {
+                    load('error.js')(req, res, null, global.i18n.__('edit_noparagraph'), '/', global.i18n.__('mainpage'), 200)
+                    return
                 }
 
-                res.render('pages/edit.ejs', {
-                    title: req.params.name,
-                    content,
-                    username: req.session.username,
-                    csrfToken: req.csrfToken(),
-                    l: global.i18n.__,
-                    prefix: '',
-                    suffix: ''
-                })
-            } catch (error) {
-                next(error)
+                for (let i = 0; i < req.query.section + offset; i++) prefix += splits[i]
+                for (let i = req.query.section + offset + 1; i < splits.length; i++) suffix += splits[i]
+                content = splits[req.query.section + offset]
             }
-        }
+
+            const templateData = {
+                title: req.params.name,
+                content,
+                prefix,
+                suffix,
+                username,
+                l: global.i18n.__,
+                csrfToken: req.csrfToken()
+            }
+
+            if (r === true) {
+                templateData.captcha = await load('tools', 'captcha.js').genCaptcha(req)
+            } else if (r !== undefined) {
+                templateData.disabled = true
+            }
+
+            const html = await ejs.renderFile(paths.view('pages/edit.ejs'), templateData)
+            renderLayout(req, res, {
+                title: global.i18n.__('edit_pg', { name: req.params.name }),
+                content: html,
+                isPage: true,
+                pageMode: r === true ? 'edit' : undefined,
+                notification: r === true ? undefined : r,
+                pagename: req.params.name,
+                username,
+                ipaddr: req.ipAddress
+            })
+        })
     )
 
     router.post('/edit/:name(*)',
         csrfProtection,
-        verifyAuthentication,
-        param('name').trim().notEmpty().isLength({ max: 255 }),
-        body('content').notEmpty(),
-        body('comment').optional().trim(),
-        validateRequest,
-        async (req, res, next) => {
-            try {
-                await services.page.editPage({
-                    title: req.params.name,
-                    content: req.body.content,
-                    user: req.session.username,
-                    comment: req.body.comment
-                })
-                res.redirect(`/w/${req.params.name}`)
-            } catch (error) {
-                next(error)
+        checkAcl({ task: 'edit', fallback: 'everyone' }),
+        asyncRoute(async (req, res) => {
+            const captchaSuccess = await load('tools', 'captcha.js').chkCaptcha(req, res, global.db.perm)
+            if (!captchaSuccess) return
+
+            if (!req.params.name) {
+                load('error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
+                return
             }
-        }
+
+            if (!req.body.content) {
+                load('error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
+                return
+            }
+
+            if (!req.body.content.endsWith('\n')) req.body.content += '\n'
+            req.body.content = (req.body.editPrefix || '') + req.body.content + (req.body.editSuffix || '')
+            req.body.content = req.body.content.replace(/\r/g, '')
+            req.body.content = await signAsync(req, req.body.content, /~~~~/igm, global.db.settings)
+
+            const page = await req.app.locals.repositories.pages.findByTitle(req.params.name)
+            const doneby = req.session.username || req.ipAddress
+
+            const categories = services.category.extractFromContent(req.body.content)
+            await services.category.registerForPage(req.params.name, categories)
+            await regLink(req.params.name, req.body.content)
+
+            if (page) {
+                const oldLength = page.content.length
+                const newRev = page.currentRev + 1
+                await req.app.locals.repositories.pages.upsertPage(
+                    req.params.name,
+                    req.body.content,
+                    newRev,
+                    false,
+                    {
+                        doneBy: doneby,
+                        bytechange: req.body.content.length - oldLength,
+                        comment: req.body.comment,
+                        type: 'edit'
+                    }
+                )
+
+                await req.app.locals.repositories.history.create({
+                    page: req.params.name,
+                    rev: newRev,
+                    content: req.body.content,
+                    bytechange: req.body.content.length - oldLength,
+                    editedby: doneby,
+                    comment: req.body.comment,
+                    type: 'edit'
+                })
+            } else {
+                if (req.params.name.toLowerCase().startsWith('file:')) {
+                    load('error.js')(req, res, null, global.i18n.__('pagename_illegalfile'), '/', global.i18n.__('mainpage'), 200)
+                    return
+                }
+
+                await req.app.locals.repositories.pages.upsertPage(
+                    req.params.name,
+                    req.body.content,
+                    1,
+                    false,
+                    {
+                        doneBy: doneby,
+                        bytechange: req.body.content.length,
+                        comment: req.body.comment,
+                        type: 'create'
+                    }
+                )
+
+                await req.app.locals.repositories.history.create({
+                    page: req.params.name,
+                    rev: 1,
+                    content: req.body.content,
+                    bytechange: req.body.content.length,
+                    editedby: doneby,
+                    comment: req.body.comment,
+                    type: 'create'
+                })
+            }
+
+            res.redirect(`/w/${req.params.name}`)
+        })
     )
 
-    router.post('/delete/:name(*)',
+    router.get('/move/:name(*)',
         csrfProtection,
-        verifyAuthentication,
-        param('name').trim().notEmpty(),
-        validateRequest,
-        async (req, res, next) => {
-            try {
-                await services.page.deletePage(req.params.name, req.session.username)
-                res.redirect('/')
-            } catch (error) {
-                next(error)
+        checkAcl({ task: 'move', fallback: 'everyone' }),
+        asyncRoute(async (req, res) => {
+            if (req.params.name.toLowerCase().startsWith('file:')) {
+                load('error.js')(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('pagename_toolong'), 200)
+                return
             }
-        }
+
+            const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
+            if (!target) {
+                load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}"> ${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404)
+                return
+            }
+
+            const username = req.session.username
+            const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
+            await renderTemplateInLayout(req, res, 'pages/move.ejs', {
+                originalName: req.params.name,
+                l: global.i18n.__,
+                username,
+                captcha: captchaSVG,
+                csrfToken: req.csrfToken()
+            }, {
+                title: global.i18n.__('movepg', { name: req.params.name }),
+                isPage: true,
+                pagename: req.params.name,
+                pageMode: 'move',
+                username,
+                ipaddr: req.ipAddress
+            })
+        })
+    )
+
+    router.get('/delete/:name(*)',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            const username = req.session.username
+            if (username === undefined) {
+                load('error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 404, 'ko')
+                return
+            }
+            const hasDeletePerm = await req.app.locals.repositories.permissions.hasPermission(username, 'deletepage')
+            if (!hasDeletePerm) {
+                load('error.js')(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
+                return
+            }
+
+            const target = await req.app.locals.repositories.pages.findByTitle(req.params.name)
+            if (!target) {
+                load('error.js')(req, res, null, `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`, '/', global.i18n.__('mainpage'), 404, 'ko')
+                return
+            }
+
+            await renderTemplateInLayout(req, res, 'pages/delete.ejs', {
+                title: req.params.name,
+                l: global.i18n.__,
+                username,
+                csrfToken: req.csrfToken()
+            }, {
+                title: global.i18n.__('deletepg', { name: req.params.name }),
+                isPage: true,
+                pageMode: 'delete',
+                pagename: target.title,
+                username,
+                ipaddr: req.ipAddress
+            })
+        })
     )
 
     router.post('/move/:name(*)',
         csrfProtection,
-        verifyAuthentication,
-        param('name').trim().notEmpty(),
-        body('newName').trim().notEmpty().isLength({ max: 255 }),
-        validateRequest,
-        async (req, res, next) => {
-            try {
-                await services.page.movePage(req.params.name, req.body.newName, req.session.username)
-                res.redirect(`/w/${req.body.newName}`)
-            } catch (error) {
-                next(error)
-            }
-        }
+        checkAcl({ task: 'move', fallback: 'everyone' }),
+        asyncRoute(async (req, res) => {
+            await load('pages', 'move.js')(req, res)
+        })
+    )
+
+    router.post('/delete/:name(*)',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('pages', 'delete.js')(req, res)
+        })
     )
 
     return router

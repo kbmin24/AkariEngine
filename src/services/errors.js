@@ -37,6 +37,11 @@ class AuthenticationRequiredError extends AppError {
         super('Authentication required', 401)
     }
 }
+class CaptchaError extends AppError {
+    constructor() {
+        super('Captcha verification failed', 400)
+    }
+}
 
 module.exports = {
     AppError,
@@ -44,5 +49,6 @@ module.exports = {
     PageExistsError,
     ValidationError,
     PermissionDeniedError,
-    AuthenticationRequiredError
+    AuthenticationRequiredError,
+    CaptchaError
 }
