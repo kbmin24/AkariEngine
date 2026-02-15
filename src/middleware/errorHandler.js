@@ -4,11 +4,9 @@ const {
     PageNotFoundError,
     PermissionDeniedError,
     AuthenticationRequiredError,
-    ValidationError
+    ValidationError,
+    CaptchaError
 } = require('../services/errors')
-const { RouteAccessError } = require('./permission')
-
-// TODO call error.js instead of this
 
 function errorHandler(err, req, res, next) {
     if (err && err.code) {
@@ -17,16 +15,20 @@ function errorHandler(err, req, res, next) {
 
     logger.error('Request error', err)
 
-    if (err instanceof RouteAccessError) {
+    const localizedMessage = (err && typeof err.getLocalizedMessage === 'function')
+        ? err.getLocalizedMessage(req)
+        : err.message
+
+    if (err instanceof PermissionDeniedError) {
         return require(paths.resolve('error.js'))(
             req,
             res,
             null,
-            err.message,
-            err.returnLink,
-            global.i18n.__(err.returnName),
-            err.statusCode,
-            err.lang
+            localizedMessage,
+            err.returnLink || '/',
+            global.i18n.__(err.returnName || 'mainpage'),
+            err.statusCode || 403,
+            err.lang || 'ko'
         )
     }
 
@@ -37,22 +39,37 @@ function errorHandler(err, req, res, next) {
         })
     }
 
-    if (err instanceof PermissionDeniedError) {
-        return res.status(403).render('error', {
-            title: 'Permission Denied',
-            message: err.message
-        })
-    }
-
     if (err instanceof AuthenticationRequiredError) {
-        return res.redirect('/login')
+        return require(paths.resolve('error.js'))(
+            req,
+            res,
+            null,
+            localizedMessage || global.i18n.__('loginneeded'),
+            err.returnLink || '/login',
+            global.i18n.__(err.returnName || 'loginpage'),
+            err.statusCode || 403,
+            err.lang || 'ko'
+        )
     }
 
     if (err instanceof ValidationError) {
         return res.status(400).render('error', {
             title: 'Validation Error',
-            message: err.message
+            message: localizedMessage
         })
+    }
+
+    if (err instanceof CaptchaError) {
+        return require(paths.resolve('error.js'))(
+            req,
+            res,
+            null,
+            localizedMessage,
+            err.returnLink || 'javascript:window.history.back()',
+            global.i18n.__(err.returnName || 'previousPage'),
+            err.statusCode || 400,
+            err.lang || 'ko'
+        )
     }
 
     return res.status(err.statusCode || 500).render('error', {

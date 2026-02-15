@@ -3,30 +3,15 @@ const {
     PermissionDeniedError
 } = require('../services/errors')
 
-class RouteAccessError extends Error {
-    constructor({
-        message,
-        statusCode = 403,
-        returnLink = '/',
-        returnName = 'mainpage',
-    }) {
-        super(message)
-        this.name = 'RouteAccessError'
-        this.statusCode = statusCode
-        this.returnLink = returnLink
-        this.returnName = returnName
-    }
-}
-
 function buildAccessError(req, error, options = {}) {
     const acl = (error && error.details && error.details.acl) || options.acl || 'everyone'
 
     if (error instanceof AuthenticationRequiredError) {
-        return new RouteAccessError({
+        return new AuthenticationRequiredError({
             message: global.i18n.__('loginneeded'),
-            statusCode: options.authStatusCode || 403,
             returnLink: options.authReturnLink || '/login',
-            returnName: options.authReturnName || 'loginpage'
+            returnName: options.authReturnName || 'loginpage',
+            lang: options.lang || 'ko'
         })
     }
 
@@ -35,11 +20,12 @@ function buildAccessError(req, error, options = {}) {
         const message = detailMessage
             || options.noAclMessage
             || global.i18n.__(options.noAclMessageKey || 'edit_noacl', { acl })
-        return new RouteAccessError({
+        return new PermissionDeniedError(error.action || 'unknown', error.resource || null, {
+            ...(error.details || {}),
             message,
-            statusCode: options.permissionStatusCode || 403,
             returnLink: options.permissionReturnLink || '/',
-            returnName: options.permissionReturnName || 'mainpage'
+            returnName: options.permissionReturnName || 'mainpage',
+            lang: options.lang || 'ko'
         })
     }
 
@@ -81,7 +67,7 @@ function requirePermission(permission, options = {}) {
             next()
         } catch (error) {
             const mapped = buildAccessError(req, error, options)
-            if (mode === 'store' && mapped instanceof RouteAccessError) {
+            if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
                 req[storeKey] = {
                     allowed: false,
                     permission,
@@ -121,7 +107,7 @@ function requirePageAccess(action, options = {}) {
                 noAclMessageKey: options.noAclMessageKey || `${action}_noacl`
             })
 
-            if (mode === 'store' && mapped instanceof RouteAccessError) {
+            if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
                 req[storeKey] = {
                     allowed: false,
                     action,
@@ -139,6 +125,5 @@ function requirePageAccess(action, options = {}) {
 
 module.exports = {
     requirePermission,
-    requirePageAccess,
-    RouteAccessError
+    requirePageAccess
 }

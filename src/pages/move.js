@@ -18,12 +18,6 @@ module.exports = async (req, res) =>
         return
     }
 
-    if (!(await require(paths.tools('captcha')).chkCaptcha(req, res, permissions)))
-    {
-        //captcha failed
-        throw new CaptchaError()
-    }
-
     try
     {
         const ipAddress = req.ipAddress

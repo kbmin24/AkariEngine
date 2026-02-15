@@ -127,5 +127,6 @@
 	"show10": "Show 10",
 	"show30": "Show 30",
 	"show100": "Show 100",
-	"pagename": "Page"
+	"pagename": "Page",
+	"unknown_error": "An unknown error has occurred."
 }

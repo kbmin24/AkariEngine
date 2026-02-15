@@ -4,6 +4,7 @@ const logger = require(paths.utils('logger'))
 const {
     PageNotFoundError,
     PageExistsError,
+    RevisionNotFoundError,
     ValidationError,
     AuthenticationRequiredError
 } = require('./errors')
@@ -151,6 +152,32 @@ class PageService {
 
         logger.admin('Page moved', doneBy, { from: sourceTitle, to: targetTitle })
         return { oldTitle: sourceTitle, newTitle: targetTitle }
+    }
+
+    async revertPage({ title, revertRev, user, ipAddress, comment = '' }) {
+        if (!title) throw new ValidationError('Page title is required')
+        if (revertRev === undefined || revertRev === null || Number.isNaN(Number(revertRev))) {
+            throw new ValidationError('Revision is required')
+        }
+
+        const doneBy = user || ipAddress
+        const mergedComment = `Revert to r${revertRev} - ${comment || ''}`
+        const result = await this.pageRepo.revertPageToRevision({
+            title,
+            revertRev,
+            comment: mergedComment,
+            doneBy
+        })
+
+        if (!result.reverted && result.reason === 'not_found') {
+            throw new PageNotFoundError(title)
+        }
+        if (!result.reverted && result.reason === 'revision_not_found') {
+            throw new RevisionNotFoundError(title, revertRev)
+        }
+
+        logger.info('Page reverted', { title, revertRev, doneBy })
+        return result
     }
 
     async searchPages(query, limit = 10) {

@@ -4,6 +4,7 @@ const date = require('date-and-time')
 const ejs = require('ejs')
 const { param, query, body } = require('express-validator')
 const { requirePermission } = require('../middleware/permission')
+const { chkCaptcha } = require('../middleware/chkCaptcha')
 const { validateRequest } = require(paths.middleware('validation'))
 const { requirePageAccess } = require(paths.middleware('permission'))
 
@@ -190,6 +191,7 @@ module.exports = (services, options = {}) => {
 
     router.post('/edit/:name(*)',
         csrfProtection,
+        chkCaptcha,
         requirePageAccess('edit', {
             noAclMessageKey: 'edit_noacl',
             permissionReturnLink: '/login',
@@ -198,8 +200,6 @@ module.exports = (services, options = {}) => {
             authReturnName: 'loginpage'
         }),
         asyncRoute(async (req, res) => {
-            const captchaSuccess = await load('tools', 'captcha.js').chkCaptcha(req, res, global.db.perm)
-            if (!captchaSuccess) return
 
             if (!req.params.name) {
                 load('error.js')(req, res, null, global.i18n.__('edit_titleneeded'), '/', global.i18n.__('mainpage'), 200)
@@ -404,6 +404,7 @@ module.exports = (services, options = {}) => {
         body('rev').isInt(),
         validateRequest,
         csrfProtection,
+        chkCaptcha,
         requirePageAccess('read', {
             noAclMessageKey: 'view_noacl',
             permissionReturnLink: '/login',
@@ -415,20 +416,14 @@ module.exports = (services, options = {}) => {
             await load('pages', 'revert.js')(
                 req,
                 res,
-                req.session.username,
-                global.db.users,
-                global.db.pages,
-                global.db.recentchanges,
-                global.db.history,
-                global.db.protect,
-                global.db.perm,
-                global.db.block
+                global.db.perm
             )
         })
     )
 
     router.post('/move/:name(*)',
         csrfProtection,
+        chkCaptcha,
         requirePageAccess('move', {
             noAclMessageKey: 'move_noacl',
             permissionReturnLink: '/login',
@@ -442,7 +437,10 @@ module.exports = (services, options = {}) => {
     )
 
     router.post('/delete/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
         csrfProtection,
+        chkCaptcha,
         requirePermission('delete', {
             mode: 'enforce'
         }),

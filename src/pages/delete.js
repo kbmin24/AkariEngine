@@ -9,12 +9,6 @@ const {
 module.exports = async (req, res) =>
 {
     try {
-        if (req.params.name === undefined)
-        {
-            require(paths.resolve('error.js'))(req, res, null, '페이지가 지정되지 않았습니다.', '/', global.i18n.__('mainpage'), 404, 'ko')
-            return
-        }
-
         await req.app.locals.services.page.deletePage({
             title: req.params.name,
             user: req.session.username,
@@ -41,7 +35,7 @@ module.exports = async (req, res) =>
         }
         if (error instanceof ValidationError)
         {
-            require(paths.resolve('error.js'))(req, res, null, 'Unknown Error', '/', global.i18n.__('mainpage'), 500, 'ko')
+            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('unknown_error'), '/', global.i18n.__('mainpage'), 500, 'ko')
             return
         }
         throw error

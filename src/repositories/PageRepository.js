@@ -72,6 +72,31 @@ class PageRepository extends BaseRepository {
         return this.model.findAll({ attributes: ['title'] })
     }
 
+    extractLinks(title, content) {
+        const found = new Set()
+        const res = []
+        const shouldSkip = (text) => {
+            const v = (text || '').toLowerCase()
+            return v.startsWith('category') || v.startsWith('분류') || v.startsWith('http://') || v.startsWith('https://')
+        }
+
+        content.replace(/\[\[([^|\r\n]*?)\]\]/igm, (_match, p1) => {
+            if (shouldSkip(p1) || found.has(p1)) return ''
+            found.add(p1)
+            res.push({ source: title, dest: p1 })
+            return ''
+        })
+
+        content.replace(/\[\[(.*?)\|(.*?)\]\]/igm, (_match, p1) => {
+            if (shouldSkip(p1) || found.has(p1)) return ''
+            found.add(p1)
+            res.push({ source: title, dest: p1 })
+            return ''
+        })
+
+        return res
+    }
+
     async deletePageWithHistory({ title, doneBy, comment = '', isFile = false, filename = '' }) {
         const page = await this.findByTitle(title)
         if (!page) {
@@ -209,6 +234,51 @@ class PageRepository extends BaseRepository {
         }
 
         return { moved: true, rev: movedRev }
+    }
+
+    async revertPageToRevision({ title, revertRev, comment = '', doneBy }) {
+        const page = await this.findByTitle(title)
+        if (!page) return { reverted: false, reason: 'not_found' }
+        if (!this.historyModel) throw new Error('History model is required for revert')
+
+        const oldRev = await this.historyModel.findOne({ where: { page: title, rev: revertRev } })
+        if (!oldRev) return { reverted: false, reason: 'revision_not_found' }
+
+        const oldLength = (page.content || '').length
+        const newContent = oldRev.content || ''
+        const nextRev = (page.currentRev || 0) + 1
+
+        await page.update({ content: newContent, deleted: false, currentRev: nextRev })
+
+        if (this.linkModel) {
+            await this.linkModel.destroy({ where: { source: title } })
+            const links = this.extractLinks(title, newContent)
+            if (links.length > 0) await this.linkModel.bulkCreate(links)
+        }
+
+        if (this.recentChangesModel) {
+            await this.recentChangesModel.create({
+                page: title,
+                rev: nextRev,
+                doneBy,
+                bytechange: newContent.length - oldLength,
+                comment,
+                type: 'revert'
+            })
+        }
+
+        await this.historyModel.create({
+            page: title,
+            rev: nextRev,
+            content: newContent,
+            bytechange: newContent.length - oldLength,
+            editedby: doneBy,
+            comment,
+            revertTo: revertRev,
+            type: 'revert'
+        })
+
+        return { reverted: true, rev: nextRev }
     }
 }
 

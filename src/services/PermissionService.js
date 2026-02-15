@@ -162,7 +162,18 @@ class PermissionService {
         if (!user) throw new AuthenticationRequiredError()
 
         const hasPermission = await this.permissionRepo.hasPermission(user, permission)
-        if (!hasPermission) throw new PermissionDeniedError(permission, null, {message: global.i18n.__('deletepermneeded')})
+        if (!hasPermission) {
+            throw new PermissionDeniedError(permission, null, {
+                i18nKey: 'deletepermneeded'
+            })
+        }
+    }
+
+    async hasPermission(user, permission) {
+        // alias for repo.hasPermission
+        // gentler version of requirePermission
+        if (!user) return false
+        return await this.permissionRepo.hasPermission(user, permission)
     }
 
     async grantPermission(adminUser, targetUser, permission) {
