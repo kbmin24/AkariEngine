@@ -8,12 +8,37 @@ const {
     CaptchaError
 } = require('../services/errors')
 
-function errorHandler(err, req, res, next) {
-    if (err && err.code) {
-        return next(err)
+function getEnglishMessage(err) {
+    if (!err) return 'Unknown error'
+
+    if (err.i18nKey && global.i18n && typeof global.i18n.__ === 'function') {
+        try {
+            return global.i18n.__({ phrase: err.i18nKey, locale: 'en_GB' }, err.i18nParams || {})
+        } catch (_error) {
+            return err.message || 'Unknown error'
+        }
     }
 
-    logger.error('Request error', err)
+    return err.message || 'Unknown error'
+}
+
+function getStackForLogging(err, englishMessage) {
+    if (!err || !err.stack) return err
+
+    const stackLines = String(err.stack).split('\n')
+    if (stackLines.length === 0) return err.stack
+
+    stackLines[0] = `${err.name || 'Error'}: ${englishMessage}`
+    return stackLines.join('\n')
+}
+
+function errorHandler(err, req, res, next) {
+    if (err && err.code) {
+        return next(err) // pass it to legacy handler
+    }
+
+    const englishMessage = getEnglishMessage(err)
+    logger.error(`Request error: ${englishMessage}`, getStackForLogging(err, englishMessage))
 
     const localizedMessage = (err && typeof err.getLocalizedMessage === 'function')
         ? err.getLocalizedMessage(req)
@@ -23,12 +48,12 @@ function errorHandler(err, req, res, next) {
         return require(paths.resolve('error.js'))(
             req,
             res,
-            null,
-            localizedMessage,
-            err.returnLink || '/',
-            global.i18n.__(err.returnName || 'mainpage'),
-            err.statusCode || 403,
-            err.lang || 'ko'
+            {
+                description: localizedMessage,
+                returnLink: err.returnLink || '/',
+                returnName: global.i18n.__(err.returnName || 'mainpage'),
+                statusCode: err.statusCode || 403
+            }
         )
     }
 
@@ -43,12 +68,12 @@ function errorHandler(err, req, res, next) {
         return require(paths.resolve('error.js'))(
             req,
             res,
-            null,
-            localizedMessage || global.i18n.__('loginneeded'),
-            err.returnLink || '/login',
-            global.i18n.__(err.returnName || 'loginpage'),
-            err.statusCode || 403,
-            err.lang || 'ko'
+            {
+                description: localizedMessage || global.i18n.__('loginneeded'),
+                returnLink: err.returnLink || '/login',
+                returnName: global.i18n.__(err.returnName || 'loginpage'),
+                statusCode: err.statusCode || 403
+            }
         )
     }
 
@@ -63,12 +88,12 @@ function errorHandler(err, req, res, next) {
         return require(paths.resolve('error.js'))(
             req,
             res,
-            null,
-            localizedMessage,
-            err.returnLink || 'javascript:window.history.back()',
-            global.i18n.__(err.returnName || 'previousPage'),
-            err.statusCode || 400,
-            err.lang || 'ko'
+            {
+                description: localizedMessage,
+                returnLink: err.returnLink || 'javascript:window.history.back()',
+                returnName: global.i18n.__(err.returnName || 'previousPage'),
+                statusCode: err.statusCode || 400
+            }
         )
     }
 

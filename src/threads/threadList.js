@@ -13,7 +13,7 @@ module.exports = async (req, res, dbs = {}) =>
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require(paths.resolve('error.js'))(req, res, null, 'No such thread.', '/', 'the main page', code=404)
+        require(paths.resolve('error.js'))(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 

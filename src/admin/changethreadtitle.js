@@ -8,7 +8,7 @@ module.exports = async (req, res, dbs = {}) =>
     if (!(await dbs['perm'].findOne({where: {username: username, perm: 'thread'}})))
     {
         logger.admin('Unauthorised thread attempt', username, { ip: req.ipAddress })
-        require(paths.resolve('error.js'))(req, res, null, 'You do not have a thread permission', '/admin', 'the admin page')
+        require(paths.resolve('error.js'))(req, res, { description: 'You do not have a thread permission', returnLink: '/admin', returnName: 'the admin page' })
         return
     }
 
@@ -21,7 +21,7 @@ module.exports = async (req, res, dbs = {}) =>
     })
     if (!t)
     {
-        require(paths.resolve('error.js'))(req, res, null, 'No such thread.', 'javascript:window.history.back()', 'the thread.')
+        require(paths.resolve('error.js'))(req, res, { description: 'No such thread.', returnLink: 'javascript:window.history.back()', returnName: 'the thread.' })
         return
     }
 

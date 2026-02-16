@@ -40,14 +40,14 @@ module.exports = async (req, res, users, loginhistory) =>
                 else
                 {
                     logger.warn('Login error (password mismatch)', { id, ipaddr })
-                    require(paths.resolve('error.js'))(req, res, null, `비밀번호가 틀렸습니다. 다시 시도해 주세요.`, '/login', '로그인 페이지', 403, 'ko')
+                    require(paths.resolve('error.js'))(req, res, { description: `비밀번호가 틀렸습니다. 다시 시도해 주세요.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
                 }
             })
         }
         else
         {
             logger.warn('Login error (no such user)', { id: req.body.id })
-            require(paths.resolve('error.js'))(req, res, null, `사용자를 찾을 수 없습니다. 사용자명을 올바르게 입력했는지 확인해 주세요.`, '/login', '로그인 페이지', 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: `사용자를 찾을 수 없습니다. 사용자명을 올바르게 입력했는지 확인해 주세요.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
         }
     })
 }

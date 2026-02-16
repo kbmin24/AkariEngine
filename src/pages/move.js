@@ -14,7 +14,7 @@ module.exports = async (req, res) =>
 
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require(paths.resolve('error.js'))(req, res, null, global.i18n.__('move_nofile'), '/', global.i18n.__('mainpage'), 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('move_nofile'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
         return
     }
 
@@ -33,17 +33,17 @@ module.exports = async (req, res) =>
     {
         if (error instanceof PageExistsError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('move_alreadyexists'), '/', global.i18n.__('mainpage'), 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('move_alreadyexists'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('illegalaccess'), '/', global.i18n.__('mainpage'), 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('illegalaccess'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('illegalaccess'), '/', global.i18n.__('mainpage'), 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('illegalaccess'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
             return
         }
         throw error

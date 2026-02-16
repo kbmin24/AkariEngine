@@ -101,7 +101,7 @@
 	"none": "None",
 	"admin": "Admin",
 	"error": "Error",
-	"file_nobrowser": "This file cannot be displayed on browswer.",
+	"file_nobrowser": "This file cannot be displayed on browser.",
 	"file_innewtab": "Open in new tab",
 	"page_redirectedfrom": "Redirected from {{{page}}}",
 	"noUserPage_user": "<h3>Cannot find the user page.</h3><p>However, you can create a new one!</p><p><a href='/edit/{{link}}'>Create user page</a></p>",
@@ -128,5 +128,10 @@
 	"show30": "Show 30",
 	"show100": "Show 100",
 	"pagename": "Page",
-	"unknown_error": "An unknown error has occurred."
+	"unknown_error": "An unknown error has occurred.",
+	"ip_blocked": "IP address {{ip}} has been blocked by {{doneBy}} until {{until}}. Reason: {{comment}}",
+	"ip_blocked_forever": "IP address {{ip}} has been blocked by {{doneBy}} forever. Reason: {{comment}}",
+	"user_blocked": "User {{user}} has been blocked by {{doneBy}} until {{until}}. Reason: {{comment}}",
+	"user_blocked_forever": "User {{user}} has been blocked by {{doneBy}} forever. Reason: {{comment}}",
+	"admin_required": "Admin permission required."
 }

@@ -25,21 +25,21 @@ module.exports = async (req, res, dbs = {}) =>
     const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ['everyone'], null, dbs['block'])
     if (!r)
     {
-        require(paths.resolve('error.js'))(req, res, null, 'You cannot crate a thread because you are blocked' + '.', '/', 'the main page')
+        require(paths.resolve('error.js'))(req, res, { description: 'You cannot crate a thread because you are blocked' + '.', returnLink: '/', returnName: 'the main page' })
         return
     }
 
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require(paths.resolve('error.js'))(req, res, null, 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', '/', 'the main page', code=404)
+        require(paths.resolve('error.js'))(req, res, { description: 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 
     //And check whether datas are given
     if (!req.body.title)
     {
-        require(paths.resolve('error.js'))(req, res, null, 'Please enter a title.', '/', 'the main page', code=404)
+        require(paths.resolve('error.js'))(req, res, { description: 'Please enter a title.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 

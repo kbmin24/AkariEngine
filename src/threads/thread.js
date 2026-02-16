@@ -18,7 +18,7 @@ module.exports = async (req, res, dbs = {}) =>
     }
     if (!t)
     {
-        require(paths.resolve('error.js'))(req, res, null, 'No such thread.', '/', 'the main page', 404)
+        require(paths.resolve('error.js'))(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
     ejs.renderFile(paths.view('threads/thread.ejs'),

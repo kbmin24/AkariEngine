@@ -25,6 +25,6 @@ module.exports = async (req, res, sequelize, users, perm) =>
             salt: salt
         })
         .then(async () => await require(paths.resolve('sendfile.js'))(req, res, global.i18n.__('register_done'), '/views/user/signupnotify.html'))
-        .catch(err => require(paths.resolve('error.js'))(req, res, null, global.i18n.__('register_fail'), '/signup', global.i18n.__('register'), 500, 'ko'))
+        .catch(err => require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('register_fail'), returnLink: '/signup', returnName: global.i18n.__('register'), statusCode: 500 }))
     })
 }

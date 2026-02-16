@@ -47,7 +47,7 @@ module.exports = async (req, res, tables = {}) =>
                 const newPassword = req.body.password
                 if (!user)
                 {
-                    require(paths.resolve('error.js'))(req, res, null, `로그인이 필요합니다.`, '/login', '로그인 페이지', 403, 'ko')
+                    require(paths.resolve('error.js'))(req, res, { description: `로그인이 필요합니다.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
                     return
                 }
                 
@@ -58,7 +58,7 @@ module.exports = async (req, res, tables = {}) =>
                     if (hashedPW.toString('base64') != user.password)
                     {
                         //bad.
-                        require(paths.resolve('error.js'))(req, res, null, `이전 비밀번호를 올바르게 입력했는지 확인해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 403, 'ko')
+                        require(paths.resolve('error.js'))(req, res, { description: `이전 비밀번호를 올바르게 입력했는지 확인해 주세요.`, returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
                         return
                     }
                     //good. Put new password in.

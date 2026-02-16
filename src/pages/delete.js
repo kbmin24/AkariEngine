@@ -20,22 +20,22 @@ module.exports = async (req, res) =>
     } catch (error) {
         if (error instanceof AuthenticationRequiredError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('loginneeded'), returnLink: '/login', returnName: global.i18n.__('loginpage'), statusCode: 403 })
             return
         }
         if (error instanceof PermissionDeniedError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('deletepermneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('deletepermneeded'), returnLink: '/login', returnName: global.i18n.__('loginpage'), statusCode: 403 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('page404'), '/', global.i18n.__('mainpage'), 404, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('page404'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('unknown_error'), '/', global.i18n.__('mainpage'), 500, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('unknown_error'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 500 })
             return
         }
         throw error

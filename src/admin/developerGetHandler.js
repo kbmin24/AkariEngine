@@ -8,12 +8,12 @@ module.exports = async (req, res, options) =>
     const username = req.session.username
     if (username === undefined)
     {
-        require(paths.resolve('error.js'))(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
         return
     }
     if (!(await options.perm.findOne({where: {username: req.session.username, perm: 'developer'}})))
     {
-        require(paths.resolve('error.js'))(req, res, null, 'No such user.', '/', 'FrontPage')
+        require(paths.resolve('error.js'))(req, res, { description: 'No such user.', returnLink: '/', returnName: 'FrontPage' })
         return
     }
     ejs.renderFile(paths.view('admin/developermenu.ejs'),

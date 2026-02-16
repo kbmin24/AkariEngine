@@ -4,25 +4,29 @@ const {
 } = require('../services/errors')
 
 function buildAccessError(req, error, options = {}) {
+    // error from PermissionService is quite generic; transforms error to something that makes more sense
     const acl = (error && error.details && error.details.acl) || options.acl || 'everyone'
 
     if (error instanceof AuthenticationRequiredError) {
         return new AuthenticationRequiredError({
-            message: global.i18n.__('loginneeded'),
+            message: 'Login Required.', //fallback
             returnLink: options.authReturnLink || '/login',
             returnName: options.authReturnName || 'loginpage',
+            i18nKey: 'loginneeded',
             lang: options.lang || 'ko'
         })
     }
 
     if (error instanceof PermissionDeniedError) {
-        const detailMessage = error.details && error.details.message
+        const detailMessage = error.details && error.details.message // honestly not sure whether this is even required
+
         const message = detailMessage
             || options.noAclMessage
-            || global.i18n.__(options.noAclMessageKey || 'edit_noacl', { acl })
         return new PermissionDeniedError(error.action || 'unknown', error.resource || null, {
             ...(error.details || {}),
             message,
+            i18nKey: options.noAclMessageKey,
+            i18nParams: { acl },
             returnLink: options.permissionReturnLink || '/',
             returnName: options.permissionReturnName || 'mainpage',
             lang: options.lang || 'ko'

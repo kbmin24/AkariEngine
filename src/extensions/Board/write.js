@@ -5,7 +5,7 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require(paths.resolve('error.js'))(req, res, null, '존재하지 않는 게시판입니다.', '/board', '게시판 홈', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     if (!(await require(paths.resolve('utils', 'captcha.js')).chkCaptcha(req, res, perm))) return
@@ -13,23 +13,23 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
     {
         if (req.body.nickname.trim() == "")
         {
-            require(paths.resolve('error.js'))(req, res, null, '닉네임이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: '닉네임이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
             return
         }
         if (req.body.pw.trim() == "")
         {
-            require(paths.resolve('error.js'))(req, res, null, '비밀번호가 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+            require(paths.resolve('error.js'))(req, res, { description: '비밀번호가 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
             return
         }
     }
     if (!req.body.title)
     {
-        require(paths.resolve('error.js'))(req, res, null, '제목이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '제목이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
     if (!req.body.content)
     {
-        require(paths.resolve('error.js'))(req, res, null, '내용이 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '내용이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
     const pro = boardNow.writeACL
@@ -45,7 +45,7 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
     }
     else
     {
-        require(paths.resolve('error.js'))(req, res, req.session.username, '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
 

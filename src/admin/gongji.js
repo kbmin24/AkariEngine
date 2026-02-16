@@ -6,7 +6,7 @@ module.exports = async (req, res, gongji) =>
 {
     if (!req.body.boardname)
     {
-        require(paths.resolve('error.js'))(req, res, null, '게시판 ID가 필요합니다.', 'javascript:window.history.back()', '글쓰기', 200, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '게시판 ID가 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
     await gongji.destroy({

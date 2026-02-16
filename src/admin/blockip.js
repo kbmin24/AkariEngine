@@ -4,12 +4,17 @@ const logger = require(paths.utils('logger'))
 
 module.exports = async (req, res, users, perm, block, adminlog) =>
 {
+
+    // TODO remove old blocks before processing the request
+    // TODO add index to DB
+    // TODO remove old blocks for blockuser too
+
     const username = req.session.username
     //first check whether the user has block permission or not
     if (!(await perm.findOne({where: {username: username, perm: 'block'}})))
     {
         logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-        require(paths.resolve('error.js'))(req, res, null, 'You do not have a block permission', '/admin', 'the admin page')
+        require(paths.resolve('error.js'))(req, res, { description: 'You do not have a block permission', returnLink: '/admin', returnName: 'the admin page' })
         return
     }
 
@@ -17,7 +22,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     const CIDRregex = /^([0-9]{1,3}\.){3}[0-9]{1,3}($|\/(1[6-9]|2[0-9]|3[0-2]))$/
     if (!CIDRregex.test(req.body.target))
     {
-        await require(paths.resolve('error.js'))(req, res, null, 'CIDR given is invalid.', '/admin/blockip', 'blockip page')
+        await require(paths.resolve('error.js'))(req, res, { description: 'CIDR given is invalid.', returnLink: '/admin/blockip', returnName: 'blockip page' })
         return
     }
 
@@ -31,7 +36,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
                 if (!currentBlock)
                 {
-                    await require(paths.resolve('error.js'))(req, res, null, 'The IP currently is not blocked.', '/admin/blockip', 'blockip page')
+                    await require(paths.resolve('error.js'))(req, res, { description: 'The IP currently is not blocked.', returnLink: '/admin/blockip', returnName: 'blockip page' })
                     return
                 }
                 await block.destroy({where: {target: req.body.target}})
@@ -43,7 +48,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
                 if (currentBlock)
                 {
-                    await require(paths.resolve('error.js'))(req, res, null, 'The user is already blocked. Please unblock the user first.', '/admin/blockip', 'blockip page')
+                    await require(paths.resolve('error.js'))(req, res, { description: 'The IP is already blocked. Please unblock the IP first.', returnLink: '/admin/blockip', returnName: 'blockip page' })
                     return
                 }
                 await block.create({
@@ -62,13 +67,13 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 //other periods
                 if (isNaN(req.body.blockfor))
                 {
-                    await require(paths.resolve('error.js'))(req, res, null, 'Block period must be unblock, forever or an integer.', '/admin/blockip', 'blockip page')
+                    await require(paths.resolve('error.js'))(req, res, { description: 'Block period must be unblock, forever or an integer.', returnLink: '/admin/blockip', returnName: 'blockip page' })
                     return
                 }
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
                 if (currentBlock)
                 {
-                    await require(paths.resolve('error.js'))(req, res, null, 'The IP is already blocked. Please unblock the IP first.', '/admin/blockip', 'blockip page')
+                    await require(paths.resolve('error.js'))(req, res, { description: 'The IP is already blocked. Please unblock the IP first.', returnLink: '/admin/blockip', returnName: 'blockip page' })
                     return
                 }
                 const blockTill = new Date(Date.now() + req.body.blockfor * 1000)

@@ -14,7 +14,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     var rev2 = req.query.rev2
     if (!rev1 || !rev2)
     {
-        require(paths.resolve('error.js'))(req, res, null, `리비전이 지정되지 않았습니다.`, '/', '메인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: `리비전이 지정되지 않았습니다.`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
         return
     }
 
@@ -36,7 +36,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     }
     else
     {
-        require(paths.resolve('error.js'))(req, res, null, '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', '/login', '로그인 페이지', 403, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
         return
     }
 
@@ -50,7 +50,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev1)
     {
-        require(paths.resolve('error.js'))(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
         return
     }
 
@@ -64,7 +64,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev2)
     {
-        require(paths.resolve('error.js'))(req, res, null, `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, '/', '메인 페이지', 404, 'ko')
+        require(paths.resolve('error.js'))(req, res, { description: `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
         return
     }
 

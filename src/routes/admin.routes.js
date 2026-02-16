@@ -2,9 +2,7 @@ const express = require('express')
 const ejs = require('ejs')
 const date = require('date-and-time')
 const { Op } = require('sequelize')
-const { body } = require('express-validator')
 const paths = require('../utils/paths')
-const { validateRequest } = require(paths.middleware('validation'))
 const { requirePermission } = require(paths.middleware('auth'))
 const logger = require(paths.utils('logger'))
 
@@ -35,14 +33,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'grant' } })
             if (!p) {
                 logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, null, 'You do not have a grant permission.', '/admin', 'the admin page')
+                load('error.js')(req, res, { description: 'You do not have a grant permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -59,7 +57,7 @@ module.exports = (services, options = {}) => {
 
             const u = await global.db.users.findOne({ where: { username: req.query.grantTo } })
             if (!u) {
-                load('error.js')(req, res, null, 'No such user.', '/admin/grant', 'the grant page')
+                load('error.js')(req, res, { description: 'No such user.', returnLink: '/admin/grant', returnName: 'the grant page' })
                 return
             }
 
@@ -83,14 +81,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'block' } })
             if (!p) {
                 logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, null, 'You do not have a block permission.', '/admin', 'the admin page')
+                load('error.js')(req, res, { description: 'You do not have a block permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -109,14 +107,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'block' } })
             if (!p) {
                 logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, null, 'You do not have a block permission.', '/admin', 'the admin page')
+                load('error.js')(req, res, { description: 'You do not have a block permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -135,14 +133,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'loginhistory' } })
             if (!p) {
                 logger.admin('Unauthorised loginhistory attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, null, 'You do not have a loginhistory permission.', '/admin', 'the admin page')
+                load('error.js')(req, res, { description: 'You do not have a loginhistory permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -182,14 +180,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'acl' } })
             if (!p) {
                 logger.admin('Unauthorised rev hide attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, null, 'You do not have an acl permission.', '/admin', 'the admin page')
+                load('error.js')(req, res, { description: 'You do not have an acl permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -209,13 +207,13 @@ module.exports = (services, options = {}) => {
             // TODO move this to extension. Why is it even here??
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 404, 'ko')
+                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'board' } })
             if (!p) {
-                load('error.js')(req, res, null, 'You do not have a board permission.', '/admin', 'the admin page')
+                load('error.js')(req, res, { description: 'You do not have a board permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -231,24 +229,87 @@ module.exports = (services, options = {}) => {
 
     router.post('/admin/grant',
         csrfProtection,
-        requirePermission('grant'),
-        body('grantTo').trim().notEmpty(),
-        body('permissions').isArray(),
-        validateRequest,
-        async (req, res, next) => {
-            try {
-                for (const permission of req.body.permissions) {
-                    await services.permission.grantPermission(
-                        req.session.username,
-                        req.body.grantTo,
-                        permission
-                    )
-                }
-                res.redirect('/admin')
-            } catch (error) {
-                next(error)
-            }
-        }
+        asyncRoute(async (req, res) => {
+            await load('admin', 'grant.js')(req, res, global.db.users, global.db.perm, global.db.adminlog)
+        })
+    )
+
+    router.post('/admin/blockuser',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'blockuser.js')(req, res, global.db.users, global.db.perm, global.db.block, global.db.adminlog)
+        })
+    )
+
+    router.post('/admin/blockip',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'blockip.js')(req, res, global.db.users, global.db.perm, global.db.block, global.db.adminlog)
+        })
+    )
+
+    router.post('/admin/hiderev',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'protectRevision.js')(req, res, {
+                perm: global.db.perm,
+                page: global.db.pages,
+                protect: global.db.protect,
+                adminlog: global.db.adminlog
+            })
+        })
+    )
+
+    router.post('/admin/hidethread',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'hidethreadcomment.js')(req, res, {
+                perm: global.db.perm,
+                threadcomment: global.db.threadcomment
+            })
+        })
+    )
+
+    router.post('/admin/changethreadstatus',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'changethreadstatus.js')(req, res, {
+                perm: global.db.perm,
+                thread: global.db.thread,
+                threadcomment: global.db.threadcomment
+            })
+        })
+    )
+
+    router.post('/admin/changethreadname',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'changethreadtitle.js')(req, res, {
+                perm: global.db.perm,
+                thread: global.db.thread,
+                threadcomment: global.db.threadcomment
+            })
+        })
+    )
+
+    router.post('/admin/gongji',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'gongji.js')(req, res, global.db.gongji)
+        })
+    )
+
+    router.get('/admin/developer',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+            await load('admin', 'developerGetHandler.js')(req, res, { perm: global.db.perm })
+        })
+    )
+
+    router.get('/adminlog',
+        asyncRoute(async (req, res) => {
+            await load('admin', 'adminlog.js')(req, res, global.db.adminlog)
+        })
     )
 
     return router

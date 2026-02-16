@@ -182,7 +182,7 @@ module.exports = async (req, res) =>
                 {
                     hisText = global.i18n.__("seeHistory", {link: escapeHtml(req.params.name)})
                 }
-                require(paths.resolve('error.js'))(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
+                require(paths.resolve('error.js'))(req, res, { description: global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: global.i18n.__("mainpage"), statusCode: 404 })
             }
         })()
     }
@@ -210,7 +210,7 @@ module.exports = async (req, res) =>
             }
             else
             {
-                require(paths.resolve('error.js'))(req, res, null, global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), '/', global.i18n.__("mainpage"), 404)
+                require(paths.resolve('error.js'))(req, res, { description: global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: global.i18n.__("mainpage"), statusCode: 404 })
             }
         })()
     }

@@ -140,25 +140,9 @@ global.escapeHTML = require(paths.utils('escapeHTML'))
 const dateandtime = require('date-and-time')
 
 //views
-const ejs = require('ejs')
 app.set('view engine', 'ejs')
 app.set('views', paths.views)
 const load = (...segments) => require(paths.resolve(...segments))
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
-const renderLayout = (req, res, renderOpt) => load('view.js')(req, res, renderOpt)
-const delegate = (moduleSegments, argsFactory = () => []) => asyncRoute(async (req, res) => {
-    const handler = load(...moduleSegments)
-    const args = argsFactory(req, res)
-    await handler(req, res, ...args)
-})
-
-async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
-    const html = await ejs.renderFile(paths.view(templatePath), templateData)
-    renderLayout(req, res, {
-        ...layoutData,
-        content: html
-    })
-}
 
 // Private Mode?
 app.use((req, res, next) => {
@@ -187,10 +171,20 @@ app.use((req, res, next) => {
 
     if (url.startsWith('/signup'))
     {
-        return load('error.js')(req, res, null, '계정 생성이 비활성화되어 있습니다.', '/login', '로그인 페이지', 403, 'ko')
+        return load('error.js')(req, res, {
+            description: '계정 생성이 비활성화되어 있습니다.',
+            returnLink: '/login',
+            returnName: '로그인 페이지',
+            statusCode: 403
+        })
     }
 
-    return load('error.js')(req, res, null, '로그인이 필요합니다.', '/login', '로그인 페이지', 403, 'ko')
+    return load('error.js')(req, res, {
+        description: '로그인이 필요합니다.',
+        returnLink: '/login',
+        returnName: '로그인 페이지',
+        statusCode: 403
+    })
 })
 
 app.use(express.static(paths.public))
@@ -223,129 +217,8 @@ app.use((req, res, next) => {
 //Register routes
 require('./routes')(app, services, { csrfProtection })
 
-app.get('/', (req, res) => {
-    res.redirect('/w/FrontPage')
-})
 
-app.get('/Licence', asyncRoute(async (req, res) => {
-    await renderTemplateInLayout(req, res, 'license.ejs', {}, { title: 'Licence' })
-}))
-
-app.get('/noEmail', asyncRoute(async (req, res) => {
-    await renderTemplateInLayout(req, res, 'etc/noEmail.ejs', { l: res.__ }, { title: global.i18n.__('noEmail') })
-}))
-
-app.get('/signup', asyncRoute(async (req, res) => {
-    const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
-    await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: global.i18n.__ }, {
-        title: global.i18n.__('register'),
-        username: req.session.username,
-        ipaddr: req.ipAddress
-    })
-}))
-
-app.post('/signup', (req, res) => {
-    load('user', 'signup.js')(req, res, sequelize, users, perm)
-})
-
-app.get('/login', csrfProtection, asyncRoute(async (req, res) => {
-    const username = req.session.username
-    await renderTemplateInLayout(req, res, 'user/login.ejs', { csrfToken: req.csrfToken(), l: global.i18n.__ }, {
-        title: global.i18n.__('login'),
-        username,
-        ipaddr: req.ipAddress
-    })
-}))
-
-app.post('/login', csrfProtection, asyncRoute(async (req, res) => {
-    load('user', 'login.js')(req, res, users, loginhistory)
-}))
-
-app.get('/logout', (req, res) => {
-    req.session.regenerate(() => {})
-    res.redirect('/')
-})
-
-app.get('/settings', csrfProtection, asyncRoute(async (req, res) => {
-    const username = req.session.username ? req.session.username : null
-    const sR = await settings.findOne({
-        where:
-        {
-            user: username,
-            key: 'sign'
-        }
-    })
-    const sign = sR ? sR.value : ''
-    await renderTemplateInLayout(req, res, 'user/settings.ejs', {
-        csrfToken: req.csrfToken(),
-        sign,
-        username,
-        l: global.i18n.__
-    }, {
-        title: global.i18n.__('settings'),
-        username,
-        ipaddr: req.ipAddress
-    })
-}))
-
-app.post('/settings/:name(*)', csrfProtection, asyncRoute(async (req, res) => {
-    load('user', 'settings.js')(req, res,
-        {
-            settings: settings,
-            users: users
-        })
-}))
-
-
-app.post('/w', asyncRoute(async (req,res) => {
-    await res.redirect('/w/' + req.body.pagename)
-}))
-app.post('/preview', delegate(['pages', 'preview.js'], () => [pages, mfile, category]))
-app.get('/search', delegate(['pages', 'search.js'], () => [pages]))
-app.post('/search', delegate(['pages', 'navSearch.js'], () => [pages]))
-app.get('/protect/:name(*)', delegate(['admin', 'protectGet.js'], () => [perm, protect, block]))
-app.post('/protect/:name(*)', delegate(['admin', 'protectPost.js'], () => [perm, protect, pages, history, recentchanges, block]))
-app.get('/raw/:name(*)', delegate(['pages', 'raw.js'], () => [pages, history, protect, perm, block]))
-app.get('/history/:name(*)', delegate(['pages', 'history.js'], () => [history]))
-app.get('/RecentChanges', asyncRoute(async (req, res) => {
-    await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: global.i18n.__ }, {
-        title: global.i18n.__('recentChanges'),
-        isPage: false,
-        username: req.session.username,
-        ipaddr: req.ipAddress
-    })
-}))
-app.get('/PageList', delegate(['pages', 'pagelist.js'], () => [pages]))
-
-app.get('/Upload', asyncRoute(async (req, res) => {
-    const username = req.session.username
-    const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
-    await renderTemplateInLayout(req, res, 'files/upload.ejs', {
-        username: username,
-        captcha: captchaSVG,
-        filetypes: getFileTypes().join(', '),
-        fileLimit: fileLimit
-    }, {
-        title: global.i18n.__('upload'),
-        username: username,
-        ipaddr: req.ipAddress
-    })
-}))
-const multer = require('multer')
-const fs = require('fs')
-const e = require('express')
-const default_filetypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
-function getFileTypes()
-{
-    if (global.conf.upload_types) return global.conf.upload_types
-    else return default_filetypes
-}
-function getMimeTypes()
-{
-    //only returns the LAST PART of mime (after slash)
-    if (global.conf.upload_mimes) return global.conf.upload_mimes
-    else return getFileTypes()
-}
+const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
 
 function checkFileType(file, cb)
 {
@@ -361,202 +234,6 @@ function checkFileType(file, cb)
         cb(`${getFileTypes().join(', ')}만 업로드 할 수 있습니다.`)
     }
 }
-var storage = multer.diskStorage({
-    destination: (req, file, cb) => {cb(null, paths.resolve('public', 'uploads'))},
-    filename: (req, file, cb) =>
-    {
-        if (req.body.filename == '')
-        {
-            let e = new Error('File name is null')
-            e.code = 'FILENAMENULL'
-            return cb(e)
-        }
-        try
-        {
-            //todo: refuse comma
-            if (fs.existsSync(paths.resolve('public', 'uploads', req.body.filename)))
-            {
-                let e = new Error('파일이 이미 존재합니다.')
-                e.code = 'FILEEXISTS'
-                return cb(e)
-            }
-            else
-            {
-                cb(null, req.body.filename.trim()) //req.body.filename
-            }
-        }
-        catch(err)
-        {
-            logger.error('Upload storage check failed', err)
-            cb('Internal Server Error')
-        }
-    }
-})
-
-const axios = require('axios')
-
-var fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
-
-var upload = multer({
-    storage: storage,
-    limits:
-    {
-        fields: 3,
-        fieldNameSize: 255,
-        fileSize: fileLimit * 1024 * 1024
-    },
-    fileFilter: async (req, file, cb) =>
-    {
-        const username = req.session.username
-        if (username === undefined)
-        {
-            load('error.js')(req, res, null, global.i18n.__('loginneeded'), '/login', global.i18n.__('loginpage'), 403, 'ko')
-            return
-        }
-        const b = await block.findOne({where: {target: username, targetType: 'user'}})
-        if (b)
-        {
-            if (b.isForever)
-            {
-                load('error.js')(req, res, null, `${b.doneBy}에 의해 영구적으로 차단된 상태입니다. (사유: ${b.comment})`, '/', '메인 페이지', 403, 'ko')
-                return
-            }
-            else
-            {
-                load('error.js')(req, res, null, `${b.doneBy}에 의해 ${dateandtime.format(b.until, global.dtFormat)}까지 차단된 상태입니다. (사유: ${b.comment})`, '/', '메인 페이지', 403, 'ko')
-                return
-            }
-        }
-        if (req.session.username && (await perm.findOne({where: {perm: 'bypasscaptcha', username: req.session.username}})))
-        {
-
-        }
-        else
-        {
-            const resKey = req.body['g-recaptcha-response']
-            const url = `https://www.google.com/recaptcha/api/siteverify?secret=${global.conf.reCAPTCHA_prv}&response=${resKey}`
-            
-            try
-            {
-                const verRes = await axios.post(url)
-                const data = verRes.data || {}
-                if (data.success !== true)
-                {
-                    let e = new Error('캡챠 오류')
-                    e.code = 'INVALIDCAPTCHA'
-                    return cb(e)
-                }
-            }
-            catch (err)
-            {
-                let e = new Error('캡챠 오류')
-                e.code = 'INVALIDCAPTCHA'
-                return cb(e)
-            }
-        }
-
-        let ext = req.body.filename.split(/\./).pop().toLowerCase();
-        if (!(getFileTypes().includes(ext)))
-        {
-            cb(`${getFileTypes().join(', ')}만 업로드할 수 있습니다.`)
-        }
-        if (!req.body.filename.match(/^[^\#\?\\\/\<\>\:\*\|\"]*$/i))
-        {
-            cb('파일명은 다음 문자를 포함할 수 없습니다: #, ?, /, \\, &lt;, &gt;, :, *, |, ".')
-        }
-        checkFileType(file, cb)
-    }
-})
-app.post('/Upload', upload.single('inputFile'), async (req, res) =>
-{
-    let filepgname = 'File:' + req.body.filename
-
-    await mfile.create(
-    {
-        filename: req.body.filename,
-        uploader: req.session.username,
-        explanation: req.body.explanation
-    })
-    await pages.create(
-        {
-            title: filepgname,
-            content: req.body.explanation,
-            currentRev: 1
-        })
-
-    //분류 등록
-    {
-        const categoryRegex = /\[\[(?:Category|분류):(.*?)\]\]/igm
-        let e
-        while ((e = categoryRegex.exec(req.body.explanation)) !== null)
-        {
-            if (!e[1]) continue
-            category.create(
-                {
-                    page: filepgname,
-                    category: e[1]
-                }
-            )
-        }
-    }
-    await history.create(
-        {
-            page: filepgname,
-            rev: 1,
-            content: req.body.explanation,
-            bytechange: req.body.explanation.length,
-            editedby: req.session.username,
-            comment: `${req.body.filename} 업로드`,
-            type: 'edit'
-        })
-    await recentchanges.create(
-    {
-        page: filepgname,
-        rev: 1,
-        doneBy: req.session.username,
-        comment: `${req.body.filename} 업로드`,
-        bytechange: req.body.explanation.length,
-        type: 'upload'
-    })
-    res.redirect('/w/' + filepgname)
-})
-app.get('/diff/:name(*)', delegate(['pages', 'diff.js'], () => [history, protect, perm, block]))
-app.get('/RandomPage', asyncRoute(async (req, res) => {
-    const randomPage = await pages.findOne({ 
-        order: sequelize.random() 
-    })
-    res.redirect(`/w/${randomPage.title}`)
-}))
-app.get('/admin/developer', csrfProtection, delegate(['admin', 'developerGetHandler.js'], () => [{ perm }]))
-app.post('/admin/:name(*)', csrfProtection, delegate(['admin', 'adminPostHandler.js'], () => [users, perm, block, pages, protect, adminlog, threadcomment, thread]))
-app.get('/adminlog', delegate(['admin', 'adminlog.js'], () => [adminlog]))
-
-app.get('/category/:name(*)', delegate(['pages', 'category.js'], () => [category]))
-
-app.get('/contribution/:name(*)', delegate(['user', 'contribution.js'], () => [history]))
-
-app.get('/orphaned', asyncRoute(async (req, res) => {
-    await renderTemplateInLayout(req, res, 'pages/orphaned.ejs', {}, { title: '고립된 문서' })
-}))
-
-app.get('/viewrank', delegate(['pages', 'viewrank.js'], () => [viewcount]))
-
-app.get('/threads/:name(*)', delegate(['threads', 'threadList.js'], () => [{ pages, thread, block }]))
-app.post('/threads/:name(*)', delegate(['threads', 'createThread.js'], () => [{ pages, thread, threadcomment, recentdiscuss, block, perm }]))
-
-app.get('/thread/:name(*)', csrfProtection, delegate(['threads', 'thread.js'], () => [{ pages, thread, threadcomment, perm }]))
-
-app.get('/xref/:name(*)', delegate(['pages', 'xref.js']))
-
-app.get('/RecentDiscuss', delegate(['threads', 'rd.js'], () => [recentdiscuss, thread]))
-
-//AJAX routes
-app.get('/ajax/autocomplete', delegate(['AJAX', 'pageautocomplete.js'], () => [pages]))
-app.get('/ajax/recentchanges', delegate(['AJAX', 'recentchanges.js'], () => [recentchanges]))
-app.get('/ajax/username', delegate(['AJAX', 'username.js'], () => [users]))
-app.get('/ajax/threadcomments', delegate(['AJAX', 'threadcomments.js'], () => [{ pages, thread, threadcomment, file: mfile }]))
-app.get('/ajax/threadinfo', delegate(['AJAX', 'threadinfo.js'], () => [{ thread, block }]))
-app.get('/ajax/threadlist', delegate(['AJAX', 'threadlist.js'], () => [thread]))
 
 app.get('/lovelive', (req, res) =>
 {
@@ -581,19 +258,34 @@ app.use((err, req, res, next) =>
             break
         case 'FILENAMENULL':
             {
-                load('error.js')(req, res, null, `파일 이름이 비어 있습니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+                load('error.js')(req, res, {
+                    description: '파일 이름이 비어 있습니다.',
+                    returnLink: 'javascript:window.history.back()',
+                    returnName: '이전 페이지',
+                    statusCode: 400
+                })
             }
             break
         case 'FILEEXISTS':
             {
-                load('error.js')(req, res, null, `파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+                load('error.js')(req, res, {
+                    description: '파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.',
+                    returnLink: 'javascript:window.history.back()',
+                    returnName: '이전 페이지',
+                    statusCode: 400
+                })
             }
             break
         case 'PROCESSED':
             break
         case 'INVALIDCAPTCHA':
             {
-                load('error.js')(req, res, null, `CAPTCHA를 수행해 주세요.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+                load('error.js')(req, res, {
+                    description: 'CAPTCHA를 수행해 주세요.',
+                    returnLink: 'javascript:window.history.back()',
+                    returnName: '이전 페이지',
+                    statusCode: 400
+                })
             }
             break
         case 'BOARD_LIMIT_FILE_SIZE':
@@ -620,7 +312,12 @@ app.use((err, req, res, next) =>
             break
         case 'LIMIT_FILE_SIZE':
             {
-                load('error.js')(req, res, null, `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`, 'javascript:window.history.back()', '이전 페이지', 200, 'ko')
+                load('error.js')(req, res, {
+                    description: `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`,
+                    returnLink: 'javascript:window.history.back()',
+                    returnName: '이전 페이지',
+                    statusCode: 400
+                })
             }
             break
         default:

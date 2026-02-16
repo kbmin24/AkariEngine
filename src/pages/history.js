@@ -19,7 +19,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require(paths.resolve('error.js'))(req, res, null, global.i18n.__('noPageMsg', {name: req.params.name}), '/', global.i18n.__('mainpage'), 404)
+            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 404 })
             return
         }
         //from & to is nth entry in history (NOT nth revision)

@@ -15,6 +15,7 @@ class PermissionService {
     }
 
     formatBlockMessage(block, isIpBlock = false) {
+        // This message is fallback; default is i18nKey.
         if (isIpBlock) {
             if (block.isForever) {
                 return `Your ip address or its range (${block.target}) is blocked forever by ${block.doneBy} - ${block.comment}`
@@ -45,75 +46,102 @@ class PermissionService {
                 for (const ipBlock of ipBlocks) {
                     if (ipBlock.allowLogin && user) continue
                     if (ipRangeCheck(ipAddress, ipBlock.target)) {
-                        return {
+                        let res = {
                             allowed: false,
                             requiredLevel,
                             reason: 'ip_block',
+                            i18nParams: { ip: ipBlock.target, doneBy: ipBlock.doneBy, comment: ipBlock.comment },
                             block: ipBlock,
                             message: this.formatBlockMessage(ipBlock, true)
                         }
+                        if (ipBlock.isForever) {
+                            res.i18nKey = 'ip_blocked_forever'
+                        }
+                        else {
+                            res.i18nKey = 'ip_blocked'
+                            res.i18nParams.until = dateandtime.format(ipBlock.until, global.dtFormat)
+                        }
+                        return res
                     }
                 }
             }
         }
 
         switch (requiredLevel) {
-        case 'blocked':
-            return { allowed: true, requiredLevel }
+            case 'blocked':
+                return { allowed: true, requiredLevel }
 
-        case 'everyone': {
-            if (!user) return { allowed: true, requiredLevel }
-            const userBlock = await this.blockRepo.findUserBlock(user)
-            if (userBlock) {
+            case 'everyone': {
+                if (!user) return { allowed: true, requiredLevel }
+                const userBlock = await this.blockRepo.findUserBlock(user)
+                if (userBlock) {
+                    let res = {
+                        allowed: false,
+                        requiredLevel,
+                        reason: 'user_block',
+                        i18nParams: { user: userBlock.target, doneBy: userBlock.doneBy, comment: userBlock.comment },
+                        block: userBlock,
+                        message: this.formatBlockMessage(userBlock, false)
+                    }
+                    if (userBlock.isForever) {
+                        res.i18nKey = 'user_blocked_forever'
+                    }
+                    else {
+                        res.i18nKey = 'user_blocked'
+                        res.i18nParams.until = dateandtime.format(userBlock.until, global.dtFormat)
+                    }
+                    return res
+                }
+                return { allowed: true, requiredLevel }
+            }
+
+            case 'login':
+                if (!user) {
+                    return {
+                        allowed: false,
+                        requiredLevel,
+                        i18nKey: 'loginneeded',
+                        reason: 'login_required',
+                        message: this.formatLoginRequiredMessage(action)
+                    }
+                }
+                return { allowed: true, requiredLevel }
+
+            case 'admin': {
+                if (!user) {
+                    return {
+                        allowed: false,
+                        requiredLevel,
+                        i18nKey: 'loginneeded',
+                        reason: 'login_required',
+                        message: this.formatLoginRequiredMessage(action)
+                    }
+                }
+                const isAdmin = await this.permissionRepo.isAdmin(user)
                 return {
-                    allowed: false,
+                    allowed: isAdmin,
                     requiredLevel,
-                    reason: 'user_block',
-                    block: userBlock,
-                    message: this.formatBlockMessage(userBlock, false)
+                    i18nKey: "admin_required",
+                    reason: isAdmin ? null : 'permission_denied'
                 }
             }
-            return { allowed: true, requiredLevel }
-        }
 
-        case 'login':
-            if (!user) {
-                return {
-                    allowed: false,
-                    requiredLevel,
-                    reason: 'login_required',
-                    message: this.formatLoginRequiredMessage(action)
+            default:
+                // Honestly this route should never show up, it just exists for the sake of existing.
+                if (!user) {
+                    return {
+                        allowed: false,
+                        requiredLevel,
+                        i18nKey: 'loginneeded',
+                        reason: 'login_required',
+                        message: this.formatLoginRequiredMessage(action)
+                    }
                 }
-            }
-            return { allowed: true, requiredLevel }
-
-        case 'admin': {
-            if (!user) {
                 return {
-                    allowed: false,
+                    allowed: await this.permissionRepo.hasPermission(user, requiredLevel),
                     requiredLevel,
-                    reason: 'login_required',
-                    message: this.formatLoginRequiredMessage(action)
+                    reason: 'permission_denied',
                 }
-            }
-            const isAdmin = await this.permissionRepo.isAdmin(user)
-            return { allowed: isAdmin, requiredLevel, reason: isAdmin ? null : 'permission_denied' }
-        }
-
-        default:
-            if (!user) {
-                return {
-                    allowed: false,
-                    requiredLevel,
-                    reason: 'login_required',
-                    message: this.formatLoginRequiredMessage(action)
-                }
-            }
-            return {
-                allowed: await this.permissionRepo.hasPermission(user, requiredLevel),
-                requiredLevel,
-                reason: 'permission_denied'
-            }
         }
     }
 
@@ -128,6 +156,8 @@ class PermissionService {
             throw new PermissionDeniedError('read', title, {
                 acl: result.requiredLevel,
                 reason: result.reason,
+                i18nKey: result.i18nKey || null,
+                i18nParams: result.i18nParams || null,
                 block: result.block,
                 message: result.message
             })
@@ -140,6 +170,8 @@ class PermissionService {
             throw new PermissionDeniedError('edit', title, {
                 acl: result.requiredLevel,
                 reason: result.reason,
+                i18nKey: result.i18nKey || null,
+                i18nParams: result.i18nParams || null,
                 block: result.block,
                 message: result.message
             })
@@ -152,6 +184,8 @@ class PermissionService {
             throw new PermissionDeniedError('move', title, {
                 acl: result.requiredLevel,
                 reason: result.reason,
+                i18nKey: result.i18nKey || null,
+                i18nParams: result.i18nParams || null,
                 block: result.block,
                 message: result.message
             })
@@ -164,6 +198,7 @@ class PermissionService {
         const hasPermission = await this.permissionRepo.hasPermission(user, permission)
         if (!hasPermission) {
             throw new PermissionDeniedError(permission, null, {
+                acl: permission,
                 i18nKey: 'deletepermneeded'
             })
         }
