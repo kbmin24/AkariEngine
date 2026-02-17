@@ -5,6 +5,9 @@ const CategoryRepository = require('./CategoryRepository')
 const HistoryRepository = require('./HistoryRepository')
 const BlockRepository = require('./BlockRepository')
 const ProtectRepository = require('./ProtectRepository')
+const RecentChangeRepository = require('./RecentChangeRepository')
+const ThreadRepository = require('./ThreadRepository')
+const ThreadCommentRepository = require('./ThreadCommentRepository')
 
 class RepositoryFactory {
     constructor(db) {
@@ -21,6 +24,9 @@ class RepositoryFactory {
         this.permissions = new PermissionRepository(db.perm)
         this.categories = new CategoryRepository(db.category)
         this.history = new HistoryRepository(db.history)
+        this.recentchanges = new RecentChangeRepository(db.recentchanges)
+        this.threads = new ThreadRepository(db.thread)
+        this.threadcomments = new ThreadCommentRepository(db.threadcomment)
         this.blocks = new BlockRepository(db.block)
         this.protections = new ProtectRepository(db.protect)
     }

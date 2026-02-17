@@ -173,8 +173,62 @@ function requireLogin(options = {}) {
     }
 }
 
+function createRequireEveryoneMiddleware(options = {}) {
+    // requires 'everyone' ACL i.e. pass IP/user block checks.
+    const mode = options.mode || 'enforce'
+    const storeKey = options.storeKey || 'everyoneAccess'
+
+    return async (req, res, next) => {
+        try {
+            const username = req.session ? req.session.username : undefined
+            const services = req.app.locals.services
+
+            const result = await services.permission.checkAccessDetailed(username, null, 'read', {
+                ipAddress: req.ipAddress,
+                requiredLevel: 'everyone'
+            })
+
+            if (!result.allowed) {
+                throw new PermissionDeniedError('read', null, {
+                    acl: result.requiredLevel,
+                    reason: result.reason,
+                    i18nKey: result.i18nKey || null,
+                    i18nParams: result.i18nParams || null,
+                    block: result.block,
+                    message: result.message
+                })
+            }
+
+            req[storeKey] = { allowed: true }
+            next()
+        } catch (error) {
+            const mapped = buildAccessError(req, error, options)
+
+            if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
+                req[storeKey] = {
+                    allowed: false,
+                    error: mapped
+                }
+                next()
+                return
+            }
+
+            next(mapped)
+        }
+    }
+}
+
+function requireEveryone(options, res, next) {
+    if (typeof next === 'function') {
+        return createRequireEveryoneMiddleware({})(options, res, next)
+    }
+
+    return createRequireEveryoneMiddleware(options || {})
+}
+
 module.exports = {
     requirePermission,
     requirePageAccess,
-    requireLogin
+    requireLogin,
+    requireEveryone
 }

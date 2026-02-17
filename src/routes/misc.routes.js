@@ -17,7 +17,7 @@ module.exports = () => {
     }))
 
     router.get('/orphaned', asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'pages/orphaned.ejs', {}, { title: '고립된 문서' })
+        await renderTemplateInLayout(req, res, 'pages/orphaned.ejs', { t: i18n.__ }, { title: i18n.__('orphaned_pages') })
     }))
 
     return router

@@ -28,6 +28,21 @@ class PageRepository extends BaseRepository {
         })
     }
 
+    async autocompleteByPrefix(query, limit = 10) {
+        return this.model.findAll({
+            attributes: ['title'],
+            where: {
+                title: {
+                    [Op.like]: `${query}%`
+                }
+            },
+            order: [
+                ['title', 'ASC']
+            ],
+            limit
+        })
+    }
+
     async upsertPage(title, content, currentRev, deleted = false, recentChange = null) {
         const existing = await this.findByTitle(title)
         let page

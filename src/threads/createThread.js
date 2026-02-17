@@ -1,5 +1,6 @@
 const sanitiseHtml = require('sanitize-html')
 const paths = require('../utils/paths')
+
 function genArbitaryString(len)
 {
     //https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
@@ -16,18 +17,7 @@ module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
 
-    let captchaSuccess = await require(paths.resolve('utils', 'captcha.js')).chkCaptcha(req, res, dbs['perm'])
-    if (!captchaSuccess) return //CAPTCHA error
-
     const title = req.params.name
-
-
-    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ['everyone'], null, dbs['block'])
-    if (!r)
-    {
-        require(paths.resolve('error.js'))(req, res, { description: 'You cannot crate a thread because you are blocked' + '.', returnLink: '/', returnName: 'the main page' })
-        return
-    }
 
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))

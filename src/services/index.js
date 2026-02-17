@@ -1,6 +1,8 @@
 const PageService = require('./PageService')
 const PermissionService = require('./PermissionService')
 const CategoryService = require('./CategoryService')
+const RecentChangeService = require('./RecentChangeService')
+const ThreadService = require('./ThreadService')
 
 class ServiceFactory {
     constructor(repositories) {
@@ -16,6 +18,8 @@ class ServiceFactory {
             this.category,
             this.permission
         )
+        this.recentChanges = new RecentChangeService(repositories.recentchanges)
+        this.thread = new ThreadService(repositories.threads, repositories.threadcomments, this.permission)
     }
 }
 

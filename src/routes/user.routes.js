@@ -1,6 +1,7 @@
 const express = require('express')
 const i18n = require("i18n")
 const paths = require('../utils/paths')
+const { chkCaptcha } = require(paths.middleware('chkCaptcha'))
 const { load, asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
 
 module.exports = (_services, options = {}) => {
@@ -8,7 +9,7 @@ module.exports = (_services, options = {}) => {
     const csrfProtection = options.csrfProtection
 
     router.get('/signup', asyncRoute(async (req, res) => {
-        const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
+        const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
         await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: i18n.__ }, {
             title: i18n.__('register'),
             username: req.session.username,
@@ -16,7 +17,9 @@ module.exports = (_services, options = {}) => {
         })
     }))
 
-    router.post('/signup', asyncRoute(async (req, res) => {
+    router.post('/signup',
+        chkCaptcha,
+        asyncRoute(async (req, res) => {
         await load('user', 'signup.js')(req, res, global.sequelize, global.db.users, global.db.perm)
     }))
 

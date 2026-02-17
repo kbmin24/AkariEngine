@@ -355,6 +355,15 @@ class PageService {
     async searchPages(query, limit = 10) {
         return this.pageRepo.searchByTitle(query, limit)
     }
+
+    async autocompletePages(query, limit = 10) {
+        if (!query || typeof query !== 'string') return []
+
+        const normalized = query.trim()
+        if (!normalized) return []
+
+        return this.pageRepo.autocompleteByPrefix(normalized, limit)
+    }
 }
 
 module.exports = PageService
