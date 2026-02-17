@@ -5,21 +5,9 @@ const fs = require('fs')
 const axios = require('axios')
 const dateandtime = require('date-and-time')
 const paths = require('../utils/paths')
+const { load, asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
 const { chkCaptcha } = require('../middleware/chkCaptcha')
 const { requireLogin } = require(paths.middleware('permission'))
-
-const router = express.Router()
-const load = (...segments) => require(paths.resolve(...segments))
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
-
-async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
-    const ejs = require('ejs')
-    const html = await ejs.renderFile(paths.view(templatePath), templateData)
-    load('view.js')(req, res, {
-        ...layoutData,
-        content: html
-    })
-}
 
 const defaultFileTypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
 
@@ -41,6 +29,7 @@ function checkFileType(file, cb) {
 }
 
 module.exports = (_services, _options = {}) => {
+    const router = express.Router()
     const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
 
     const storage = multer.diskStorage({

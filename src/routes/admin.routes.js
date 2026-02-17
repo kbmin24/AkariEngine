@@ -3,14 +3,12 @@ const ejs = require('ejs')
 const date = require('date-and-time')
 const { Op } = require('sequelize')
 const paths = require('../utils/paths')
+const { asyncRoute, load } = require('../utils/httpHelper')
 const { requirePermission } = require(paths.middleware('auth'))
 const logger = require(paths.utils('logger'))
 
-const router = express.Router()
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
-const load = (...segments) => require(paths.resolve(...segments))
-
 module.exports = (services, options = {}) => {
+    const router = express.Router()
     const csrfProtection = options.csrfProtection
 
     router.get('/admin',

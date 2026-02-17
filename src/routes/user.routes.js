@@ -1,21 +1,10 @@
 const express = require('express')
 const i18n = require("i18n")
 const paths = require('../utils/paths')
-const ejs = require('ejs')
-
-const router = express.Router()
-const load = (...segments) => require(paths.resolve(...segments))
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
-
-async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
-    const html = await ejs.renderFile(paths.view(templatePath), templateData)
-    load('view.js')(req, res, {
-        ...layoutData,
-        content: html
-    })
-}
+const { load, asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
 
 module.exports = (_services, options = {}) => {
+    const router = express.Router()
     const csrfProtection = options.csrfProtection
 
     router.get('/signup', asyncRoute(async (req, res) => {

@@ -1,21 +1,9 @@
 const express = require('express')
 const i18n = require("i18n")
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-
-const router = express.Router()
-const load = (...segments) => require(paths.resolve(...segments))
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
-
-async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
-    const html = await ejs.renderFile(paths.view(templatePath), templateData)
-    load('view.js')(req, res, {
-        ...layoutData,
-        content: html
-    })
-}
+const { asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
 
 module.exports = () => {
+    const router = express.Router()
     router.get('/', (req, res) => {
         res.redirect('/w/FrontPage')
     })

@@ -1,11 +1,8 @@
 const express = require('express')
-const paths = require('../utils/paths')
-
-const router = express.Router()
-const load = (...segments) => require(paths.resolve(...segments))
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
+const { load, asyncRoute } = require('../utils/httpHelper')
 
 module.exports = () => {
+    const router = express.Router()
     router.get('/ajax/autocomplete', asyncRoute(async (req, res) => {
         await load('AJAX', 'pageautocomplete.js')(req, res, global.db.pages)
     }))

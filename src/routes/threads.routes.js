@@ -1,11 +1,8 @@
 const express = require('express')
-const paths = require('../utils/paths')
-
-const router = express.Router()
-const load = (...segments) => require(paths.resolve(...segments))
-const asyncRoute = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
+const { load, asyncRoute } = require('../utils/httpHelper')
 
 module.exports = (_services, options = {}) => {
+    const router = express.Router()
     const csrfProtection = options.csrfProtection
 
     router.get('/threads/:name(*)', asyncRoute(async (req, res) => {
