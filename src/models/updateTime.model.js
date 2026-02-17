@@ -11,5 +11,13 @@ module.exports = (sequelize) =>
         {
             type: DataTypes.DATE
         }
+    },
+    {
+        indexes: [
+            {
+                unique: true,
+                fields: ['key']
+            }
+        ]
     })
 }

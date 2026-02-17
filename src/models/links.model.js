@@ -1,17 +1,27 @@
-const {DataTypes} = require('sequelize')
-module.exports = (sequelize) =>
-{
+const { DataTypes } = require('sequelize')
+module.exports = (sequelize) => {
     return sequelize.define('link',
-    {
-        source:
         {
-            allowNull: false,
-            type: DataTypes.STRING
-        },
-        dest:
-        {
-            allowNull: false,
-            type: DataTypes.STRING
-        }
+            source:
+            {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            dest:
+            {
+                allowNull: false,
+                type: DataTypes.STRING
+            }
+        }, {
+        indexes: [
+            {
+                using: 'BTREE',
+                fields: ['source']
+            },
+            {
+                using: 'BTREE',
+                fields: ['dest']
+            }
+        ]
     })
 }

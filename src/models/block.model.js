@@ -56,6 +56,10 @@ module.exports = (sequelize) => {
                 {
                     using: 'BTREE',
                     fields: ['targetType', 'startIP', 'endIP']
+                },
+                {
+                    using: 'BTREE',
+                    fields: ['targetType', 'target']
                 }
             ]
         })
