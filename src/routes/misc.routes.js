@@ -1,6 +1,7 @@
 const express = require('express')
 const i18n = require("i18n")
 const { asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
+const logger = require('../utils/logger')
 
 module.exports = () => {
     const router = express.Router()

@@ -102,6 +102,7 @@ module.exports = (services, options = {}) => {
 
     router.get('/admin/blockip',
         csrfProtection,
+        requirePermission('block'),
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {

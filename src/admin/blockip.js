@@ -1,99 +1,45 @@
-const dateandtime = require('date-and-time')
 const paths = require('../utils/paths')
 const logger = require(paths.utils('logger'))
+const { ValidationError, PermissionDeniedError } = require(paths.services('errors'))
 
-module.exports = async (req, res, users, perm, block, adminlog) =>
-{
-
-    // TODO remove old blocks before processing the request
-    // TODO add index to DB
-    // TODO remove old blocks for blockuser too
-
+module.exports = async (req, res, _users, _perm, _block, adminlog) => {
     const username = req.session.username
-    //first check whether the user has block permission or not
-    if (!(await perm.findOne({where: {username: username, perm: 'block'}})))
-    {
-        logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-        require(paths.resolve('error.js'))(req, res, { description: 'You do not have a block permission', returnLink: '/admin', returnName: 'the admin page' })
-        return
-    }
 
-    //secondly validate CIDR.
-    const CIDRregex = /^([0-9]{1,3}\.){3}[0-9]{1,3}($|\/(1[6-9]|2[0-9]|3[0-2]))$/
-    if (!CIDRregex.test(req.body.target))
-    {
-        await require(paths.resolve('error.js'))(req, res, { description: 'CIDR given is invalid.', returnLink: '/admin/blockip', returnName: 'blockip page' })
-        return
-    }
+    try {
+        const result = await req.app.locals.services.block.blockIp({
+            actor: username,
+            target: req.body.target,
+            blockFor: req.body.blockfor,
+            allowLogin: req.body.allowLogin === 'on' || req.body.allowLogin === true,
+            comment: req.body.comment || ''
+        })
 
-    //thirdly determine the type of task to do
-    var description = ''
-    const allowLogin = req.body.allowLogin ? true : false
-    switch (req.body.blockfor)
-    {
-        case 'unblock':
-            {
-                let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
-                if (!currentBlock)
-                {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'The IP currently is not blocked.', returnLink: '/admin/blockip', returnName: 'blockip page' })
-                    return
-                }
-                await block.destroy({where: {target: req.body.target}})
-                description = `unblocked ${req.body.target} - ${req.body.comment}`
-                break
-            }
-        case 'forever':
-            {
-                let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
-                if (currentBlock)
-                {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'The IP is already blocked. Please unblock the IP first.', returnLink: '/admin/blockip', returnName: 'blockip page' })
-                    return
-                }
-                await block.create({
-                    target: req.body.target,
-                    targetType: 'ip',
-                    isForever: true,
-                    doneBy: username,
-                    allowLogin: allowLogin,
-                    comment: req.body.comment
-                })
-                description = `blocked ${req.body.target} forever (Login: ${allowLogin ? 'Allow': 'Disallow'}) - ${req.body.comment}`
-                break
-            }
-        default:
-            {
-                //other periods
-                if (isNaN(req.body.blockfor))
-                {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'Block period must be unblock, forever or an integer.', returnLink: '/admin/blockip', returnName: 'blockip page' })
-                    return
-                }
-                let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'ip'}})
-                if (currentBlock)
-                {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'The IP is already blocked. Please unblock the IP first.', returnLink: '/admin/blockip', returnName: 'blockip page' })
-                    return
-                }
-                const blockTill = new Date(Date.now() + req.body.blockfor * 1000)
-                await block.create({
-                    target: req.body.target,
-                    targetType: 'ip',
-                    isForever: false,
-                    doneBy: username,
-                    until: blockTill,
-                    allowLogin: allowLogin,
-                    comment: req.body.comment
-                })
-                description = `blocked ${req.body.target} until ${dateandtime.format(blockTill, global.dtFormat)} (Login: ${allowLogin ? 'Allow': 'Disallow'}) - ${req.body.comment}`
-                break
-            }
+        await adminlog.create({
+            username,
+            job: result.description
+        })
 
+        require(paths.resolve('info.js'))(req, res, null, 'Done.', '/admin', 'the admin page')
+    } catch (error) {
+        if (error instanceof PermissionDeniedError) {
+            logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
+            require(paths.resolve('error.js'))(req, res, {
+                description: 'You do not have a block permission',
+                returnLink: '/admin',
+                returnName: 'the admin page'
+            })
+            return
+        }
+
+        if (error instanceof ValidationError) {
+            require(paths.resolve('error.js'))(req, res, {
+                description: error.message,
+                returnLink: '/admin/blockip',
+                returnName: 'blockip page'
+            })
+            return
+        }
+
+        throw error
     }
-    adminlog.create({
-        username: username,
-        job: description
-    })
-    require(paths.resolve('info.js'))(req, res, null, 'Done.', '/admin', 'the admin page')
 }

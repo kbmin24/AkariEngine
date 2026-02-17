@@ -326,7 +326,8 @@ app.use((err, req, res, next) =>
     }
 })
 
-//Put server on
+// Put server on
+// maybe we should support ipv6 in the future but I don't have any way to test it...
 const server = app.listen(port, '0.0.0.0', () =>
 {
     const host = server.address().address

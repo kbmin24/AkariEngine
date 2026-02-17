@@ -3,14 +3,21 @@ const PermissionService = require('./PermissionService')
 const CategoryService = require('./CategoryService')
 const RecentChangeService = require('./RecentChangeService')
 const ThreadService = require('./ThreadService')
+const BlockService = require('./BlockService')
 
 class ServiceFactory {
     constructor(repositories) {
         this.category = new CategoryService(repositories.categories)
+        this.block = new BlockService(
+            repositories.blocks,
+            repositories.users,
+            repositories.permissions
+        )
         this.permission = new PermissionService(
             repositories.permissions,
             repositories.blocks,
-            repositories.protections
+            repositories.protections,
+            this.block
         )
         this.page = new PageService(
             repositories.pages,

@@ -1,6 +1,5 @@
 const paths = require('../utils/paths')
 const logger = require(paths.utils('logger'))
-const ipRangeCheck = require('ip-range-check')
 const dateandtime = require('date-and-time')
 const {
     PermissionDeniedError,
@@ -8,10 +7,11 @@ const {
 } = require('./errors')
 
 class PermissionService {
-    constructor(permissionRepo, blockRepo, protectRepo) {
+    constructor(permissionRepo, blockRepo, protectRepo, blockService = null) {
         this.permissionRepo = permissionRepo
         this.blockRepo = blockRepo
         this.protectRepo = protectRepo
+        this.blockService = blockService
     }
 
     formatBlockMessage(block, isIpBlock = false) {
@@ -53,7 +53,6 @@ class PermissionService {
     }
 
     async checkAccessDetailed(user, resource, action = 'read', context = {}) {
-        await this.blockRepo.clearExpiredBlocks()
 
         const requiredLevelOverride = context.requiredLevel
         const protection = requiredLevelOverride ? null : await this.protectRepo.findProtection(resource, action)
@@ -61,28 +60,25 @@ class PermissionService {
 
         if (requiredLevel !== 'blocked') {
             const ipAddress = context.ipAddress
-            if (ipAddress) {
-                const ipBlocks = await this.blockRepo.findActiveIpBlocks()
-                for (const ipBlock of ipBlocks) {
-                    if (ipBlock.allowLogin && user) continue
-                    if (ipRangeCheck(ipAddress, ipBlock.target)) {
-                        let res = {
-                            allowed: false,
-                            requiredLevel,
-                            reason: 'ip_block',
-                            i18nParams: { ip: ipBlock.target, doneBy: ipBlock.doneBy, comment: ipBlock.comment },
-                            block: ipBlock,
-                            message: this.formatBlockMessage(ipBlock, true)
-                        }
-                        if (ipBlock.isForever) {
-                            res.i18nKey = 'ip_blocked_forever'
-                        }
-                        else {
-                            res.i18nKey = 'ip_blocked'
-                            res.i18nParams.until = dateandtime.format(ipBlock.until, global.dtFormat)
-                        }
-                        return res
+            if (ipAddress && this.blockService) {
+                const ipBlock = await this.blockService.findIPBlock(ipAddress)
+                if (ipBlock && !(ipBlock.allowLogin && user)) {
+                    let res = {
+                        allowed: false,
+                        requiredLevel,
+                        reason: 'ip_block',
+                        i18nParams: { ip: ipBlock.target, doneBy: ipBlock.doneBy, comment: ipBlock.comment },
+                        block: ipBlock,
+                        message: this.formatBlockMessage(ipBlock, true)
                     }
+                    if (ipBlock.isForever) {
+                        res.i18nKey = 'ip_blocked_forever'
+                    }
+                    else {
+                        res.i18nKey = 'ip_blocked'
+                        res.i18nParams.until = dateandtime.format(ipBlock.until, global.dtFormat)
+                    }
+                    return res
                 }
             }
         }
