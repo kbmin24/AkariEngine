@@ -30,14 +30,34 @@ class PermissionService {
     }
 
     formatLoginRequiredMessage(action) {
-        return global.i18n.__(`loginneeded`)
+        return 'Login required.'
+    }
+
+    buildUserBlockResult(userBlock, requiredLevel) {
+        let res = {
+            allowed: false,
+            requiredLevel,
+            reason: 'user_block',
+            i18nParams: { user: userBlock.target, doneBy: userBlock.doneBy, comment: userBlock.comment },
+            block: userBlock,
+            message: this.formatBlockMessage(userBlock, false)
+        }
+        if (userBlock.isForever) {
+            res.i18nKey = 'user_blocked_forever'
+        }
+        else {
+            res.i18nKey = 'user_blocked'
+            res.i18nParams.until = dateandtime.format(userBlock.until, global.dtFormat)
+        }
+        return res
     }
 
     async checkAccessDetailed(user, resource, action = 'read', context = {}) {
         await this.blockRepo.clearExpiredBlocks()
 
-        const protection = await this.protectRepo.findProtection(resource, action)
-        const requiredLevel = protection ? protection.protectionLevel : 'everyone'
+        const requiredLevelOverride = context.requiredLevel
+        const protection = requiredLevelOverride ? null : await this.protectRepo.findProtection(resource, action)
+        const requiredLevel = requiredLevelOverride || (protection ? protection.protectionLevel : 'everyone')
 
         if (requiredLevel !== 'blocked') {
             const ipAddress = context.ipAddress
@@ -72,25 +92,10 @@ class PermissionService {
                 return { allowed: true, requiredLevel }
 
             case 'everyone': {
-                if (!user) return { allowed: true, requiredLevel }
+                if (!user) return { allowed: true, requiredLevel } // ip block already checked
                 const userBlock = await this.blockRepo.findUserBlock(user)
                 if (userBlock) {
-                    let res = {
-                        allowed: false,
-                        requiredLevel,
-                        reason: 'user_block',
-                        i18nParams: { user: userBlock.target, doneBy: userBlock.doneBy, comment: userBlock.comment },
-                        block: userBlock,
-                        message: this.formatBlockMessage(userBlock, false)
-                    }
-                    if (userBlock.isForever) {
-                        res.i18nKey = 'user_blocked_forever'
-                    }
-                    else {
-                        res.i18nKey = 'user_blocked'
-                        res.i18nParams.until = dateandtime.format(userBlock.until, global.dtFormat)
-                    }
-                    return res
+                    return this.buildUserBlockResult(userBlock, requiredLevel)
                 }
                 return { allowed: true, requiredLevel }
             }
@@ -105,6 +110,12 @@ class PermissionService {
                         message: this.formatLoginRequiredMessage(action)
                     }
                 }
+
+                const userBlock = await this.blockRepo.findUserBlock(user)
+                if (userBlock) {
+                    return this.buildUserBlockResult(userBlock, requiredLevel)
+                }
+
                 return { allowed: true, requiredLevel }
 
             case 'admin': {
@@ -182,6 +193,32 @@ class PermissionService {
         const result = await this.checkAccessDetailed(user, title, 'move', context)
         if (!result.allowed) {
             throw new PermissionDeniedError('move', title, {
+                acl: result.requiredLevel,
+                reason: result.reason,
+                i18nKey: result.i18nKey || null,
+                i18nParams: result.i18nParams || null,
+                block: result.block,
+                message: result.message
+            })
+        }
+    }
+
+    async requireLoginAccess(user, context = {}) {
+        const result = await this.checkAccessDetailed(user, null, 'read', {
+            ...context,
+            requiredLevel: 'login'
+        })
+
+        if (!result.allowed) {
+            if (result.reason === 'login_required') {
+                throw new AuthenticationRequiredError({
+                    message: result.message,
+                    i18nKey: result.i18nKey || 'loginneeded',
+                    i18nParams: result.i18nParams || null
+                })
+            }
+
+            throw new PermissionDeniedError('login', null, {
                 acl: result.requiredLevel,
                 reason: result.reason,
                 i18nKey: result.i18nKey || null,

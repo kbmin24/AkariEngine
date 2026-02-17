@@ -1,4 +1,5 @@
 const paths = require('../utils/paths')
+const i18n = require("i18n")
 const logger = require(paths.utils('logger'))
 const {
     PageNotFoundError,
@@ -11,9 +12,9 @@ const {
 function getEnglishMessage(err) {
     if (!err) return 'Unknown error'
 
-    if (err.i18nKey && global.i18n && typeof global.i18n.__ === 'function') {
+    if (err.i18nKey && i18n && typeof i18n.__ === 'function') {
         try {
-            return global.i18n.__({ phrase: err.i18nKey, locale: 'en_GB' }, err.i18nParams || {})
+            return i18n.__({ phrase: err.i18nKey, locale: 'en_GB' }, err.i18nParams || {})
         } catch (_error) {
             return err.message || 'Unknown error'
         }
@@ -51,7 +52,7 @@ function errorHandler(err, req, res, next) {
             {
                 description: localizedMessage,
                 returnLink: err.returnLink || '/',
-                returnName: global.i18n.__(err.returnName || 'mainpage'),
+                returnName: i18n.__(err.returnName || 'mainpage'),
                 statusCode: err.statusCode || 403
             }
         )
@@ -69,9 +70,9 @@ function errorHandler(err, req, res, next) {
             req,
             res,
             {
-                description: localizedMessage || global.i18n.__('loginneeded'),
+                description: localizedMessage || i18n.__('loginneeded'),
                 returnLink: err.returnLink || '/login',
-                returnName: global.i18n.__(err.returnName || 'loginpage'),
+                returnName: i18n.__(err.returnName || 'loginpage'),
                 statusCode: err.statusCode || 403
             }
         )
@@ -91,7 +92,7 @@ function errorHandler(err, req, res, next) {
             {
                 description: localizedMessage,
                 returnLink: err.returnLink || 'javascript:window.history.back()',
-                returnName: global.i18n.__(err.returnName || 'previousPage'),
+                returnName: i18n.__(err.returnName || 'previousPage'),
                 statusCode: err.statusCode || 400
             }
         )

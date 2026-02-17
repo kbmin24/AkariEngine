@@ -19,14 +19,27 @@ function buildAccessError(req, error, options = {}) {
 
     if (error instanceof PermissionDeniedError) {
         const detailMessage = error.details && error.details.message // honestly not sure whether this is even required
+        const detailI18nKey = error.details && error.details.i18nKey
+        const detailI18nParams = error.details && error.details.i18nParams
+        const denyReason = error.details && error.details.reason
+        const isBlockDeny = denyReason === 'user_block' || denyReason === 'ip_block'
 
         const message = detailMessage
             || options.noAclMessage
+
+        const i18nKey = isBlockDeny
+            ? detailI18nKey
+            : (options.noAclMessageKey || detailI18nKey)
+
+        const i18nParams = isBlockDeny
+            ? (detailI18nParams || { acl })
+            : (options.noAclMessageKey ? { acl } : (detailI18nParams || { acl }))
+
         return new PermissionDeniedError(error.action || 'unknown', error.resource || null, {
             ...(error.details || {}),
             message,
-            i18nKey: options.noAclMessageKey,
-            i18nParams: { acl },
+            i18nKey,
+            i18nParams,
             returnLink: options.permissionReturnLink || '/',
             returnName: options.permissionReturnName || 'mainpage',
             lang: options.lang || 'ko'
@@ -127,7 +140,41 @@ function requirePageAccess(action, options = {}) {
     }
 }
 
+function requireLogin(options = {}) {
+    // requires 'login' ACL, that is, logged in & not blocked.
+    const mode = options.mode || 'enforce'
+    const storeKey = options.storeKey || 'loginAccess'
+
+    return async (req, res, next) => {
+        try {
+            const username = req.session ? req.session.username : undefined
+            const services = req.app.locals.services
+
+            await services.permission.requireLoginAccess(username, {
+                ipAddress: req.ipAddress
+            })
+
+            req[storeKey] = { allowed: true }
+            next()
+        } catch (error) {
+            const mapped = buildAccessError(req, error, options)
+
+            if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
+                req[storeKey] = {
+                    allowed: false,
+                    error: mapped
+                }
+                next()
+                return
+            }
+
+            next(mapped)
+        }
+    }
+}
+
 module.exports = {
     requirePermission,
-    requirePageAccess
+    requirePageAccess,
+    requireLogin
 }

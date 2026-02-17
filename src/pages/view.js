@@ -1,4 +1,5 @@
 const date = require('date-and-time')
+const i18n = require("i18n")
 const paths = require('../utils/paths')
 const escapeHtml = require(paths.utils('escapeHTML'))
 
@@ -9,13 +10,13 @@ async function getCategory(title, category, categorys)
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='category'>${global.i18n.__('category')}: `
+    const cardBeginning = `<div class='category'>${i18n.__('category')}: `
     const cardEnd = `</div>`
 
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + global.i18n.__('none') + cardEnd
+        return cardBeginning + i18n.__('none') + cardEnd
     }
 
     var res = cardBeginning
@@ -97,7 +98,7 @@ module.exports = async (req, res) =>
             {
                 if (await permissionRepo.hasPermission(username, 'admin'))
                 {
-                    titleSuffix += `(${global.i18n.__('admin')})`
+                    titleSuffix += `(${i18n.__('admin')})`
                 }
         }
     }
@@ -114,7 +115,7 @@ module.exports = async (req, res) =>
         }
         else
         {
-            contentPrefix = `<p><span class="fw-bold text-danger">${global.i18n.__('error')}:</span> ${global.i18n.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${global.i18n.__('file_innewtab')}</a></p>`
+            contentPrefix = `<p><span class="fw-bold text-danger">${i18n.__('error')}:</span> ${i18n.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${i18n.__('file_innewtab')}</a></p>`
         }
         
     }
@@ -133,7 +134,7 @@ module.exports = async (req, res) =>
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
                 if (req.query.from)
                 {
-                    titleSuffix = global.i18n.__('page_redirectedfrom', {page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>`}), `&nbsp;` + titleSuffix
+                    titleSuffix = i18n.__('page_redirectedfrom', {page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>`}), `&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
@@ -163,12 +164,12 @@ module.exports = async (req, res) =>
                 {
                     let content
                     if (req.params.name.split(':')[1] == req.session.username)
-                        content = global.i18n.__("noUserPage_user", {link: escapeHtml(req.params.name)})
+                        content = i18n.__("noUserPage_user", {link: escapeHtml(req.params.name)})
                     else
-                        content = global.i18n.__("noUserPage")
+                        content = i18n.__("noUserPage")
                     require(paths.resolve('view.js'))(req, res,
                     {
-                        title: global.i18n.__("error"),
+                        title: i18n.__("error"),
                         content: content,
                         isPage: false,
                         username: req.session.username,
@@ -180,9 +181,9 @@ module.exports = async (req, res) =>
                 let hisText = ''
                 if (page)
                 {
-                    hisText = global.i18n.__("seeHistory", {link: escapeHtml(req.params.name)})
+                    hisText = i18n.__("seeHistory", {link: escapeHtml(req.params.name)})
                 }
-                require(paths.resolve('error.js'))(req, res, { description: global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: global.i18n.__("mainpage"), statusCode: 404 })
+                require(paths.resolve('error.js'))(req, res, { description: i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404 })
             }
         })()
     }
@@ -210,7 +211,7 @@ module.exports = async (req, res) =>
             }
             else
             {
-                require(paths.resolve('error.js'))(req, res, { description: global.i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: global.i18n.__("mainpage"), statusCode: 404 })
+                require(paths.resolve('error.js'))(req, res, { description: i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404 })
             }
         })()
     }

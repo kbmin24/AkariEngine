@@ -1,4 +1,5 @@
 const express = require('express')
+const i18n = require("i18n")
 const ejs = require('ejs')
 const paths = require('../utils/paths')
 
@@ -24,7 +25,7 @@ module.exports = () => {
     }))
 
     router.get('/noEmail', asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'etc/noEmail.ejs', { l: res.__ }, { title: global.i18n.__('noEmail') })
+        await renderTemplateInLayout(req, res, 'etc/noEmail.ejs', { l: res.__ }, { title: i18n.__('noEmail') })
     }))
 
     router.get('/orphaned', asyncRoute(async (req, res) => {

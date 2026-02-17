@@ -1,4 +1,5 @@
 const express = require('express')
+const i18n = require("i18n")
 const paths = require('../utils/paths')
 const ejs = require('ejs')
 
@@ -19,8 +20,8 @@ module.exports = (_services, options = {}) => {
 
     router.get('/signup', asyncRoute(async (req, res) => {
         const captchaSVG = await load('tools', 'captcha.js').genCaptcha(req)
-        await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: global.i18n.__ }, {
-            title: global.i18n.__('register'),
+        await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: i18n.__ }, {
+            title: i18n.__('register'),
             username: req.session.username,
             ipaddr: req.ipAddress
         })
@@ -31,8 +32,8 @@ module.exports = (_services, options = {}) => {
     }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'user/login.ejs', { csrfToken: req.csrfToken(), l: global.i18n.__ }, {
-            title: global.i18n.__('login'),
+        await renderTemplateInLayout(req, res, 'user/login.ejs', { csrfToken: req.csrfToken(), l: i18n.__ }, {
+            title: i18n.__('login'),
             username: req.session.username,
             ipaddr: req.ipAddress
         })
@@ -60,9 +61,9 @@ module.exports = (_services, options = {}) => {
             csrfToken: req.csrfToken(),
             sign,
             username,
-            l: global.i18n.__
+            l: i18n.__
         }, {
-            title: global.i18n.__('settings'),
+            title: i18n.__('settings'),
             username,
             ipaddr: req.ipAddress
         })

@@ -1,4 +1,5 @@
 const ejs = require('ejs')
+const i18n = require("i18n")
 const date = require('date-and-time')
 const paths = require('../utils/paths')
 const pgSize = 30
@@ -19,7 +20,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 404 })
+            require(paths.resolve('error.js'))(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         //from & to is nth entry in history (NOT nth revision)
@@ -31,7 +32,7 @@ module.exports = (req, res, histories) =>
         if (to > changes.count) to = changes.count
         ejs.renderFile(paths.view('pages/histories.ejs'),
         {
-            l: global.i18n.__,
+            l: i18n.__,
             changes: changes.rows,
             from: from,
             to: to,
@@ -44,7 +45,7 @@ module.exports = (req, res, histories) =>
             const username = req.session.username
             require(paths.resolve('view.js'))(req, res,
             {
-                title: global.i18n.__('historyOf', {p: req.params.name}),
+                title: i18n.__('historyOf', {p: req.params.name}),
                 content: html,
                 username: username,
                 ipaddr: req.ipAddress,

@@ -1,9 +1,12 @@
 const express = require('express')
+const i18n = require("i18n")
 const multer = require('multer')
 const fs = require('fs')
 const axios = require('axios')
 const dateandtime = require('date-and-time')
 const paths = require('../utils/paths')
+const { chkCaptcha } = require('../middleware/chkCaptcha')
+const { requireLogin } = require(paths.middleware('permission'))
 
 const router = express.Router()
 const load = (...segments) => require(paths.resolve(...segments))
@@ -71,41 +74,8 @@ module.exports = (_services, _options = {}) => {
         },
         fileFilter: async (req, file, cb) => {
             const username = req.session.username
-            if (username === undefined) {
-                const e = new Error(global.i18n.__('loginneeded'))
-                e.code = 'UPLOAD_LOGINNEEDED'
-                return cb(e)
-            }
 
-            const b = await global.db.block.findOne({ where: { target: username, targetType: 'user' } })
-            if (b) {
-                const e = new Error(
-                    b.isForever
-                        ? `${b.doneBy}에 의해 영구적으로 차단된 상태입니다. (사유: ${b.comment})`
-                        : `${b.doneBy}에 의해 ${dateandtime.format(b.until, global.dtFormat)}까지 차단된 상태입니다. (사유: ${b.comment})`
-                )
-                e.code = 'UPLOAD_BLOCKED'
-                return cb(e)
-            }
-
-            const hasBypass = await global.db.perm.findOne({ where: { perm: 'bypasscaptcha', username: req.session.username } })
-            if (!hasBypass) {
-                const resKey = req.body['g-recaptcha-response']
-                const url = `https://www.google.com/recaptcha/api/siteverify?secret=${global.conf.reCAPTCHA_prv}&response=${resKey}`
-                try {
-                    const verRes = await axios.post(url)
-                    const data = verRes.data || {}
-                    if (data.success !== true) {
-                        const e = new Error('캡챠 오류')
-                        e.code = 'INVALIDCAPTCHA'
-                        return cb(e)
-                    }
-                } catch (_err) {
-                    const e = new Error('캡챠 오류')
-                    e.code = 'INVALIDCAPTCHA'
-                    return cb(e)
-                }
-            }
+            // it doens't make sense that this logic is even here...
 
             const ext = req.body.filename.split(/\./).pop().toLowerCase()
             if (!(getFileTypes().includes(ext))) {
@@ -119,7 +89,9 @@ module.exports = (_services, _options = {}) => {
         }
     })
 
-    router.get('/Upload', asyncRoute(async (req, res) => {
+    router.get('/Upload',
+        requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
+        asyncRoute(async (req, res) => {
         const username = req.session.username
         const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
         await renderTemplateInLayout(req, res, 'files/upload.ejs', {
@@ -128,13 +100,17 @@ module.exports = (_services, _options = {}) => {
             filetypes: getFileTypes().join(', '),
             fileLimit
         }, {
-            title: global.i18n.__('upload'),
+            title: i18n.__('upload'),
             username,
             ipaddr: req.ipAddress
         })
     }))
 
-    router.post('/Upload', upload.single('inputFile'), asyncRoute(async (req, res) => {
+    router.post('/Upload',
+        requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
+        chkCaptcha,
+        upload.single('inputFile'),
+        asyncRoute(async (req, res) => {
         const filepgname = 'File:' + req.body.filename
 
         await global.db.mfile.create({

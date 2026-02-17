@@ -1,4 +1,5 @@
 const {Op} = require('sequelize')
+const i18n = require("i18n")
 const arraywrap = require('arraywrap')
 const sanitiseHtml = require('sanitize-html')
 const ejs = require('ejs')
@@ -58,7 +59,7 @@ module.exports = async (req, res, pages) =>
     const username = req.session.username
     require(paths.resolve('view.js'))(req, res,
     {
-        title: global.i18n.__('searchResults', {q: sanitiseHtml(query, {disallowedTagsMode: escape})}),
+        title: i18n.__('searchResults', {q: sanitiseHtml(query, {disallowedTagsMode: escape})}),
         content: searchHTML,
         username: username,
         ipaddr: req.ipAddress,

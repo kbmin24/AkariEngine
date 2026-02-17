@@ -122,22 +122,20 @@ require(paths.resolve('taskScheduler.js'))()
 global.sanitiseOptions = config.sanitizeOptions
 
 //i18n -- Global (Non-skin)
-global.i18n = require("i18n");
-global.i18n.configure({
+i18n = require("i18n");
+i18n.configure({
     locales: ['ko_KR', 'en_GB'],
     defaultLocale: config.defaultLocale,
     directory: paths.locales,
     objectNotation: true
   });
-const i18n = global.i18n
+const i18n = require("i18n")
 
 //regex for testing whether page title is legal or not
 global.legalTitleRegex = /^[^\[\]\{\}\|#\n]*$/m
 
 //load global tools
 global.escapeHTML = require(paths.utils('escapeHTML'))
-
-const dateandtime = require('date-and-time')
 
 //views
 app.set('view engine', 'ejs')

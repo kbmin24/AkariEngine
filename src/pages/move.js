@@ -1,4 +1,5 @@
 const { CaptchaError } = require('../services/errors')
+const i18n = require("i18n")
 const paths = require('../utils/paths')
 const {
     PageNotFoundError,
@@ -14,7 +15,7 @@ module.exports = async (req, res) =>
 
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('move_nofile'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
+        require(paths.resolve('error.js'))(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
 
@@ -33,17 +34,17 @@ module.exports = async (req, res) =>
     {
         if (error instanceof PageExistsError)
         {
-            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('move_alreadyexists'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
+            require(paths.resolve('error.js'))(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('illegalaccess'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
+            require(paths.resolve('error.js'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('illegalaccess'), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 200 })
+            require(paths.resolve('error.js'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
             return
         }
         throw error

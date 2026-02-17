@@ -1,3 +1,4 @@
+const i18n = require("i18n")
 // Some standardised errors
 
 function getDefaultLocale() {
@@ -7,10 +8,10 @@ function getDefaultLocale() {
 
 function translate(i18nKey, params = {}, locale = getDefaultLocale(), fallback = '') {
     if (!i18nKey) return fallback
-    if (!global.i18n || typeof global.i18n.__ !== 'function') return fallback || i18nKey
+    if (!i18n || typeof i18n.__ !== 'function') return fallback || i18nKey
 
     try {
-        return global.i18n.__({ phrase: i18nKey, locale }, params)
+        return i18n.__({ phrase: i18nKey, locale }, params)
     } catch (_error) {
         return fallback || i18nKey
     }

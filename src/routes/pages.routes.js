@@ -1,4 +1,5 @@
 const express = require('express')
+const i18n = require("i18n")
 const paths = require('../utils/paths')
 const ejs = require('ejs')
 const { param, query, body } = require('express-validator')
@@ -86,8 +87,8 @@ module.exports = (services, options = {}) => {
     }))
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: global.i18n.__ }, {
-            title: global.i18n.__('recentChanges'),
+        await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: i18n.__ }, {
+            title: i18n.__('recentChanges'),
             isPage: false,
             username: req.session.username,
             ipaddr: req.ipAddress
@@ -141,7 +142,7 @@ module.exports = (services, options = {}) => {
                     prefix: editModel.prefix,
                     suffix: editModel.suffix,
                     username: editModel.username,
-                    l: global.i18n.__,
+                    l: i18n.__,
                     csrfToken: req.csrfToken(),
                     disabled: editModel.disabled
                 }
@@ -154,7 +155,7 @@ module.exports = (services, options = {}) => {
 
                 const html = await ejs.renderFile(paths.view('pages/edit.ejs'), templateData)
                 renderLayout(req, res, {
-                    title: global.i18n.__('edit_pg', { name: req.params.name }),
+                    title: i18n.__('edit_pg', { name: req.params.name }),
                     content: html,
                     isPage: true,
                     pageMode: editModel.disabled ? undefined : 'edit',
@@ -164,9 +165,9 @@ module.exports = (services, options = {}) => {
             } catch (error) {
                 if (error instanceof ValidationError && error.i18nKey) {
                     load('error.js')(req, res, {
-                        description: global.i18n.__(error.i18nKey),
+                        description: i18n.__(error.i18nKey),
                         returnLink: '/',
-                        returnName: global.i18n.__('mainpage'),
+                        returnName: i18n.__('mainpage'),
                         statusCode: error.statusCode || 200
                     })
                     return
@@ -196,18 +197,18 @@ module.exports = (services, options = {}) => {
             } catch (error) {
                 if (error instanceof ValidationError && error.i18nKey === 'edit_titleneeded') {
                     load('error.js')(req, res, {
-                        description: global.i18n.__('edit_titleneeded'),
+                        description: i18n.__('edit_titleneeded'),
                         returnLink: '/',
-                        returnName: global.i18n.__('mainpage'),
+                        returnName: i18n.__('mainpage'),
                         statusCode: 200
                     })
                     return
                 }
                 if (error instanceof ValidationError && error.i18nKey === 'pagename_illegalfile') {
                     load('error.js')(req, res, {
-                        description: global.i18n.__('pagename_illegalfile'),
+                        description: i18n.__('pagename_illegalfile'),
                         returnLink: '/',
-                        returnName: global.i18n.__('mainpage'),
+                        returnName: i18n.__('mainpage'),
                         statusCode: 200
                     })
                     return
@@ -230,12 +231,12 @@ module.exports = (services, options = {}) => {
                 const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
                 await renderTemplateInLayout(req, res, 'pages/move.ejs', {
                     originalName: model.originalName,
-                    l: global.i18n.__,
+                    l: i18n.__,
                     username: model.username,
                     captcha: captchaSVG,
                     csrfToken: req.csrfToken()
                 }, {
-                    title: global.i18n.__('movepg', { name: req.params.name }),
+                    title: i18n.__('movepg', { name: req.params.name }),
                     isPage: true,
                     pagename: req.params.name,
                     pageMode: 'move',
@@ -245,18 +246,18 @@ module.exports = (services, options = {}) => {
             } catch (error) {
                 if (error instanceof ValidationError && error.i18nKey === 'move_nofile') {
                     load('error.js')(req, res, {
-                        description: global.i18n.__('move_nofile'),
+                        description: i18n.__('move_nofile'),
                         returnLink: BACK_LINK,
-                        returnName: global.i18n.__('previousPage'),
+                        returnName: i18n.__('previousPage'),
                         statusCode: 200
                     })
                     return
                 }
                 if (error instanceof PageNotFoundError) {
                     load('error.js')(req, res, {
-                        description: `${global.i18n.__('page404')} <a href="/edit/${req.params.name}"> ${global.i18n.__('page_asknew')}</a>`,
+                        description: `${i18n.__('page404')} <a href="/edit/${req.params.name}"> ${i18n.__('page_asknew')}</a>`,
                         returnLink: '/',
-                        returnName: global.i18n.__('mainpage'),
+                        returnName: i18n.__('mainpage'),
                         statusCode: 404
                     })
                     return
@@ -280,11 +281,11 @@ module.exports = (services, options = {}) => {
 
                 await renderTemplateInLayout(req, res, 'pages/delete.ejs', {
                     title: model.title,
-                    l: global.i18n.__,
+                    l: i18n.__,
                     username: model.username,
                     csrfToken: req.csrfToken()
                 }, {
-                    title: global.i18n.__('deletepg', { name: req.params.name }),
+                    title: i18n.__('deletepg', { name: req.params.name }),
                     isPage: true,
                     pageMode: 'delete',
                     pagename: model.pagename
@@ -292,9 +293,9 @@ module.exports = (services, options = {}) => {
             } catch (error) {
                 if (error instanceof PageNotFoundError) {
                     load('error.js')(req, res, {
-                        description: `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`,
+                        description: `${i18n.__('page404')} <a href="/edit/${req.params.name}">${i18n.__('page_asknew')}</a>`,
                         returnLink: '/',
-                        returnName: global.i18n.__('mainpage'),
+                        returnName: i18n.__('mainpage'),
                         statusCode: 404
                     })
                     return
@@ -316,9 +317,9 @@ module.exports = (services, options = {}) => {
             if (!p)
             {
                 load('error.js')(req, res, {
-                    description: `${global.i18n.__('page404')} <a href="/edit/${req.params.name}">${global.i18n.__('page_asknew')}</a>`,
+                    description: `${i18n.__('page404')} <a href="/edit/${req.params.name}">${i18n.__('page_asknew')}</a>`,
                     returnLink: '/',
-                    returnName: global.i18n.__('mainpage'),
+                    returnName: i18n.__('mainpage'),
                     statusCode: 404
                 })
                 return
@@ -327,7 +328,7 @@ module.exports = (services, options = {}) => {
             ejs.renderFile(paths.view('pages/revert.ejs'),
             {
                 pagename: req.params.name,
-                l: global.i18n.__,
+                l: i18n.__,
                 username: username,
                 rev: req.query.rev,
                 captcha: captchaSVG,
@@ -342,7 +343,7 @@ module.exports = (services, options = {}) => {
                 }
                 load('view.js')(req, res,
                 {
-                    title: global.i18n.__('revert_title', {page: req.params.name, rev: req.query.rev}),
+                    title: i18n.__('revert_title', {page: req.params.name, rev: req.query.rev}),
                     content: html,
                     username: username,
                     ipaddr: req.ipAddress,

@@ -1,17 +1,18 @@
 const paths = require('../utils/paths')
+const i18n = require("i18n")
 
 async function getCategory(title, category, categorys)
 {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({where: {page: title}})
 
-    const cardBeginning = `<div class='card'><div class='category'>${global.i18n.__('category')}: `
+    const cardBeginning = `<div class='card'><div class='category'>${i18n.__('category')}: `
     const cardEnd = `</div></div>`
 
     if (categories.length == 0)
     {
         if (!categorySwitch) return '' //we don't need category for user page
-        return cardBeginning + global.i18n.__('none') + cardEnd
+        return cardBeginning + i18n.__('none') + cardEnd
     }
 
     var res = cardBeginning
@@ -45,7 +46,7 @@ module.exports = async (req, res, pages, files, category) =>
     let opt = await getOptions(req.body.content)
     let content = await require(paths.resolve('pages', 'render.js'))(req.body.title, req.body.content, true, pages, files, req, res, false, true, {}, opt)
     content = await getCategory(req.body.title, category, opt['category']) + content
-    content = `<div class='alert alert-warning' role='alert'>${global.i18n.__('previewWarning')}</div>` + content
+    content = `<div class='alert alert-warning' role='alert'>${i18n.__('previewWarning')}</div>` + content
     let renderOpt = {
         title: req.body.title,
         titleInfo: '(<i>미리보기</i>)',

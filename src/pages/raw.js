@@ -1,4 +1,5 @@
 const paths = require('../utils/paths')
+const i18n = require("i18n")
 
 module.exports = async (req, res, pages, history, protect, perm, block) =>
 {
@@ -27,7 +28,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
     }
     else
     {
-        require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('edit_nocal', {acl: acl}), returnLink: '/', returnName: '메인 페이지', statusCode: 403 })
+        require(paths.resolve('error.js'))(req, res, { description: i18n.__('edit_nocal', {acl: acl}), returnLink: '/', returnName: '메인 페이지', statusCode: 403 })
         return
     }
 
@@ -43,7 +44,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
             else
             {
                 //404!
-                require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 404 })
+                require(paths.resolve('error.js'))(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             }
         })
     }
@@ -67,7 +68,7 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
                 }
                 else
                 {
-                    require(paths.resolve('error.js'))(req, res, { description: global.i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: global.i18n.__('mainpage'), statusCode: 404 })
+                    require(paths.resolve('error.js'))(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
                 }
             })
     }

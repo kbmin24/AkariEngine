@@ -1,4 +1,5 @@
 const ejs = require('ejs')
+const i18n = require("i18n")
 const paths = require('../utils/paths')
 module.exports = async (req, res, perm, protect, block) =>
 {
@@ -17,7 +18,7 @@ module.exports = async (req, res, perm, protect, block) =>
     {
         require(paths.resolve('view.js'))(req, res,
         {
-            title: global.i18n.__('protectPage', {page: req.params.name}),
+            title: i18n.__('protectPage', {page: req.params.name}),
             content: html,
             isPage: true,
             pageMode: "protect",
