@@ -25,10 +25,10 @@ module.exports = (sequelize) => {
         },
         {
             indexes: [
-                {
-                    unique: true,
+                                {
+                    using: 'BTREE',
                     fields: ['threadID']
-                }
+                },
             ]
         })
 }

@@ -196,7 +196,7 @@ config.skins.forEach(e => {
 })
 
 //Extension
-let ext = require(paths.resolve('extensionManager.js'))
+let ext = require(paths.resolve('extensions/extensionManager.js'))
 ext(app, ext)
 
 

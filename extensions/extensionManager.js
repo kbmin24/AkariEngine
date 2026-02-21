@@ -1,5 +1,5 @@
 //ext.js: extension manager
-const paths = require('./utils/paths')
+const paths = require('../utils/paths')
 
 let extensions = {}
 global.extensions = extensions
