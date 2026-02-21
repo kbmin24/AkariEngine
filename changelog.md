@@ -1,3 +1,8 @@
+v4.0 (2026-??-??)
+* Under progress
+* Refactored backend to be more maintainable
+* Supports meilisearch as full-text search engine
+
 v3.1b (2025-06-06)
 * Private mode
 

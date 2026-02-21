@@ -24,20 +24,43 @@
             "storage": "/db.sqlite"
         }
     },
-    "boardHome":
-    {
-        "boards": [{"id": "free"}],
+    "meilisearch": {
+        "enabled": true,
+        "host": "http://127.0.0.1:7700",
+        "apiKey": "(insert api key here)"
+    },
+    "boardHome": {
+        "boards": [
+            {
+                "id": "free"
+            }
+        ],
         "postCount": 5
     },
-    "boardDescriptions":
-    {
+    "boardDescriptions": {
         "free": "주저리주저리절절"
     },
     "mapKey": "Kakao map key",
     "gaenyumThreshold": 5,
     "disableDarkMode": false,
-    "upload_types": ["jpeg", "jpg", "jfif", "png", "gif", "webp", "svg"],
-    "upload_mimes": ["jpeg", "jpg", "jfif", "png", "gif", "webp", "svg"],
+    "upload_types": [
+        "jpeg",
+        "jpg",
+        "jfif",
+        "png",
+        "gif",
+        "webp",
+        "svg"
+    ],
+    "upload_mimes": [
+        "jpeg",
+        "jpg",
+        "jfif",
+        "png",
+        "gif",
+        "webp",
+        "svg"
+    ],
     "upload_maxsize_mb": 10,
     "specialPages": [
         {
@@ -47,18 +70,21 @@
         {
             "title": "Licence",
             "link": "/Licence"
-        },
-        {
-            "title": "anther entry",
-            "link": "another link"
         }
     ],
-    "security":
-    {
-        "allowedIframeHostnames": ["www.youtube.com", "www.youtube-nocookie.com"]
+    "security": {
+        "allowedIframeHostnames": [
+            "www.youtube.com",
+            "www.youtube-nocookie.com"
+        ]
     },
-    "skins": ["GECWiki"],
-    "extensions": ["Interwiki", "Board"],
+    "skins": [
+        "GECWiki"
+    ],
+    "extensions": [
+        "Interwiki",
+        "Board"
+    ],
     "defaultLocale": "ko_KR",
     "isPrivate": false
 }
