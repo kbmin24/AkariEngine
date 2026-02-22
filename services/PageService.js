@@ -1,7 +1,7 @@
 const paths = require('../utils/paths')
 const fs = require('fs')
 const date = require('date-and-time')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 const {
     PageNotFoundError,
     PageExistsError,

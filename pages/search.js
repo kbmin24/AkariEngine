@@ -57,7 +57,7 @@ module.exports = async (req, res, pages) =>
         from: from
     })
     const username = req.session.username
-    require(paths.resolve('view.js'))(req, res,
+    require('../view.js')(req, res,
     {
         title: i18n.__('searchResults', {q: sanitiseHtml(query, {disallowedTagsMode: escape})}),
         content: searchHTML,

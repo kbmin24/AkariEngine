@@ -1,5 +1,4 @@
-const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 const dateandtime = require('date-and-time')
 const {
     PermissionDeniedError,

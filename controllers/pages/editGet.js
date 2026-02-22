@@ -1,10 +1,10 @@
 const ejs = require('ejs')
 const i18n = require("i18n")
 const paths = require('../../utils/paths')
-const { renderLayout } = require(paths.utils('httpHelper'))
+const { renderLayout } = require('../../utils/httpHelper.js')
 const {
     ValidationError
-} = require(paths.resolve('services', 'errors.js'))
+} = require('../../services/errors.js')
 
 module.exports = async (req, res) => {
     try {
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
         }
 
         if (editModel.needsCaptcha) {
-            templateData.captcha = await require(paths.utils('captcha')).genCaptcha()
+            templateData.captcha = await require('../../utils/captcha.js').genCaptcha()
         } else {
             templateData.captcha = ''
         }
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
         })
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey) {
-            require(paths.utils('error'))(req, res, {
+            require('../../utils/error.js')(req, res, {
                 description: i18n.__(error.i18nKey),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

@@ -13,7 +13,7 @@ module.exports = async (req, res, title, filename) =>
         }
         else
         {
-            require(paths.resolve('view.js'))(req, res,
+            require('./view.js')(req, res,
             {
                 title: title,
                 content: data,

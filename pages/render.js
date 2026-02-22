@@ -5,7 +5,6 @@
 const dateandtime = require('date-and-time')
 const sanitiseHtml = require('sanitize-html')
 const hljs = require('highlight.js')
-const paths = require('../utils/paths')
 
 function errMessege(name, reason) {
     return `<p class="fw-bold text-danger">${name}: ${reason}</p>`
@@ -104,8 +103,8 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                         const v = args[i].substring(eqSign + 1).trim()
                         temArgs[k] = v
                     }
-                    const opt = await require(paths.resolve('pages', 'view.js')).getOptions(p.content)
-                    const res = await require(paths.resolve('pages', 'render.js'))(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
+                    const opt = await require('./view.js').getOptions(p.content)
+                    const res = await require('./render.js')(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
                     return res
                 }
             }

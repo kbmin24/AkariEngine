@@ -20,7 +20,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require(paths.utils('error'))(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require('../utils/error.js')(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         //from & to is nth entry in history (NOT nth revision)
@@ -43,7 +43,7 @@ module.exports = (req, res, histories) =>
         }, (err, html) => 
         {
             const username = req.session.username
-            require(paths.resolve('view.js'))(req, res,
+            require('../view.js')(req, res,
             {
                 title: i18n.__('historyOf', {p: req.params.name}),
                 content: html,

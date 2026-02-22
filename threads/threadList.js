@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
@@ -8,19 +8,19 @@ module.exports = async (req, res, dbs = {}) =>
     const title = req.params.name
 
     //block
-    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ['everyone'], null, dbs['block'], true, true)
+    const r = await require('../pages/satisfyACL.js')(req, res, ['everyone'], null, dbs['block'], true, true)
 
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require(paths.utils('error'))(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 
     let openThreads = await dbs['thread'].findAll({where: {pagename: title, isOpen: true}})
     let closedThreads = await dbs['thread'].findAll({where: {pagename: title, isOpen: false}})
 
-    let captcha = await require(paths.resolve('utils', 'captcha.js')).genCaptcha()
+    let captcha = await require('../utils/captcha.js').genCaptcha()
 
     ejs.renderFile(paths.view('threads/threadlist.ejs'),
     {
@@ -37,7 +37,7 @@ module.exports = async (req, res, dbs = {}) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(paths.resolve('view.js'))(req, res,
+        require('../view.js')(req, res,
         {
             title: `${title}의 토론`,
             content: html,

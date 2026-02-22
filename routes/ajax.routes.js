@@ -1,5 +1,5 @@
 const express = require('express')
-const { load, asyncRoute } = require('../utils/httpHelper')
+const { asyncRoute } = require('../utils/httpHelper')
 
 module.exports = () => {
     const router = express.Router()
@@ -26,11 +26,11 @@ module.exports = () => {
     }))
 
     router.get('/ajax/threadcomments', asyncRoute(async (req, res) => {
-        await load('controllers', 'ajax', 'threadcomments.js')(req, res)
+        await require('../controllers/ajax/threadcomments.js')(req, res)
     }))
 
     router.get('/ajax/threadinfo', asyncRoute(async (req, res) => {
-        await load('controllers', 'ajax', 'threadinfo.js')(req, res)
+        await require('../controllers/ajax/threadinfo.js')(req, res)
     }))
 
     router.get('/ajax/threadlist', asyncRoute(async (req, res) => {

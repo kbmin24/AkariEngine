@@ -1,6 +1,5 @@
 const date = require('date-and-time')
 const i18n = require("i18n")
-const paths = require('../utils/paths')
 async function sign(req, settings)
 {
     const dtnow = date.format(new Date(), global.dtFormat)
@@ -114,17 +113,17 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 {
 
     //check CAPTCHA
-    let captchaSuccess = await require(paths.resolve('utils', 'captcha.js')).chkCaptcha(req, res, perm)
+    let captchaSuccess = await require('../utils/captcha.js').chkCaptcha(req, res, perm)
     if (!captchaSuccess) return //CAPTCHA error
 
     if (!req.params.name)
     {
-        require(paths.utils('error'))(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+        require('../utils/error.js')(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
     if (!req.body.content)
     {
-        require(paths.utils('error'))(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+        require('../utils/error.js')(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
     
@@ -149,7 +148,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         //check for protection 
         const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
         var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-        const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
+        const r = await require('./satisfyACL.js')(req, res, [acl], perm, block)
         if (r)
         {
             //do nothing
@@ -160,7 +159,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            require(paths.utils('error'))(req, res, { description: i18n.__('edit_noacl', {acl: acl}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 403 })
+            require('../utils/error.js')(req, res, { description: i18n.__('edit_noacl', {acl: acl}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 403 })
             return
         }
 
@@ -196,7 +195,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
-                require(paths.utils('error'))(req, res, { description: i18n.__('pagename_illegalfile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+                require('../utils/error.js')(req, res, { description: i18n.__('pagename_illegalfile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
                 return
             }
 

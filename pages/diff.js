@@ -1,6 +1,5 @@
 const diff2html = require('diff2html')
 const diff = require('diff')
-const paths = require('../utils/paths')
 module.exports = async (req, res, history, protect, perm, block) =>
 {   
     //check read ACL
@@ -13,7 +12,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     var rev2 = req.query.rev2
     if (!rev1 || !rev2)
     {
-        require(paths.utils('error'))(req, res, { description: `리비전이 지정되지 않았습니다.`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: `리비전이 지정되지 않았습니다.`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
         return
     }
 
@@ -24,7 +23,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     const pro2 = await protect.findOne({where: {title: req.params.name, task: 'read', revision: rev2}})
     if (pro1) ACLList.push(pro1.protectionLevel)
     if (pro2) ACLList.push(pro2.protectionLevel)
-    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, ACLList, perm, block, rev1)
+    const r = await require('./satisfyACL.js')(req, res, ACLList, perm, block, rev1)
     if (r)
     {
         //do nothing
@@ -35,7 +34,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     }
     else
     {
-        require(paths.utils('error'))(req, res, { description: '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
+        require('../utils/error.js')(req, res, { description: '읽기 권한이 ' + acl + '이기 때문에 읽을 수 없습니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
         return
     }
 
@@ -49,7 +48,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev1)
     {
-        require(paths.utils('error'))(req, res, { description: `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
         return
     }
 
@@ -63,7 +62,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     })
     if (!pagev2)
     {
-        require(paths.utils('error'))(req, res, { description: `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: `요청하신 문서나 리비전을 찾을 수 없었습니다. <a href="/edit/${req.params.name}">새로 만드시겠습니까?</a>`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
         return
     }
 
@@ -102,7 +101,7 @@ module.exports = async (req, res, history, protect, perm, block) =>
     <div class='row'><div class='col m-2'><span class='text-danger'>red</span>: Removed in r${rev2}</div></div>
     </div><br><br>` + html
     */
-    require(paths.resolve('view.js'))(req, res,
+    require('../view.js')(req, res,
     {
         title: `${req.params.name} r${rev1}, r${rev2} 비교`,
         content: html,

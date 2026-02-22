@@ -1,10 +1,9 @@
 const i18n = require("i18n")
-const paths = require('../../utils/paths')
 const {
     PageNotFoundError,
     PageExistsError,
     ValidationError
-} = require(paths.resolve('services', 'errors.js'))
+} = require('../../services/errors.js')
 
 module.exports = async (req, res) =>
 {
@@ -12,7 +11,7 @@ module.exports = async (req, res) =>
 
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require(paths.utils('error'))(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+        require('../../utils/error.js')(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
         return
     }
 
@@ -31,17 +30,17 @@ module.exports = async (req, res) =>
     {
         if (error instanceof PageExistsError)
         {
-            require(paths.utils('error'))(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            require('../../utils/error.js')(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require(paths.utils('error'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            require('../../utils/error.js')(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require(paths.utils('error'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            require('../../utils/error.js')(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         throw error

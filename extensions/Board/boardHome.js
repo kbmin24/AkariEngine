@@ -1,5 +1,4 @@
 const ejs = require('ejs')
-const paths = require('../../utils/paths')
 const logger = require('../../utils/logger')
 module.exports = async (req, res, boards, posts) =>
 {
@@ -41,7 +40,7 @@ module.exports = async (req, res, boards, posts) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(paths.resolve('view.js'))(req, res,
+        require('../../view.js')(req, res,
         {
             title: "게시판 홈",
             titleLink: "/board/",

@@ -1,4 +1,3 @@
-const paths = require('../../../utils/paths')
 
 module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
 {
@@ -13,7 +12,7 @@ module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
 
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
+    const r = await require('../../../pages/satisfyACL.js')(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing

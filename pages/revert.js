@@ -1,10 +1,9 @@
-const paths = require('../utils/paths')
 const i18n = require("i18n")
 const {
     PageNotFoundError,
     RevisionNotFoundError,
     ValidationError
-} = require(paths.resolve('services', 'errors.js'))
+} = require('../services/errors.js')
 
 module.exports = async (req, res) => {
     try {
@@ -20,15 +19,15 @@ module.exports = async (req, res) => {
     }
     catch (error) {
         if (error instanceof RevisionNotFoundError) {
-            require(paths.utils('error'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require('../utils/error.js')(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof PageNotFoundError) {
-            require(paths.utils('error'))(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require('../utils/error.js')(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof ValidationError) {
-            require(paths.utils('error'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require('../utils/error.js')(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         throw error

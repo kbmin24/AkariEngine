@@ -1,8 +1,7 @@
 const i18n = require("i18n")
-const paths = require('../../utils/paths')
 const {
     ValidationError
-} = require(paths.resolve('services', 'errors.js'))
+} = require('../../services/errors.js')
 
 module.exports = async (req, res) => {
     try {
@@ -19,7 +18,7 @@ module.exports = async (req, res) => {
         res.redirect(`/w/${req.params.name}`)
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey === 'edit_titleneeded') {
-            require(paths.utils('error'))(req, res, {
+            require('../../utils/error.js')(req, res, {
                 description: i18n.__('edit_titleneeded'),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),
@@ -28,7 +27,7 @@ module.exports = async (req, res) => {
             return
         }
         if (error instanceof ValidationError && error.i18nKey === 'pagename_illegalfile') {
-            require(paths.utils('error'))(req, res, {
+            require('../../utils/error.js')(req, res, {
                 description: i18n.__('pagename_illegalfile'),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

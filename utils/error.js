@@ -1,5 +1,4 @@
 //error.js: display error to the user.
-const paths = require('./paths')
 const i18n = require("i18n")
 
 module.exports = (req, res, options = {}) => {
@@ -22,7 +21,7 @@ module.exports = (req, res, options = {}) => {
     })
 
     res.status(statusCode || 200)
-    require(paths.resolve('view.js'))(req, res, {
+    require('../view.js')(req, res, {
         title: 'Error!',
         content,
         username: req.session.username,

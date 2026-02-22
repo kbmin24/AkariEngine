@@ -26,7 +26,7 @@ module.exports = async (req, res, history) =>
         from: showfrom,
         date: date
     })
-    require(paths.resolve('view.js'))(req, res,
+    require('../view.js')(req, res,
     {
         title: `${name}의 기여 목록`,
         content: html        

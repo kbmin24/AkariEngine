@@ -1,5 +1,4 @@
 const sanitiseHtml = require('sanitize-html')
-const paths = require('../../utils/paths')
 
 module.exports = async (req, res) => {
     const query = req.query ? req.query.q : undefined
@@ -20,7 +19,7 @@ module.exports = async (req, res) => {
         results.push({
             type: comment.type,
             username: sanitiseHtml(comment.doneBy, { allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape }),
-            content: await require(paths.resolve('pages', 'render.js'))('', content, true, global.db.pages, global.db.mfile, null, null, false, false, {}, {}),
+            content: await require('../../pages/render.js')('', content, true, global.db.pages, global.db.mfile, null, null, false, false, {}, {}),
             date: comment.createdAt,
             isHidden: comment.isHidden
         })

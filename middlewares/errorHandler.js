@@ -1,6 +1,5 @@
-const paths = require('../utils/paths')
 const i18n = require("i18n")
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 const {
     PageNotFoundError,
     PermissionDeniedError,
@@ -46,7 +45,7 @@ function errorHandler(err, req, res, next) {
         : err.message
 
     if (err instanceof PermissionDeniedError) {
-        return require(paths.utils('error'))(
+        return require('../utils/error.js')(
             req,
             res,
             {
@@ -66,7 +65,7 @@ function errorHandler(err, req, res, next) {
     }
 
     if (err instanceof AuthenticationRequiredError) {
-        return require(paths.utils('error'))(
+        return require('../utils/error.js')(
             req,
             res,
             {
@@ -86,7 +85,7 @@ function errorHandler(err, req, res, next) {
     }
 
     if (err instanceof CaptchaError) {
-        return require(paths.utils('error'))(
+        return require('../utils/error.js')(
             req,
             res,
             {

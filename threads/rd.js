@@ -2,7 +2,7 @@ const { Op } = require('sequelize')
 const date = require('date-and-time')
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 module.exports = async (req, res, recentdiscuss, thread) =>
 {
 
@@ -56,7 +56,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(paths.resolve('view.js'))(req, res,
+        require('../view.js')(req, res,
         {
             title: '최근 토론',
             content: html,

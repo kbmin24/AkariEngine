@@ -1,5 +1,4 @@
 const sanitiseHtml = require('sanitize-html')
-const paths = require('../utils/paths')
 
 function genArbitaryString(len)
 {
@@ -22,14 +21,14 @@ module.exports = async (req, res, dbs = {}) =>
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require(paths.utils('error'))(req, res, { description: 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 
     //And check whether datas are given
     if (!req.body.title)
     {
-        require(paths.utils('error'))(req, res, { description: 'Please enter a title.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: 'Please enter a title.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 

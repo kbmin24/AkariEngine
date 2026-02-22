@@ -1,9 +1,8 @@
 const i18n = require("i18n")
-const paths = require('../../utils/paths')
-const { PageNotFoundError } = require(paths.service('errors'))
+const { PageNotFoundError } = require('../../services/errors.js')
 const {
     renderTemplateInLayout
-} = require(paths.utils('httpHelper'))
+} = require('../../utils/httpHelper.js')
 
 module.exports = async (req, res) => {
     try {
@@ -25,7 +24,7 @@ module.exports = async (req, res) => {
         })
     } catch (error) {
         if (error instanceof PageNotFoundError) {
-            require(paths.utils('error'))(req, res, {
+            require('../../utils/error.js')(req, res, {
                 description: `${i18n.__('page404')} <a href="/edit/${req.params.name}">${i18n.__('page_asknew')}</a>`,
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

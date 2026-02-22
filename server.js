@@ -2,11 +2,10 @@ const express = require('express')
 const app = express()
 const paths = require('./utils/paths')
 const config = require('./config')
-const logger = require(paths.utils('logger'))
+const logger = require('./utils/logger.js')
 const { createSequelizeInstance } = require('./config/database')
 const RepositoryFactory = require('./repositories')
 const ServiceFactory = require('./services')
-const { load } = require(paths.utils('httpHelper'))
 
 global.path = config.basePath
 global.conf = config.settings
@@ -67,24 +66,24 @@ app.use(express.urlencoded({ limit: "1mb", extended: false }))
 app.disable('x-powered-by')
 
 //db
-const users = require(paths.model('user'))(sequelize)
-const pages = require(paths.model('page'))(sequelize)
-const recentchanges = require(paths.model('recentchanges'))(sequelize)
-const history = require(paths.model('history'))(sequelize)
-const mfile = require(paths.model('file'))(sequelize)
-const perm = require(paths.model('perm'))(sequelize)
-const protect = require(paths.model('protect'))(sequelize)
-const adminlog = require(paths.model('adminlog'))(sequelize)
-const block = require(paths.model('block'))(sequelize)
-const loginhistory = require(paths.model('loginhistory'))(sequelize)
-const category = require(paths.model('category'))(sequelize)
-const settings = require(paths.model('setting'))(sequelize)
-const viewcount = require(paths.model('viewcount'))(sequelize)
-const updateTime = require(paths.model('updateTime'))(sequelize)
-const thread = require(paths.model('thread'))(sequelize)
-const threadcomment = require(paths.model('threadcomment'))(sequelize)
-const recentdiscuss = require(paths.model('recentdiscuss'))(sequelize)
-const links = require(paths.model('links'))(sequelize)
+const users = require('./models/user.model.js')(sequelize)
+const pages = require('./models/page.model.js')(sequelize)
+const recentchanges = require('./models/recentchanges.model.js')(sequelize)
+const history = require('./models/history.model.js')(sequelize)
+const mfile = require('./models/file.model.js')(sequelize)
+const perm = require('./models/perm.model.js')(sequelize)
+const protect = require('./models/protect.model.js')(sequelize)
+const adminlog = require('./models/adminlog.model.js')(sequelize)
+const block = require('./models/block.model.js')(sequelize)
+const loginhistory = require('./models/loginhistory.model.js')(sequelize)
+const category = require('./models/category.model.js')(sequelize)
+const settings = require('./models/setting.model.js')(sequelize)
+const viewcount = require('./models/viewcount.model.js')(sequelize)
+const updateTime = require('./models/updateTime.model.js')(sequelize)
+const thread = require('./models/thread.model.js')(sequelize)
+const threadcomment = require('./models/threadcomment.model.js')(sequelize)
+const recentdiscuss = require('./models/recentdiscuss.model.js')(sequelize)
+const links = require('./models/links.model.js')(sequelize)
 sequelize.sync()
 
 global.db =
@@ -117,7 +116,7 @@ app.locals.services = services
 global.sequelize = sequelize
 
 //task scheduler
-require(paths.resolve('taskScheduler.js'))()
+require('./taskScheduler.js')()
 
 global.sanitiseOptions = config.sanitizeOptions
 
@@ -134,7 +133,7 @@ i18n.configure({
 global.legalTitleRegex = /^[^[\]{}|#\n]*$/m
 
 //load global tools
-global.escapeHTML = require(paths.utils('escapeHTML'))
+global.escapeHTML = require('./utils/escapeHTML.js')
 
 //views
 app.set('view engine', 'ejs')
@@ -163,7 +162,7 @@ app.use((req, res, next) => {
     }
 
     if (url.startsWith('/signup')) {
-        return require(paths.utils('error'))(req, res, {
+        return require('./utils/error.js')(req, res, {
             description: global.i18n.__('signupdisabled'),
             returnLink: '/login',
             returnName: i18n.__('loginpage'),
@@ -171,7 +170,7 @@ app.use((req, res, next) => {
         })
     }
 
-    return require(paths.utils('error'))(req, res, {
+    return require('./utils/error.js')(req, res, {
         description: global.i18n.__('loginneeded'),
         returnLink: '/login',
         returnName: i18n.__('loginpage'),
@@ -185,13 +184,13 @@ app.use(express.static(paths.public))
 global.skins = []
 config.skins.forEach(e => {
     app.use(`/skins/${e}`, express.static(paths.resolve('skins', e, 'public')))
-    let skinSettings = require(paths.resolve('skins', e, 'skinSettings.json'))
-    let skinManifest = require(paths.resolve('skins', e, 'manifest.json'))
+    let skinSettings = require('./skins/skinSettings.json')
+    let skinManifest = require('./skins/manifest.json')
     global.skins.push({ 'name': e, 'settings': skinSettings, 'manifest': skinManifest })
 })
 
 //Extension
-let ext = require(paths.resolve('extensions/extensionManager.js'))
+let ext = require('./extensions/extensionManager.js')
 ext(app)
 
 
@@ -227,7 +226,7 @@ app.use((err, req, res, _next) => {
     switch (err.code) {
         case 'FILENAMENULL':
             {
-                require(paths.utils('error'))(req, res, {
+                require('./utils/error.js')(req, res, {
                     description: '파일 이름이 비어 있습니다.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -237,7 +236,7 @@ app.use((err, req, res, _next) => {
             break
         case 'FILEEXISTS':
             {
-                require(paths.utils('error'))(req, res, {
+                require('./utils/error.js')(req, res, {
                     description: '파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -269,7 +268,7 @@ app.use((err, req, res, _next) => {
             break
         case 'LIMIT_FILE_SIZE':
             {
-                require(paths.utils('error'))(req, res, {
+                require('./utils/error.js')(req, res, {
                     description: `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`,
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -360,10 +359,10 @@ io.on('connection', async socket => {
         )
 
         //render to wikitext
-        data.message = await load('pages', 'render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
+        data.message = await require('./pages/render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
         io.sockets.in(data.roomId).emit('message', data)
     })
     socket.on('input', async data => {
-        await load('admin', 'command.js')(io, socket, data.command, { perm: perm, file: mfile, pages: pages, history: history, category: category })
+        await require('./admin/command.js')(io, socket, data.command, { perm: perm, file: mfile, pages: pages, history: history, category: category })
     })
 })

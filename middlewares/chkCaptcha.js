@@ -1,7 +1,6 @@
 const axios = require('axios')
-const paths = require('../utils/paths')
-const config = require(paths.resolve('config'))
-const { CaptchaError } = require(paths.resolve('services', 'errors.js'))
+const config = require('../config')
+const { CaptchaError } = require('../services/errors.js')
 
 
 async function chkCaptcha(req, res, next) {

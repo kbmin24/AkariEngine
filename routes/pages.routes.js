@@ -1,8 +1,6 @@
 const express = require('express')
 const i18n = require("i18n")
-const paths = require('../utils/paths')
 const {
-    load,
     asyncRoute,
     renderTemplateInLayout,
     BACK_LINK,
@@ -13,8 +11,8 @@ const { param, query, body } = require('express-validator')
 const { requirePermission } = require('../middlewares/permission')
 const { chkCaptcha } = require('../middlewares/chkCaptcha')
 
-const { validateRequest } = require(paths.middleware('validation'))
-const { requirePageAccess } = require(paths.middleware('permission'))
+const { validateRequest } = require('../middlewares/validation.js')
+const { requirePageAccess } = require('../middlewares/permission.js')
 
 function accessOptions(noAclMessageKey, extra = {}) {
     return {
@@ -38,7 +36,7 @@ module.exports = (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            const viewHandler = require(paths.resolve('pages', 'view.js'))
+            const viewHandler = require('../pages/view.js')
             await viewHandler(req, res)
         })
     )
@@ -52,23 +50,23 @@ module.exports = (services, options = {}) => {
         body('title').trim().notEmpty(),
         validateRequest,
         asyncRoute(async (req, res) => {
-            await load('controllers', 'pages/preview.js')(req, res)
+            await require('../controllers/pages/preview.js')(req, res)
         }))
 
     router.get('/search', asyncRoute(async (req, res) => {
-        await load('pages', 'search.js')(req, res, global.db.pages)
+        await require('../pages/search.js')(req, res, global.db.pages)
     }))
 
     router.post('/search', asyncRoute(async (req, res) => {
-        await load('pages', 'navSearch.js')(req, res, global.db.pages)
+        await require('../pages/navSearch.js')(req, res, global.db.pages)
     }))
 
     router.get('/protect/:name(*)', asyncRoute(async (req, res) => {
-        await load('admin', 'protectGet.js')(req, res, global.db.perm, global.db.protect, global.db.block)
+        await require('../admin/protectGet.js')(req, res, global.db.perm, global.db.protect, global.db.block)
     }))
 
     router.post('/protect/:name(*)', asyncRoute(async (req, res) => {
-        await load('admin', 'protectPost.js')(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
+        await require('../admin/protectPost.js')(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
     }))
 
     router.get('/raw/:name(*)',
@@ -77,16 +75,16 @@ module.exports = (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            await require(paths.controller('pages/rawGet'))(req, res)
+            await require('../controllers/pages/rawGet.js')(req, res)
         })
     )
 
     router.get('/history/:name(*)', asyncRoute(async (req, res) => {
-        await load('pages', 'history.js')(req, res, global.db.history)
+        await require('../pages/history.js')(req, res, global.db.history)
     }))
 
     router.get('/diff/:name(*)', asyncRoute(async (req, res) => {
-        await load('pages', 'diff.js')(req, res, global.db.history, global.db.protect, global.db.perm, global.db.block)
+        await require('../pages/diff.js')(req, res, global.db.history, global.db.protect, global.db.perm, global.db.block)
     }))
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
@@ -99,19 +97,19 @@ module.exports = (services, options = {}) => {
     }))
 
     router.get('/PageList', asyncRoute(async (req, res) => {
-        await load('pages', 'pagelist.js')(req, res, global.db.pages)
+        await require('../pages/pagelist.js')(req, res, global.db.pages)
     }))
 
     router.get('/category/:name(*)', asyncRoute(async (req, res) => {
-        await load('pages', 'category.js')(req, res, global.db.category)
+        await require('../pages/category.js')(req, res, global.db.category)
     }))
 
     router.get('/viewrank', asyncRoute(async (req, res) => {
-        await load('pages', 'viewrank.js')(req, res, global.db.viewcount)
+        await require('../pages/viewrank.js')(req, res, global.db.viewcount)
     }))
 
     router.get('/xref/:name(*)', asyncRoute(async (req, res) => {
-        await load('pages', 'xref.js')(req, res)
+        await require('../pages/xref.js')(req, res)
     }))
 
     router.get('/RandomPage', asyncRoute(async (req, res) => {
@@ -131,7 +129,7 @@ module.exports = (services, options = {}) => {
         param('name').trim().matches(global.legalTitleRegex),
         validateRequest,
         asyncRoute(async (req, res) => {
-            await load('controllers', 'pages/editGet.js')(req, res)
+            await require('../controllers/pages/editGet.js')(req, res)
         })
     )
 
@@ -140,7 +138,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('edit', accessOptions('edit_noacl')),
         asyncRoute(async (req, res) => {
-            await load('controllers', 'pages/editPost.js')(req, res)
+            await require('../controllers/pages/editPost.js')(req, res)
         })
     )
 
@@ -148,7 +146,7 @@ module.exports = (services, options = {}) => {
         csrfProtection,
         requirePageAccess('move', accessOptions('move_noacl')),
         asyncRoute(async (req, res) => {
-            await load('controllers', 'pages/moveGet.js')(req, res)
+            await require('../controllers/pages/moveGet.js')(req, res)
         })
     )
 
@@ -158,7 +156,7 @@ module.exports = (services, options = {}) => {
             mode: 'enforce'
         }),
         asyncRoute(async (req, res) => {
-            await load('controllers', 'pages/deleteGet.js')(req, res)
+            await require('../controllers/pages/deleteGet.js')(req, res)
         })
     )
 
@@ -169,7 +167,7 @@ module.exports = (services, options = {}) => {
         requirePageAccess('read', accessOptions('view_noacl')),
         csrfProtection,
         asyncRoute(async (req, res) => {
-            await load('pages', 'revertGet.js')(req, res)
+            await require('../pages/revertGet.js')(req, res)
         })
     )
 
@@ -181,7 +179,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            await load('pages', 'revert.js')(req, res)
+            await require('../pages/revert.js')(req, res)
         })
     )
 
@@ -190,7 +188,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('move', accessOptions('move_noacl')),
         asyncRoute(async (req, res) => {
-            await load('controllers', 'pages/movePost.js')(req, res)
+            await require('../controllers/pages/movePost.js')(req, res)
         })
     )
 
@@ -203,7 +201,7 @@ module.exports = (services, options = {}) => {
             mode: 'enforce'
         }),
         asyncRoute(async (req, res) => {
-            await load('pages', 'delete.js')(req, res)
+            await require('../pages/delete.js')(req, res)
         })
     )
 

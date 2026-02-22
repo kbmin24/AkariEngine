@@ -23,7 +23,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         const boardNow = await boards.findOne({where: {boardID: req.params.board}})
         const pro = boardNow.writeACL
         const acl = (pro == undefined ? 'everyone' : pro) //fallback
-        const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
+        const r = await require('../../pages/satisfyACL.js')(req, res, [acl], perm, block)
         if (r)
         {
             //do nothing
@@ -34,13 +34,13 @@ module.exports = async (app, sequelize, csrfProtection) => {
         }
         else
         {
-            require(paths.utils('error'))(req, res, { description: '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+            require('../../utils/error.js')(req, res, { description: '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
             return
         }
-        const captchaSVG = await require(paths.resolve('utils', 'captcha.js')).genCaptcha()
+        const captchaSVG = await require('../../utils/captcha.js').genCaptcha()
         if (!(boardNow))
         {
-            require(paths.utils('error'))(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+            require('../../utils/error.js')(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
             return
         }
         ejs.renderFile(__dirname + '/views/write.ejs',
@@ -57,7 +57,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            require(paths.resolve('view.js'))(req, res,
+            require('../../view.js')(req, res,
             {
                 title: boardNow.boardTitle,
                 titleLink: `/board/${boardNow.boardID}`,
@@ -163,7 +163,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            require(paths.resolve('view.js'))(req, res,
+            require('../../view.js')(req, res,
             {
                 title: '정말로 글을 삭제하시겠습니까?',
                 content: html,
@@ -182,7 +182,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             }}) !== null ) === true
         if (!req.body.postid)
         {
-            require(paths.utils('error'))(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
+            require('../../utils/error.js')(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
             return
         }
         const boardNow = await boards.findOne({where: {boardID: req.body.boardid}})
@@ -190,7 +190,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         let post = await posts.findOne({where: {boardID: req.body.boardid, idAtBoard: req.body.postid}})
         if (!post)
         {
-            require(paths.utils('error'))(req, res, { description: '이미 삭제된 글입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
+            require('../../utils/error.js')(req, res, { description: '이미 삭제된 글입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
             return
         }
         if (post.writtenIP && !isAdmin)
@@ -200,7 +200,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             const saltedPW = crypto.pbkdf2Sync(req.body.pw, post.ipPWsalt, 10000, 64, 'sha512')
             if (saltedPW.toString('base64') != post.ipPW)
             {
-                require(paths.utils('error'))(req, res, { description: '비밀번호가 틀렸습니다.', returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
+                require('../../utils/error.js')(req, res, { description: '비밀번호가 틀렸습니다.', returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
                 return
             }
         }
@@ -208,7 +208,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (!isAdmin && post.writtenBy != req.session.username)
             {
-                require(paths.utils('error'))(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
+                require('../../utils/error.js')(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
                 return
             }
         }
@@ -252,7 +252,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
                 res.writeHead(500).write('Internal Server Error')
                 return
             }
-            require(paths.resolve('view.js'))(req, res,
+            require('../../view.js')(req, res,
             {
                 title: '정말로 댓글을 삭제하시겠습니까?',
                 content: html,
@@ -271,13 +271,13 @@ module.exports = async (app, sequelize, csrfProtection) => {
             }}) !== null ) === true
         if (!req.body.commentid)
         {
-            require(paths.utils('error'))(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
+            require('../../utils/error.js')(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
             return
         }
         let comment = await boardcomment.findOne({where: {id: req.body.commentid}})
         if (!comment || comment.isDeleted)
         {
-            require(paths.utils('error'))(req, res, { description: '이미 삭제된 댓글입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
+            require('../../utils/error.js')(req, res, { description: '이미 삭제된 댓글입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
             return
         }
         if (comment.doneIP && !isAdmin)
@@ -287,7 +287,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
             const saltedPW = crypto.pbkdf2Sync(req.body.pw, comment.ipPWsalt, 10000, 64, 'sha512')
             if (saltedPW.toString('base64') != comment.ipPW)
             {
-                require(paths.utils('error'))(req, res, { description: '비밀번호가 틀렸습니다.', returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
+                require('../../utils/error.js')(req, res, { description: '비밀번호가 틀렸습니다.', returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
                 return
             }
         }
@@ -295,7 +295,7 @@ module.exports = async (app, sequelize, csrfProtection) => {
         {
             if (!isAdmin && comment.doneBy != req.session.username)
             {
-                require(paths.utils('error'))(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
+                require('../../utils/error.js')(req, res, { description: '잘못된 접근입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 403 })
                 return
             }
         }

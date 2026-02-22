@@ -16,7 +16,7 @@ module.exports = async (req, res, viewcount) =>
     {
         rank: rank
     })
-    require(paths.resolve('view.js'))(req, res,
+    require('../view.js')(req, res,
     {
         title: '오늘의 문서 조회수 랭킹',
         content: html,

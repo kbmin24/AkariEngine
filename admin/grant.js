@@ -1,5 +1,4 @@
-const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 
 module.exports = (req, res, users, perm, adminlog) =>
 {
@@ -7,7 +6,7 @@ module.exports = (req, res, users, perm, adminlog) =>
     const grantTo = req.body.grantTo
     if (username === undefined)
     {
-        require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
         return
     }
     perm.findOne({where: {username: username, perm: 'grant'}}).then(p =>
@@ -18,7 +17,7 @@ module.exports = (req, res, users, perm, adminlog) =>
             if (grantTo === undefined)
             {
                 //Error!
-                require(paths.utils('error'))(req, res, { description: 'Please specify username to grant to.', returnLink: '/admin/grant', returnName: 'grant page' })
+                require('../utils/error.js')(req, res, { description: 'Please specify username to grant to.', returnLink: '/admin/grant', returnName: 'grant page' })
                 return
             }
             //does the username even exist?
@@ -57,7 +56,7 @@ module.exports = (req, res, users, perm, adminlog) =>
                 }
                 else
                 {
-                    require(paths.utils('error'))(req, res, { description: 'No such user.', returnLink: '/admin', returnName: 'the admin page' })
+                    require('../utils/error.js')(req, res, { description: 'No such user.', returnLink: '/admin', returnName: 'the admin page' })
                 }
             })
         }
@@ -65,9 +64,9 @@ module.exports = (req, res, users, perm, adminlog) =>
         {
             //Unauthorised access
             logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
-            require(paths.utils('error'))(req, res, { description: 'You do not have a grant permission', returnLink: '/admin', returnName: 'the admin page' })
+            require('../utils/error.js')(req, res, { description: 'You do not have a grant permission', returnLink: '/admin', returnName: 'the admin page' })
             return
         }
     })
-    require(paths.resolve('info.js'))(req, res, null, 'Done.', '/admin', 'the admin page')
+    require('../info.js')(req, res, null, 'Done.', '/admin', 'the admin page')
 }

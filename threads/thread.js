@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
@@ -18,7 +18,7 @@ module.exports = async (req, res, dbs = {}) =>
     }
     if (!t)
     {
-        require(paths.utils('error'))(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        require('../utils/error.js')(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
     ejs.renderFile(paths.view('threads/thread.ejs'),
@@ -35,7 +35,7 @@ module.exports = async (req, res, dbs = {}) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(paths.resolve('view.js'))(req, res,
+        require('../view.js')(req, res,
         {
             title: `${t.pagename} 토론 - ${t.threadTitle}`,
             content: html,

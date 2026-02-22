@@ -1,4 +1,3 @@
-const paths = require('../utils/paths')
 const i18n = require("i18n")
 
 module.exports = async (req, res, users) =>
@@ -7,7 +6,7 @@ module.exports = async (req, res, users) =>
     
     if (req.body.password != req.body.passwordConfirm)
     {
-        require(paths.resolve('info.js'))(req, res, null, i18n.__('register_pwNotMatch'), '/signup', i18n.__('register'), 200, 'ko')
+        require('../info.js')(req, res, null, i18n.__('register_pwNotMatch'), '/signup', i18n.__('register'), 200, 'ko')
         return
     }
     //create hashed PW
@@ -24,7 +23,7 @@ module.exports = async (req, res, users) =>
             password: hashedPW.toString('base64'),
             salt: salt
         })
-        .then(async () => await require(paths.resolve('sendfile.js'))(req, res, i18n.__('register_done'), '/views/user/signupnotify.html'))
-        .catch(_err => require(paths.utils('error'))(req, res, { description: i18n.__('register_fail'), returnLink: '/signup', returnName: i18n.__('register'), statusCode: 500 }))
+        .then(async () => await require('../sendfile.js')(req, res, i18n.__('register_done'), '/views/user/signupnotify.html'))
+        .catch(_err => require('../utils/error.js')(req, res, { description: i18n.__('register_fail'), returnLink: '/signup', returnName: i18n.__('register'), statusCode: 500 }))
     })
 }

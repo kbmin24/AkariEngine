@@ -1,5 +1,4 @@
-const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 
 module.exports = async (req, res, dbs = {}) =>
 {
@@ -8,7 +7,7 @@ module.exports = async (req, res, dbs = {}) =>
     if (!(await dbs['perm'].findOne({where: {username: username, perm: 'thread'}})))
     {
         logger.admin('Unauthorised thread attempt', username, { ip: req.ipAddress })
-        require(paths.utils('error'))(req, res, { description: 'You do not have a thread permission', returnLink: '/admin', returnName: 'the admin page' })
+        require('../utils/error.js')(req, res, { description: 'You do not have a thread permission', returnLink: '/admin', returnName: 'the admin page' })
         return
     }
 
@@ -21,7 +20,7 @@ module.exports = async (req, res, dbs = {}) =>
     })
     if (!t)
     {
-        require(paths.utils('error'))(req, res, { description: 'No such thread.', returnLink: 'javascript:window.history.back()', returnName: 'the thread.' })
+        require('../utils/error.js')(req, res, { description: 'No such thread.', returnLink: 'javascript:window.history.back()', returnName: 'the thread.' })
         return
     }
 
@@ -37,5 +36,5 @@ module.exports = async (req, res, dbs = {}) =>
         }
     )
 
-    require(paths.resolve('info.js'))(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
+    require('../info.js')(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
 }

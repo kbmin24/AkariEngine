@@ -1,5 +1,4 @@
 const crypto = require('crypto')
-const paths = require('../utils/paths')
 module.exports = async (req, res, tables = {}) =>
 {
     switch (req.params.name)
@@ -18,7 +17,7 @@ module.exports = async (req, res, tables = {}) =>
                         key: 'sign',
                         value: req.body.sign
                 })
-            require(paths.resolve('info.js'))(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+            require('../info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
             return
             }
         case "changeSkin":
@@ -37,7 +36,7 @@ module.exports = async (req, res, tables = {}) =>
                             value: skinName
                     })
                 }
-                require(paths.resolve('info.js'))(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+                require('../info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
                 return
         case 'changePassword':
             {
@@ -46,7 +45,7 @@ module.exports = async (req, res, tables = {}) =>
                 const newPassword = req.body.password
                 if (!user)
                 {
-                    require(paths.utils('error'))(req, res, { description: `로그인이 필요합니다.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
+                    require('../utils/error.js')(req, res, { description: `로그인이 필요합니다.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
                     return
                 }
                 
@@ -57,7 +56,7 @@ module.exports = async (req, res, tables = {}) =>
                     if (hashedPW.toString('base64') != user.password)
                     {
                         //bad.
-                        require(paths.utils('error'))(req, res, { description: `이전 비밀번호를 올바르게 입력했는지 확인해 주세요.`, returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
+                        require('../utils/error.js')(req, res, { description: `이전 비밀번호를 올바르게 입력했는지 확인해 주세요.`, returnLink: 'javascript:window.history.back()', returnName: '이전 페이지', statusCode: 403 })
                         return
                     }
                     //good. Put new password in.
@@ -65,7 +64,7 @@ module.exports = async (req, res, tables = {}) =>
                     {
                         if (err) throw new Error("Password generation failed")
                         await user.update({password: hashedPW.toString('base64')})
-                        require(paths.resolve('info.js'))(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+                        require('../info.js')(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
                     })
                 })
                 return

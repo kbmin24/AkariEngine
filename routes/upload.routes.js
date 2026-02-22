@@ -3,9 +3,9 @@ const i18n = require("i18n")
 const multer = require('multer')
 const fs = require('fs')
 const paths = require('../utils/paths')
-const { load, asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
+const { asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
 const { chkCaptcha } = require('../middlewares/chkCaptcha')
-const { requireLogin } = require(paths.middleware('permission'))
+const { requireLogin } = require('../middlewares/permission.js')
 
 const defaultFileTypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
 
@@ -78,7 +78,7 @@ module.exports = (_services, _options = {}) => {
         requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
         asyncRoute(async (req, res) => {
         const username = req.session.username
-        const captchaSVG = await load('utils', 'captcha.js').genCaptcha()
+        const captchaSVG = await require('../utils/captcha.js').genCaptcha()
         await renderTemplateInLayout(req, res, 'files/upload.ejs', {
             username,
             captcha: captchaSVG,

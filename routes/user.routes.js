@@ -1,15 +1,14 @@
 const express = require('express')
 const i18n = require("i18n")
-const paths = require('../utils/paths')
-const { chkCaptcha } = require(paths.middleware('chkCaptcha'))
-const { load, asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
+const { chkCaptcha } = require('../middlewares/chkCaptcha.js')
+const { asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
 
 module.exports = (_services, options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
 
     router.get('/signup', asyncRoute(async (req, res) => {
-        const captchaSVG = await load('utils', 'captcha.js').genCaptcha()
+        const captchaSVG = await require('../utils/captcha.js').genCaptcha()
         await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: i18n.__ }, {
             title: i18n.__('register'),
             username: req.session.username,
@@ -20,7 +19,7 @@ module.exports = (_services, options = {}) => {
     router.post('/signup',
         chkCaptcha,
         asyncRoute(async (req, res) => {
-        await load('user', 'signup.js')(req, res, global.db.users)
+        await require('../user/signup.js')(req, res, global.db.users)
     }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
@@ -32,7 +31,7 @@ module.exports = (_services, options = {}) => {
     }))
 
     router.post('/login', csrfProtection, asyncRoute(async (req, res) => {
-        await load('user', 'login.js')(req, res, global.db.users, global.db.loginhistory)
+        await require('../user/login.js')(req, res, global.db.users, global.db.loginhistory)
     }))
 
     router.get('/logout', (req, res) => {
@@ -62,18 +61,18 @@ module.exports = (_services, options = {}) => {
     }))
 
     router.post('/settings/:name(*)', csrfProtection, asyncRoute(async (req, res) => {
-        await load('user', 'settings.js')(req, res, {
+        await require('../user/settings.js')(req, res, {
             settings: global.db.settings,
             users: global.db.users
         })
     }))
 
     router.get('/contribution/:name(*)', asyncRoute(async (req, res) => {
-        await load('user', 'contribution.js')(req, res, global.db.history)
+        await require('../user/contribution.js')(req, res, global.db.history)
     }))
 
     router.get('/whoami', (req, res) => {
-        load('view.js')(req, res, {
+        require('../view.js')(req, res, {
             title: 'You are',
             content: `${req.session.username}<br>IP Address: ${req.ipAddress}`,
             username: req.session.username,

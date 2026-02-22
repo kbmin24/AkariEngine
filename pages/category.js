@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 module.exports = async (req, res, category) =>
 {
     const searchRes = await category.findAndCountAll({
@@ -22,7 +22,7 @@ module.exports = async (req, res, category) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require(paths.resolve('view.js'))(req, res,
+        require('../view.js')(req, res,
         {
             title: '분류 ' + req.params.name,
             content: html,

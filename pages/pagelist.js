@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require('../utils/logger.js')
 const pageLength = 50
 module.exports = async (req, res, pages) =>
 {
@@ -23,7 +23,7 @@ module.exports = async (req, res, pages) =>
             return
         }
         const username = req.session.username
-        require(paths.resolve('view.js'))(req, res,
+        require('../view.js')(req, res,
         {
             title: '문서 목록',
             content: html,

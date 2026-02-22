@@ -1,5 +1,4 @@
 //ext.js: extension manager
-const paths = require('../utils/paths')
 
 let extensions = {}
 global.extensions = extensions
@@ -22,8 +21,8 @@ module.exports = async (app) =>
     // TODO change it so that it doesn't use global.conf.extensions directly
     for (let e of global.conf.extensions)
     {
-        let extManifest = require(paths.resolve('extensions', e, 'manifest.json'))
-        let obj = require(paths.resolve('extensions', e, 'main.js'))
+        let extManifest = require('./manifest.json')
+        let obj = require('./main.js')
         extensions[e] = {'manifest': extManifest, 'obj': obj}
     }
     for (let e of global.conf.extensions)

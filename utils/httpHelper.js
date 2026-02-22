@@ -4,16 +4,12 @@ const paths = require('./paths')
 const BACK_LINK = 'javascript:history.back()'
 const LOGIN_LINK = '/login'
 
-function load(...segments) {
-    return require(paths.resolve(...segments))
-}
-
 function asyncRoute(handler) {
     return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next)
 }
 
 function renderLayout(req, res, renderOpt) {
-    load('view.js')(req, res, renderOpt)
+    require('../view.js')(req, res, renderOpt)
 }
 
 async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
@@ -25,7 +21,6 @@ async function renderTemplateInLayout(req, res, templatePath, templateData, layo
 }
 
 module.exports = {
-    load,
     asyncRoute,
     renderLayout,
     renderTemplateInLayout,

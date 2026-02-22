@@ -1,6 +1,5 @@
 const ejs = require('ejs')
 const {Op} = require('sequelize')
-const paths = require('../../utils/paths')
 
 global.pageLength = 30
 const pageLength = global.pageLength
@@ -9,12 +8,12 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require(paths.utils('error'))(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        require('../../utils/error.js')(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require(paths.resolve('pages', 'satisfyACL.js'))(req, res, [acl], perm, block)
+    const r = await require('../../pages/satisfyACL.js')(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -25,7 +24,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
     }
     else
     {
-        require(paths.utils('error'))(req, res, { description: '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 200 })
+        require('../../utils/error.js')(req, res, { description: '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 200 })
         return
     }
 
@@ -138,7 +137,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         isRecommended: req.query.recommended === 'yes'
     })
     if (isHTML) return html
-    require(paths.resolve('view.js'))(req, res,
+    require('../../view.js')(req, res,
     {
         title: boardNow.boardTitle,
         titleLink: `/board/${boardNow.boardID}`,

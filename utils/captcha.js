@@ -1,5 +1,4 @@
-const paths = require('./paths')
-const config = require(paths.resolve('/config/'))
+const config = require('../config')
 
 // todo: move genCaptcha to middleware too
 

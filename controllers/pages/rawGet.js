@@ -1,9 +1,8 @@
 const i18n = require('i18n')
-const paths = require('../../utils/paths')
 const {
     PageNotFoundError,
     ValidationError
-} = require(paths.service('errors'))
+} = require('../../services/errors.js')
 
 module.exports = async (req, res) => {
     try {
@@ -16,7 +15,7 @@ module.exports = async (req, res) => {
         res.send(content)
     } catch (error) {
         if (error instanceof PageNotFoundError) {
-            require(paths.utils('error'))(req, res, {
+            require('../../utils/error.js')(req, res, {
                 description: i18n.__('noPageMsg', { name: req.params.name }),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),
@@ -26,7 +25,7 @@ module.exports = async (req, res) => {
         }
 
         if (error instanceof ValidationError && error.i18nKey) {
-            require(paths.utils('error'))(req, res, {
+            require('../../utils/error.js')(req, res, {
                 description: i18n.__(error.i18nKey),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

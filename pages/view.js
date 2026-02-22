@@ -1,7 +1,6 @@
 const date = require('date-and-time')
 const i18n = require("i18n")
-const paths = require('../utils/paths')
-const escapeHtml = require(paths.utils('escapeHTML'))
+const escapeHtml = require('../utils/escapeHTML.js')
 
 // TODO refactor to use PageService
 
@@ -118,7 +117,7 @@ module.exports = async (req, res) => {
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
-                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, redirect, true, {}, opt)
+                let content = await require('./render.js')(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, redirect, true, {}, opt)
                 if (content === true) return
                 content = await getCategory(req.params.name, categoryRepo, opt['category']) + content
                 let renderOpt = {
@@ -134,7 +133,7 @@ module.exports = async (req, res) => {
 
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require(paths.resolve('view.js'))(req, res, renderOpt)
+                require('../view.js')(req, res, renderOpt)
             }
             else {
                 //404!
@@ -145,7 +144,7 @@ module.exports = async (req, res) => {
                         content = i18n.__("noUserPage_user", { link: escapeHtml(req.params.name) })
                     else
                         content = i18n.__("noUserPage")
-                    require(paths.resolve('view.js'))(req, res,
+                    require('../view.js')(req, res,
                         {
                             title: i18n.__("error"),
                             content: content,
@@ -160,7 +159,7 @@ module.exports = async (req, res) => {
                 if (page) {
                     hisText = i18n.__("seeHistory", { link: escapeHtml(req.params.name) })
                 }
-                require(paths.utils('error'))(req, res, {
+                require('../utils/error.js')(req, res, {
                     description: i18n.__("noPageMsg",
                         {
                             name: escapeHtml(req.params.name),
@@ -176,7 +175,7 @@ module.exports = async (req, res) => {
         await (async () => {
             if (page) {
                 //show the page
-                let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
+                let content = await require('./render.js')(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
                 if (content === true) return
                 let renderOpt = {
                     title: page.page,
@@ -187,10 +186,10 @@ module.exports = async (req, res) => {
                     pagename: page.page
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require(paths.resolve('view.js'))(req, res, renderOpt)
+                require('../view.js')(req, res, renderOpt)
             }
             else {
-                require(paths.utils('error'))(req, res, {
+                require('../utils/error.js')(req, res, {
                     description: i18n.__("noPageMsg",
                         {
                             name: escapeHtml(req.params.name),
