@@ -71,9 +71,15 @@ module.exports = (services, options = {}) => {
         await load('admin', 'protectPost.js')(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
     }))
 
-    router.get('/raw/:name(*)', asyncRoute(async (req, res) => {
-        await load('pages', 'raw.js')(req, res, global.db.pages, global.db.history, global.db.protect, global.db.perm, global.db.block)
-    }))
+    router.get('/raw/:name(*)',
+        param('name').trim().notEmpty(),
+        query('rev').optional().isInt(),
+        validateRequest,
+        requirePageAccess('read', accessOptions('view_noacl')),
+        asyncRoute(async (req, res) => {
+            await require(paths.controller('pages/rawGet'))(req, res)
+        })
+    )
 
     router.get('/history/:name(*)', asyncRoute(async (req, res) => {
         await load('pages', 'history.js')(req, res, global.db.history)

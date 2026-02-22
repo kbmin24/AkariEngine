@@ -106,6 +106,16 @@ Notes:
 - Prefer `req.app.locals.services.*` from routes/controllers in refactor paths.
 - Reuse shared helpers from `utils/httpHelper.js` (`asyncRoute`, layout helpers).
 
+## editPost good practices (reference pattern)
+- Treat `controllers/pages/editPost.js` as the model for write controllers in refactor paths.
+- Delegate all page mutation logic to service layer (`req.app.locals.services.page.editPage(...)`), not controller logic.
+- Pass a single options object to services (title/content/user/ip/comment/prefix/suffix) for readability and backward-safe extension.
+- Keep success path minimal and explicit (single redirect/response, no extra branching).
+- Catch only known typed domain errors (`ValidationError`) and map specific `i18nKey` values to UX responses.
+- Re-throw unknown errors so centralized middleware handles logging and fallback rendering.
+- Prefer i18n-backed error descriptions and structured error helper options (`description`, `returnLink`, `returnName`, `statusCode`).
+- Preserve request context usage (`req.session.username`, `req.ipAddress`, `req`) when required for audit/security/business rules.
+
 ## Validation and contracts
 - Use `express-validator` at route boundary.
 - Run `validateRequest` immediately after validators.

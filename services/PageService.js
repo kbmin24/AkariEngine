@@ -103,6 +103,23 @@ class PageService {
         }
     }
 
+    async getRawContent({ title, rev }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 400,
+                code: 'RAW_TITLE_NEEDED'
+            })
+        }
+
+        const page = rev === undefined
+            ? await this.pageRepo.findByTitle(title)
+            : await this.historyRepo.findByPageAndRev(title, rev)
+
+        if (!page || page.deleted) throw new PageNotFoundError(title)
+        return page.content
+    }
+
     async getMoveViewModel({ title, username }) {
         if (!title) {
             throw new ValidationError({
