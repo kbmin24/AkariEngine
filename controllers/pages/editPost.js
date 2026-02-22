@@ -1,6 +1,5 @@
 const i18n = require("i18n")
 const paths = require('../../utils/paths')
-const { load } = require(paths.util('httpHelper'))
 const {
     ValidationError
 } = require(paths.resolve('services', 'errors.js'))
@@ -20,7 +19,7 @@ module.exports = async (req, res) => {
         res.redirect(`/w/${req.params.name}`)
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey === 'edit_titleneeded') {
-            load('error.js')(req, res, {
+            require(paths.utils('error'))(req, res, {
                 description: i18n.__('edit_titleneeded'),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),
@@ -29,7 +28,7 @@ module.exports = async (req, res) => {
             return
         }
         if (error instanceof ValidationError && error.i18nKey === 'pagename_illegalfile') {
-            load('error.js')(req, res, {
+            require(paths.utils('error'))(req, res, {
                 description: i18n.__('pagename_illegalfile'),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

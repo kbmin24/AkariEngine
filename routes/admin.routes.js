@@ -5,7 +5,7 @@ const { Op } = require('sequelize')
 const paths = require('../utils/paths')
 const { asyncRoute, load } = require('../utils/httpHelper')
 const { requirePermission } = require(paths.middleware('auth'))
-const logger = require(paths.util('logger'))
+const logger = require(paths.utils('logger'))
 
 module.exports = (services, options = {}) => {
     const router = express.Router()
@@ -31,14 +31,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+                require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'grant' } })
             if (!p) {
                 logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, { description: 'You do not have a grant permission.', returnLink: '/admin', returnName: 'the admin page' })
+                require(paths.utils('error'))(req, res, { description: 'You do not have a grant permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -55,7 +55,7 @@ module.exports = (services, options = {}) => {
 
             const u = await global.db.users.findOne({ where: { username: req.query.grantTo } })
             if (!u) {
-                load('error.js')(req, res, { description: 'No such user.', returnLink: '/admin/grant', returnName: 'the grant page' })
+                require(paths.utils('error'))(req, res, { description: 'No such user.', returnLink: '/admin/grant', returnName: 'the grant page' })
                 return
             }
 
@@ -79,14 +79,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+                require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'block' } })
             if (!p) {
                 logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, { description: 'You do not have a block permission.', returnLink: '/admin', returnName: 'the admin page' })
+                require(paths.utils('error'))(req, res, { description: 'You do not have a block permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -106,14 +106,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+                require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'block' } })
             if (!p) {
                 logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, { description: 'You do not have a block permission.', returnLink: '/admin', returnName: 'the admin page' })
+                require(paths.utils('error'))(req, res, { description: 'You do not have a block permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -132,14 +132,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+                require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'loginhistory' } })
             if (!p) {
                 logger.admin('Unauthorised loginhistory attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, { description: 'You do not have a loginhistory permission.', returnLink: '/admin', returnName: 'the admin page' })
+                require(paths.utils('error'))(req, res, { description: 'You do not have a loginhistory permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -179,14 +179,14 @@ module.exports = (services, options = {}) => {
         asyncRoute(async (req, res) => {
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+                require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'acl' } })
             if (!p) {
                 logger.admin('Unauthorised rev hide attempt', username, { ip: req.ipAddress })
-                load('error.js')(req, res, { description: 'You do not have an acl permission.', returnLink: '/admin', returnName: 'the admin page' })
+                require(paths.utils('error'))(req, res, { description: 'You do not have an acl permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 
@@ -206,13 +206,13 @@ module.exports = (services, options = {}) => {
             // TODO move this to extension. Why is it even here??
             const username = req.session.username
             if (username === undefined) {
-                load('error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+                require(paths.utils('error'))(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
                 return
             }
 
             const p = await global.db.perm.findOne({ where: { username, perm: 'board' } })
             if (!p) {
-                load('error.js')(req, res, { description: 'You do not have a board permission.', returnLink: '/admin', returnName: 'the admin page' })
+                require(paths.utils('error'))(req, res, { description: 'You do not have a board permission.', returnLink: '/admin', returnName: 'the admin page' })
                 return
             }
 

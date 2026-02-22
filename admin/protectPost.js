@@ -18,13 +18,13 @@ module.exports = async (req, res, perm, protect, pages, history, rc, _block) =>
     }
     else
     {
-        require(paths.resolve('error.js'))(req, res, { description: 'You need ACL permission.', returnLink: '/', returnName: 'the main page' })
+        require(paths.utils('error'))(req, res, { description: 'You need ACL permission.', returnLink: '/', returnName: 'the main page' })
     }
 
     const pg = await pages.findOne({where: {title: req.params.name}})
     if (pg === undefined)
     {
-        require(paths.resolve('error.js'))(req, res, { description: 'No such page.', returnLink: '/', returnName: 'the main page' })
+        require(paths.utils('error'))(req, res, { description: 'No such page.', returnLink: '/', returnName: 'the main page' })
         return
     }
     await protect.destroy({where: {title: req.params.name}})

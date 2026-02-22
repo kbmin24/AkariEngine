@@ -137,5 +137,6 @@
 	"user_blocked_forever": "사용자 {{user}}가 {{doneBy}}에 의해 영구히 차단되었습니다. 사유: {{comment}}",
 	"admin_required": "관리자 권한이 필요합니다.",
 	"orphaned_pages": "고립된 문서",
-	"orphaned_pages_desc": "<p><a href='/w/FrontPage'>FrontPage</a>에서 링크로 도달할 수 없는 문서를 모두 표시합니다.</p><p>이 페이지는 매일 자정 업데이트됩니다.</p>"
+	"orphaned_pages_desc": "<p><a href='/w/FrontPage'>FrontPage</a>에서 링크로 도달할 수 없는 문서를 모두 표시합니다.</p><p>이 페이지는 매일 자정 업데이트됩니다.</p>",
+	"signupdisabled": "계정 생성이 비활성화되어 있습니다."
 }

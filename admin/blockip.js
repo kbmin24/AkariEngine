@@ -1,5 +1,5 @@
 const paths = require('../utils/paths')
-const logger = require(paths.util('logger'))
+const logger = require(paths.utils('logger'))
 const { ValidationError, PermissionDeniedError } = require(paths.service('errors'))
 
 module.exports = async (req, res, _users, _perm, _block, adminlog) => {
@@ -23,7 +23,7 @@ module.exports = async (req, res, _users, _perm, _block, adminlog) => {
     } catch (error) {
         if (error instanceof PermissionDeniedError) {
             logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-            require(paths.resolve('error.js'))(req, res, {
+            require(paths.utils('error'))(req, res, {
                 description: 'You do not have a block permission',
                 returnLink: '/admin',
                 returnName: 'the admin page'
@@ -32,7 +32,7 @@ module.exports = async (req, res, _users, _perm, _block, adminlog) => {
         }
 
         if (error instanceof ValidationError) {
-            require(paths.resolve('error.js'))(req, res, {
+            require(paths.utils('error'))(req, res, {
                 description: error.message,
                 returnLink: '/admin/blockip',
                 returnName: 'blockip page'

@@ -6,7 +6,7 @@ const {
 } = require('./errors')
 
 const paths = require('../utils/paths')
-const { CIDRtoRange, isValidIP, iptoBigInt } = require(paths.util('ipTools'))
+const { CIDRtoRange, isValidIP, iptoBigInt } = require(paths.utils('ipTools'))
 
 class BlockService {
     constructor(blockRepo, userRepo, permissionRepo) {

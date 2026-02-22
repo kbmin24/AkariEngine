@@ -1,7 +1,7 @@
 const date = require('date-and-time')
 const i18n = require("i18n")
 const paths = require('../utils/paths')
-const escapeHtml = require(paths.util('escapeHTML'))
+const escapeHtml = require(paths.utils('escapeHTML'))
 
 // TODO refactor to use PageService
 
@@ -160,7 +160,7 @@ module.exports = async (req, res) => {
                 if (page) {
                     hisText = i18n.__("seeHistory", { link: escapeHtml(req.params.name) })
                 }
-                require(paths.resolve('error.js'))(req, res, {
+                require(paths.utils('error'))(req, res, {
                     description: i18n.__("noPageMsg",
                         {
                             name: escapeHtml(req.params.name),
@@ -190,7 +190,7 @@ module.exports = async (req, res) => {
                 require(paths.resolve('view.js'))(req, res, renderOpt)
             }
             else {
-                require(paths.resolve('error.js'))(req, res, {
+                require(paths.utils('error'))(req, res, {
                     description: i18n.__("noPageMsg",
                         {
                             name: escapeHtml(req.params.name),

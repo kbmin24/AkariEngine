@@ -25,6 +25,6 @@ module.exports = async (req, res, users) =>
             salt: salt
         })
         .then(async () => await require(paths.resolve('sendfile.js'))(req, res, i18n.__('register_done'), '/views/user/signupnotify.html'))
-        .catch(_err => require(paths.resolve('error.js'))(req, res, { description: i18n.__('register_fail'), returnLink: '/signup', returnName: i18n.__('register'), statusCode: 500 }))
+        .catch(_err => require(paths.utils('error'))(req, res, { description: i18n.__('register_fail'), returnLink: '/signup', returnName: i18n.__('register'), statusCode: 500 }))
     })
 }

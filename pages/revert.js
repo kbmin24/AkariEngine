@@ -20,15 +20,15 @@ module.exports = async (req, res) => {
     }
     catch (error) {
         if (error instanceof RevisionNotFoundError) {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof PageNotFoundError) {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof ValidationError) {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         throw error

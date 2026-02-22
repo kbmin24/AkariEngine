@@ -1,5 +1,5 @@
 //error.js: display error to the user.
-const paths = require('./utils/paths')
+const paths = require('./paths')
 const i18n = require("i18n")
 
 module.exports = (req, res, options = {}) => {

@@ -1,12 +1,12 @@
 const i18n = require('i18n')
 const paths = require('../../utils/paths')
-const { renderTemplateInLayout, load } = require(paths.util('httpHelper'))
+const { renderTemplateInLayout, load } = require(paths.utils('httpHelper'))
 
 module.exports = async (req, res) => {
     const username = req.session.username
     const p = await req.app.locals.repositories.pages.findByTitle(req.params.name)
     if (!p) {
-        load('error.js')(req, res, {
+        require(paths.utils('error'))(req, res, {
             description: `${i18n.__('page404')} <a href="/edit/${req.params.name}">${i18n.__('page_asknew')}</a>`,
             returnLink: '/',
             returnName: i18n.__('mainpage'),

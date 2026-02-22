@@ -1,6 +1,6 @@
 const dateandtime = require('date-and-time')
 const paths = require('../utils/paths')
-const logger = require(paths.util('logger'))
+const logger = require(paths.utils('logger'))
 
 module.exports = async (req, res, users, perm, block, adminlog) =>
 {
@@ -9,7 +9,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     if (!(await perm.findOne({where: {username: username, perm: 'block'}})))
     {
         logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-        require(paths.resolve('error.js'))(req, res, { description: 'You do not have a block permission', returnLink: '/admin', returnName: 'the admin page' })
+        require(paths.utils('error'))(req, res, { description: 'You do not have a block permission', returnLink: '/admin', returnName: 'the admin page' })
         return
     }
     
@@ -17,7 +17,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     const u = users.findOne({where: {username: req.body.target}})
     if (!u)
     {
-        await require(paths.resolve('error.js'))(req, res, { description: 'No such user.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+        await require(paths.utils('error'))(req, res, { description: 'No such user.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
         return
     }
 
@@ -30,7 +30,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (!currentBlock)
                 {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'The user currently is not blocked.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await require(paths.utils('error'))(req, res, { description: 'The user currently is not blocked.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 await block.destroy({where: {target: req.body.target, targetType: 'user'}})
@@ -42,7 +42,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (currentBlock)
                 {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await require(paths.utils('error'))(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 await block.create({
@@ -60,13 +60,13 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 //other periods
                 if (isNaN(req.body.blockfor))
                 {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'Block period must be unblock, forever or an integer.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await require(paths.utils('error'))(req, res, { description: 'Block period must be unblock, forever or an integer.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (currentBlock)
                 {
-                    await require(paths.resolve('error.js'))(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await require(paths.utils('error'))(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 const blockTill = new Date(Date.now() + req.body.blockfor * 1000)

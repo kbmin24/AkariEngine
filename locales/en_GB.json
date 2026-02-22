@@ -135,5 +135,6 @@
 	"user_blocked_forever": "User {{user}} has been blocked by {{doneBy}} forever. Reason: {{comment}}",
 	"admin_required": "Admin permission required.",
 	"orphaned_pages": "Orphaned pages",
-	"orphaned_pages_desc": "<p>Shows all pages that cannot be reached by links from <a href='/w/FrontPage'>FrontPage</a>.</p><p>This page is updated every midnight.</p>"
+	"orphaned_pages_desc": "<p>Shows all pages that cannot be reached by links from <a href='/w/FrontPage'>FrontPage</a>.</p><p>This page is updated every midnight.</p>",
+	"signupedisabled": "Account creation is disabled."
 }

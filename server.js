@@ -2,11 +2,11 @@ const express = require('express')
 const app = express()
 const paths = require('./utils/paths')
 const config = require('./config')
-const logger = require(paths.util('logger'))
+const logger = require(paths.utils('logger'))
 const { createSequelizeInstance } = require('./config/database')
 const RepositoryFactory = require('./repositories')
 const ServiceFactory = require('./services')
-const { load } = require(paths.util('httpHelper'))
+const { load } = require(paths.utils('httpHelper'))
 
 global.path = config.basePath
 global.conf = config.settings
@@ -134,7 +134,7 @@ i18n.configure({
 global.legalTitleRegex = /^[^[\]{}|#\n]*$/m
 
 //load global tools
-global.escapeHTML = require(paths.util('escapeHTML'))
+global.escapeHTML = require(paths.utils('escapeHTML'))
 
 //views
 app.set('view engine', 'ejs')
@@ -163,18 +163,18 @@ app.use((req, res, next) => {
     }
 
     if (url.startsWith('/signup')) {
-        return load('error.js')(req, res, {
-            description: '계정 생성이 비활성화되어 있습니다.',
+        return require(paths.utils('error'))(req, res, {
+            description: global.i18n.__('signupdisabled'),
             returnLink: '/login',
-            returnName: '로그인 페이지',
+            returnName: i18n.__('loginpage'),
             statusCode: 403
         })
     }
 
-    return load('error.js')(req, res, {
-        description: '로그인이 필요합니다.',
+    return require(paths.utils('error'))(req, res, {
+        description: global.i18n.__('loginneeded'),
         returnLink: '/login',
-        returnName: '로그인 페이지',
+        returnName: i18n.__('loginpage'),
         statusCode: 403
     })
 })
@@ -227,7 +227,7 @@ app.use((err, req, res, _next) => {
     switch (err.code) {
         case 'FILENAMENULL':
             {
-                load('error.js')(req, res, {
+                require(paths.utils('error'))(req, res, {
                     description: '파일 이름이 비어 있습니다.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -237,7 +237,7 @@ app.use((err, req, res, _next) => {
             break
         case 'FILEEXISTS':
             {
-                load('error.js')(req, res, {
+                require(paths.utils('error'))(req, res, {
                     description: '파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -269,7 +269,7 @@ app.use((err, req, res, _next) => {
             break
         case 'LIMIT_FILE_SIZE':
             {
-                load('error.js')(req, res, {
+                require(paths.utils('error'))(req, res, {
                     description: `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`,
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',

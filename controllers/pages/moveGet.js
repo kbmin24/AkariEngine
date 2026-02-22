@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
         })
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey === 'move_nofile') {
-            load('error.js')(req, res, {
+            require(paths.utils('error'))(req, res, {
                 description: i18n.__('move_nofile'),
                 returnLink: BACK_LINK,
                 returnName: i18n.__('previousPage'),
@@ -40,7 +40,7 @@ module.exports = async (req, res) => {
             return
         }
         if (error instanceof PageNotFoundError) {
-            load('error.js')(req, res, {
+            require(paths.utils('error'))(req, res, {
                 description: `${i18n.__('page404')} <a href="/edit/${req.params.name}"> ${i18n.__('page_asknew')}</a>`,
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

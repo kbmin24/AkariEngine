@@ -12,7 +12,7 @@ module.exports = async (req, res) =>
 
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require(paths.resolve('error.js'))(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+        require(paths.utils('error'))(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
         return
     }
 
@@ -31,17 +31,17 @@ module.exports = async (req, res) =>
     {
         if (error instanceof PageExistsError)
         {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         throw error

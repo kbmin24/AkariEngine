@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.util('logger'))
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res, category) =>
 {
     const searchRes = await category.findAndCountAll({

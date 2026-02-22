@@ -80,12 +80,12 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require(paths.resolve('error.js'))(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        require(paths.utils('error'))(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     if (!req.query.no)
     {
-        require(paths.resolve('error.js'))(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        require(paths.utils('error'))(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     const pro = boardNow.readACL
@@ -101,13 +101,13 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     }
     else
     {
-        require(paths.resolve('error.js'))(req, res, { description: '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 200 })
+        require(paths.utils('error'))(req, res, { description: '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 200 })
         return
     }
     const post = await posts.findOne({where: {idAtBoard: req.query.no, boardID: boardNow.boardID}})
     if (!post)
     {
-        require(paths.resolve('error.js'))(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        require(paths.utils('error'))(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     post.update({viewCount: post.viewCount + 1})

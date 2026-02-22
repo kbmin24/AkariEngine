@@ -119,12 +119,12 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
 
     if (!req.params.name)
     {
-        require(paths.resolve('error.js'))(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+        require(paths.utils('error'))(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
     if (!req.body.content)
     {
-        require(paths.resolve('error.js'))(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+        require(paths.utils('error'))(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
     
@@ -160,7 +160,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            require(paths.resolve('error.js'))(req, res, { description: i18n.__('edit_noacl', {acl: acl}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 403 })
+            require(paths.utils('error'))(req, res, { description: i18n.__('edit_noacl', {acl: acl}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 403 })
             return
         }
 
@@ -196,7 +196,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
-                require(paths.resolve('error.js'))(req, res, { description: i18n.__('pagename_illegalfile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+                require(paths.utils('error'))(req, res, { description: i18n.__('pagename_illegalfile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
                 return
             }
 

@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.util('logger'))
+const logger = require(paths.utils('logger'))
 module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
@@ -13,7 +13,7 @@ module.exports = async (req, res, dbs = {}) =>
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require(paths.resolve('error.js'))(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        require(paths.utils('error'))(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 
