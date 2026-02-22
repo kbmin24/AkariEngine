@@ -9,7 +9,7 @@ module.exports = (_services, options = {}) => {
     const csrfProtection = options.csrfProtection
 
     router.get('/signup', asyncRoute(async (req, res) => {
-        const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
+        const captchaSVG = await load('utils', 'captcha.js').genCaptcha()
         await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: i18n.__ }, {
             title: i18n.__('register'),
             username: req.session.username,
@@ -20,7 +20,7 @@ module.exports = (_services, options = {}) => {
     router.post('/signup',
         chkCaptcha,
         asyncRoute(async (req, res) => {
-        await load('user', 'signup.js')(req, res, global.sequelize, global.db.users, global.db.perm)
+        await load('user', 'signup.js')(req, res, global.db.users)
     }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {

@@ -1,6 +1,6 @@
 const i18n = require('i18n')
 const paths = require('../../utils/paths')
-const { renderTemplateInLayout, load } = require(paths.utils('httpHelper'))
+const { renderTemplateInLayout, load } = require(paths.util('httpHelper'))
 
 module.exports = async (req, res) => {
     const username = req.session.username
@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
         })
         return
     }
-    const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
+    const captchaSVG = await load('utils', 'captcha.js').genCaptcha()
 
     await renderTemplateInLayout(req, res, 'pages/revert.ejs', {
         pagename: req.params.name,

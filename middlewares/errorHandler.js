@@ -1,6 +1,6 @@
 const paths = require('../utils/paths')
 const i18n = require("i18n")
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 const {
     PageNotFoundError,
     PermissionDeniedError,

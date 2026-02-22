@@ -1,6 +1,6 @@
 const paths = require('../utils/paths')
 
-module.exports = async (req, res, perm, protect, pages, history, rc, block) =>
+module.exports = async (req, res, perm, protect, pages, history, rc, _block) =>
 {
     //todo: RC
     //todo: add support for REVISION

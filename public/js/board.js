@@ -1,3 +1,5 @@
+
+/* exported removeRBoard */
 let injectRBoard = (lst) =>
 {
     let cnt = 0
@@ -21,7 +23,7 @@ $(() =>
         localStorage.setItem('kyoko', JSON.stringify([]))
     }
     let visitList = JSON.parse(localStorage.getItem('kyoko'))
-    let a = /^\/board\/(?:read|write)?\/?([^\/]*)$/igm.exec(window.location.pathname)
+    let a = /^\/board\/(?:read|write)?\/?([^/]*)$/igm.exec(window.location.pathname)
     if (a)
     {
         let idx = -1

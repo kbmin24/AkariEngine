@@ -1,7 +1,7 @@
 const ejs = require('ejs')
 const i18n = require("i18n")
 const paths = require('../utils/paths')
-module.exports = async (req, res, perm, protect, block) =>
+module.exports = async (req, res, perm, protect, _block) =>
 {
     const username = req.session.username
     const permsPresent = await protect.findAll({where: {title: req.params.name}})

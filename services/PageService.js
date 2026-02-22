@@ -1,7 +1,7 @@
 const paths = require('../utils/paths')
 const fs = require('fs')
 const date = require('date-and-time')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 const {
     PageNotFoundError,
     PageExistsError,
@@ -22,7 +22,7 @@ class PageService {
         const { rev, user } = options
         await this.permissionService.requireReadAccess(user, title)
 
-        let page = null
+        let page
         if (rev) {
             page = await this.historyRepo.findByPageAndRev(title, rev)
             if (!page) throw new PageNotFoundError(title)

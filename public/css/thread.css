@@ -50,7 +50,7 @@
 .thText
 {
     padding: 10px;
-    word-wrap: anywhere;
+    word-wrap: break-word;
     max-height: 512px;
     overflow-y: auto;
 }

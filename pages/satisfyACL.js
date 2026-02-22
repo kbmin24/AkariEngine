@@ -1,7 +1,7 @@
 const {Op} = require('sequelize')
 const dateandtime = require('date-and-time')
 const ipRangeCheck = require('ip-range-check')
-const paths = require('../utils/paths')
+
 
 module.exports = async (req, res, ACLs, perms, block, editErrorMsg=false) =>
 {

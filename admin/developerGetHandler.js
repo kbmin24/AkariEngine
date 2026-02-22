@@ -1,8 +1,6 @@
 const ejs = require('ejs')
-const date = require('date-and-time')
-const {Op} = require('sequelize')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 module.exports = async (req, res, options) =>
 {
     const username = req.session.username

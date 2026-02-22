@@ -1,10 +1,10 @@
 const i18n = require("i18n")
 const paths = require('../../utils/paths')
-const { PageNotFoundError } = require(paths.services('errors'))
+const { PageNotFoundError } = require(paths.service('errors'))
 const {
     load,
     renderTemplateInLayout
-} = require(paths.utils('httpHelper'))
+} = require(paths.util('httpHelper'))
 
 module.exports = async (req, res) => {
     try {

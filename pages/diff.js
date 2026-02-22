@@ -7,7 +7,6 @@ module.exports = async (req, res, history, protect, perm, block) =>
     req.params.name = req.params.name.trim()
     const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
-    var username = req.session.username
 
     //rule: OLD AND NEW
     var rev1 = req.query.rev1

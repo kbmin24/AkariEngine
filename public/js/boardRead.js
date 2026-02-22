@@ -29,9 +29,9 @@ $(() =>
                     $('.bichuCount').text(result.newBichu)
                 }
             })
-        .fail((xhr, status, errorThrown) =>
+        .fail((_xhr, _status, _errorThrown) =>
         {
-            alert('추천 도중 문제가 발생하였습니다.')
+            alert('An error occurred while processing the request.')
         })
     })
     $('.bichu').click(() =>
@@ -62,12 +62,12 @@ $(() =>
                     $('.bichuCount').text(result.newBichu)
                 }
             })
-        .fail((xhr, status, errorThrown) =>
+        .fail((_xhr, _status, _errorThrown) =>
         {
-            alert('비추천 도중 문제가 발생하였습니다.')
+            alert('An error occurred while processing the request.')
         })
     })
-    $('.commentDaedaetgul').click(function (event)
+    $('.commentDaedaetgul').click(function (_event)
     {
         let commentElement = $(`.commentContentWrap[data-id='${$(this).attr('data-id')}']`)
         

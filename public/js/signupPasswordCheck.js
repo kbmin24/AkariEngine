@@ -1,4 +1,5 @@
 //사실 ID도 체크함
+/* exported idCheck, pwAppropriateCheck, pwMatchCheck */
 function idCheck()
 {
     const goodid = document.getElementById('goodid')
@@ -20,7 +21,7 @@ function pwAppropriateCheck()
     const badlength = document.getElementById('passwordbadlength')
     const badchar = document.getElementById('passwordbadchar')
     const badcharlist = document.getElementById('passwordbadcharlist')
-    const goodchars = /^[A-Za-z\d@\$!%\*\?&\^#_\-\+=<>,\.\/\|]$/
+    const goodchars = /^[A-Za-z\d@$!%*?&^#_\-+=<>,./|]$/
     //passwordbadlength
     if (pw.length < 8 || pw.length > 255)
         badlength.style.display = 'block'

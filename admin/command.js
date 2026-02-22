@@ -19,7 +19,7 @@ module.exports = async (io, socket, command, options) =>
             case 'cleancategories':
             {
                 let cat = await options.category.findAll()
-                cat.forEach(async (val, i , err) =>
+                cat.forEach(async val =>
                 {
                     if (await options.pages.findOne({where: {title: val.page}}))
                     {

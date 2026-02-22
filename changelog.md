@@ -24,33 +24,33 @@ v2.8 (2023-06-05)
 
 v2.7 (2023-04-06)
 * Added [macroname]{{arguments}} multiline macro (note: [:], [(] and [)] work the same as before)
-* 분류:로 분류 가능
-* 문서 이동, 파일 업로드 시 분류 처리
-* 코드 하이라이트 기능 추가
-* 다크모드 disable 스위치 추가
-* 업로드 파일 최대 사이즈 및 확장자 선택 기능 추가
-* 브라우저에서 볼 수 없는 파일 핸들링 추가 (pdf etc)
+* Category: is now an alias of 분류:
+* Proper treatment of categories when uploading files or moving pages
+* Added code highlighting
+* Added switch to disable dark mode
+* Added option to choose max file size and allowed file extensions
+* Added handling of files that cannot be shown on browser (pdf etc)
 
 v2.6 (2023-04-05)
 * design reform
 
 v2.5b (2023-04-04)
-* mathd 매크로 추가
-* 관리 콘솔 메시지 변경
+* Added mathd macro
+* Changed messages on management console
 
 v2.5a (2022-07-26)
-* RCcidebar에 type이 create인 편집이 표시되도록 수정
-* 열려있는 토론이 없는 경우 메세지 표출
+* RCcidebar now shows edits for which type=create
+* Shows a message if there is no open discussion
 
 v2.5 (2022-07-07)
-* 한글화 개선
-* 설정 변경 후 자동 새로고침
-* 주석 표시 방식을 변경
+* Improved i18n
+* Auto refresh after changing settings
+* Changed how comments are shown
 * added some friendly messages
 
 v2.4 (2022-05-12)
-* 편집창 버튼 추가
-* 검색 기능 향상 (페이지네이션, 게시판 검색)
+* Added buttons to edit screen
+* Pagination to search & search on board
 
 v2.3 (2022-04-17)
 * Reintroduced dark mode
@@ -212,7 +212,7 @@ v0.3 (2021-07-28)
 * Changed branding
 * Resolved issue of having two title tags
 * Changed cookie security options
-* 개인정보처리방침
+* Privacy Policy
 * Changed file upload notice
 * Changed various texts to point to user pages when relavent
 

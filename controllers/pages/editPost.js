@@ -1,6 +1,6 @@
 const i18n = require("i18n")
 const paths = require('../../utils/paths')
-const { load } = require(paths.utils('httpHelper'))
+const { load } = require(paths.util('httpHelper'))
 const {
     ValidationError
 } = require(paths.resolve('services', 'errors.js'))

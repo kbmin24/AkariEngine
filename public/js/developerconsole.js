@@ -15,7 +15,7 @@ $(document).ready(async () =>
     const socket = io()
     await socket.emit('joinRoom', {roomId: 'developerconsole', notAThread: true})
     
-    socket.on('joinok', data =>
+    socket.on('joinok', _data =>
     {
         stdout('OK!\n')
     })

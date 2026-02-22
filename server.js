@@ -1,13 +1,12 @@
-/* eslint-disable no-unused-vars */
 const express = require('express')
 const app = express()
 const paths = require('./utils/paths')
 const config = require('./config')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 const { createSequelizeInstance } = require('./config/database')
 const RepositoryFactory = require('./repositories')
 const ServiceFactory = require('./services')
-const { load } = require(paths.utils('httpHelper'))
+const { load } = require(paths.util('httpHelper'))
 
 global.path = config.basePath
 global.conf = config.settings
@@ -36,7 +35,7 @@ const secret = config.sessionSecret
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const sessionStore = require('express-session-sequelize')(session.Store)
-const sequelizeSessionStore = new sessionStore({db: sequelize})
+const sequelizeSessionStore = new sessionStore({ db: sequelize })
 app.use(cookieParser(secret))
 const sess = session({
     proxy: true,
@@ -62,8 +61,8 @@ const csurf = require('csurf')
 const csrfProtection = csurf({})
 global.csrfProtection = csrfProtection
 
-app.use(express.json({limit : "1mb"}))
-app.use(express.urlencoded({limit : "1mb", extended: false}))
+app.use(express.json({ limit: "1mb" }))
+app.use(express.urlencoded({ limit: "1mb", extended: false }))
 
 app.disable('x-powered-by')
 
@@ -88,7 +87,7 @@ const recentdiscuss = require(paths.model('recentdiscuss'))(sequelize)
 const links = require(paths.model('links'))(sequelize)
 sequelize.sync()
 
-global.db = 
+global.db =
 {
     users: users,
     pages: pages,
@@ -129,13 +128,13 @@ i18n.configure({
     defaultLocale: config.defaultLocale,
     directory: paths.locales,
     objectNotation: true
-  });
+});
 
 //regex for testing whether page title is legal or not
-global.legalTitleRegex = /^[^\[\]\{\}\|#\n]*$/m
+global.legalTitleRegex = /^[^[\]{}|#\n]*$/m
 
 //load global tools
-global.escapeHTML = require(paths.utils('escapeHTML'))
+global.escapeHTML = require(paths.util('escapeHTML'))
 
 //views
 app.set('view engine', 'ejs')
@@ -148,26 +147,22 @@ app.use((req, res, next) => {
     // Check whether private mode is enabled
     if (!config.isPrivate) return next()
 
-    if (req.session.username !== undefined)
-    {
+    if (req.session.username !== undefined) {
         //Logged in
         return next()
     }
 
-    if (url.startsWith('/login'))
-    {
+    if (url.startsWith('/login')) {
         //Login Route
         return next()
     }
 
-    if (url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/lib') || url.startsWith('/robots.txt') || url.startsWith('/skins/') || url.startsWith('favicon.ico'))
-    {
+    if (url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/lib') || url.startsWith('/robots.txt') || url.startsWith('/skins/') || url.startsWith('favicon.ico')) {
         // Required lib
         return next()
     }
 
-    if (url.startsWith('/signup'))
-    {
+    if (url.startsWith('/signup')) {
         return load('error.js')(req, res, {
             description: '계정 생성이 비활성화되어 있습니다.',
             returnLink: '/login',
@@ -192,12 +187,12 @@ config.skins.forEach(e => {
     app.use(`/skins/${e}`, express.static(paths.resolve('skins', e, 'public')))
     let skinSettings = require(paths.resolve('skins', e, 'skinSettings.json'))
     let skinManifest = require(paths.resolve('skins', e, 'manifest.json'))
-    global.skins.push({'name': e, 'settings': skinSettings, 'manifest': skinManifest})
+    global.skins.push({ 'name': e, 'settings': skinSettings, 'manifest': skinManifest })
 })
 
 //Extension
 let ext = require(paths.resolve('extensions/extensionManager.js'))
-ext(app, ext)
+ext(app)
 
 
 //Middlewares
@@ -209,7 +204,7 @@ app.use((req, res, next) => {
     req.ipAddress = (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
 
     next()
-  })
+})
 
 //Register routes
 require('./routes')(app, services, { csrfProtection })
@@ -217,42 +212,19 @@ require('./routes')(app, services, { csrfProtection })
 
 const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
 
-function checkFileType(file, cb)
-{
-    //https://stackoverflow.com/questions/60408575/how-to-validate-file-extension-with-multer-middleware
-    const ext = getFileTypes().includes(file.originalname.split(/\./).pop().toLowerCase())
-    const mime = getMimeTypes().includes(file.mimetype.split(/\//).pop().toLowerCase())
-    if (mime && ext)
-    {
-        return cb(null,true)
-    }
-    else
-    {
-        cb(`${getFileTypes().join(', ')}만 업로드 할 수 있습니다.`)
-    }
-}
-
-app.get('/lovelive', (req, res) =>
-{
+app.get('/lovelive', (req, res) => {
     res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')
     return
 })
 
-const { errorHandler } = require('./middleware/errorHandler')
+const { errorHandler } = require('./middlewares/errorHandler')
 app.use(errorHandler)
 
 //error handler
-app.use((err, req, res, next) =>
-{
+// TODO split this into new error handler
+app.use((err, req, res, _next) => {
     logger.error('Unhandled request error', err)
-    switch (err.code)
-    {
-        case 'EBADCSRFTOKEN':
-            {
-                //Send CSRF Error message
-                load('sendfile.js')(req, res, 'CSRF 토큰 오류', '/csrfError.html')
-            }
-            break
+    switch (err.code) {
         case 'FILENAMENULL':
             {
                 load('error.js')(req, res, {
@@ -267,18 +239,6 @@ app.use((err, req, res, next) =>
             {
                 load('error.js')(req, res, {
                     description: '파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.',
-                    returnLink: 'javascript:window.history.back()',
-                    returnName: '이전 페이지',
-                    statusCode: 400
-                })
-            }
-            break
-        case 'PROCESSED':
-            break
-        case 'INVALIDCAPTCHA':
-            {
-                load('error.js')(req, res, {
-                    description: 'CAPTCHA를 수행해 주세요.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
                     statusCode: 400
@@ -302,7 +262,7 @@ app.use((err, req, res, next) =>
                 res.send({
                     'error':
                     {
-                        'message': e.toString()
+                        'message': err.toString()
                     }
                 })
             }
@@ -328,8 +288,7 @@ app.use((err, req, res, next) =>
 
 // Put server on
 // maybe we should support ipv6 in the future but I don't have any way to test it...
-const server = app.listen(port, '0.0.0.0', () =>
-{
+const server = app.listen(port, '0.0.0.0', () => {
     const host = server.address().address
     const port = server.address().port
     logger.info(`App listening at http://${host}:${port}`)
@@ -337,45 +296,38 @@ const server = app.listen(port, '0.0.0.0', () =>
 
 //Console
 const io = require('socket.io')(server)
-io.use(require('express-socket.io-session')(sess, {autoSave: true}))
+io.use(require('express-socket.io-session')(sess, { autoSave: true }))
 
-io.on('connection', async socket =>
-{
-    socket.on('joinRoom', async data =>
-    {
-        if (data.notAThread === true && data.roomId === 'developerconsole')
-        {
+io.on('connection', async socket => {
+    socket.on('joinRoom', async data => {
+        if (data.notAThread === true && data.roomId === 'developerconsole') {
             //developer console.
             let username = socket.handshake.session.username
-            if (await perm.findOne({where: {username: username, perm: 'developer'}}))
-            {
+            if (await perm.findOne({ where: { username: username, perm: 'developer' } })) {
                 await socket.join('developerconsole')
                 await socket.emit('joinok')
                 socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2023. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
             }
         }
-        else
-        {
+        else {
             socket.join(data.roomId)
         }
     })
-    socket.on('message', async data =>
-    {
+    socket.on('message', async data => {
         if (!data.message) return
         let username = socket.handshake.session.username
         let IP = socket.handshake.headers['x-real-ip'] || socket.handshake.address
-        
+
         //get username
         let doneBy = username ? username : IP
 
         data.username = doneBy
-        let ipblock = await block.findOne({where: {target: IP}})
-        if (ipblock)
-        {
-                if (!username) return
-                if (!ipblock.allowLogin) return
+        let ipblock = await block.findOne({ where: { target: IP } })
+        if (ipblock) {
+            if (!username) return
+            if (!ipblock.allowLogin) return
         }
-        if (username && await block.findOne({where: {target: username}})) return
+        if (username && await block.findOne({ where: { target: username } })) return
 
         //put in DB
         await threadcomment.create(
@@ -388,15 +340,15 @@ io.on('connection', async socket =>
             }
         )
         let t = await thread.findOne(
-        {
-                where: {threadID: data.roomId}
-        })
+            {
+                where: { threadID: data.roomId }
+            })
 
         //RD should be unique
         await recentdiscuss.destroy(
-        {
-            where: {threadID: data.roomId}
-        })
+            {
+                where: { threadID: data.roomId }
+            })
 
         //And PUT
         await recentdiscuss.create(
@@ -408,11 +360,10 @@ io.on('connection', async socket =>
         )
 
         //render to wikitext
-        data.message  = await load('pages', 'render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
+        data.message = await load('pages', 'render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
         io.sockets.in(data.roomId).emit('message', data)
     })
-    socket.on('input', async data =>
-    {
-        await load('admin', 'command.js')(io, socket, data.command, {perm: perm, file: mfile, pages: pages, history: history, category: category})
+    socket.on('input', async data => {
+        await load('admin', 'command.js')(io, socket, data.command, { perm: perm, file: mfile, pages: pages, history: history, category: category })
     })
 })

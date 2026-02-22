@@ -1,3 +1,4 @@
+/* exported closefnModal */
 function closefnModal(fnCount)
 {
     $(`#fnModal_${fnCount}`).modal('hide')
@@ -37,17 +38,17 @@ window.onload = () =>
     document.querySelectorAll('.math').forEach(element =>
     {
         let org = element.innerHTML
-        org = org.replace(/\&lt;/gi, '<')
-                .replace(/\&gt;/gi, '>')
-                .replace(/\&amp;/gi, '&')
+        org = org.replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&amp;/gi, '&')
         katex.render(org, element, {throwOnErrorL: false})
     })
     document.querySelectorAll('.mathd').forEach(element =>
     {
         let org = element.innerHTML
-        org = org.replace(/\&lt;/gi, '<')
-                .replace(/\&gt;/gi, '>')
-                .replace(/\&amp;/gi, '&')
+        org = org.replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&amp;/gi, '&')
         katex.render(org, element, {throwOnErrorL: false, displayMode: true})
     })
     document.querySelectorAll('.map').forEach(element =>

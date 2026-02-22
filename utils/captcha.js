@@ -1,7 +1,5 @@
-const axios = require('axios')
 const paths = require('./paths')
 const config = require(paths.resolve('/config/'))
-const { requirePermission } = require(paths.middleware('permission'))
 
 // todo: move genCaptcha to middleware too
 
@@ -18,7 +16,7 @@ function genArbitaryString(len)
     return res
 }
 exports.genArbitaryString = genArbitaryString
-exports.genCaptcha = async (req) =>
+exports.genCaptcha = async () =>
 {
     if (!config.settings.reCAPTCHA_enabled) return ""
     return `<div class="g-recaptcha" data-sitekey="${config.settings.reCAPTCHA}"></div>`

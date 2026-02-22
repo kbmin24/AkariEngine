@@ -1,6 +1,6 @@
 const dateandtime = require('date-and-time')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 
 module.exports = async (req, res, users, perm, block, adminlog) =>
 {
@@ -22,7 +22,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     }
 
     //thirdly determine the type of task to do
-    var description = ''
+    var description
     switch (req.body.blockfor)
     {
         case 'unblock':

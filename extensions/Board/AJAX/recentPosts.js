@@ -12,7 +12,7 @@ module.exports = async (req, res, boardposts) =>
     })
     let results = []
 
-    changes.forEach((value, index, array) =>
+    changes.forEach(value =>
     {
         if (show <= 0) return
         results.push({

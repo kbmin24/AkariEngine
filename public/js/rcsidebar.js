@@ -14,7 +14,7 @@ function loadRC() {
             $.each(data, (rc) =>
             {
                 var ln = `<a href='/w/${data[rc].page}'>${data[rc].page}</a> ${data[rc].rev ? '' : '<em>(삭제)</em>'}`
-                let dt = ''
+                let dt
                 if (moment(data[rc].createdAt).isSame(moment(), 'day'))
                 {
                     dt = moment(data[rc].createdAt).utcOffset('+0900').format('HH:mm')
@@ -23,7 +23,7 @@ function loadRC() {
                 {
                     dt = moment(data[rc].createdAt).utcOffset('+0900').format('MM/DD')
                 }
-                res = `<li class='list-group-item' style='overflow: hidden; text-overflow : ellipsis;white-space: nowrap;'>${dt} ${ln}</li>`
+                let res = `<li class='list-group-item' style='overflow: hidden; text-overflow : ellipsis;white-space: nowrap;'>${dt} ${ln}</li>`
                 $('#rcsidebarcontents').append(res)
             })
         }

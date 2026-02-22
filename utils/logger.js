@@ -2,7 +2,7 @@ let chalk = null
 
 try {
     chalk = require('chalk')
-} catch (error) {
+} catch (_error) {
     chalk = {
         blue: (text) => text,
         red: (text) => text,

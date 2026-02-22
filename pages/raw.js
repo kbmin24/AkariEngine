@@ -6,7 +6,6 @@ module.exports = async (req, res, pages, history, protect, perm, block) =>
     //check read ACL
     const pro = await protect.findOne({where: {title: req.params.name, task: 'read'}})
     var acl = (pro == undefined ? 'blocked' : pro.protectionLevel) //fallback
-    var username = req.session.username
     let ACLList = [acl]
     var rev = req.query.rev
     if (rev)

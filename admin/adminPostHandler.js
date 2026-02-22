@@ -47,7 +47,7 @@ module.exports = async (req, res, users, perm, block, page, protect, adminlog, t
             return
         case 'gongji':
             {
-                await require(paths.resolve('admin', 'gongji.js'))(req, res, gongji)
+                await require(paths.resolve('admin', 'gongji.js'))(req, res, global.db.gongji)
                 return
             }
         default:

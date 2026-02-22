@@ -1,7 +1,7 @@
 const paths = require('../utils/paths')
 const i18n = require("i18n")
 
-module.exports = async (req, res, sequelize, users, perm) =>
+module.exports = async (req, res, users) =>
 {
     //req.body.id,req.body.password,req.body.passwordConfirm
     
@@ -25,6 +25,6 @@ module.exports = async (req, res, sequelize, users, perm) =>
             salt: salt
         })
         .then(async () => await require(paths.resolve('sendfile.js'))(req, res, i18n.__('register_done'), '/views/user/signupnotify.html'))
-        .catch(err => require(paths.resolve('error.js'))(req, res, { description: i18n.__('register_fail'), returnLink: '/signup', returnName: i18n.__('register'), statusCode: 500 }))
+        .catch(_err => require(paths.resolve('error.js'))(req, res, { description: i18n.__('register_fail'), returnLink: '/signup', returnName: i18n.__('register'), statusCode: 500 }))
     })
 }

@@ -1,5 +1,5 @@
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 
 module.exports = (req, res, users, perm, adminlog) =>
 {

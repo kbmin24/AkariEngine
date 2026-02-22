@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
             username: req.session.username
         })
 
-        const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
+        const captchaSVG = await load('utils', 'captcha.js').genCaptcha()
         await renderTemplateInLayout(req, res, 'pages/move.ejs', {
             originalName: model.originalName,
             l: i18n.__,

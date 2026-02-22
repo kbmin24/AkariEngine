@@ -1,7 +1,7 @@
 const ejs = require('ejs')
 const i18n = require("i18n")
 const paths = require('../../utils/paths')
-const { renderLayout, load } = require(paths.utils('httpHelper'))
+const { renderLayout, load } = require(paths.util('httpHelper'))
 const {
     ValidationError
 } = require(paths.resolve('services', 'errors.js'))
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
         }
 
         if (editModel.needsCaptcha) {
-            templateData.captcha = await require(paths.utils('captcha')).genCaptcha(req)
+            templateData.captcha = await require(paths.util('captcha')).genCaptcha()
         } else {
             templateData.captcha = ''
         }

@@ -3,7 +3,7 @@ $(() =>
     $('.dt').each((idx, val) =>
     {
         let dt = moment($(val).attr('datetime')).utcOffset('+0900')
-        let dtText = ''
+        let dtText
         if (dt.isSame(new Date(), 'day'))
         {
             dtText = dt.format('HH:mm')

@@ -63,7 +63,7 @@ async function updateOrphaned()
 module.exports = async () =>
 {
     updateOrphaned()
-    const orphaned = schedule.scheduleJob('0 0 * * *', () =>
+    schedule.scheduleJob('0 0 * * *', () =>
     {
         logger.info('Updating orphaned page list...')
         updateOrphaned()

@@ -1,5 +1,4 @@
 const ejs = require('ejs')
-const dt = require('date-and-time')
 const sanitiseHtml = require('sanitize-html')
 const paths = require('../../utils/paths')
 const logger = require('../../utils/logger')
@@ -155,7 +154,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
             content: html,
             canonical: `/board/read/${boardNow.boardID}?no=${req.query.no}`,
             username: req.session.username,
-            description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : ''            
+            description: Object.hasOwn(global.conf.boardDescriptions, boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : ''            
         })
     })
 }

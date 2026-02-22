@@ -1,14 +1,14 @@
 const paths = require('../../utils/paths')
 const i18n = require("i18n")
-const { getCategory, getOptions } = require(paths.pages('view'))
+const { getCategory, getOptions } = require(paths.page('view'))
 
 module.exports = async (req, res) => {
     let title = req.body.title
     let rawContent = req.body.content
     let opt = await getOptions(rawContent)
-    let renderedContent = await require(paths.pages('render'))(title, rawContent, true, pages, files, req, res, false, true, {}, opt)
+    let renderedContent = await require(paths.page('render'))(title, rawContent, true, global.db.pages, global.db.files, req, res, false, true, {}, opt)
 
-    renderedContent = await getCategory(title, category, opt['category']) + renderedContent
+    renderedContent = await getCategory(title, global.db.category, opt['category']) + renderedContent
     renderedContent = `<div class='alert alert-warning' role='alert'>${i18n.__('previewWarning')}</div>` + renderedContent
     let renderOpt = {
         title,

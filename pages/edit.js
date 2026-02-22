@@ -91,7 +91,7 @@ async function regLink(title, content)
     //w separate label
     {
         let r = /\[\[(.*?)\|(.*?)\]\]/igm
-        content = content.replace(r, (_match, p1, _offset, _string, _groups) =>
+        content.replace(r, (_match, p1, _offset, _string, _groups) =>
         {
             if (p1.toLowerCase().startsWith('category') ||
             p1.toLowerCase().startsWith('분류') ||

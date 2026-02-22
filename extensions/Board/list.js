@@ -1,6 +1,5 @@
 const ejs = require('ejs')
 const {Op} = require('sequelize')
-const dt = require('date-and-time')
 const paths = require('../../utils/paths')
 
 global.pageLength = 30
@@ -30,7 +29,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         return
     }
 
-    let page = 1
+    let page
     if (currentPost !== null)
     {
         page = Math.floor((boardNow.postCount - currentPost + 1) / global.pageLength) + 1
@@ -102,7 +101,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         }
     )
     let ipProcessed = []
-    lst.forEach((val, idx, array) =>
+    lst.forEach(val =>
     {
         let ipNow = ''
         if (val.writtenIP)
@@ -144,7 +143,7 @@ module.exports = async (isHTML, req, res, boards, posts, block, perm, gongji, cu
         title: boardNow.boardTitle,
         titleLink: `/board/${boardNow.boardID}`,
         canonical: `/board/${boardNow.boardID}`,
-        description: global.conf.boardDescriptions.hasOwnProperty(boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
+        description: Object.hasOwn(global.conf.boardDescriptions, boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
         content: html,
         username: req.session.username,
         ipaddr: req.ipAddress,

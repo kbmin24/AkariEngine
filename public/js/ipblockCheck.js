@@ -1,3 +1,4 @@
+/* exported CIDRcheck, unblockCheck */
 function CIDRcheck()
 {
     const CIDRregex = /^([0-9]{1,3}\.){3}[0-9]{1,3}\/(1[6-9]|2[0-9]|3[0-2])$/

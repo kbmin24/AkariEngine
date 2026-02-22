@@ -10,8 +10,8 @@ const {
 } = require('../utils/httpHelper')
 const { param, query, body } = require('express-validator')
 
-const { requirePermission } = require('../middleware/permission')
-const { chkCaptcha } = require('../middleware/chkCaptcha')
+const { requirePermission } = require('../middlewares/permission')
+const { chkCaptcha } = require('../middlewares/chkCaptcha')
 
 const { validateRequest } = require(paths.middleware('validation'))
 const { requirePageAccess } = require(paths.middleware('permission'))
@@ -175,11 +175,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            await load('pages', 'revert.js')(
-                req,
-                res,
-                global.db.perm
-            )
+            await load('pages', 'revert.js')(req, res)
         })
     )
 

@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 module.exports = async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
@@ -20,7 +20,7 @@ module.exports = async (req, res, dbs = {}) =>
     let openThreads = await dbs['thread'].findAll({where: {pagename: title, isOpen: true}})
     let closedThreads = await dbs['thread'].findAll({where: {pagename: title, isOpen: false}})
 
-    let captcha = await require(paths.resolve('utils', 'captcha.js')).genCaptcha(req)
+    let captcha = await require(paths.resolve('utils', 'captcha.js')).genCaptcha()
 
     ejs.renderFile(paths.view('threads/threadlist.ejs'),
     {

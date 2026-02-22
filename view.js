@@ -1,7 +1,7 @@
 // View.js: renderer
 var ejs = require('ejs')
 const paths = require('./utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 module.exports = async (req, res, renderOpt) =>
 {
     let args = structuredClone(renderOpt)

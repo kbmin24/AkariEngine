@@ -1,6 +1,6 @@
 const { Op } = require('sequelize')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 module.exports = async (req, res, users, loginhistory) =>
 {
     const crypto = require('crypto')

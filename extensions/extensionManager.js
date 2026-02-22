@@ -17,12 +17,9 @@ let registerDB = async(name, model) =>
     //model: supply the model defined with 'sequelize.define', NOT the file path.
     global.db[name] = model(global.sequelize)
 }
-module.exports = async (app, ext) =>
+module.exports = async (app) =>
 {
-    let registerHook = async (hook, f) =>
-    {
-        global.hooks[hook].push(f)
-    }
+    // TODO change it so that it doesn't use global.conf.extensions directly
     for (let e of global.conf.extensions)
     {
         let extManifest = require(paths.resolve('extensions', e, 'manifest.json'))

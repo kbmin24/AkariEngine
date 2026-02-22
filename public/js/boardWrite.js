@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 $(() =>
 {
     ClassicEditor.create(document.querySelector("#editAreaBox"),
@@ -33,7 +34,7 @@ $(() =>
         })
     .catch(error =>
         {
-            console.error('CKEditor5을 불러오는 중 오류가 발생했습니다.')
+            console.error('An error occurred while initialising CKEditor5.')
             console.error(error)
         })
 })

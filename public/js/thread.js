@@ -6,7 +6,7 @@ function renderDiscuss(thNumber, username, date, message, isHidden, type)
     if (type !== 'comment') message = '<em>' +type + ' ' + message + '</em>'
 
     let thNumberField = `<a href='#${thNumber}'>#${thNumber}</a>`
-    let usernameField = ''
+    let usernameField
     let contrib = `<sup><a href='/contribution/${username}'>C</a></sup>`
     if ((/\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?/.test(username)))
     {

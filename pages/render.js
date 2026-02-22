@@ -7,23 +7,19 @@ const sanitiseHtml = require('sanitize-html')
 const hljs = require('highlight.js')
 const paths = require('../utils/paths')
 
-function errMessege(name, reason)
-{
+function errMessege(name, reason) {
     return `<p class="fw-bold text-danger">${name}: ${reason}</p>`
 }
 
-function isString(args)
-{
+function isString(args) {
     return args instanceof String || typeof args == 'string'
 }
 
-async function renderMacro(match, macro, args, pages = undefined, files, incl = true)
-{
+async function renderMacro(match, macro, args, pages = undefined, files, incl = true) {
     macro = macro.trim()
     if (isString(args)) args = args.trim()
     //switch?
-    switch (macro)
-    {
+    switch (macro) {
         case 'hr':
             return '<hr>'
         case 'br':
@@ -31,162 +27,138 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
         case 'toc':
             return buildTOC()
         case 'file':
-        {
-            if (!isString(args))
             {
-                return errMessege('FILE 매크로 오류', '매개 변수가 없습니다.')
-            }
-            //todo: change to random file name
-            var options = args.split('|')
-            var res = ''
-            var filename = ''
-            const properties = [
-                /^(.*?\.(?:png|jpg|jpeg|gif|webp|svg|pdf))$/gi,
-                /^width ?= ?(.*?)$/ig,
-                /^height ?= ?(.*?)$/ig
-            ]
-            let ok = true
-            for (let val of options)
-            {
-                let j = 0
-                for(let reg of properties)
-                {
-                    if (reg.test(val.trim()))
-                    {
-                        if (j == 0)
-                        {
-                            filename = val
-                            let f = await files.findOne({where: {filename: filename}})
-                            if (f === null)
-                            {
-                                ok = false
+                if (!isString(args)) {
+                    return errMessege('FILE 매크로 오류', '매개 변수가 없습니다.')
+                }
+                //todo: change to random file name
+                var options = args.split('|')
+                var res = ''
+                var filename = ''
+                const properties = [
+                    /^(.*?\.(?:png|jpg|jpeg|gif|webp|svg|pdf))$/gi,
+                    /^width ?= ?(.*?)$/ig,
+                    /^height ?= ?(.*?)$/ig
+                ]
+                let ok = true
+                for (let val of options) {
+                    let j = 0
+                    for (let reg of properties) {
+                        if (reg.test(val.trim())) {
+                            if (j == 0) {
+                                filename = val
+                                let f = await files.findOne({ where: { filename: filename } })
+                                if (f === null) {
+                                    ok = false
+                                }
+                                else {
+                                    res += 'src=\'/uploads/'//src
+                                }
                             }
-                            else
-                            {
-                                res += 'src=\'/uploads/'//src
-                            }
+                            res += val
+                            if (j == 0) res += '\''
+                            res += ' '
                         }
-                        res += val
-                        if (j == 0) res += '\''
-                        res += ' ' 
+                        j++;
                     }
-                    j++;
                 }
-            }
-            if (!ok) return match
+                if (!ok) return match
 
-            if (filename.toLowerCase().endsWith('pdf'))
-            {
-                //pdf
-                if (!res.toLowerCase().includes("width"))
-                {
-                    res += " width=500px "
-                }
-                if (!res.toLowerCase().includes("height"))
-                {
-                    res += " height=500px "
-                }
-                return `<a href='/w/File:${filename}'><iframe ${res}></a>`
-            }
-            else
-            {
-                return `<a href='/w/File:${filename}'><img ${res} class='ren-img img-fluid'></a>`
-            }
-        }
-        case 'include':
-        {
-            if (!incl)
-            {
-                return ''//`[${macro}(${args})]`
-            }
-            if (!isString(args))
-            {
-                return errMessege('INCLUDE 매크로 오류', '매개 변수가 없습니다.')
-            }
-            //let's fetch the data
-            args = args.split('|')
-            const p = await pages.findOne({where: {title: args[0]}})
-            if (!p)
-            {
-                return ''
-                //return `[${macro}(${args})]`
-            }
-            else
-            {
-                var temArgs = {}
-                for (var i = 1; i < args.length; i++)
-                {
-                    const eqSign = args[i].indexOf('=')
-                    if (eqSign === undefined)
-                    {
-                        return errMessege('INCLUDE 매크로 오류',`인수 ${args[i]}의 값이 없습니다.`)
+                if (filename.toLowerCase().endsWith('pdf')) {
+                    //pdf
+                    if (!res.toLowerCase().includes("width")) {
+                        res += " width=500px "
                     }
-                    const k = args[i].substring(0,eqSign).trim()
-                    const v = args[i].substring(eqSign + 1).trim()
-                    temArgs[k] = v
+                    if (!res.toLowerCase().includes("height")) {
+                        res += " height=500px "
+                    }
+                    return `<a href='/w/File:${filename}'><iframe ${res}></a>`
                 }
-                const opt = await require(paths.resolve('pages', 'view.js')).getOptions(p.content)
-                const res = await require(paths.resolve('pages', 'render.js'))(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
-                return res
+                else {
+                    return `<a href='/w/File:${filename}'><img ${res} class='ren-img img-fluid'></a>`
+                }
             }
-        }
+        case 'include':
+            {
+                if (!incl) {
+                    return ''//`[${macro}(${args})]`
+                }
+                if (!isString(args)) {
+                    return errMessege('INCLUDE 매크로 오류', '매개 변수가 없습니다.')
+                }
+                //let's fetch the data
+                args = args.split('|')
+                const p = await pages.findOne({ where: { title: args[0] } })
+                if (!p) {
+                    return ''
+                    //return `[${macro}(${args})]`
+                }
+                else {
+                    var temArgs = {}
+                    for (var i = 1; i < args.length; i++) {
+                        const eqSign = args[i].indexOf('=')
+                        if (eqSign === undefined) {
+                            return errMessege('INCLUDE 매크로 오류', `인수 ${args[i]}의 값이 없습니다.`)
+                        }
+                        const k = args[i].substring(0, eqSign).trim()
+                        const v = args[i].substring(eqSign + 1).trim()
+                        temArgs[k] = v
+                    }
+                    const opt = await require(paths.resolve('pages', 'view.js')).getOptions(p.content)
+                    const res = await require(paths.resolve('pages', 'render.js'))(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
+                    return res
+                }
+            }
         case 'color':
-        {
-            if (!isString(args))
             {
-                return errMessege('COLOR 매크로 오류', '매개 변수 형식이 올바르지 않습니다.')
+                if (!isString(args)) {
+                    return errMessege('COLOR 매크로 오류', '매개 변수 형식이 올바르지 않습니다.')
+                }
+                const lastComma = args.lastIndexOf('|')
+                const color = args.substring(lastComma + 1, args.length)
+                const text = args.substring(0, lastComma)
+                return '<span style="color: ' + color + '" class="renColor">' + text + '</span>'
             }
-            const lastComma = args.lastIndexOf('|')
-            const color = args.substring(lastComma + 1, args.length)
-            const text = args.substring(0, lastComma)
-            return '<span style="color: ' + color + '" class="renColor">' + text + '</span>'
-        }
         case 'youtube':
-        {
-            const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
-            return ifr
-        }
+            {
+                const ifr = `<iframe class='ren-yt' width="560" height="315" src="https://www.youtube-nocookie.com/embed/${args}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+                return ifr
+            }
         case 'anchor':
-        {
-            return `<a id='${args}'></a>`
-        }
+            {
+                return `<a id='${args}'></a>`
+            }
         case 'dday':
-        {
-            if (!isString(args))
             {
-                return errMessege('DDAY 매크로 오류', '매개 변수가 없습니다.')
+                if (!isString(args)) {
+                    return errMessege('DDAY 매크로 오류', '매개 변수가 없습니다.')
+                }
+                try {
+                    if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
+                    const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
+                    let gap = (new Date()) - d1
+                    let res = Math.floor(gap / (1000 * 60 * 60 * 24))
+                    res = res < 0 ? res + '' : '+' + res
+                    return res
+                }
+                catch (e) {
+                    return errMessege('DDAY 매크로 오류', '매개 변수 형식이 올바르지 않습니다.')
+                }
             }
-            try
-            {
-                if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
-                const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
-                let gap = (new Date()) - d1
-                let res = Math.floor(gap / (1000 * 60 * 60 * 24))
-                res = res < 0 ? res + '' : '+' + res
-                return res
-            }
-            catch (e)
-            {
-                return errMessege('DDAY 매크로 오류', '매개 변수 형식이 올바르지 않습니다.')
-            }
-        }
         case 'agek':
-        {
-            try
             {
-                if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
-                const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
-                return (new Date()).getFullYear() - d1.getFullYear() + 1
+                try {
+                    if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
+                    const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
+                    return (new Date()).getFullYear() - d1.getFullYear() + 1
+                }
+                catch (e) {
+                    return errMessege('AGEK 매크로 오류', '날짜 형식이 잘못되었습니다.')
+                }
             }
-            catch (e)
-            {
-                return errMessege('AGEK 매크로 오류', '날짜 형식이 잘못되었습니다.')
-            }
-        }
         case 'age':
             {
-                try
-                {
+                try {
                     if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) throw new Error()
                     const d1 = dateandtime.parse(args, 'YYYY-MM-DD')
                     let age = (new Date()).getFullYear() - d1.getFullYear()
@@ -194,35 +166,31 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                     if (m < 0 || (m === 0 && (new Date()).getDate() < d1.getDate())) age--;
                     return age
                 }
-                catch (e)
-                {
+                catch (e) {
                     return errMessege('AGEK 매크로 오류', '날짜 형식이 잘못되었습니다.')
                 }
             }
         case 'math':
             {
-                if (!isString(args))
-                {
+                if (!isString(args)) {
                     return errMessege('MATH 매크로 오류', '매개 변수가 없습니다.')
                 }
                 args = args.replace(/\\/gi, '\\\\') //backslash,
-                            .replace(/\n/gi, ' ') //stop <br>
+                    .replace(/\n/gi, ' ') //stop <br>
                 return `<span class='math'>${args}</span>`
             }
         case 'mathd':
             {
-                if (!isString(args))
-                {
+                if (!isString(args)) {
                     return errMessege('MATHD 매크로 오류', '매개 변수가 없습니다.')
                 }
                 args = args.replace(/\\/gi, '\\\\') //backslash,
-                            .replace(/\n/gi, ' ') //stop <br>
+                    .replace(/\n/gi, ' ') //stop <br>
                 return `<span class='mathd'>${args}</span>`
             }
         case 'map':
             {
-                if (!isString(args))
-                {
+                if (!isString(args)) {
                     return errMessege('MAP 매크로 오류', '매개 변수가 없습니다.')
                 }
                 args = args.split('|')
@@ -232,14 +200,12 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 let dataloc = null
                 let width = null
                 let height = null
-                for (let arg of args)
-                {
+                for (let arg of args) {
                     let as = arg.split('=')
                     if (as.length != 2) continue
                     as[0] = as[0].trim()
                     as[1] = as[1].trim()
-                    switch (as[0])
-                    {
+                    switch (as[0]) {
                         case 'x':
                             {
                                 datax = parseFloat(as[1])
@@ -253,8 +219,7 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                         case 'z':
                             {
                                 let tmp = parseInt(as[1])
-                                if (1 <= tmp && tmp <= 14)
-                                {
+                                if (1 <= tmp && tmp <= 14) {
                                     dataz = tmp
                                 }
                                 break
@@ -279,26 +244,23 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                 let style = ''
                 style += `width:${width || '300px'};`
                 style += `height:${height || '300px'};`
-                
+
                 return `<div class='map' ${opt}' style='${style}'></div>`
             }
         case 'syntax':
             {
-                if (!isString(args))
-                {
+                if (!isString(args)) {
                     return errMessege('SYNTAX 매크로 오류', '매개 변수가 없습니다.')
                 }
 
-                try
-                {
+                try {
                     let [language, ...rest] = args.split('|')
                     language = language.toLowerCase().trim()
                     let code = rest.join('|').trim().replace(/\\/gi, '\\\\')
-                    let res = hljs.highlight(code, {language: language, ignoreIllegals: true}).value;
+                    let res = hljs.highlight(code, { language: language, ignoreIllegals: true }).value;
                     return `<pre>${res}</pre>`
                 }
-                catch (e)
-                {
+                catch (e) {
                     return errMessege('SYNTAX 매크로 오류', '알 수 없는 에러가 발생하였습니다.')
                 }
             }
@@ -308,119 +270,99 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
             }
         default:
             return match
-            //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
+        //return '<p class="fw-bold text-danger">UNDEFINED MACRO ERROR: Macro with name "' + macro + '" does not exist.'
     }
 }
-async function asyncMacro(str, regex, fn, pages, files, incl=true)
-{
+async function asyncMacro(str, regex, fn, pages, files, incl = true) {
     //https://stackoverflow.com/questions/33631041/javascript-async-await-in-replace
     const promises = []
-    str.replace(regex, (match, p1, p2, _offset, _string, _groups) =>
-    {
+    str.replace(regex, (match, p1, p2, _offset, _string, _groups) => {
         const promise = fn(match, p1, p2, pages, files, incl)
         promises.push(promise)
     })
     const data = await Promise.all(promises)
     return str.replace(regex, () => data.shift())
 }
-function list(line, type)
-{
-    opentag = '<' + type + '>'
-    closetag = '</' + type + '>'
-    liIdentifier = null
-    if (type == 'ol')
-    {
+function list(line, type) {
+    let opentag = '<' + type + '>'
+    let closetag = '</' + type + '>'
+    let liIdentifier
+    if (type == 'ol') {
         liIdentifier = /(#+) (.+)/i
     }
-    else
-    {
+    else {
         liIdentifier = /(\*+) (.+)/i
     }
     //type: ul, ol
     line = line.trim()
     var res = ''
     const r = /^<\/h\d>(.*)$/s
-    if (r.test(line))
-    {
+    if (r.test(line)) {
         res += '</h2>'
         line = line.replace(r, '$1')
     }
     var currentLevel = 0
     var lines = line.split(/\r?\n/)
-    lines.forEach((item, _index, _a) =>
-    {
+    lines.forEach((item, _index, _a) => {
         var e = liIdentifier.exec(item)
         var newLevel = e[1].length
-        while (currentLevel < newLevel)
-        {
+        while (currentLevel < newLevel) {
             res += opentag
             currentLevel++
         }
-        while (currentLevel > newLevel)
-        {
+        while (currentLevel > newLevel) {
             res += closetag
             currentLevel--
         }
         res += `<li>${e[2]}</li>`
     })
-    while (currentLevel)
-    {
-        res+= closetag
+    while (currentLevel) {
+        res += closetag
         currentLevel -= 1
     }
     return res
 }
-function buildHeadingName(depth, separator)
-{
+function buildHeadingName(depth, separator) {
     var res = ''
-    for (var i = 1; i <= depth; i++)
-    {
+    for (var i = 1; i <= depth; i++) {
         res += currentTOC[i].toString()
         if (i != depth) res += separator
     }
     return res
 }
-function renderHeading(text, depth)
-{
+function renderHeading(text, depth) {
     for (let i = depth + 1; i <= 5; i++) currentTOC[i] = 0
     if (latestHeading >= depth) currentTOC[depth]++
     latestHeading = depth
     if (currentTOC[depth] == 0) currentTOC[depth] = 1
     let editButton = renderSectionEditButton ? `<a class='ren-header-edit' href='/edit/${pgname}?section=${currentSection++}'>[편집]</a>` : ''
-    var res = `<h${depth+1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text} ${editButton}</h${depth+1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
+    var res = `<h${depth + 1} class='border-bottom ren-header' id='s${buildHeadingName(depth, '_')}'><a href='#toc'>${buildHeadingName(depth, '.')}.</a> ${text} ${editButton}</h${depth + 1}>\n` //<a href='#s${buildHeadingName(depth, '_')}'>¶</a>
 
     //update TOC
     for (let i = 1; i < depth; i++) toc += '&emsp;'
     toc += `<a href='#s${buildHeadingName(depth, '_')}'>${buildHeadingName(depth, '.')}.&nbsp;<span class='blackln'>${text}</span></a><br>`
     return res
 }
-function buildTOC()
-{
+function buildTOC() {
     return `<div id='toc' class='border m-3 ms-0 me-0 p-3 ren-toc'>${toc}</div>`
 }
-function regFootnote(text)
-{
+function regFootnote(text) {
     const f = [++footnotecount, text]
     footnotes.push(f)
-    return `<span class='fn_origin' data-x='${footnotecount}' data-y='${sanitiseHtml(text, {allowedTags: [], allowedAttributes: {}})}'>${text}</span>`
+    return `<span class='fn_origin' data-x='${footnotecount}' data-y='${sanitiseHtml(text, { allowedTags: [], allowedAttributes: {} })}'>${text}</span>`
 }
-function generateFootnote()
-{
-    while (footnotes.length)
-    {
+function generateFootnote() {
+    while (footnotes.length) {
         const ft = footnotes[0]
         footnotes.shift()
         footnote += `<a id='foot_${ft[0]}' href='#foot_source${ft[0]}'>[${ft[0]}]</a> ${ft[1]}<br>`
     }
     return footnote
 }
-function fredirect(orgname, pagename, paragraph, text, res, redirect)
-{
-    pagename = sanitiseHtml(pagename,{allowedTags: [], allowedAttributes: {}})
-    if (res !== undefined)
-    {
-        if (!redirect)
-        {
+function fredirect(orgname, pagename, paragraph, text, res, redirect) {
+    pagename = sanitiseHtml(pagename, { allowedTags: [], allowedAttributes: {} })
+    if (res !== undefined) {
+        if (!redirect) {
             return `<p>${text}</p>`
         }
         res.redirect(`/w/${pagename}?from=${orgname}${paragraph === undefined ? '' : paragraph}`) //todo: implement s-? redirected from?
@@ -429,10 +371,9 @@ function fredirect(orgname, pagename, paragraph, text, res, redirect)
     else return '<p><span class="fw-bold text-danger">리다이렉트 오류</span>: 리다이렉트는 일반 문서에서만 할 수 있습니다.</p>'
 }
 
-function renderTable(data)
-{
+function renderTable(data) {
     let res = '<table class=\'table table-bordered ren-table\' '
-    
+
     //get table-wide options
     //Get the first cell
     let cellRegEx = /\|\| ?((?: ?\[.*?\] ?)*)(.*?)(?=\|\|)/igm
@@ -443,12 +384,9 @@ function renderTable(data)
     let caption = ''
     let borderColor
     let borderWidth
-    while (((firstCellOptFound = firstCellOptRegex.exec(firstCell)) !== null))
-    {
-        if (/tablefloat *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
-            switch (firstCellOptFound[1].split('=')[1].trim())
-            {
+    while (((firstCellOptFound = firstCellOptRegex.exec(firstCell)) !== null)) {
+        if (/tablefloat *?= *?(.+?)/i.test(firstCellOptFound[1])) {
+            switch (firstCellOptFound[1].split('=')[1].trim()) {
                 case 'left':
                     tableStyle += 'float:left;'
                     break
@@ -461,49 +399,39 @@ function renderTable(data)
                     break
             }
         }
-        else if (/caption *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/caption *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             caption = `<caption style='text-align:center'>${firstCellOptFound[1].split('=')[1].trim()}</caption>`
         }
-        else if (/tablebordercolou?r *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/tablebordercolou?r *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             tableStyle += `border-color:${firstCellOptFound[1].split('=')[1].trim()};`
             borderColor = firstCellOptFound[1].split('=')[1].trim()
         }
-        else if (/tableborderwidth *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/tableborderwidth *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             tableStyle += `border-width:${firstCellOptFound[1].split('=')[1].trim()};`
             borderWidth = firstCellOptFound[1].split('=')[1].trim()
         }
-        else if (/tablebackgroundcolou?r *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/tablebackgroundcolou?r *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             tableStyle += `background-color:${firstCellOptFound[1].split('=')[1].trim()};`
         }
-        else if (/tablewidth *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/tablewidth *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             tableStyle += `width:${firstCellOptFound[1].split('=')[1].trim()};`
         }
-        else if (/tablemaxwidth *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/tablemaxwidth *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             tableStyle += `max-width:${firstCellOptFound[1].split('=')[1].trim()};`
         }
-        else if (/tableheight *?= *?(.+?)/i.test(firstCellOptFound[1]))
-        {
+        else if (/tableheight *?= *?(.+?)/i.test(firstCellOptFound[1])) {
             tableStyle += `height:${firstCellOptFound[1].split('=')[1].trim()};`
         }
-        else if (firstCellOptFound[1].trim() == 'nomargin')
-        {
+        else if (firstCellOptFound[1].trim() == 'nomargin') {
             tableStyle += 'margin: 0px;'
         }
     }
     res += `style='${tableStyle}'>`
 
-    let colbody = '<colgroup'
     let tbody = '<tbody>'
     let rowNum = 1
     let tSplit = data.split('\n')
-    tSplit.forEach((line) =>
-    {
+    tSplit.forEach((line) => {
         //line.replace('\r', '') // /r/n problem
         if (line.trim() == '') return
         let l = '<tr '
@@ -511,20 +439,16 @@ function renderTable(data)
         let found
         let isFirst = true
         let cellRegEx = /\|\| ?((?: ?\[.*?\] ?)*)(.*?)(?=\|\|)/igm
-        while (((found = cellRegEx.exec(line)) !== null))
-        {
-            if (isFirst)
-            {
+        while (((found = cellRegEx.exec(line)) !== null)) {
+            if (isFirst) {
                 //put row-wide attribute
                 let colOptRegex = /\[ *(.*?) *\]/igm
                 let optFound
-                
+
                 //search for attritubtes
-                while (((optFound = colOptRegex.exec(found[1].trim())) !== null))
-                {
+                while (((optFound = colOptRegex.exec(found[1].trim())) !== null)) {
                     if (optFound.length < 2) continue;
-                    if (/rowbackgroundcolor=(.+?)/i.test(optFound[1]))
-                    {
+                    if (/rowbackgroundcolor=(.+?)/i.test(optFound[1])) {
                         rowStyle += `background-color:${optFound[1].split('=')[1]};`
                     }
                 }
@@ -536,9 +460,8 @@ function renderTable(data)
             let cellOptRegex = /\[ *(.*?) *\]/igm
             let cellOptFound
             if (borderColor) cellStyle += 'border-color:' + borderColor + ';'
-            if (borderWidth) cellStyle += 'border-width:' +  borderWidth + ';'
-            while (((cellOptFound = cellOptRegex.exec(found[1].trim())) !== null))
-            {
+            if (borderWidth) cellStyle += 'border-width:' + borderWidth + ';'
+            while (((cellOptFound = cellOptRegex.exec(found[1].trim())) !== null)) {
                 cellOptFound[1] = cellOptFound[1].trim()
                 if (/-(.*?)/.test(cellOptFound[1])) //[-3]
                 {
@@ -548,52 +471,40 @@ function renderTable(data)
                 {
                     cell += `rowspan='${cellOptFound[1].substring(1)}' `
                 }
-                else if (cellOptFound[1] == ':')
-                {
+                else if (cellOptFound[1] == ':') {
                     cellStyle += 'text-align: center;'
                 }
-                else if (cellOptFound[1] == '(')
-                {
+                else if (cellOptFound[1] == '(') {
                     cellStyle += 'text-align: left;'
                 }
-                else if (cellOptFound[1] == ')')
-                {
+                else if (cellOptFound[1] == ')') {
                     cellStyle += 'text-align: right;'
                 }
-                else if (cellOptFound[1] == '^')
-                {
+                else if (cellOptFound[1] == '^') {
                     cellStyle += 'vertical-align: top;'
                 }
-                else if (cellOptFound[1] == '=')
-                {
+                else if (cellOptFound[1] == '=') {
                     cellStyle += 'vertical-align: middle;'
                 }
-                else if (cellOptFound[1] == 'v')
-                {
+                else if (cellOptFound[1] == 'v') {
                     cellStyle += 'vertical-align: bottom;'
                 }
-                else if (/bordercolou?r *?= *?(.+?)/i.test(cellOptFound[1]))
-                {
+                else if (/bordercolou?r *?= *?(.+?)/i.test(cellOptFound[1])) {
                     cellStyle += `border-color:${cellOptFound[1].split('=')[1].trim()};`
                 }
-                else if (/borderwidth *?= *?(.+?)/i.test(cellOptFound[1]))
-                {
+                else if (/borderwidth *?= *?(.+?)/i.test(cellOptFound[1])) {
                     cellStyle += `border-width:${cellOptFound[1].split('=')[1].trim()};`
                 }
-                else if (/backgroundcolou?r *?= *?(.+?)/i.test(cellOptFound[1]))
-                {
+                else if (/backgroundcolou?r *?= *?(.+?)/i.test(cellOptFound[1])) {
                     cellStyle += `background-color:${cellOptFound[1].split('=')[1].trim()};`
                 }
-                else if (/width *?= *?(.+?)/i.test(cellOptFound[1]))
-                {
+                else if (/width *?= *?(.+?)/i.test(cellOptFound[1])) {
                     cellStyle += `width:${cellOptFound[1].split('=')[1].trim()};`
                 }
-                else if (/height *?= *?(.+?)/i.test(cellOptFound[1]))
-                {
+                else if (/height *?= *?(.+?)/i.test(cellOptFound[1])) {
                     cellStyle += `height:${cellOptFound[1].split('=')[1].trim()};`
                 }
-                else
-                {
+                else {
                     //same as bgcolor
                     cellStyle += `background-color:${cellOptFound[1].trim()};`
                 }
@@ -605,30 +516,26 @@ function renderTable(data)
         tbody += l
         rowNum++
     })
-    colbody += ''
     tbody += '</tbody>'
     res += caption + tbody + '</table>'
     return res
 }
 
-function linkfix(t)
-{
+function linkfix(t) {
     const rExec = /^<a.*?>(.*?)<\/a>$/ig.exec(t)
     if (rExec && rExec.length == 2) return rExec[1]
     else return t
 }
 
-function blockquote(match, rgx, depth)
-{
+function blockquote(match, rgx, depth) {
     if (depth++ >= 10) return match
     let txt = ''
     let lSplit = match.split('\n')
-    lSplit.forEach((l, i) =>
-    {
+    lSplit.forEach((l, i) => {
         if (l.length < 2) return
-        txt += l.substring(1,l.length) + (i + 1 == lSplit.length ? '' : '\n')
+        txt += l.substring(1, l.length) + (i + 1 == lSplit.length ? '' : '\n')
     })
-   txt = txt.replace(rgx, match => {return blockquote(match, rgx, depth)}).replace(/\n/g, '<br>')
+    txt = txt.replace(rgx, match => { return blockquote(match, rgx, depth) }).replace(/\n/g, '<br>')
     return `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>${txt}</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
 }
 
@@ -643,28 +550,25 @@ var footnotecount
 var renderSectionEditButton = true
 
 const ulRegex = /(^|<\/h\d>)((?:\*+ (?:.+(?:\r?\n|$)))+)/igm
-const olRegex = /(^|<\/h\d>)((?:\#+ (?:.+(?:\r?\n|$)))+)/igm
+const olRegex = /(^|<\/h\d>)((?:#+ (?:.+(?:\r?\n|$)))+)/igm
 const blockquoteRegex = /^(>.*(\r?\n|$))+/igm
 
-module.exports = async (pagename, data, _renderInclude, pages = undefined, files = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}) => //todo: remove pages requirement
+module.exports = async (pagename, data, _renderInclude, pages = undefined, files = undefined, req = undefined, res = undefined, redirect = true, incl = true, args = {}, renderOptions = {}) => //todo: remove pages requirement
 {
     //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
     //deprecated options: _renderInclude, redirect
     //initialise
-    try
-    {
+    try {
         pgname = pagename
         currentSection = 1
         currentTOC = [undefined, 0, 0, 0, 0, 0] //supports until 5th
         latestHeading = 7
         toc = '<div style="font-weight:bold;margin-bottom: 1rem;">목차</div>'
 
-        if (renderOptions.showSectionEditButton == 'on')
-        {
+        if (renderOptions.showSectionEditButton == 'on') {
             renderSectionEditButton = true
         }
-        else
-        {
+        else {
             renderSectionEditButton = false
         }
 
@@ -673,62 +577,52 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
 
         //Redirect
         let doRedr = false
-        const redr = data.replace(/^#redirect +(.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) =>
-        {
-            if (true === fredirect(pagename, p1, p2, string, res, redirect))
-            {
+        const redr = data.replace(/^#redirect +(.*?)(?:\r?\n)*(#(?:s\d+))?$/ig, (_match, p1, p2, _offset, string, _groups) => {
+            if (true === fredirect(pagename, p1, p2, string, res, redirect)) {
                 doRedr = true
                 return true
             }
         })
-        if (doRedr === true)
-        {
+        if (doRedr === true) {
             return true
         } //escape
-        
+
         //args
-        data = data.replace(/{{{(.+?)}}}/igm, (_match, p1, _offset, _string, _groups) =>
-        {
+        data = data.replace(/{{{(.+?)}}}/igm, (_match, p1, _offset, _string, _groups) => {
             const res = args[p1.trim()]
-            if (res === undefined)
-            {
+            if (res === undefined) {
                 return `{{{${p1}}}}` //no change
             }
-            else
-            {
+            else {
                 return res
             }
         })
 
         //beginRender hook
-        for (let f of global.hooks.beginRender)
-        {
+        for (let f of global.hooks.beginRender) {
             let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
             pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
         }
-        
+
         //\r\n issue
         data = data.replace(/\r/g, '')
 
         //comments
         data = data.replace(/^\/\/.*?\r?\n/igm, '')
-        
+
         //headings
         data = data.replace(/^(=+) (.*) =+( )*\r?\n/igm, (_match, p1, p2, _offset, _string, _groups) => renderHeading(p2, p1.length))
 
         //centred text
-        data = data.replace(/\[:\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) =>
-        {
+        data = data.replace(/\[:\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) => {
             return `<div class="ren-center">${p1.trim()}</div>`
         })
         //left aligned text
-        data = data.replace(/\[\(\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) =>
-        {
+        data = data.replace(/\[\(\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) => {
             return `<div class="ren-left">${p1.trim()}</div>`
         })
         //right aligned text
-        data = data.replace(/\[\)\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) =>
-        {
+        data = data.replace(/\[\)\]{{(.*?)}}/igms, (match, p1, _offset, _string, _groups) => {
             return `<div class="ren-right">${p1.trim()}</div>`
         })
 
@@ -740,27 +634,24 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         data = await asyncMacro(data, /\[(\w*)(?:\((.*?)\))?\]/igms, renderMacro, pages, files, incl)
 
         //inline maths
-        if (renderOptions['maths'] == 'on')
-        {
-            data = data.replace(/\$(.*?)\$/gi, (match, p1, _offset, _string, _groups) =>
-            {
+        if (renderOptions['maths'] == 'on') {
+            data = data.replace(/\$(.*?)\$/gi, (match, p1, _offset, _string, _groups) => {
                 let S = p1.replace(/\\/gi, '\\\\') //backslash,
-                .replace(/\n/gi, ' ') //stop <br>
+                    .replace(/\n/gi, ' ') //stop <br>
                 return `<span class='math'>${S}</span>`
             })
 
-            data = data.replace(/\\\[(.*?)\\\]/gims, (match, p1, _offset, _string, _groups) =>
-            {
+            data = data.replace(/\\\[(.*?)\\\]/gims, (match, p1, _offset, _string, _groups) => {
                 let S = p1.replace(/\\/gi, '\\\\') //backslash,
-                .replace(/\n/gi, ' ') //stop <br>
+                    .replace(/\n/gi, ' ') //stop <br>
                 return `<span class='mathd'>\\\\begin{equation*} ${S} \\\\end{equation*}</span>`
             })
         }
 
         //ul
-        data = data.replace(ulRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ul'))) //NOTE: must have /n at the end
+        data = data.replace(ulRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2, 'ul'))) //NOTE: must have /n at the end
         //ol
-        data = data.replace(olRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2,'ol')))
+        data = data.replace(olRegex, (match, p1, p2, _offset, _string, _groups) => (p1 + list(p2, 'ol')))
         //big text
         data = data.replace(/"""(.*?)"""/gim, '<span style="font-size: 24px">$1</span>')
         //bold
@@ -775,19 +666,17 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         data = data.replace(/\^\^(.*?)\^\^/igm, '<sup>$1</sup>')
         //subscript
         data = data.replace(/,,(.*?),,/igm, '<sub>$1</sub>')
-        
+
         //external link
-        data = data.replace(/\[\[(https?:\/\/([^|\r\n]+?))\]\]/igm, (_match, p1, _offset, _string, _groups) =>
-        {
+        data = data.replace(/\[\[(https?:\/\/([^|\r\n]+?))\]\]/igm, (_match, p1, _offset, _string, _groups) => {
             p1 = linkfix(p1)
-            let p1Tooltip = p1.replace(/'/g,`&apos;`)
+            let p1Tooltip = p1.replace(/'/g, `&apos;`)
             return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p1}</a>`
         })
         //external link with different text
-        data = data.replace(/\[\[(https?:\/\/[^|\r\n]+?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) =>
-        {
+        data = data.replace(/\[\[(https?:\/\/[^|\r\n]+?)\|(.*?)\]\]/igm, (_match, p1, p2, _offset, _string, _groups) => {
             p2 = linkfix(p2)
-            let p1Tooltip = p1.replace(/'/g,`&apos;`)
+            let p1Tooltip = p1.replace(/'/g, `&apos;`)
             return `<a href='${p1}' target='_blank' rel='nofollow noopener noreferrer' title='${p1Tooltip}' class='ren-extlink'><i class="fas fa-external-link-square-alt ren-extlink-icon"></i>${p2}</a>`
         })
         //category
@@ -800,15 +689,13 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         {
             let r = /\[\[([^|\r\n]*?)\]\]/igm
             const promises = []
-            data.replace(r, (_match, p1, _offset, _string, _groups) =>
-            {
+            data.replace(r, (_match, p1, _offset, _string, _groups) => {
                 p1 = linkfix(p1)
-                let f = async (p1) =>
-                {
-                    let p = await pages.findOne({where: {title: p1}})
+                let f = async (p1) => {
+                    let p = await pages.findOne({ where: { title: p1 } })
                     let p1Esc = encodeURIComponent(p1)
                     p1Esc = p1Esc.replace(/'/g, '%27')
-                    let p1Tooltip = p1.replace(/'/g,`&apos;`)
+                    let p1Tooltip = p1.replace(/'/g, `&apos;`)
 
                     let p_me = (pagename == p1) ? 'ren_thispage' : ''
                     if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p1}</a>`
@@ -826,20 +713,18 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
             return `<a href='/w/${p1}'>${p1}</a>`
         })
         */
-    
+
         //Internal Link with different text
         {
             let r = /\[\[(.*?)\|(.*?)\]\]/igm
             const promises = []
-            data.replace(r, (_match, p1, p2, _offset, _string, _groups) =>
-            {
+            data.replace(r, (_match, p1, p2, _offset, _string, _groups) => {
                 p2 = linkfix(p2)
-                let f = async (p1, p2) =>
-                {
-                    let p = await pages.findOne({where: {title: p1}})
+                let f = async (p1, p2) => {
+                    let p = await pages.findOne({ where: { title: p1 } })
                     let p1Esc = encodeURIComponent(p1)
                     p1Esc = p1Esc.replace(/'/g, '%27')
-                    let p1Tooltip = p1.replace(/'/g,`&apos;`)
+                    let p1Tooltip = p1.replace(/'/g, `&apos;`)
                     let p_me = (pagename == p1) ? 'ren_thispage' : ''
                     if (p) return `<a href='/w/${p1Esc}' title='${p1Tooltip}' class='${p_me}'>${p2}</a>`
                     else return `<a href='/w/${p1Esc}' title='${p1Tooltip} (존재하지 않는 페이지)' class='ren_nosuchpage ${p_me}'>${p2}</a>`
@@ -872,7 +757,7 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         //replace \n
         data = data.replace(/\r?\n/igm, '<br>')
         */
-    
+
         //make into paragraphs
         /*data = data.replace(/^( *)(.*?)(?:\r?\n)(?:\r?\n)?/igm, (match, p1, p2, offset, string, groups) =>
         {
@@ -881,49 +766,43 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
             return `<p>${'&nbsp;'.repeat(p1 ? p1.length : 0)}${p2}</p>`
         })*/
         //table
-        data = data.replace(/(^\|\|(.*?\|\|)+(\r?\n|$))+/igm, (match) =>
-        {
+        data = data.replace(/(^\|\|(.*?\|\|)+(\r?\n|$))+/igm, (match) => {
             return renderTable(match)
         })
-        data = data.replace(/(?:^|>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, _offset, _string, _groups) =>
-        {
+        data = data.replace(/(?:^|>)(:+)(.*)(\r?\n|$)/igm, (match, p1, p2, _offset, _string, _groups) => {
             return (match[0] == '>' ? '>' : '') + `<div style='padding-left: ${5 * p1.length}px'>${p2}</div>`
         })
 
         //blockquote
-        data = data.replace(blockquoteRegex, match => {return blockquote(match, blockquoteRegex, 1)})
+        data = data.replace(blockquoteRegex, match => { return blockquote(match, blockquoteRegex, 1) })
 
-        data = data.replace(/```(.*?)```/igms, (match, p1, _offset, _string, _groups) =>
-        {
+        data = data.replace(/```(.*?)```/igms, (match, p1, _offset, _string, _groups) => {
             return p1.replace(/\n/igm, '')
         })
         //remove \r?\n
-        data = data.replace(/(<\/h\d>)\n/igm, (match, p1, offset, input) =>
-            {
-                return p1
-            })
+        data = data.replace(/(<\/h\d>)\n/igm, (match, p1, offset, input) => {
+            return p1
+        })
         data = data.replace(/\n/igm, '<br>')
         data = data.replace(/(<br>)?<hr>(<br>)?/igm, '<hr>')
         //data = data.replace(/^\n/igm, '<br>')
         //data = data.replace('\n', '')
         //escape things
         if (renderOptions['escaperslash'] != 'off')
-            data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => {return p1 == '\\' ? '' : '\\'})
+            data = data.replace(/((\\\\|\\))/igm, (_match, p1, _offset, _string, _groups) => { return p1 == '\\' ? '' : '\\' })
 
         //endRender hook
-        for (let f of global.hooks.endRender)
-        {
+        for (let f of global.hooks.endRender) {
             let r = f(pagename, data, req, res, redirect, incl, args, renderOptions)
             pagename = r.pagename; data = r.data; req = r.req; res = r.res; redirect = r.redirect, incl = r.incl; args = r.args; renderOptions = r.renderOptions;
         }
-        
+
         //sanitising things
         data = sanitiseHtml(data, global.sanitiseOptions)
-        
+
         return data
     }
-    catch (exception)
-    {
+    catch (exception) {
         return `<div class="alert alert-danger" role="alert">The parser crashed. Consider reading the page RAW to diagnose the error.</div>`
     }
 }

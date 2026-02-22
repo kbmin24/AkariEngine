@@ -6,10 +6,8 @@ const {
     ValidationError
 } = require(paths.resolve('services', 'errors.js'))
 
-module.exports = async (req, res, perm) =>
-{
-    try
-    {
+module.exports = async (req, res) => {
+    try {
         const ipAddress = req.ipAddress
         await req.app.locals.services.page.revertPage({
             title: decodeURI(req.params.name),
@@ -20,20 +18,16 @@ module.exports = async (req, res, perm) =>
         })
         res.redirect('/w/' + decodeURI(req.params.name))
     }
-    catch (error)
-    {
-        if (error instanceof RevisionNotFoundError)
-        {
+    catch (error) {
+        if (error instanceof RevisionNotFoundError) {
             require(paths.resolve('error.js'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
-        if (error instanceof PageNotFoundError)
-        {
+        if (error instanceof PageNotFoundError) {
             require(paths.resolve('error.js'))(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
-        if (error instanceof ValidationError)
-        {
+        if (error instanceof ValidationError) {
             require(paths.resolve('error.js'))(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }

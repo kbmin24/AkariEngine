@@ -1,6 +1,6 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 const pageLength = 50
 module.exports = async (req, res, pages) =>
 {

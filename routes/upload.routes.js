@@ -2,11 +2,9 @@ const express = require('express')
 const i18n = require("i18n")
 const multer = require('multer')
 const fs = require('fs')
-const axios = require('axios')
-const dateandtime = require('date-and-time')
 const paths = require('../utils/paths')
 const { load, asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
-const { chkCaptcha } = require('../middleware/chkCaptcha')
+const { chkCaptcha } = require('../middlewares/chkCaptcha')
 const { requireLogin } = require(paths.middleware('permission'))
 
 const defaultFileTypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
@@ -25,7 +23,7 @@ function checkFileType(file, cb) {
     const ext = getFileTypes().includes(file.originalname.split(/\./).pop().toLowerCase())
     const mime = getMimeTypes().includes(file.mimetype.split(/\//).pop().toLowerCase())
     if (mime && ext) return cb(null, true)
-    cb(`${getFileTypes().join(', ')}만 업로드 할 수 있습니다.`)
+    cb(`You can only upload ${getFileTypes().join(', ')}.`)
 }
 
 module.exports = (_services, _options = {}) => {
@@ -62,16 +60,14 @@ module.exports = (_services, _options = {}) => {
             fileSize: fileLimit * 1024 * 1024
         },
         fileFilter: async (req, file, cb) => {
-            const username = req.session.username
-
-            // it doens't make sense that this logic is even here...
+            // TODO it doens't make sense that this logic is even here...
 
             const ext = req.body.filename.split(/\./).pop().toLowerCase()
             if (!(getFileTypes().includes(ext))) {
-                return cb(`${getFileTypes().join(', ')}만 업로드할 수 있습니다.`)
+                return cb(`You can only upload ${getFileTypes().join(', ')}.`)
             }
-            if (!req.body.filename.match(/^[^\#\?\\\/\<\>\:\*\|"]*$/i)) {
-                return cb('파일명은 다음 문자를 포함할 수 없습니다: #, ?, /, \\, &lt;, &gt;, :, *, |, ".')
+            if (!req.body.filename.match(/^[^#?\\/<>:*|"]*$/i)) {
+                return cb('File name cannot contain any of the following characters: #, ?, /, \\, <, >, :, *, |, ".')
             }
 
             checkFileType(file, cb)
@@ -82,7 +78,7 @@ module.exports = (_services, _options = {}) => {
         requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
         asyncRoute(async (req, res) => {
         const username = req.session.username
-        const captchaSVG = await load('utils', 'captcha.js').genCaptcha(req)
+        const captchaSVG = await load('utils', 'captcha.js').genCaptcha()
         await renderTemplateInLayout(req, res, 'files/upload.ejs', {
             username,
             captcha: captchaSVG,

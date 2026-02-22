@@ -91,7 +91,7 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
     let pg = await posts.create(postOptions)
     boardNow.update({postCount: boardNow.postCount + 1})
 
-    let fre = /<img src=\"\/boarduploads\/([a-zA-Z0-9]+)">/mig
+    let fre = /<img src="\/boarduploads\/([a-zA-Z0-9]+)">/mig
     let er
     while ((er = fre.exec(req.body.content)) !== null)
     {

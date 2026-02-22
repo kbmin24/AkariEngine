@@ -23,7 +23,6 @@ module.exports = async (req, res, tables = {}) =>
             }
         case "changeSkin":
                 {
-                    const user = await tables['users'].findOne({where: {username: req.session.username}})
                     const skinName = req.body.skin
                     tables['settings'].destroy({
                         where:
@@ -64,7 +63,7 @@ module.exports = async (req, res, tables = {}) =>
                     //good. Put new password in.
                     crypto.pbkdf2(newPassword, user.salt, 10000, 64, 'sha512', async (err, hashedPW) =>
                     {
-                        if (err) throw new error
+                        if (err) throw new Error("Password generation failed")
                         await user.update({password: hashedPW.toString('base64')})
                         require(paths.resolve('info.js'))(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
                     })

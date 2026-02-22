@@ -1,6 +1,6 @@
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
-const { ValidationError, PermissionDeniedError } = require(paths.services('errors'))
+const logger = require(paths.util('logger'))
+const { ValidationError, PermissionDeniedError } = require(paths.service('errors'))
 
 module.exports = async (req, res, _users, _perm, _block, adminlog) => {
     const username = req.session.username

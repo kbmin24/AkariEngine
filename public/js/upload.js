@@ -1,6 +1,6 @@
 document.getElementById('inputFile').onchange = () =>
 {
-    document.getElementById('filenameInputBox').value = document.getElementById('inputFile').value.replace(/^.*[\\\/]/igm, '')
+    document.getElementById('filenameInputBox').value = document.getElementById('inputFile').value.replace(/^.*[\\/]/igm, '')
     const [file] = document.getElementById('inputFile').files
     if (file)
     {

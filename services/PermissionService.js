@@ -1,5 +1,5 @@
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 const dateandtime = require('date-and-time')
 const {
     PermissionDeniedError,
@@ -30,7 +30,7 @@ class PermissionService {
     }
 
     formatLoginRequiredMessage(action) {
-        return 'Login required.'
+        return `Login is required for ${action}`
     }
 
     buildUserBlockResult(userBlock, requiredLevel) {
@@ -97,22 +97,24 @@ class PermissionService {
             }
 
             case 'login':
-                if (!user) {
-                    return {
-                        allowed: false,
-                        requiredLevel,
-                        i18nKey: 'loginneeded',
-                        reason: 'login_required',
-                        message: this.formatLoginRequiredMessage(action)
+                {
+                    if (!user) {
+                        return {
+                            allowed: false,
+                            requiredLevel,
+                            i18nKey: 'loginneeded',
+                            reason: 'login_required',
+                            message: this.formatLoginRequiredMessage(action)
+                        }
                     }
-                }
 
-                const userBlock = await this.blockRepo.findUserBlock(user)
-                if (userBlock) {
-                    return this.buildUserBlockResult(userBlock, requiredLevel)
-                }
+                    const userBlock = await this.blockRepo.findUserBlock(user)
+                    if (userBlock) {
+                        return this.buildUserBlockResult(userBlock, requiredLevel)
+                    }
 
-                return { allowed: true, requiredLevel }
+                    return { allowed: true, requiredLevel }
+                }
 
             case 'admin': {
                 if (!user) {

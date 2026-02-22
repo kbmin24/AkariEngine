@@ -1,6 +1,5 @@
 const ejs = require('ejs')
 const paths = require('../utils/paths')
-const logger = require(paths.utils('logger'))
 module.exports = async (req, res) => {
     let pagename = req.params.name
     if (pagename === undefined)

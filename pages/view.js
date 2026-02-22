@@ -1,64 +1,55 @@
 const date = require('date-and-time')
 const i18n = require("i18n")
 const paths = require('../utils/paths')
-const escapeHtml = require(paths.utils('escapeHTML'))
+const escapeHtml = require(paths.util('escapeHTML'))
 
 // TODO refactor to use PageService
 
-async function getCategory(title, category, categorys)
-{
+async function getCategory(title, category, categorys) {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
-    const categories = await category.findAll({where: {page: title}})
+    const categories = await category.findAll({ where: { page: title } })
 
     const cardBeginning = `<div class='category'>${i18n.__('category')}: `
     const cardEnd = `</div>`
 
-    if (categories.length == 0)
-    {
+    if (categories.length == 0) {
         if (!categorySwitch) return '' //we don't need category for user page
         return cardBeginning + i18n.__('none') + cardEnd
     }
 
     var res = cardBeginning
 
-    categories.forEach((c, i) =>
-    {
-        res += `<a href='/category/${c.category.replace(/\'/g,`&apos;`)}'>${c.category}</a> `
+    categories.forEach((c, i) => {
+        res += `<a href='/category/${c.category.replace(/'/g, `&apos;`)}'>${c.category}</a> `
         if (i < categories.length - 1) res += '| '
     })
     res += cardEnd
     return res
 }
 
-async function getOptions(content)
-{
+async function getOptions(content) {
     let res = {}
-    let regRes =  /^((?:Option \w+ \w+\r?\n)+)/ig.exec(content)
+    let regRes = /^((?:Option \w+ \w+\r?\n)+)/ig.exec(content)
     if (!regRes || regRes.length < 2) return {}
     let options = regRes[1]
     if (!options) return res //blank
-    options.split('\n').forEach((option) =>
-    {
+    options.split('\n').forEach((option) => {
         if (option == '') return
         const sp = option.split(' ')
         res[sp[1].toLowerCase()] = sp[2].replace('\r', '').toLowerCase()
     })
     return res
 }
-async function updViewCount(title, viewcount, updateTime)
-{
-    const u = await updateTime.findOne({where: {key: 'viewcount'}})
-    if (u)
-    {
-        if (u.value.getDate() != (new Date()).getDate())
-        {
+async function updViewCount(title, viewcount, updateTime) {
+    const u = await updateTime.findOne({ where: { key: 'viewcount' } })
+    if (u) {
+        if (u.value.getDate() != (new Date()).getDate()) {
             //wipe out
-            await viewcount.destroy({where: {}, truncate: true})
-            await u.update({value: new Date()})
+            await viewcount.destroy({ where: {}, truncate: true })
+            await u.update({ value: new Date() })
         }
     }
-    else
-    {
+    else {
         await updateTime.create(
             {
                 key: 'viewcount',
@@ -66,13 +57,12 @@ async function updViewCount(title, viewcount, updateTime)
             }
         )
     }
-    const p = await viewcount.findOne({where: {title: title}})
-    if (p) p.update({count: p.count + 1})
-    else viewcount.create({title: title, count: 1})
+    const p = await viewcount.findOne({ where: { title: title } })
+    if (p) p.update({ count: p.count + 1 })
+    else viewcount.create({ title: title, count: 1 })
 }
 
-module.exports = async (req, res) =>
-{
+module.exports = async (req, res) => {
     const repositories = req.app.locals.repositories
     const pagesRepo = repositories.pages
     const historyRepo = repositories.history
@@ -85,56 +75,46 @@ module.exports = async (req, res) =>
     //check read ACL
     req.params.name = req.params.name.trim()
     var rev = req.query.rev
-    
+
     let titleSuffix = ''
     let contentPrefix = ''
     //check if it's a user page AND it's an admin's one
     if (rev) titleSuffix = `(r${rev})&nbsp;`
     const usernameRegex = /User:(.*)/
-    if (usernameRegex.test(req.params.name))
-    {
+    if (usernameRegex.test(req.params.name)) {
         const username = usernameRegex.exec(req.params.name)[1]
-            if (username)
-            {
-                if (await permissionRepo.hasPermission(username, 'admin'))
-                {
-                    titleSuffix += `(${i18n.__('admin')})`
-                }
+        if (username) {
+            if (await permissionRepo.hasPermission(username, 'admin')) {
+                titleSuffix += `(${i18n.__('admin')})`
+            }
         }
     }
-    if (req.params.name.toLowerCase().startsWith('file:'))
-    {
+    if (req.params.name.toLowerCase().startsWith('file:')) {
         const filename = /File:(.*)/.exec(req.params.name)[1]
-        if (/^(.*?\.(?:png|jpg|jpeg|gif|webp|svg))$/gi.test(filename))
-        {
+        if (/^(.*?\.(?:png|jpg|jpeg|gif|webp|svg))$/gi.test(filename)) {
             contentPrefix = `[file(${filename})]\n`
         }
-        else if (/^(.*?\.pdf)$/gi.test(filename))
-        {
+        else if (/^(.*?\.pdf)$/gi.test(filename)) {
             contentPrefix = `[file(${filename}|width=100%|height=500px)]\n<a href='/uploads/${filename}'>Download</a>`
         }
-        else
-        {
+        else {
             contentPrefix = `<p><span class="fw-bold text-danger">${i18n.__('error')}:</span> ${i18n.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${i18n.__('file_innewtab')}</a></p>`
         }
-        
+
     }
 
-    if (rev === undefined)
-    {
+    if (rev === undefined) {
         //get the newest ver.
         const page = await pagesRepo.findByTitle(req.params.name)
 
-        await (async () =>
-        {
+        await (async () => {
             if (page && !page.deleted) //if page exists
             {
                 await updViewCount(req.params.name, viewcountModel, updateTimeModel)
                 //show the page
                 const redirect = !(req.query.redirect == 'true' || req.query.from)
-                if (req.query.from)
-                {
-                    titleSuffix = i18n.__('page_redirectedfrom', {page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>`}), `&nbsp;` + titleSuffix
+                if (req.query.from) {
+                    titleSuffix = i18n.__('page_redirectedfrom', { page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>` }), `&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
@@ -151,50 +131,50 @@ module.exports = async (req, res) =>
                     updatedAt: date.format(page.updatedAt, global.dtFormat),
                     username: req.session.username,
                     ipaddr: req.ipAddress,
-                    
+
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require(paths.resolve('view.js'))(req, res,renderOpt)
+                require(paths.resolve('view.js'))(req, res, renderOpt)
             }
-            else
-            {
+            else {
                 //404!
                 //do stuff with user pages
-                if (/User\:.*?/igm.test(req.params.name))
-                {
+                if (/User:.*?/igm.test(req.params.name)) {
                     let content
                     if (req.params.name.split(':')[1] == req.session.username)
-                        content = i18n.__("noUserPage_user", {link: escapeHtml(req.params.name)})
+                        content = i18n.__("noUserPage_user", { link: escapeHtml(req.params.name) })
                     else
                         content = i18n.__("noUserPage")
                     require(paths.resolve('view.js'))(req, res,
-                    {
-                        title: i18n.__("error"),
-                        content: content,
-                        isPage: false,
-                        username: req.session.username,
-                        ipaddr: req.ipAddress,
-                        
-                    })
+                        {
+                            title: i18n.__("error"),
+                            content: content,
+                            isPage: false,
+                            username: req.session.username,
+                            ipaddr: req.ipAddress,
+
+                        })
                     return
                 }
                 let hisText = ''
-                if (page)
-                {
-                    hisText = i18n.__("seeHistory", {link: escapeHtml(req.params.name)})
+                if (page) {
+                    hisText = i18n.__("seeHistory", { link: escapeHtml(req.params.name) })
                 }
-                require(paths.resolve('error.js'))(req, res, { description: i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404 })
+                require(paths.resolve('error.js'))(req, res, {
+                    description: i18n.__("noPageMsg",
+                        {
+                            name: escapeHtml(req.params.name),
+                            hisText,
+                        }), returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404
+                })
             }
         })()
     }
-    else
-    {
+    else {
         //get the nth revision
         const page = await historyRepo.findByPageAndRev(req.params.name, rev)
-        await (async () =>
-        {
-            if (page)
-            {
+        await (async () => {
+            if (page) {
                 //show the page
                 let content = await require(paths.resolve('pages', 'render.js'))(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
                 if (content === true) return
@@ -209,9 +189,15 @@ module.exports = async (req, res) =>
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
                 require(paths.resolve('view.js'))(req, res, renderOpt)
             }
-            else
-            {
-                require(paths.resolve('error.js'))(req, res, { description: i18n.__("noPageMsg", {name: escapeHtml(req.params.name), hisText: hisText}), returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404 })
+            else {
+                require(paths.resolve('error.js'))(req, res, {
+                    description: i18n.__("noPageMsg",
+                        {
+                            name: escapeHtml(req.params.name),
+                            hisText: ''
+                        }),
+                    returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404
+                })
             }
         })()
     }

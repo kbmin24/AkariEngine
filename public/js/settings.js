@@ -1,3 +1,4 @@
+/* exported setDarkPref, setRCPref */
 $(() =>
 {
     switch (localStorage.getItem('theme'))

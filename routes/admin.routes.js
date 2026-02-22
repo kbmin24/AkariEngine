@@ -5,7 +5,7 @@ const { Op } = require('sequelize')
 const paths = require('../utils/paths')
 const { asyncRoute, load } = require('../utils/httpHelper')
 const { requirePermission } = require(paths.middleware('auth'))
-const logger = require(paths.utils('logger'))
+const logger = require(paths.util('logger'))
 
 module.exports = (services, options = {}) => {
     const router = express.Router()
