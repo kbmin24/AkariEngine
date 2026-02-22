@@ -55,7 +55,23 @@ class PermissionService {
 
         const requiredLevelOverride = context.requiredLevel
         const protection = requiredLevelOverride ? null : await this.protectRepo.findProtection(resource, action)
-        const requiredLevel = requiredLevelOverride || (protection ? protection.protectionLevel : 'everyone')
+        let requiredLevel
+        if (requiredLevelOverride)
+        {
+            requiredLevel = requiredLevelOverride
+        }
+        else if (protection)
+        {
+            requiredLevel = protection.protectionLevel
+        }
+        else if (Object.hasOwn(context, 'fallbackLevel'))
+        {
+            requiredLevel = context.fallbackLevel
+        }
+        else
+        {
+            requiredLevel = 'everyone'
+        }
 
         if (requiredLevel !== 'blocked') {
             const ipAddress = context.ipAddress
@@ -159,7 +175,7 @@ class PermissionService {
     }
 
     async requireReadAccess(user, title, context = {}) {
-        const result = await this.checkAccessDetailed(user, title, 'read', context)
+        const result = await this.checkAccessDetailed(user, title, 'read', {...context, fallbackLevel: 'blocked'})
         if (!result.allowed) {
             throw new PermissionDeniedError('read', title, {
                 acl: result.requiredLevel,
@@ -173,7 +189,7 @@ class PermissionService {
     }
 
     async requireWriteAccess(user, title, context = {}) {
-        const result = await this.checkAccessDetailed(user, title, 'edit', context)
+        const result = await this.checkAccessDetailed(user, title, 'edit', {...context, fallbackLevel: 'everyone'})
         if (!result.allowed) {
             throw new PermissionDeniedError('edit', title, {
                 acl: result.requiredLevel,
@@ -187,7 +203,7 @@ class PermissionService {
     }
 
     async requireMoveAccess(user, title, context = {}) {
-        const result = await this.checkAccessDetailed(user, title, 'move', context)
+        const result = await this.checkAccessDetailed(user, title, 'move', {...context, fallbackLevel: 'login'})
         if (!result.allowed) {
             throw new PermissionDeniedError('move', title, {
                 acl: result.requiredLevel,

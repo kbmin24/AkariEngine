@@ -9,7 +9,7 @@ module.exports = async (req, res, _users, _perm, _block, adminlog) => {
             actor: username,
             target: req.body.target,
             blockFor: req.body.blockfor,
-            allowLogin: req.body.allowLogin === 'on' || req.body.allowLogin === true,
+            allowLogin: req.body.allowLogin === 'allowLogin' || req.body.allowLogin === true,
             comment: req.body.comment || ''
         })
 
