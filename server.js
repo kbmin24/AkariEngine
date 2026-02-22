@@ -6,6 +6,7 @@ const logger = require('./utils/logger.js')
 const { createSequelizeInstance } = require('./config/database')
 const RepositoryFactory = require('./repositories')
 const ServiceFactory = require('./services')
+const path = require('node:path')
 
 global.path = config.basePath
 global.conf = config.settings
@@ -184,8 +185,8 @@ app.use(express.static(paths.public))
 global.skins = []
 config.skins.forEach(e => {
     app.use(`/skins/${e}`, express.static(paths.resolve('skins', e, 'public')))
-    let skinSettings = require('./skins/skinSettings.json')
-    let skinManifest = require('./skins/manifest.json')
+    let skinSettings = require(paths.resolve(path.join(`skins/${e}/` + 'skinSettings.json')))
+    let skinManifest = require(paths.resolve(path.join(`./skins/${e}/` + 'manifest.json')))
     global.skins.push({ 'name': e, 'settings': skinSettings, 'manifest': skinManifest })
 })
 
