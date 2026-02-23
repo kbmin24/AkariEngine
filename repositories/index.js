@@ -1,13 +1,13 @@
-const PageRepository = require('./PageRepository')
-const UserRepository = require('./UserRepository')
-const PermissionRepository = require('./PermissionRepository')
-const CategoryRepository = require('./CategoryRepository')
-const HistoryRepository = require('./HistoryRepository')
-const BlockRepository = require('./BlockRepository')
-const ProtectRepository = require('./ProtectRepository')
-const RecentChangeRepository = require('./RecentChangeRepository')
-const ThreadRepository = require('./ThreadRepository')
-const ThreadCommentRepository = require('./ThreadCommentRepository')
+import PageRepository from './PageRepository.js'
+import UserRepository from './UserRepository.js'
+import PermissionRepository from './PermissionRepository.js'
+import CategoryRepository from './CategoryRepository.js'
+import HistoryRepository from './HistoryRepository.js'
+import BlockRepository from './BlockRepository.js'
+import ProtectRepository from './ProtectRepository.js'
+import RecentChangeRepository from './RecentChangeRepository.js'
+import ThreadRepository from './ThreadRepository.js'
+import ThreadCommentRepository from './ThreadCommentRepository.js'
 
 class RepositoryFactory {
     constructor(db) {
@@ -32,4 +32,4 @@ class RepositoryFactory {
     }
 }
 
-module.exports = RepositoryFactory
+export default RepositoryFactory;

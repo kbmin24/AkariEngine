@@ -1,5 +1,5 @@
 //navSearch.js
-module.exports = async (req, res, pages) =>
+export default async (req, res, pages) =>
 {
     req.body.pagename = req.body.pagename.trim()
     if (req.body.pagename == '')
@@ -18,4 +18,4 @@ module.exports = async (req, res, pages) =>
         res.redirect('/search?q=' + req.body.pagename)
         return
     }
-}
+};

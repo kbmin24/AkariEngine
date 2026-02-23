@@ -1,5 +1,6 @@
-const ejs = require('ejs')
-const paths = require('./paths')
+import ejs from 'ejs'
+import paths from './paths.js'
+import renderView from '../view.js'
 
 const BACK_LINK = 'javascript:history.back()'
 const LOGIN_LINK = '/login'
@@ -9,7 +10,7 @@ function asyncRoute(handler) {
 }
 
 function renderLayout(req, res, renderOpt) {
-    require('../view.js')(req, res, renderOpt)
+    renderView(req, res, renderOpt)
 }
 
 async function renderTemplateInLayout(req, res, templatePath, templateData, layoutData) {
@@ -20,7 +21,7 @@ async function renderTemplateInLayout(req, res, templatePath, templateData, layo
     })
 }
 
-module.exports = {
+export {
     asyncRoute,
     renderLayout,
     renderTemplateInLayout,

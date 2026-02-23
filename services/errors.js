@@ -1,4 +1,4 @@
-const i18n = require("i18n")
+import i18n from 'i18n'
 // Some standardised errors
 
 function getDefaultLocale() {
@@ -138,7 +138,7 @@ class CaptchaError extends AppError {
     }
 }
 
-module.exports = {
+export {
     AppError,
     PageNotFoundError,
     PageExistsError,

@@ -1,5 +1,6 @@
-const {DataTypes} = require('sequelize')
-module.exports = (sequelize) =>
+import { DataTypes } from 'sequelize'
+
+export default (sequelize) =>
 {
     return sequelize.define('recentchanges',
     {
@@ -47,4 +48,4 @@ module.exports = (sequelize) =>
             type: DataTypes.DATE
         }
     })
-}
+};

@@ -1,7 +1,4 @@
-const {
-    AuthenticationRequiredError,
-    PermissionDeniedError
-} = require('../services/errors')
+import { AuthenticationRequiredError, PermissionDeniedError } from '../services/errors.js'
 
 function buildAccessError(req, error, options = {}) {
     // error from PermissionService is quite generic; transforms error to something that makes more sense
@@ -226,7 +223,7 @@ function requireEveryone(options, res, next) {
     return createRequireEveryoneMiddleware(options || {})
 }
 
-module.exports = {
+export {
     requirePermission,
     requirePageAccess,
     requireLogin,

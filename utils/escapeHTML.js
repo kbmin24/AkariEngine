@@ -1,4 +1,4 @@
-module.exports = (text) =>
+export default (text) =>
 {
     //https://lifefun.tistory.com/85
     var map = {
@@ -7,7 +7,7 @@ module.exports = (text) =>
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
-      };
+      }
       
       return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
+};

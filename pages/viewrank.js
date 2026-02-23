@@ -1,7 +1,9 @@
 
-let ejs = require('ejs')
-const paths = require('../utils/paths')
-module.exports = async (req, res, viewcount) =>
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import renderView from '../view.js'
+
+export default async (req, res, viewcount) =>
 {
     let rank = await viewcount.findAll(
         {
@@ -16,7 +18,7 @@ module.exports = async (req, res, viewcount) =>
     {
         rank: rank
     })
-    require('../view.js')(req, res,
+    renderView(req, res,
     {
         title: '오늘의 문서 조회수 랭킹',
         content: html,

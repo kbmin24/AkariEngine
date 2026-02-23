@@ -1,5 +1,5 @@
-const { Op } = require('sequelize')
-const BaseRepository = require('./BaseRepository')
+import { Op } from 'sequelize'
+import BaseRepository from './BaseRepository.js'
 
 class RecentChangeRepository extends BaseRepository {
     async trimToLatest(limit = 100) {
@@ -23,4 +23,4 @@ class RecentChangeRepository extends BaseRepository {
     }
 }
 
-module.exports = RecentChangeRepository
+export default RecentChangeRepository

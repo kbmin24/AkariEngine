@@ -1,9 +1,12 @@
-const ejs = require('ejs')
-const i18n = require("i18n")
-const date = require('date-and-time')
-const paths = require('../utils/paths')
+import ejs from 'ejs'
+import i18n from 'i18n'
+import date from 'date-and-time'
+import paths from '../utils/paths.js'
+import renderError from '../utils/error.js'
+import renderView from '../view.js'
 const pgSize = 30
-module.exports = (req, res, histories) =>
+
+export default (req, res, histories) =>
 {
     histories.findAndCountAll(
     {
@@ -20,7 +23,7 @@ module.exports = (req, res, histories) =>
     {
         if (changes.count == 0)
         {
-            require('../utils/error.js')(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: i18n.__('noPageMsg', {name: req.params.name}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         //from & to is nth entry in history (NOT nth revision)
@@ -43,7 +46,7 @@ module.exports = (req, res, histories) =>
         }, (err, html) => 
         {
             const username = req.session.username
-            require('../view.js')(req, res,
+            renderView(req, res,
             {
                 title: i18n.__('historyOf', {p: req.params.name}),
                 content: html,

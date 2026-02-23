@@ -1,5 +1,5 @@
-const path = require('path')
-const config = require('../config')
+import path from 'path'
+import config from '../config/index.js'
 
 class PathResolver {
     constructor(basePath) {
@@ -32,4 +32,4 @@ class PathResolver {
     controller(name) { return this.resolve('controllers', `${name}.js`) }
 }
 
-module.exports = new PathResolver(config.basePath)
+export default new PathResolver(config.basePath);

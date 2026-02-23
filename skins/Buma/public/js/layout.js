@@ -26,7 +26,7 @@ function processWikiImages() {
 var skinSettings = {
 	get: function(n, d) {return localStorage.getItem('buma_' + n) || (d ? d : 'skinDefault');},
 	set: function(n, v) {localStorage.setItem('buma_' + n, v);}
-};
+}
 function processSkinSettings() {
 	var style = document.createElement("style");
 	switch(skinSettings.get('hideDeletedOnWiki')) {

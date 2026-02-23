@@ -1,4 +1,4 @@
-const { requirePermission } = require('./permission')
+import { requirePermission } from './permission.js'
 
 function verifyLoginStatus(req, res, next) {
     if (!req.session.username) {
@@ -8,4 +8,4 @@ function verifyLoginStatus(req, res, next) {
     next()
 }
 
-module.exports = { verifyLoginStatus, requirePermission }
+export { verifyLoginStatus, requirePermission }

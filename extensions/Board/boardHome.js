@@ -1,6 +1,12 @@
-const ejs = require('ejs')
-const logger = require('../../utils/logger')
-module.exports = async (req, res, boards, posts) =>
+import ejs from 'ejs'
+import logger from '../../utils/logger.js'
+import renderView from '../../view.js'
+
+import { fileURLToPath } from "url"
+const __dirname = fileURLToPath(new URL(".", import.meta.url))
+
+
+export default async (req, res, boards, posts) =>
 {
     let boardMatome = [] //includes HTML
     for( const val of global.conf.boardHome.boards)
@@ -40,7 +46,7 @@ module.exports = async (req, res, boards, posts) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require('../../view.js')(req, res,
+        renderView(req, res,
         {
             title: "게시판 홈",
             titleLink: "/board/",

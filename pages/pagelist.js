@@ -1,8 +1,10 @@
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-const logger = require('../utils/logger.js')
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import logger from '../utils/logger.js'
+import renderView from '../view.js'
 const pageLength = 50
-module.exports = async (req, res, pages) =>
+
+export default async (req, res, pages) =>
 {
     let page = req.query.page * 1 || 1
     let pagelist = await pages.findAndCountAll(
@@ -23,7 +25,7 @@ module.exports = async (req, res, pages) =>
             return
         }
         const username = req.session.username
-        require('../view.js')(req, res,
+        renderView(req, res,
         {
             title: '문서 목록',
             content: html,

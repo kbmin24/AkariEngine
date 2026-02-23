@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class ProtectRepository extends BaseRepository {
     async findProtection(title, task, revision = null) {
@@ -8,4 +8,4 @@ class ProtectRepository extends BaseRepository {
     }
 }
 
-module.exports = ProtectRepository
+export default ProtectRepository

@@ -1,8 +1,9 @@
 {
-  "name": "wikiengine",
+  "name": "akariengine",
   "version": "1.0.0",
   "description": "Wiki engine",
   "main": "server.js",
+  "type": "module",
   "dependencies": {
     "arraywrap": "^1.0.0",
     "axios": "^0.25.0",

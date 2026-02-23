@@ -1,7 +1,9 @@
-const express = require('express')
-const { asyncRoute } = require('../utils/httpHelper')
+import express from 'express'
+import { asyncRoute } from '../utils/httpHelper.js'
+import threadCommentsController from '../controllers/ajax/threadcomments.js'
+import threadInfoController from '../controllers/ajax/threadinfo.js'
 
-module.exports = () => {
+export default () => {
     const router = express.Router()
     router.get('/ajax/autocomplete',
         asyncRoute(async (req, res) => {
@@ -26,11 +28,11 @@ module.exports = () => {
     }))
 
     router.get('/ajax/threadcomments', asyncRoute(async (req, res) => {
-        await require('../controllers/ajax/threadcomments.js')(req, res)
+        await threadCommentsController(req, res)
     }))
 
     router.get('/ajax/threadinfo', asyncRoute(async (req, res) => {
-        await require('../controllers/ajax/threadinfo.js')(req, res)
+        await threadInfoController(req, res)
     }))
 
     router.get('/ajax/threadlist', asyncRoute(async (req, res) => {

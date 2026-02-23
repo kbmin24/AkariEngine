@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class CategoryRepository extends BaseRepository {
     async findByCategory(category) {
@@ -14,4 +14,4 @@ class CategoryRepository extends BaseRepository {
     }
 }
 
-module.exports = CategoryRepository
+export default CategoryRepository

@@ -1,4 +1,4 @@
-const config = require('../config')
+import config from '../config/index.js'
 
 // todo: move genCaptcha to middleware too
 
@@ -14,9 +14,13 @@ function genArbitaryString(len)
     }
     return res
 }
-exports.genArbitaryString = genArbitaryString
-exports.genCaptcha = async () =>
+async function genCaptcha()
 {
     if (!config.settings.reCAPTCHA_enabled) return ""
     return `<div class="g-recaptcha" data-sitekey="${config.settings.reCAPTCHA}"></div>`
+}
+
+export {
+    genArbitaryString,
+    genCaptcha
 }

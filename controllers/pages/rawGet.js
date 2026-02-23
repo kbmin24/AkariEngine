@@ -1,10 +1,8 @@
-const i18n = require('i18n')
-const {
-    PageNotFoundError,
-    ValidationError
-} = require('../../services/errors.js')
+import i18n from 'i18n'
+import { PageNotFoundError, ValidationError } from '../../services/errors.js'
+import renderError from '../../utils/error.js'
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     try {
         const content = await req.app.locals.services.page.getRawContent({
             title: req.params.name,
@@ -15,7 +13,7 @@ module.exports = async (req, res) => {
         res.send(content)
     } catch (error) {
         if (error instanceof PageNotFoundError) {
-            require('../../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: i18n.__('noPageMsg', { name: req.params.name }),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),
@@ -25,7 +23,7 @@ module.exports = async (req, res) => {
         }
 
         if (error instanceof ValidationError && error.i18nKey) {
-            require('../../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: i18n.__(error.i18nKey),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

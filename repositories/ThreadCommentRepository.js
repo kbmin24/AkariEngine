@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class ThreadCommentRepository extends BaseRepository {
     async findByThreadIdOrdered(threadID) {
@@ -13,4 +13,4 @@ class ThreadCommentRepository extends BaseRepository {
     }
 }
 
-module.exports = ThreadCommentRepository
+export default ThreadCommentRepository

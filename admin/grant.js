@@ -1,12 +1,14 @@
-const logger = require('../utils/logger.js')
+import logger from '../utils/logger.js'
+import renderError from '../utils/error.js'
+import renderInfo from '../info.js'
 
-module.exports = (req, res, users, perm, adminlog) =>
+export default (req, res, users, perm, adminlog) =>
 {
     const username = req.session.username
     const grantTo = req.body.grantTo
     if (username === undefined)
     {
-        require('../utils/error.js')(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
+        renderError(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
         return
     }
     perm.findOne({where: {username: username, perm: 'grant'}}).then(p =>
@@ -17,7 +19,7 @@ module.exports = (req, res, users, perm, adminlog) =>
             if (grantTo === undefined)
             {
                 //Error!
-                require('../utils/error.js')(req, res, { description: 'Please specify username to grant to.', returnLink: '/admin/grant', returnName: 'grant page' })
+                renderError(req, res, { description: 'Please specify username to grant to.', returnLink: '/admin/grant', returnName: 'grant page' })
                 return
             }
             //does the username even exist?
@@ -51,12 +53,11 @@ module.exports = (req, res, users, perm, adminlog) =>
                         job: `granted to ${grantTo}: ${permsLst}`
                     })
                     logger.admin('Permissions granted', username, { grantTo, permissions: permsLst.trim() })
-                    //res.write('<script>alert("Successfully finished granting. Returning to the admin page.");window.location.href = "/admin";</script>')
                     })
                 }
                 else
                 {
-                    require('../utils/error.js')(req, res, { description: 'No such user.', returnLink: '/admin', returnName: 'the admin page' })
+                    renderError(req, res, { description: 'No such user.', returnLink: '/admin', returnName: 'the admin page' })
                 }
             })
         }
@@ -64,9 +65,9 @@ module.exports = (req, res, users, perm, adminlog) =>
         {
             //Unauthorised access
             logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
-            require('../utils/error.js')(req, res, { description: 'You do not have a grant permission', returnLink: '/admin', returnName: 'the admin page' })
+            renderError(req, res, { description: 'You do not have a grant permission', returnLink: '/admin', returnName: 'the admin page' })
             return
         }
     })
-    require('../info.js')(req, res, null, 'Done.', '/admin', 'the admin page')
+    renderInfo(req, res, null, 'Done.', '/admin', 'the admin page')
 }

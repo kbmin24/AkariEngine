@@ -1,9 +1,13 @@
-const path = require('path')
+import path from 'path'
+import { fileURLToPath } from "url"
+const __dirname = fileURLToPath(new URL(".", import.meta.url))
+
+import settings from '../LocalSettings.json' with { type: 'json' }
 
 class Config {
     constructor() {
         this.basePath = path.resolve(__dirname, '..')
-        this.settings = require(path.join(this.basePath, 'LocalSettings.json'))
+        this.settings = settings
     }
 
     get port() { return this.settings.port }
@@ -20,7 +24,7 @@ class Config {
     get security() { return this.settings.security || {} }
     get isDevelopment() { return process.env.NODE_ENV !== 'production' }
 
-    get sanitizeOptions() {
+    get sanitiseOptions() {
         return {
             allowedTags: ['div', 'span', 'blockquote', 'code', 'p', 'pre', 'caption',
                 'i', 'b', 'u', 's', 'del', 'em', 'strong', 'a', 'sup', 'sub', 'font',
@@ -138,4 +142,4 @@ class Config {
     }
 }
 
-module.exports = new Config()
+export default new Config();

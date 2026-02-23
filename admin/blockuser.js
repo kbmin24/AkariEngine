@@ -1,14 +1,16 @@
-const dateandtime = require('date-and-time')
-const logger = require('../utils/logger.js')
+import dateandtime from 'date-and-time'
+import logger from '../utils/logger.js'
+import renderError from '../utils/error.js'
+import renderInfo from '../info.js'
 
-module.exports = async (req, res, users, perm, block, adminlog) =>
+export default async (req, res, users, perm, block, adminlog) =>
 {
     const username = req.session.username
     //first check whether the user has block permission or not
     if (!(await perm.findOne({where: {username: username, perm: 'block'}})))
     {
         logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-        require('../utils/error.js')(req, res, { description: 'You do not have a block permission', returnLink: '/admin', returnName: 'the admin page' })
+        renderError(req, res, { description: 'You do not have a block permission', returnLink: '/admin', returnName: 'the admin page' })
         return
     }
     
@@ -16,7 +18,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
     const u = users.findOne({where: {username: req.body.target}})
     if (!u)
     {
-        await require('../utils/error.js')(req, res, { description: 'No such user.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+        await renderError(req, res, { description: 'No such user.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
         return
     }
 
@@ -29,7 +31,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (!currentBlock)
                 {
-                    await require('../utils/error.js')(req, res, { description: 'The user currently is not blocked.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await renderError(req, res, { description: 'The user currently is not blocked.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 await block.destroy({where: {target: req.body.target, targetType: 'user'}})
@@ -41,7 +43,7 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (currentBlock)
                 {
-                    await require('../utils/error.js')(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await renderError(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 await block.create({
@@ -59,13 +61,13 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
                 //other periods
                 if (isNaN(req.body.blockfor))
                 {
-                    await require('../utils/error.js')(req, res, { description: 'Block period must be unblock, forever or an integer.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await renderError(req, res, { description: 'Block period must be unblock, forever or an integer.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 let currentBlock = await block.findOne({where: {target: req.body.target, targetType: 'user'}})
                 if (currentBlock)
                 {
-                    await require('../utils/error.js')(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
+                    await renderError(req, res, { description: 'The user is already blocked. Please unblock the user first.', returnLink: '/admin/blockuser', returnName: 'blockuser page' })
                     return
                 }
                 const blockTill = new Date(Date.now() + req.body.blockfor * 1000)
@@ -85,5 +87,5 @@ module.exports = async (req, res, users, perm, block, adminlog) =>
         username: username,
         job: description
     })
-    require('../info.js')(req, res, null, 'Done.', '/admin', 'the admin page')
+    renderInfo(req, res, null, 'Done.', '/admin', 'the admin page')
 }

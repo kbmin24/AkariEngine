@@ -60,4 +60,4 @@ class RecentChangeService {
     }
 }
 
-module.exports = RecentChangeService
+export default RecentChangeService

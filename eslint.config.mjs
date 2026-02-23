@@ -1,15 +1,18 @@
-import js from "@eslint/js";
-import globals from "globals";
-import json from "@eslint/json";
-import css from "@eslint/css";
-import { defineConfig, globalIgnores } from "eslint/config";
+import js from "@eslint/js"
+import globals from "globals"
+import json from "@eslint/json"
+import css from "@eslint/css"
+import { defineConfig, globalIgnores } from "eslint/config"
 
 export default defineConfig([
   {
     files: ["**/*.{js,mjs,cjs}"],
     plugins: { js },
     extends: ["js/recommended"],
-    languageOptions: { globals: globals.node },
+    languageOptions: {
+      globals: globals.node,
+      sourceType: "module",
+    },
     rules: {
       "no-unused-vars": [
         "error",
@@ -47,6 +50,6 @@ export default defineConfig([
   },
   globalIgnores([".vscode/"]),
   globalIgnores(["public/lib/"]),
-  globalIgnores(["skins/Buma/"]),
+  globalIgnores(["skins/Buma/"]), // pretty much written off of external skin
   globalIgnores(["package.json", "package-lock.json"]),
 ]);

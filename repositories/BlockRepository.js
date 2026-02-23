@@ -1,5 +1,5 @@
-const BaseRepository = require('./BaseRepository')
-const { Op } = require('sequelize')
+import BaseRepository from './BaseRepository.js'
+import { Op } from 'sequelize'
 
 class BlockRepository extends BaseRepository {
     async findBlock(target, targetType) {
@@ -66,4 +66,4 @@ class BlockRepository extends BaseRepository {
     }
 }
 
-module.exports = BlockRepository
+export default BlockRepository;

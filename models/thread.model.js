@@ -1,5 +1,6 @@
-const { DataTypes } = require('sequelize')
-module.exports = (sequelize) => {
+import { DataTypes } from 'sequelize'
+
+export default (sequelize) => {
     return sequelize.define('thread',
         {
             threadID:
@@ -29,4 +30,4 @@ module.exports = (sequelize) => {
                 }
             ]
         })
-}
+};

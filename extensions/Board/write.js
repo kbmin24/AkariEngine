@@ -1,39 +1,44 @@
 
-module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
+import crypto from 'crypto'
+import * as captchaUtils from '../../utils/captcha.js'
+import satisfyACL from '../../pages/satisfyACL.js'
+import errorPage from '../../utils/error.js'
+
+export default async (req, res, boards, posts, block, perm, boardfiles) =>
 {
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require('../../utils/error.js')(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        errorPage(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
-    if (!(await require('../../utils/captcha.js').chkCaptcha(req, res, perm))) return
+    if (!(await captchaUtils.chkCaptcha(req, res, perm))) return
     if (!req.session.username)
     {
         if (req.body.nickname.trim() == "")
         {
-            require('../../utils/error.js')(req, res, { description: '닉네임이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+            errorPage(req, res, { description: '닉네임이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
             return
         }
         if (req.body.pw.trim() == "")
         {
-            require('../../utils/error.js')(req, res, { description: '비밀번호가 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+            errorPage(req, res, { description: '비밀번호가 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
             return
         }
     }
     if (!req.body.title)
     {
-        require('../../utils/error.js')(req, res, { description: '제목이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+        errorPage(req, res, { description: '제목이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
     if (!req.body.content)
     {
-        require('../../utils/error.js')(req, res, { description: '내용이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+        errorPage(req, res, { description: '내용이 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
     const pro = boardNow.writeACL
     const acl = (pro == undefined ? 'everyone' : pro) //fallback
-    const r = await require('../../pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await satisfyACL(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -44,7 +49,7 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
     }
     else
     {
-        require('../../utils/error.js')(req, res, { description: '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+        errorPage(req, res, { description: '이 게시판의 쓰기 권한이' + acl + ' 이기 때문에 글 작성이 불가합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
 
@@ -81,7 +86,6 @@ module.exports = async (req, res, boards, posts, block, perm, boardfiles) =>
         postOptions['writtenIP'] = req.ipAddress
         
         //비밀번호 솔트화
-        const crypto = require('crypto')
         const salt = crypto.randomBytes(64).toString('base64')
         const saltedPW = crypto.pbkdf2Sync(req.body.pw, salt, 10000, 64, 'sha512')
         postOptions['ipPW'] = saltedPW.toString('base64')

@@ -1,12 +1,14 @@
-const i18n = require("i18n")
-const logger = require('../utils/logger.js')
-const {
+import i18n from 'i18n'
+import logger from '../utils/logger.js'
+import renderError from '../utils/error.js'
+
+import {
     PageNotFoundError,
     PermissionDeniedError,
     AuthenticationRequiredError,
     ValidationError,
-    CaptchaError
-} = require('../services/errors')
+    CaptchaError,
+} from '../services/errors.js'
 
 function getEnglishMessage(err) {
     if (!err) return 'Unknown error'
@@ -45,7 +47,7 @@ function errorHandler(err, req, res, next) {
         : err.message
 
     if (err instanceof PermissionDeniedError) {
-        return require('../utils/error.js')(
+        return renderError(
             req,
             res,
             {
@@ -65,7 +67,7 @@ function errorHandler(err, req, res, next) {
     }
 
     if (err instanceof AuthenticationRequiredError) {
-        return require('../utils/error.js')(
+        return renderError(
             req,
             res,
             {
@@ -85,7 +87,7 @@ function errorHandler(err, req, res, next) {
     }
 
     if (err instanceof CaptchaError) {
-        return require('../utils/error.js')(
+        return renderError(
             req,
             res,
             {
@@ -103,4 +105,4 @@ function errorHandler(err, req, res, next) {
     })
 }
 
-module.exports = { errorHandler }
+export { errorHandler }

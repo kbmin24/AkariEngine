@@ -1,11 +1,8 @@
-const i18n = require("i18n")
-const {
-    PageNotFoundError,
-    RevisionNotFoundError,
-    ValidationError
-} = require('../services/errors.js')
+import i18n from 'i18n'
+import { PageNotFoundError, RevisionNotFoundError, ValidationError } from '../services/errors.js'
+import renderError from '../utils/error.js'
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     try {
         const ipAddress = req.ipAddress
         await req.app.locals.services.page.revertPage({
@@ -19,15 +16,15 @@ module.exports = async (req, res) => {
     }
     catch (error) {
         if (error instanceof RevisionNotFoundError) {
-            require('../utils/error.js')(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof PageNotFoundError) {
-            require('../utils/error.js')(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof ValidationError) {
-            require('../utils/error.js')(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         throw error

@@ -1,19 +1,18 @@
-const i18n = require('i18n')
-const { renderTemplateInLayout, BACK_LINK } = require('../../utils/httpHelper')
-const {
-    PageNotFoundError,
-    ValidationError
-} = require('../../services/errors.js')
+import i18n from 'i18n'
+import { renderTemplateInLayout, BACK_LINK } from '../../utils/httpHelper.js'
+import { PageNotFoundError, ValidationError } from '../../services/errors.js'
+import { genCaptcha } from '../../utils/captcha.js'
+import renderError from '../../utils/error.js'
 
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     try {
         const model = await req.app.locals.services.page.getMoveViewModel({
             title: req.params.name,
             username: req.session.username
         })
 
-        const captchaSVG = await require('../../utils/captcha.js').genCaptcha()
+        const captchaSVG = await genCaptcha()
         await renderTemplateInLayout(req, res, 'pages/move.ejs', {
             originalName: model.originalName,
             l: i18n.__,
@@ -30,7 +29,7 @@ module.exports = async (req, res) => {
         })
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey === 'move_nofile') {
-            require('../../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: i18n.__('move_nofile'),
                 returnLink: BACK_LINK,
                 returnName: i18n.__('previousPage'),
@@ -39,7 +38,7 @@ module.exports = async (req, res) => {
             return
         }
         if (error instanceof PageNotFoundError) {
-            require('../../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: `${i18n.__('page404')} <a href="/edit/${req.params.name}"> ${i18n.__('page_asknew')}</a>`,
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

@@ -1,10 +1,13 @@
-const date = require('date-and-time')
-const i18n = require("i18n")
-const escapeHtml = require('../utils/escapeHTML.js')
+import date from 'date-and-time'
+import i18n from 'i18n'
+import escapeHtml from '../utils/escapeHTML.js'
+import renderPage from './render.js'
+import renderView from '../view.js'
+import renderError from '../utils/error.js'
 
 // TODO refactor to use PageService
 
-async function getCategory(title, category, categorys) {
+export async function getCategory(title, category, categorys) {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({ where: { page: title } })
 
@@ -26,7 +29,7 @@ async function getCategory(title, category, categorys) {
     return res
 }
 
-async function getOptions(content) {
+export async function getOptions(content) {
     let res = {}
     let regRes = /^((?:Option \w+ \w+\r?\n)+)/ig.exec(content)
     if (!regRes || regRes.length < 2) return {}
@@ -61,7 +64,7 @@ async function updViewCount(title, viewcount, updateTime) {
     else viewcount.create({ title: title, count: 1 })
 }
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     const repositories = req.app.locals.repositories
     const pagesRepo = repositories.pages
     const historyRepo = repositories.history
@@ -117,9 +120,9 @@ module.exports = async (req, res) => {
                 }
                 let opt = await getOptions(page.content)
                 opt.showSectionEditButton = 'on'
-                let content = await require('./render.js')(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, redirect, true, {}, opt)
+                let content = await renderPage(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, redirect, true, {}, opt)
                 if (content === true) return
-                content = await getCategory(req.params.name, categoryRepo, opt['category']) + content
+                content = (await getCategory(req.params.name, categoryRepo, opt['category'])) + content
                 let renderOpt = {
                     title: page.title,
                     content: content,
@@ -133,7 +136,7 @@ module.exports = async (req, res) => {
 
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require('../view.js')(req, res, renderOpt)
+                renderView(req, res, renderOpt)
             }
             else {
                 //404!
@@ -144,7 +147,7 @@ module.exports = async (req, res) => {
                         content = i18n.__("noUserPage_user", { link: escapeHtml(req.params.name) })
                     else
                         content = i18n.__("noUserPage")
-                    require('../view.js')(req, res,
+                    renderView(req, res,
                         {
                             title: i18n.__("error"),
                             content: content,
@@ -159,7 +162,7 @@ module.exports = async (req, res) => {
                 if (page) {
                     hisText = i18n.__("seeHistory", { link: escapeHtml(req.params.name) })
                 }
-                require('../utils/error.js')(req, res, {
+                renderError(req, res, {
                     description: i18n.__("noPageMsg",
                         {
                             name: escapeHtml(req.params.name),
@@ -175,7 +178,7 @@ module.exports = async (req, res) => {
         await (async () => {
             if (page) {
                 //show the page
-                let content = await require('./render.js')(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
+                let content = await renderPage(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
                 if (content === true) return
                 let renderOpt = {
                     title: page.page,
@@ -186,10 +189,10 @@ module.exports = async (req, res) => {
                     pagename: page.page
                 }
                 if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                require('../view.js')(req, res, renderOpt)
+                renderView(req, res, renderOpt)
             }
             else {
-                require('../utils/error.js')(req, res, {
+                renderError(req, res, {
                     description: i18n.__("noPageMsg",
                         {
                             name: escapeHtml(req.params.name),
@@ -200,6 +203,5 @@ module.exports = async (req, res) => {
             }
         })()
     }
-}
-module.exports.getCategory = async (title, category, categorys) => await getCategory(title, category, categorys)
-module.exports.getOptions = async content => await getOptions(content)
+};
+

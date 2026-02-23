@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class UserRepository extends BaseRepository {
     async findByUsername(username) {
@@ -26,4 +26,4 @@ class UserRepository extends BaseRepository {
     }
 }
 
-module.exports = UserRepository
+export default UserRepository

@@ -1,7 +1,8 @@
 let chalk = null
 
 try {
-    chalk = require('chalk')
+    const chalkModule = await import('chalk')
+    chalk = chalkModule.default
 } catch (_error) {
     chalk = {
         blue: (text) => text,
@@ -39,4 +40,4 @@ class Logger {
     }
 }
 
-module.exports = new Logger()
+export default new Logger();

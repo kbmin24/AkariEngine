@@ -1,17 +1,14 @@
-const i18n = require("i18n")
-const {
-    PageNotFoundError,
-    PageExistsError,
-    ValidationError
-} = require('../../services/errors.js')
+import i18n from 'i18n'
+import { PageNotFoundError, PageExistsError, ValidationError } from '../../services/errors.js'
+import renderError from '../../utils/error.js'
 
-module.exports = async (req, res) =>
+export default async (req, res) =>
 {
     const { services } = req.app.locals
 
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        require('../../utils/error.js')(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+        renderError(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
         return
     }
 
@@ -30,17 +27,17 @@ module.exports = async (req, res) =>
     {
         if (error instanceof PageExistsError)
         {
-            require('../../utils/error.js')(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            renderError(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require('../../utils/error.js')(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            renderError(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require('../../utils/error.js')(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            renderError(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
             return
         }
         throw error

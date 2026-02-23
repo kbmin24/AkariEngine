@@ -1,7 +1,9 @@
-const logger = require('../utils/logger.js')
-const { ValidationError, PermissionDeniedError } = require('../services/errors.js')
+import logger from '../utils/logger.js'
+import { ValidationError, PermissionDeniedError } from '../services/errors.js'
+import renderInfo from '../info.js'
+import renderError from '../utils/error.js'
 
-module.exports = async (req, res, _users, _perm, _block, adminlog) => {
+export default async (req, res, _users, _perm, _block, adminlog) => {
     const username = req.session.username
 
     try {
@@ -18,11 +20,11 @@ module.exports = async (req, res, _users, _perm, _block, adminlog) => {
             job: result.description
         })
 
-        require('../info.js')(req, res, null, 'Done.', '/admin', 'the admin page')
+        renderInfo(req, res, null, 'Done.', '/admin', 'the admin page')
     } catch (error) {
         if (error instanceof PermissionDeniedError) {
             logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-            require('../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: 'You do not have a block permission',
                 returnLink: '/admin',
                 returnName: 'the admin page'
@@ -31,7 +33,7 @@ module.exports = async (req, res, _users, _perm, _block, adminlog) => {
         }
 
         if (error instanceof ValidationError) {
-            require('../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: error.message,
                 returnLink: '/admin/blockip',
                 returnName: 'blockip page'

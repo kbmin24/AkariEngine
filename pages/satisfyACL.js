@@ -1,9 +1,9 @@
-const {Op} = require('sequelize')
-const dateandtime = require('date-and-time')
-const ipRangeCheck = require('ip-range-check')
+import { Op } from 'sequelize'
+import dateandtime from 'date-and-time'
+import ipRangeCheck from 'ip-range-check'
 
 
-module.exports = async (req, res, ACLs, perms, block, editErrorMsg=false) =>
+export default async (req, res, ACLs, perms, block, editErrorMsg=false) =>
 {
     const username = req.session.username
     //remove any 'old' blocks

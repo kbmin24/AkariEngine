@@ -1,32 +1,26 @@
-let IPCIDR
+import IPCIDR from 'ip-cidr'
+import { createRequire } from 'module'
 
-let { Address4 } = require('ip-address')
+const require = createRequire(import.meta.url)
 
-async function init() {
-    if (!IPCIDR) {
-        const mod = await import('ip-cidr');
-        IPCIDR = mod.default;
-    }
-    return IPCIDR;
-}
+const { Address4 } = require('ip-address')
 
-async function CIDRtoRange(ip) {
+function CIDRtoRange(ip) {
     const cidr = new IPCIDR(ip)
     return { startIP: cidr.start(({ type: "bigInteger" })), endIP: cidr.end(({ type: "bigInteger" })) }
 }
 
-async function isValidIP(ip) {
-    const IPCIDR = await init()
+function isValidIP(ip) {
     return IPCIDR.isValidAddress(ip)
 }
 
-async function iptoBigInt(ip) {
+function iptoBigInt(ip) {
     const address = new Address4(ip)
     if (!address.isCorrect()) throw new Error(`Invalid IP address: ${ip}`)
     return address.bigInteger()
 }
 
-module.exports = {
+export {
     CIDRtoRange,
     isValidIP,
     iptoBigInt

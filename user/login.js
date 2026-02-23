@@ -1,9 +1,11 @@
-const { Op } = require('sequelize')
-const logger = require('../utils/logger.js')
-module.exports = async (req, res, users, loginhistory) =>
+import { Op } from 'sequelize'
+import logger from '../utils/logger.js'
+import crypto from 'node:crypto'
+import renderError from '../utils/error.js'
+
+export default async (req, res, users, loginhistory) =>
 {
-    const crypto = require('crypto')
- 
+
     //remove 'too old' login history.
     await loginhistory.destroy(
         {
@@ -39,14 +41,14 @@ module.exports = async (req, res, users, loginhistory) =>
                 else
                 {
                     logger.warn('Login error (password mismatch)', { id, ipaddr })
-                    require('../utils/error.js')(req, res, { description: `비밀번호가 틀렸습니다. 다시 시도해 주세요.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
+                    renderError(req, res, { description: `비밀번호가 틀렸습니다. 다시 시도해 주세요.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
                 }
             })
         }
         else
         {
             logger.warn('Login error (no such user)', { id: req.body.id })
-            require('../utils/error.js')(req, res, { description: `사용자를 찾을 수 없습니다. 사용자명을 올바르게 입력했는지 확인해 주세요.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
+            renderError(req, res, { description: `사용자를 찾을 수 없습니다. 사용자명을 올바르게 입력했는지 확인해 주세요.`, returnLink: '/login', returnName: '로그인 페이지', statusCode: 403 })
         }
     })
 }

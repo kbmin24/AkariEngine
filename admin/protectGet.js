@@ -1,7 +1,9 @@
-const ejs = require('ejs')
-const i18n = require("i18n")
-const paths = require('../utils/paths')
-module.exports = async (req, res, perm, protect, _block) =>
+import ejs from 'ejs'
+import i18n from 'i18n'
+import paths from '../utils/paths.js'
+import renderView from '../view.js'
+
+export default async (req, res, perm, protect, _block) =>
 {
     const username = req.session.username
     const permsPresent = await protect.findAll({where: {title: req.params.name}})
@@ -16,7 +18,7 @@ module.exports = async (req, res, perm, protect, _block) =>
     }
     ejs.renderFile(paths.view('admin/protect.ejs'), {title: req.params.name, hasACL: r, perms: JSON.stringify(permsPresent)}, (err, html) => 
     {
-        require('../view.js')(req, res,
+        renderView(req, res,
         {
             title: i18n.__('protectPage', {page: req.params.name}),
             content: html,

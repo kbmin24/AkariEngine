@@ -1,7 +1,10 @@
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-const logger = require('../utils/logger.js')
-module.exports = async (req, res, dbs = {}) =>
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import logger from '../utils/logger.js'
+import renderError from '../utils/error.js'
+import renderView from '../view.js'
+
+export default async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
     const roomId = req.params.name
@@ -18,7 +21,7 @@ module.exports = async (req, res, dbs = {}) =>
     }
     if (!t)
     {
-        require('../utils/error.js')(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        renderError(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
     ejs.renderFile(paths.view('threads/thread.ejs'),
@@ -35,7 +38,7 @@ module.exports = async (req, res, dbs = {}) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require('../view.js')(req, res,
+        renderView(req, res,
         {
             title: `${t.pagename} 토론 - ${t.threadTitle}`,
             content: html,

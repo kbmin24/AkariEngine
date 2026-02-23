@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class HistoryRepository extends BaseRepository {
     async findByPageAndRev(page, rev) {
@@ -10,4 +10,4 @@ class HistoryRepository extends BaseRepository {
     }
 }
 
-module.exports = HistoryRepository
+export default HistoryRepository

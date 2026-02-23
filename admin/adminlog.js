@@ -1,8 +1,10 @@
-const date = require('date-and-time')
-const ejs = require('ejs')
-const { Op } = require("sequelize")
-const paths = require('../utils/paths')
-module.exports = async (req, res, adminlog) =>
+import date from 'date-and-time'
+import ejs from 'ejs'
+import { Op } from 'sequelize'
+import paths from '../utils/paths.js'
+import renderView from '../view.js'
+
+export default async (req, res, adminlog) =>
 {
     const username = req.session.username
     const showfrom = !isNaN(req.query.from) ? req.query.from: 0
@@ -34,7 +36,7 @@ module.exports = async (req, res, adminlog) =>
         job: req.query.job,
         date: date
     })
-    require('../view.js')(req, res,
+    renderView(req, res,
     {
         title: 'Admin Log',
         content: html,

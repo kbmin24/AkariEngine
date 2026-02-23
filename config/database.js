@@ -1,6 +1,6 @@
-const path = require('path')
-const { Sequelize } = require('sequelize')
-const config = require('./index')
+import path from 'path'
+import { Sequelize } from 'sequelize'
+import config from './index.js'
 
 function createSequelizeInstance() {
     const dbConfig = config.database
@@ -29,4 +29,4 @@ function createSequelizeInstance() {
     throw new Error(`Invalid database type: ${dbConfig.type}`)
 }
 
-module.exports = { createSequelizeInstance }
+export { createSequelizeInstance }

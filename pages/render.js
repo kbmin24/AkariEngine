@@ -2,9 +2,11 @@
 
 //gets markup and returns HTML.
 
-const dateandtime = require('date-and-time')
-const sanitiseHtml = require('sanitize-html')
-const hljs = require('highlight.js')
+import dateandtime from 'date-and-time'
+
+import sanitiseHtml from 'sanitize-html'
+import hljs from 'highlight.js'
+import { getOptions } from './view.js'
 
 function errMessege(name, reason) {
     return `<p class="fw-bold text-danger">${name}: ${reason}</p>`
@@ -103,8 +105,8 @@ async function renderMacro(match, macro, args, pages = undefined, files, incl = 
                         const v = args[i].substring(eqSign + 1).trim()
                         temArgs[k] = v
                     }
-                    const opt = await require('./view.js').getOptions(p.content)
-                    const res = await require('./render.js')(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
+                    const opt = await getOptions(p.content)
+                    const res = await renderPage(p.title, p.content, true, pages, files, undefined, undefined, false, false, temArgs, opt)
                     return res
                 }
             }
@@ -458,8 +460,8 @@ function renderTable(data) {
             let cellStyle = ''
             let cellOptRegex = /\[ *(.*?) *\]/igm
             let cellOptFound
-            if (borderColor) cellStyle += 'border-color:' + borderColor + ';'
-            if (borderWidth) cellStyle += 'border-width:' + borderWidth + ';'
+            if (borderColor) cellStyle += 'border-color:' + borderColor + ''
+            if (borderWidth) cellStyle += 'border-width:' + borderWidth + ''
             while (((cellOptFound = cellOptRegex.exec(found[1].trim())) !== null)) {
                 cellOptFound[1] = cellOptFound[1].trim()
                 if (/-(.*?)/.test(cellOptFound[1])) //[-3]
@@ -552,7 +554,7 @@ const ulRegex = /(^|<\/h\d>)((?:\*+ (?:.+(?:\r?\n|$)))+)/igm
 const olRegex = /(^|<\/h\d>)((?:#+ (?:.+(?:\r?\n|$)))+)/igm
 const blockquoteRegex = /^(>.*(\r?\n|$))+/igm
 
-module.exports = async (pagename, data, _renderInclude, pages = undefined, files = undefined, req = undefined, res = undefined, redirect = true, incl = true, args = {}, renderOptions = {}) => //todo: remove pages requirement
+const renderPage = async (pagename, data, _renderInclude, pages = undefined, files = undefined, req = undefined, res = undefined, redirect = true, incl = true, args = {}, renderOptions = {}) => //todo: remove pages requirement
 {
     //pagename, data, _renderInclude, pages = undefined, req = undefined, res = undefined, redirect = true, incl=true, args={}, renderOptions={}
     //deprecated options: _renderInclude, redirect
@@ -805,3 +807,5 @@ module.exports = async (pagename, data, _renderInclude, pages = undefined, files
         return `<div class="alert alert-danger" role="alert">The parser crashed. Consider reading the page RAW to diagnose the error.</div>`
     }
 }
+
+export default renderPage

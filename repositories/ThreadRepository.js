@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class ThreadRepository extends BaseRepository {
     async findOpenByPageName(pageName) {
@@ -19,4 +19,4 @@ class ThreadRepository extends BaseRepository {
     }
 }
 
-module.exports = ThreadRepository
+export default ThreadRepository

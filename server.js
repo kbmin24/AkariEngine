@@ -1,12 +1,25 @@
-const express = require('express')
+import express from 'express'
 const app = express()
-const paths = require('./utils/paths')
-const config = require('./config')
-const logger = require('./utils/logger.js')
-const { createSequelizeInstance } = require('./config/database')
-const RepositoryFactory = require('./repositories')
-const ServiceFactory = require('./services')
-const path = require('node:path')
+import paths from './utils/paths.js'
+import config from './config/index.js'
+import logger from './utils/logger.js'
+import { createSequelizeInstance } from './config/database.js'
+import RepositoryFactory from './repositories/index.js'
+import ServiceFactory from './services/index.js'
+import path from 'node:path'
+import fs from 'node:fs'
+import session from 'express-session'
+import cookieParser from 'cookie-parser'
+import sessionStoreFactory from 'express-session-sequelize'
+import csurf from 'csurf'
+import i18n from 'i18n'
+import taskScheduler from './taskScheduler.js'
+import escapeHTML from './utils/escapeHTML.js'
+import renderError from './utils/error.js'
+import registerRoutes from './routes/index.js'
+import expressSocketIoSession from 'express-socket.io-session'
+import renderPage from './pages/render.js'
+import adminCommand from './admin/command.js'
 
 global.path = config.basePath
 global.conf = config.settings
@@ -32,9 +45,7 @@ try {
 
 //session
 const secret = config.sessionSecret
-const session = require('express-session')
-const cookieParser = require('cookie-parser')
-const sessionStore = require('express-session-sequelize')(session.Store)
+const sessionStore = sessionStoreFactory(session.Store);
 const sequelizeSessionStore = new sessionStore({ db: sequelize })
 app.use(cookieParser(secret))
 const sess = session({
@@ -57,7 +68,6 @@ app.use(sess)
 
 //CSRF
 // TODO deprecated package, replace it
-const csurf = require('csurf')
 const csrfProtection = csurf({})
 global.csrfProtection = csrfProtection
 
@@ -67,24 +77,43 @@ app.use(express.urlencoded({ limit: "1mb", extended: false }))
 app.disable('x-powered-by')
 
 //db
-const users = require('./models/user.model.js')(sequelize)
-const pages = require('./models/page.model.js')(sequelize)
-const recentchanges = require('./models/recentchanges.model.js')(sequelize)
-const history = require('./models/history.model.js')(sequelize)
-const mfile = require('./models/file.model.js')(sequelize)
-const perm = require('./models/perm.model.js')(sequelize)
-const protect = require('./models/protect.model.js')(sequelize)
-const adminlog = require('./models/adminlog.model.js')(sequelize)
-const block = require('./models/block.model.js')(sequelize)
-const loginhistory = require('./models/loginhistory.model.js')(sequelize)
-const category = require('./models/category.model.js')(sequelize)
-const settings = require('./models/setting.model.js')(sequelize)
-const viewcount = require('./models/viewcount.model.js')(sequelize)
-const updateTime = require('./models/updateTime.model.js')(sequelize)
-const thread = require('./models/thread.model.js')(sequelize)
-const threadcomment = require('./models/threadcomment.model.js')(sequelize)
-const recentdiscuss = require('./models/recentdiscuss.model.js')(sequelize)
-const links = require('./models/links.model.js')(sequelize)
+import usersFactory from './models/user.model.js'
+
+const users = usersFactory(sequelize);
+import pagesFactory from './models/page.model.js'
+const pages = pagesFactory(sequelize);
+import recentchangesFactory from './models/recentchanges.model.js'
+const recentchanges = recentchangesFactory(sequelize);
+import historyFactory from './models/history.model.js'
+const history = historyFactory(sequelize);
+import mfileFactory from './models/file.model.js'
+const mfile = mfileFactory(sequelize);
+import permFactory from './models/perm.model.js'
+const perm = permFactory(sequelize);
+import protectFactory from './models/protect.model.js'
+const protect = protectFactory(sequelize);
+import adminlogFactory from './models/adminlog.model.js'
+const adminlog = adminlogFactory(sequelize);
+import blockFactory from './models/block.model.js'
+const block = blockFactory(sequelize);
+import loginhistoryFactory from './models/loginhistory.model.js'
+const loginhistory = loginhistoryFactory(sequelize);
+import categoryFactory from './models/category.model.js'
+const category = categoryFactory(sequelize);
+import settingsFactory from './models/setting.model.js'
+const settings = settingsFactory(sequelize);
+import viewcountFactory from './models/viewcount.model.js'
+const viewcount = viewcountFactory(sequelize);
+import updateTimeFactory from './models/updateTime.model.js'
+const updateTime = updateTimeFactory(sequelize);
+import threadFactory from './models/thread.model.js'
+const thread = threadFactory(sequelize);
+import threadcommentFactory from './models/threadcomment.model.js'
+const threadcomment = threadcommentFactory(sequelize);
+import recentdiscussFactory from './models/recentdiscuss.model.js'
+const recentdiscuss = recentdiscussFactory(sequelize);
+import linksFactory from './models/links.model.js'
+const links = linksFactory(sequelize);
 sequelize.sync()
 
 global.db =
@@ -117,12 +146,11 @@ app.locals.services = services
 global.sequelize = sequelize
 
 //task scheduler
-require('./taskScheduler.js')()
+taskScheduler()
 
-global.sanitiseOptions = config.sanitizeOptions
+global.sanitiseOptions = config.sanitiseOptions
 
 //i18n -- Global (Non-skin)
-const i18n = require("i18n");
 i18n.configure({
     locales: ['ko_KR', 'en_GB'],
     defaultLocale: config.defaultLocale,
@@ -134,7 +162,7 @@ i18n.configure({
 global.legalTitleRegex = /^[^[\]{}|#\n]*$/m
 
 //load global tools
-global.escapeHTML = require('./utils/escapeHTML.js')
+global.escapeHTML = escapeHTML
 
 //views
 app.set('view engine', 'ejs')
@@ -163,7 +191,7 @@ app.use((req, res, next) => {
     }
 
     if (url.startsWith('/signup')) {
-        return require('./utils/error.js')(req, res, {
+        return renderError(req, res, {
             description: global.i18n.__('signupdisabled'),
             returnLink: '/login',
             returnName: i18n.__('loginpage'),
@@ -171,7 +199,7 @@ app.use((req, res, next) => {
         })
     }
 
-    return require('./utils/error.js')(req, res, {
+    return renderError(req, res, {
         description: global.i18n.__('loginneeded'),
         returnLink: '/login',
         returnName: i18n.__('loginpage'),
@@ -185,13 +213,16 @@ app.use(express.static(paths.public))
 global.skins = []
 config.skins.forEach(e => {
     app.use(`/skins/${e}`, express.static(paths.resolve('skins', e, 'public')))
-    let skinSettings = require(paths.resolve(path.join(`skins/${e}/` + 'skinSettings.json')))
-    let skinManifest = require(paths.resolve(path.join(`./skins/${e}/` + 'manifest.json')))
+    const skinSettingsPath = paths.resolve(path.join(`skins/${e}/` + 'skinSettings.json'))
+    const skinManifestPath = paths.resolve(path.join(`./skins/${e}/` + 'manifest.json'))
+    let skinSettings = JSON.parse(fs.readFileSync(skinSettingsPath, 'utf8'))
+    let skinManifest = JSON.parse(fs.readFileSync(skinManifestPath, 'utf8'))
     global.skins.push({ 'name': e, 'settings': skinSettings, 'manifest': skinManifest })
 })
 
 //Extension
-let ext = require('./extensions/extensionManager.js')
+import ext from './extensions/extensionManager.js'
+
 ext(app)
 
 
@@ -207,7 +238,7 @@ app.use((req, res, next) => {
 })
 
 //Register routes
-require('./routes')(app, services, { csrfProtection })
+registerRoutes(app, services, { csrfProtection })
 
 
 const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
@@ -217,7 +248,7 @@ app.get('/lovelive', (req, res) => {
     return
 })
 
-const { errorHandler } = require('./middlewares/errorHandler')
+import { errorHandler } from './middlewares/errorHandler.js'
 app.use(errorHandler)
 
 //error handler
@@ -227,7 +258,7 @@ app.use((err, req, res, _next) => {
     switch (err.code) {
         case 'FILENAMENULL':
             {
-                require('./utils/error.js')(req, res, {
+                renderError(req, res, {
                     description: '파일 이름이 비어 있습니다.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -237,7 +268,7 @@ app.use((err, req, res, _next) => {
             break
         case 'FILEEXISTS':
             {
-                require('./utils/error.js')(req, res, {
+                renderError(req, res, {
                     description: '파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.',
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -269,7 +300,7 @@ app.use((err, req, res, _next) => {
             break
         case 'LIMIT_FILE_SIZE':
             {
-                require('./utils/error.js')(req, res, {
+                renderError(req, res, {
                     description: `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`,
                     returnLink: 'javascript:window.history.back()',
                     returnName: '이전 페이지',
@@ -295,8 +326,10 @@ const server = app.listen(port, '0.0.0.0', () => {
 })
 
 //Console
-const io = require('socket.io')(server)
-io.use(require('express-socket.io-session')(sess, { autoSave: true }))
+import { Server } from 'socket.io'
+
+const io = new Server(server)
+io.use(expressSocketIoSession(sess, { autoSave: true }))
 
 io.on('connection', async socket => {
     socket.on('joinRoom', async data => {
@@ -327,7 +360,7 @@ io.on('connection', async socket => {
             if (!username) return
             if (!ipblock.allowLogin) return
         }
-        if (username && await block.findOne({ where: { target: username } })) return
+        if (username && (await block.findOne({ where: { target: username } }))) return
 
         //put in DB
         await threadcomment.create(
@@ -360,10 +393,10 @@ io.on('connection', async socket => {
         )
 
         //render to wikitext
-        data.message = await require('./pages/render.js')('', data.message, true, pages, mfile, null, null, false, true, {}, {})
+        data.message = await renderPage('', data.message, true, pages, mfile, null, null, false, true, {}, {})
         io.sockets.in(data.roomId).emit('message', data)
     })
     socket.on('input', async data => {
-        await require('./admin/command.js')(io, socket, data.command, { perm: perm, file: mfile, pages: pages, history: history, category: category })
+        await adminCommand(io, socket, data.command, { perm: perm, file: mfile, pages: pages, history: history, category: category })
     })
 })

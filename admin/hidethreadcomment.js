@@ -1,13 +1,15 @@
-const logger = require('../utils/logger.js')
+import logger from '../utils/logger.js'
+import renderError from '../utils/error.js'
+import renderInfo from '../info.js'
 
-module.exports = async (req, res, dbs = {}) =>
+export default async (req, res, dbs = {}) =>
 {
     const username = req.session.username
     //first check whether the user has block permission or not
     if (!(await dbs['perm'].findOne({where: {username: username, perm: 'thread'}})))
     {
         logger.admin('Unauthorised thread action', username, { ip: req.ipAddress })
-        require('../utils/error.js')(req, res, { description: 'You do not have a thread permission', returnLink: '/admin', returnName: 'the admin page' })
+        renderError(req, res, { description: 'You do not have a thread permission', returnLink: '/admin', returnName: 'the admin page' })
         return
     }
 
@@ -25,7 +27,7 @@ module.exports = async (req, res, dbs = {}) =>
     })
     if (!t)
     {
-        require('../utils/error.js')(req, res, { description: 'No such comment.', returnLink: 'javascript:window.history.back()', returnName: 'the thread.' })
+        renderError(req, res, { description: 'No such comment.', returnLink: 'javascript:window.history.back()', returnName: 'the thread.' })
         return
     }
     
@@ -34,5 +36,5 @@ module.exports = async (req, res, dbs = {}) =>
 
     await t.update({isHidden: !unhide})
 
-    require('../info.js')(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
+    renderInfo(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
 }

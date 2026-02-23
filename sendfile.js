@@ -1,9 +1,10 @@
-const paths = require('./utils/paths')
-const logger = require('./utils/logger')
+import paths from './utils/paths.js'
+import logger from './utils/logger.js'
+import fs from 'node:fs'
+import renderView from './view.js'
 
-module.exports = async (req, res, title, filename) =>
+export default async (req, res, title, filename) =>
 {
-    const fs = require('fs')
     await fs.readFile(paths.resolve(filename.replace(/^\//, '')), 'utf8', (err,data) =>
     {
         if (err)
@@ -13,7 +14,7 @@ module.exports = async (req, res, title, filename) =>
         }
         else
         {
-            require('./view.js')(req, res,
+            renderView(req, res,
             {
                 title: title,
                 content: data,

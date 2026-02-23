@@ -1,11 +1,6 @@
-const dateandtime = require('date-and-time')
-const {
-    ValidationError,
-    PermissionDeniedError,
-    AuthenticationRequiredError
-} = require('./errors')
-
-const { CIDRtoRange, isValidIP, iptoBigInt } = require('../utils/ipTools.js')
+import dateandtime from 'date-and-time'
+import { ValidationError, PermissionDeniedError, AuthenticationRequiredError } from './errors.js'
+import { CIDRtoRange, isValidIP, iptoBigInt } from '../utils/ipTools.js'
 
 class BlockService {
     constructor(blockRepo, userRepo, permissionRepo) {
@@ -54,7 +49,7 @@ class BlockService {
 
         let ipAsNumber
         try {
-            ipAsNumber = await iptoBigInt(ipAddress)
+            ipAsNumber = iptoBigInt(ipAddress)
         } catch (_error) {
             return null
         }
@@ -164,7 +159,7 @@ class BlockService {
             })
         }
 
-        const { startIP, endIP } = await CIDRtoRange(target)
+        const { startIP, endIP } = CIDRtoRange(target)
 
         if (duration.mode === 'forever') {
             await this.blockRepo.createIpBlock({
@@ -199,4 +194,4 @@ class BlockService {
     }
 }
 
-module.exports = BlockService
+export default BlockService

@@ -1,4 +1,4 @@
-module.exports = async (req, res, gongji) =>
+export default async (req, res, gongji) =>
 {
     return res.json(await gongji.findAll(
         {
@@ -9,4 +9,4 @@ module.exports = async (req, res, gongji) =>
             ]
         }
     ))
-}
+};

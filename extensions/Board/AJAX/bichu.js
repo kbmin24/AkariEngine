@@ -1,5 +1,7 @@
 
-module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
+import satisfyACL from '../../../pages/satisfyACL.js'
+
+export default async (req, res, boards, posts, perm, block, boardbichu) =>
 {
     let boardID = req.body.boardID
     let postID = req.body.postID * 1
@@ -12,7 +14,7 @@ module.exports = async (req, res, boards, posts, perm, block, boardbichu) =>
 
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require('../../../pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await satisfyACL(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing

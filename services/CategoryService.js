@@ -28,4 +28,4 @@ class CategoryService {
     }
 }
 
-module.exports = CategoryService
+export default CategoryService

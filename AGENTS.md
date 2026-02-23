@@ -70,11 +70,8 @@ Notes:
 - 4) Legacy local style in the edited file (only when needed for compatibility).
 
 ## Module system (important transition rule)
-- Existing codebase is mostly CommonJS.
-- **For new pieces of code, use ESM `import` / `export`.**
-- When editing an existing CommonJS file, prefer keeping that file internally consistent.
-- Do not mix CJS and ESM in the same file unless required and verified.
-- If creating a new module consumed by CJS code, add a compatibility plan (or keep change scoped to ESM-only paths).
+- **Use ESM `import` / `export`.**
+- If an external library does not support ESM imports, use `require` as shown in `utils/ipTools.js`.
 
 ## Formatting
 - Respect `.editorconfig`: UTF-8, LF line endings, 2-space indent, trimmed trailing whitespace, final newline.

@@ -1,7 +1,9 @@
-const ejs = require('ejs')
-const date = require('date-and-time')
-const paths = require('../utils/paths')
-module.exports = async (req, res, history) =>
+import ejs from 'ejs'
+import date from 'date-and-time'
+import paths from '../utils/paths.js'
+import renderView from '../view.js'
+
+export default async (req, res, history) =>
 {
     let name = req.params.name || ''
     let showfrom = req.query.from || 0
@@ -26,7 +28,7 @@ module.exports = async (req, res, history) =>
         from: showfrom,
         date: date
     })
-    require('../view.js')(req, res,
+    renderView(req, res,
     {
         title: `${name}의 기여 목록`,
         content: html        

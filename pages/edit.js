@@ -1,5 +1,8 @@
-const date = require('date-and-time')
-const i18n = require("i18n")
+import date from 'date-and-time'
+import i18n from 'i18n'
+import * as captcha from '../utils/captcha.js'
+import renderError from '../utils/error.js'
+import satisfyAcl from './satisfyACL.js'
 async function sign(req, settings)
 {
     const dtnow = date.format(new Date(), global.dtFormat)
@@ -109,21 +112,21 @@ async function regLink(title, content)
     await global.db.links.bulkCreate(res)
 }
 
-module.exports = async (req, res, username, users, pages, recentchanges, history, protect, perm, block, category, settings) =>
+export default async (req, res, username, users, pages, recentchanges, history, protect, perm, block, category, settings) =>
 {
 
     //check CAPTCHA
-    let captchaSuccess = await require('../utils/captcha.js').chkCaptcha(req, res, perm)
+    let captchaSuccess = await captcha.chkCaptcha(req, res, perm)
     if (!captchaSuccess) return //CAPTCHA error
 
     if (!req.params.name)
     {
-        require('../utils/error.js')(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+        renderError(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
     if (!req.body.content)
     {
-        require('../utils/error.js')(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+        renderError(req, res, { description: i18n.__('edit_titleneeded'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
         return
     }
     
@@ -148,7 +151,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         //check for protection 
         const pro = await protect.findOne({where: {title: req.params.name, task: 'edit'}})
         var acl = (pro == undefined ? 'everyone' : pro.protectionLevel) //fallback
-        const r = await require('./satisfyACL.js')(req, res, [acl], perm, block)
+        const r = await satisfyAcl(req, res, [acl], perm, block)
         if (r)
         {
             //do nothing
@@ -159,7 +162,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         }
         else
         {
-            require('../utils/error.js')(req, res, { description: i18n.__('edit_noacl', {acl: acl}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 403 })
+            renderError(req, res, { description: i18n.__('edit_noacl', {acl: acl}), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 403 })
             return
         }
 
@@ -195,7 +198,7 @@ module.exports = async (req, res, username, users, pages, recentchanges, history
         {
             if (req.params.name.toLowerCase().startsWith('file:'))
             {
-                require('../utils/error.js')(req, res, { description: i18n.__('pagename_illegalfile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
+                renderError(req, res, { description: i18n.__('pagename_illegalfile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 200 })
                 return
             }
 

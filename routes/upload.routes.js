@@ -1,11 +1,12 @@
-const express = require('express')
-const i18n = require("i18n")
-const multer = require('multer')
-const fs = require('fs')
-const paths = require('../utils/paths')
-const { asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
-const { chkCaptcha } = require('../middlewares/chkCaptcha')
-const { requireLogin } = require('../middlewares/permission.js')
+import express from 'express'
+import i18n from 'i18n'
+import multer from 'multer'
+import fs from 'fs'
+import paths from '../utils/paths.js'
+import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
+import { chkCaptcha } from '../middlewares/chkCaptcha.js'
+import { requireLogin } from '../middlewares/permission.js'
+import { genCaptcha } from '../utils/captcha.js'
 
 const defaultFileTypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
 
@@ -26,7 +27,7 @@ function checkFileType(file, cb) {
     cb(`You can only upload ${getFileTypes().join(', ')}.`)
 }
 
-module.exports = (_services, _options = {}) => {
+export default (_services, _options = {}) => {
     const router = express.Router()
     const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
 
@@ -78,7 +79,7 @@ module.exports = (_services, _options = {}) => {
         requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
         asyncRoute(async (req, res) => {
         const username = req.session.username
-        const captchaSVG = await require('../utils/captcha.js').genCaptcha()
+        const captchaSVG = await genCaptcha()
         await renderTemplateInLayout(req, res, 'files/upload.ejs', {
             username,
             captcha: captchaSVG,

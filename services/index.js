@@ -1,9 +1,9 @@
-const PageService = require('./PageService')
-const PermissionService = require('./PermissionService')
-const CategoryService = require('./CategoryService')
-const RecentChangeService = require('./RecentChangeService')
-const ThreadService = require('./ThreadService')
-const BlockService = require('./BlockService')
+import PageService from './PageService.js'
+import PermissionService from './PermissionService.js'
+import CategoryService from './CategoryService.js'
+import RecentChangeService from './RecentChangeService.js'
+import ThreadService from './ThreadService.js'
+import BlockService from './BlockService.js'
 
 class ServiceFactory {
     constructor(repositories) {
@@ -30,4 +30,4 @@ class ServiceFactory {
     }
 }
 
-module.exports = ServiceFactory
+export default ServiceFactory;

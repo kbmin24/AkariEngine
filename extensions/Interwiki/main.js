@@ -34,7 +34,8 @@ let onCall = (pagename, data, req, res, redirect, incl, args, renderOptions) =>
     }
     return {pagename, data, req, res, redirect, incl, args, renderOptions}
 }
-module.exports = async (app, registerHook, _registerDB) =>
+
+export default async (app, registerHook, _registerDB) =>
 {
     registerHook('beginRender', onCall)
-}
+};

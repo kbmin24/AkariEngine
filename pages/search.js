@@ -1,10 +1,12 @@
-const {Op} = require('sequelize')
-const i18n = require("i18n")
-const arraywrap = require('arraywrap')
-const sanitiseHtml = require('sanitize-html')
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-module.exports = async (req, res, pages) =>
+import { Op } from 'sequelize'
+import i18n from 'i18n'
+import arraywrap from 'arraywrap'
+import sanitiseHtml from 'sanitize-html'
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import renderView from '../view.js'
+
+export default async (req, res, pages) =>
 {
     //just search
     const query = arraywrap(req.query.q)[0].trim()
@@ -57,7 +59,7 @@ module.exports = async (req, res, pages) =>
         from: from
     })
     const username = req.session.username
-    require('../view.js')(req, res,
+    renderView(req, res,
     {
         title: i18n.__('searchResults', {q: sanitiseHtml(query, {disallowedTagsMode: escape})}),
         content: searchHTML,

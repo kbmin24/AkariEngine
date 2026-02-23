@@ -1,4 +1,5 @@
-const sanitiseHtml = require('sanitize-html')
+import sanitiseHtml from 'sanitize-html'
+import renderError from '../utils/error.js'
 
 function genArbitaryString(len)
 {
@@ -12,7 +13,8 @@ function genArbitaryString(len)
     }
     return res
 }
-module.exports = async (req, res, dbs = {}) =>
+
+export default async (req, res, dbs = {}) =>
 {
     //dbs: users, pages, recentdiscuss, protect, perm, block
 
@@ -21,14 +23,14 @@ module.exports = async (req, res, dbs = {}) =>
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        require('../utils/error.js')(req, res, { description: 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        renderError(req, res, { description: 'The page requested is not found. Would you like to <a href="/edit/'+req.params.name+'">create one?</a>', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 
     //And check whether datas are given
     if (!req.body.title)
     {
-        require('../utils/error.js')(req, res, { description: 'Please enter a title.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        renderError(req, res, { description: 'Please enter a title.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
         return
     }
 

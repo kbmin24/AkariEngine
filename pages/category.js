@@ -1,7 +1,9 @@
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-const logger = require('../utils/logger.js')
-module.exports = async (req, res, category) =>
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import logger from '../utils/logger.js'
+import renderView from '../view.js'
+
+export default async (req, res, category) =>
 {
     const searchRes = await category.findAndCountAll({
         where:
@@ -22,7 +24,7 @@ module.exports = async (req, res, category) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require('../view.js')(req, res,
+        renderView(req, res,
         {
             title: '분류 ' + req.params.name,
             content: html,

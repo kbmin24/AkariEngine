@@ -1,12 +1,12 @@
-const ejs = require('ejs')
-const i18n = require("i18n")
-const paths = require('../../utils/paths')
-const { renderLayout } = require('../../utils/httpHelper.js')
-const {
-    ValidationError
-} = require('../../services/errors.js')
+import ejs from 'ejs'
+import i18n from 'i18n'
+import paths from '../../utils/paths.js'
+import { renderLayout } from '../../utils/httpHelper.js'
+import { ValidationError } from '../../services/errors.js'
+import { genCaptcha } from '../../utils/captcha.js'
+import renderError from '../../utils/error.js'
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     try {
         const editModel = await req.app.locals.services.page.getEditViewModel({
             title: req.params.name,
@@ -27,7 +27,7 @@ module.exports = async (req, res) => {
         }
 
         if (editModel.needsCaptcha) {
-            templateData.captcha = await require('../../utils/captcha.js').genCaptcha()
+            templateData.captcha = await genCaptcha()
         } else {
             templateData.captcha = ''
         }
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
         })
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey) {
-            require('../../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: i18n.__(error.i18nKey),
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

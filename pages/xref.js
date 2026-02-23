@@ -1,10 +1,13 @@
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-module.exports = async (req, res) => {
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import renderError from '../utils/error.js'
+import renderView from '../view.js'
+
+export default async (req, res) => {
     let pagename = req.params.name
     if (pagename === undefined)
     {
-        require('../utils/error.js')(req, res, { description: '페이지 이름이 없습니다.', returnLink: '/', returnName: '대문', statusCode: 404 })
+        renderError(req, res, { description: '페이지 이름이 없습니다.', returnLink: '/', returnName: '대문', statusCode: 404 })
         return
     }
     
@@ -19,7 +22,7 @@ module.exports = async (req, res) => {
         entries: lnk.rows,
         count: lnk.count,
     })
-    require('../view.js')(req, res,
+    renderView(req, res,
     {
         title: `${pagename}의 역링크`,
         content: html,

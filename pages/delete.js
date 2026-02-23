@@ -1,12 +1,14 @@
-const i18n = require("i18n")
-const {
+import i18n from 'i18n'
+
+import {
     PageNotFoundError,
     PermissionDeniedError,
     AuthenticationRequiredError,
-    ValidationError
-} = require('../services/errors.js')
+    ValidationError,
+} from '../services/errors.js'
+import renderError from '../utils/error.js'
 
-module.exports = async (req, res) =>
+export default async (req, res) =>
 {
     try {
         await req.app.locals.services.page.deletePage({
@@ -20,22 +22,22 @@ module.exports = async (req, res) =>
     } catch (error) {
         if (error instanceof AuthenticationRequiredError)
         {
-            require('../utils/error.js')(req, res, { description: i18n.__('loginneeded'), returnLink: '/login', returnName: i18n.__('loginpage'), statusCode: 403 })
+            renderError(req, res, { description: i18n.__('loginneeded'), returnLink: '/login', returnName: i18n.__('loginpage'), statusCode: 403 })
             return
         }
         if (error instanceof PermissionDeniedError)
         {
-            require('../utils/error.js')(req, res, { description: i18n.__('deletepermneeded'), returnLink: '/login', returnName: i18n.__('loginpage'), statusCode: 403 })
+            renderError(req, res, { description: i18n.__('deletepermneeded'), returnLink: '/login', returnName: i18n.__('loginpage'), statusCode: 403 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            require('../utils/error.js')(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof ValidationError)
         {
-            require('../utils/error.js')(req, res, { description: i18n.__('unknown_error'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 500 })
+            renderError(req, res, { description: i18n.__('unknown_error'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 500 })
             return
         }
         throw error

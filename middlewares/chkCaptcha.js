@@ -1,6 +1,6 @@
-const axios = require('axios')
-const config = require('../config')
-const { CaptchaError } = require('../services/errors.js')
+import axios from 'axios'
+import config from '../config/index.js'
+import { CaptchaError } from '../services/errors.js'
 
 
 async function chkCaptcha(req, res, next) {
@@ -30,6 +30,6 @@ async function chkCaptcha(req, res, next) {
     }
 }
 
-module.exports = {
+export {
     chkCaptcha
 }

@@ -1,14 +1,18 @@
-const express = require('express')
-const { asyncRoute } = require('../utils/httpHelper')
-const { chkCaptcha } = require('../middlewares/chkCaptcha.js')
-const { requireEveryone } = require('../middlewares/permission.js') // 'everyone' ACL level
+import express from 'express'
+import { asyncRoute } from '../utils/httpHelper.js'
+import { chkCaptcha } from '../middlewares/chkCaptcha.js'
+import { requireEveryone } from '../middlewares/permission.js' // 'everyone' ACL level
+import threadListHandler from '../threads/threadList.js'
+import createThreadHandler from '../threads/createThread.js'
+import threadHandler from '../threads/thread.js'
+import recentDiscussHandler from '../threads/rd.js'
 
-module.exports = (_services, options = {}) => {
+export default (_services, options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
 
     router.get('/threads/:name(*)', asyncRoute(async (req, res) => {
-        await require('../threads/threadList.js')(req, res, {
+        await threadListHandler(req, res, {
             pages: global.db.pages,
             thread: global.db.thread,
             block: global.db.block
@@ -19,7 +23,7 @@ module.exports = (_services, options = {}) => {
         chkCaptcha,
         requireEveryone,
         asyncRoute(async (req, res) => {
-        await require('../threads/createThread.js')(req, res, {
+        await createThreadHandler(req, res, {
             pages: global.db.pages,
             thread: global.db.thread,
             threadcomment: global.db.threadcomment,
@@ -30,7 +34,7 @@ module.exports = (_services, options = {}) => {
     }))
 
     router.get('/thread/:name(*)', csrfProtection, asyncRoute(async (req, res) => {
-        await require('../threads/thread.js')(req, res, {
+        await threadHandler(req, res, {
             pages: global.db.pages,
             thread: global.db.thread,
             threadcomment: global.db.threadcomment,
@@ -39,7 +43,7 @@ module.exports = (_services, options = {}) => {
     }))
 
     router.get('/RecentDiscuss', asyncRoute(async (req, res) => {
-        await require('../threads/rd.js')(req, res, global.db.recentdiscuss, global.db.thread)
+        await recentDiscussHandler(req, res, global.db.recentdiscuss, global.db.thread)
     }))
     
     return router

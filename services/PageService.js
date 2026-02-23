@@ -1,14 +1,15 @@
-const paths = require('../utils/paths')
-const fs = require('fs')
-const date = require('date-and-time')
-const logger = require('../utils/logger.js')
-const {
+import paths from '../utils/paths.js'
+import fs from 'fs'
+import date from 'date-and-time'
+import logger from '../utils/logger.js'
+
+import {
     PageNotFoundError,
     PageExistsError,
     RevisionNotFoundError,
     ValidationError,
     AuthenticationRequiredError
-} = require('./errors')
+} from './errors.js'
 
 class PageService {
     constructor(pageRepo, historyRepo, categoryService, permissionService) {
@@ -383,4 +384,4 @@ class PageService {
     }
 }
 
-module.exports = PageService
+export default PageService;

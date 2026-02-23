@@ -1,7 +1,8 @@
 //error.js: display error to the user.
-const i18n = require("i18n")
+import i18n from 'i18n'
+import renderView from '../view.js'
 
-module.exports = (req, res, options = {}) => {
+export default (req, res, options = {}) => {
     if (!options || typeof options !== 'object' || Array.isArray(options)) {
         throw new TypeError('error.js expects options object: { description, returnLink, returnName, statusCode }')
     }
@@ -21,7 +22,7 @@ module.exports = (req, res, options = {}) => {
     })
 
     res.status(statusCode || 200)
-    require('../view.js')(req, res, {
+    renderView(req, res, {
         title: 'Error!',
         content,
         username: req.session.username,

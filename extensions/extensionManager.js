@@ -1,6 +1,9 @@
 //ext.js: extension manager
-const paths = require('../utils/paths')
-const path = require('node:path')
+import paths from '../utils/paths.js'
+
+import fs from 'node:fs'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 let extensions = {}
 global.extensions = extensions
@@ -18,13 +21,16 @@ let registerDB = async(name, model) =>
     //model: supply the model defined with 'sequelize.define', NOT the file path.
     global.db[name] = model(global.sequelize)
 }
-module.exports = async (app) =>
+
+export default async (app) =>
 {
     // TODO change it so that it doesn't use global.conf.extensions directly
     for (let e of global.conf.extensions)
     {
-        let extManifest = require(paths.resolve(path.join(`extensions/${e}/` + 'manifest.json')))
-        let obj = require(paths.resolve(path.join(`extensions/${e}/` + 'main.js')))
+        const manifestPath = paths.resolve(path.join(`extensions/${e}/manifest.json`))
+        const extPath = paths.resolve(path.join(`extensions/${e}/main.js`))
+        const extManifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+        const { default: obj } = await import(pathToFileURL(extPath).href)
         extensions[e] = {'manifest': extManifest, 'obj': obj}
     }
     for (let e of global.conf.extensions)

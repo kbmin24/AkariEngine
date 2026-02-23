@@ -1,9 +1,6 @@
-const logger = require('../utils/logger.js')
-const dateandtime = require('date-and-time')
-const {
-    PermissionDeniedError,
-    AuthenticationRequiredError
-} = require('./errors')
+import logger from '../utils/logger.js'
+import dateandtime from 'date-and-time'
+import { PermissionDeniedError, AuthenticationRequiredError } from './errors.js'
 
 class PermissionService {
     constructor(permissionRepo, blockRepo, protectRepo, blockService = null) {
@@ -268,4 +265,4 @@ class PermissionService {
     }
 }
 
-module.exports = PermissionService
+export default PermissionService

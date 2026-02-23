@@ -1,11 +1,13 @@
 // TODO rename this file
 
+import renderError from '../utils/error.js'
 
-module.exports = async (req, res, gongji) =>
+
+export default async (req, res, gongji) =>
 {
     if (!req.body.boardname)
     {
-        require('../utils/error.js')(req, res, { description: '게시판 ID가 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
+        renderError(req, res, { description: '게시판 ID가 필요합니다.', returnLink: 'javascript:window.history.back()', returnName: '글쓰기', statusCode: 200 })
         return
     }
     await gongji.destroy({

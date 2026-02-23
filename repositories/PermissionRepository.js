@@ -1,4 +1,4 @@
-const BaseRepository = require('./BaseRepository')
+import BaseRepository from './BaseRepository.js'
 
 class PermissionRepository extends BaseRepository {
     async getUserPermissions(username) {
@@ -33,4 +33,4 @@ class PermissionRepository extends BaseRepository {
     }
 }
 
-module.exports = PermissionRepository
+export default PermissionRepository

@@ -136,5 +136,6 @@
 	"admin_required": "Admin permission required.",
 	"orphaned_pages": "Orphaned pages",
 	"orphaned_pages_desc": "<p>Shows all pages that cannot be reached by links from <a href='/w/FrontPage'>FrontPage</a>.</p><p>This page is updated every midnight.</p>",
-	"signupedisabled": "Account creation is disabled."
+	"signupedisabled": "Account creation is disabled.",
+	"diffBetweenRevisions": "{{pagename}}: Difference between r{{rev1}} and r{{rev2}}"
 }

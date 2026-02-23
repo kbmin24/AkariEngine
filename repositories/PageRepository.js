@@ -1,5 +1,5 @@
-const { Op } = require('sequelize')
-const BaseRepository = require('./BaseRepository')
+import { Op } from 'sequelize'
+import BaseRepository from './BaseRepository.js'
 
 class PageRepository extends BaseRepository {
     constructor(pageModel, deps = {}) {
@@ -304,4 +304,4 @@ class PageRepository extends BaseRepository {
     }
 }
 
-module.exports = PageRepository
+export default PageRepository

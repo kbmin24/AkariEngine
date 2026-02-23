@@ -49,4 +49,4 @@ class ThreadService {
     }
 }
 
-module.exports = ThreadService
+export default ThreadService

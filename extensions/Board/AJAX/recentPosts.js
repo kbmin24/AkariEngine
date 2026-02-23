@@ -1,6 +1,7 @@
-//const ejs = require('ejs')
-const sanitiseHtml = require('sanitize-html')
-module.exports = async (req, res, boardposts) =>
+// no template engine needed here
+import sanitiseHtml from 'sanitize-html'
+
+export default async (req, res, boardposts) =>
 {
     let show = Math.min((req.query.show ? req.query.show: 30) * 1, 100)
     const changes = await boardposts.findAll(
@@ -24,4 +25,4 @@ module.exports = async (req, res, boardposts) =>
         show--
     })
     res.json(results)
-}
+};

@@ -1,6 +1,13 @@
-const ejs = require('ejs')
-const sanitiseHtml = require('sanitize-html')
-const logger = require('../../utils/logger')
+import ejs from 'ejs'
+import sanitiseHtml from 'sanitize-html'
+import logger from '../../utils/logger.js'
+import satisfyACL from '../../pages/satisfyACL.js'
+import errorPage from '../../utils/error.js'
+import renderView from '../../view.js'
+import listPosts from './list.js'
+import { fileURLToPath } from "url"
+const __dirname = fileURLToPath(new URL(".", import.meta.url))
+
 let readComments = async (boardID, postID, comments) =>
 {
     let allcomments = await comments.findAll(
@@ -74,22 +81,23 @@ let readComments = async (boardID, postID, comments) =>
         commentCount: allcomments.length
     }
 }
-module.exports = async (req, res, boards, posts, block, perm, comments, gongji) =>
+
+export default async (req, res, boards, posts, block, perm, comments, gongji) =>
 {
     const boardNow = await boards.findOne({where: {boardID: req.params.board}})
     if (!boardNow)
     {
-        require('../../utils/error.js')(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        errorPage(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     if (!req.query.no)
     {
-        require('../../utils/error.js')(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        errorPage(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     const pro = boardNow.readACL
     const acl = (pro == undefined ? 'blocked' : pro) //fallback
-    const r = await require('../../pages/satisfyACL.js')(req, res, [acl], perm, block)
+    const r = await satisfyACL(req, res, [acl], perm, block)
     if (r)
     {
         //do nothing
@@ -100,13 +108,13 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
     }
     else
     {
-        require('../../utils/error.js')(req, res, { description: '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 200 })
+        errorPage(req, res, { description: '이 게시판의 읽기 권한이' + acl + ' 이기 때문에 글 열람이 불가합니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 200 })
         return
     }
     const post = await posts.findOne({where: {idAtBoard: req.query.no, boardID: boardNow.boardID}})
     if (!post)
     {
-        require('../../utils/error.js')(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+        errorPage(req, res, { description: '존재하지 않는 게시물입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
         return
     }
     post.update({viewCount: post.viewCount + 1})
@@ -119,14 +127,14 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
 
     let commentTree = await readComments(boardNow.boardID, post.idAtBoard, comments)
 
-    let lst = await require(__dirname + '/list.js')(true, req, res, boards, posts, block, perm, gongji, post.idAtBoard)
+    let lst = await listPosts(true, req, res, boards, posts, block, perm, gongji, post.idAtBoard)
     
     //check if admin
-    let isAdmin = (req.session.username && await perm.findOne({where:
+    let isAdmin = (req.session.username && (await perm.findOne({where:
         {
             username: req.session.username, 
             perm: 'board'
-        }}) !== null ) === true
+        }})) !== null ) === true
     post.content = sanitiseHtml(post.content, global.sanitiseOptions)
     ejs.renderFile(__dirname + '/views/read.ejs',
     {
@@ -146,7 +154,7 @@ module.exports = async (req, res, boards, posts, block, perm, comments, gongji) 
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require('../../view.js')(req, res,
+        renderView(req, res,
         {
             title: boardNow.boardTitle,
             titleLink: `/board/${boardNow.boardID}`,

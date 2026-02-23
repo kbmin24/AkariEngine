@@ -1,8 +1,11 @@
+import crypto from 'node:crypto'
+
 let stdout = (socket, data) =>
 {
     socket.emit('output', data)
 }
-module.exports = async (io, socket, command, options) =>
+
+export default async (io, socket, command, options) =>
 {
     try
     {
@@ -126,7 +129,6 @@ module.exports = async (io, socket, command, options) =>
             }
             case 'genpassword':
             {
-                const crypto = require('crypto')
                 crypto.pbkdf2(cmdSplit[1], cmdSplit[2], 10000, 64, 'sha512', (err, hashedPW) =>
                 {
                     if (err) throw new err
@@ -151,4 +153,4 @@ module.exports = async (io, socket, command, options) =>
         stdout(socket, ex.toString())
     }
     stdout(socket, '\n')
-}
+};

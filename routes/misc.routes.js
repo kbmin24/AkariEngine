@@ -1,8 +1,8 @@
-const express = require('express')
-const i18n = require("i18n")
-const { asyncRoute, renderTemplateInLayout } = require('../utils/httpHelper')
+import express from 'express'
+import i18n from 'i18n'
+import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 
-module.exports = () => {
+export default () => {
     const router = express.Router()
     router.get('/', (req, res) => {
         res.redirect('/w/FrontPage')

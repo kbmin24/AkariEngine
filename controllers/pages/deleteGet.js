@@ -1,10 +1,9 @@
-const i18n = require("i18n")
-const { PageNotFoundError } = require('../../services/errors.js')
-const {
-    renderTemplateInLayout
-} = require('../../utils/httpHelper.js')
+import i18n from 'i18n'
+import { PageNotFoundError } from '../../services/errors.js'
+import { renderTemplateInLayout } from '../../utils/httpHelper.js'
+import renderError from '../../utils/error.js'
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
     try {
         const model = await req.app.locals.services.page.getDeleteViewModel({
             title: req.params.name,
@@ -24,7 +23,7 @@ module.exports = async (req, res) => {
         })
     } catch (error) {
         if (error instanceof PageNotFoundError) {
-            require('../../utils/error.js')(req, res, {
+            renderError(req, res, {
                 description: `${i18n.__('page404')} <a href="/edit/${req.params.name}">${i18n.__('page_asknew')}</a>`,
                 returnLink: '/',
                 returnName: i18n.__('mainpage'),

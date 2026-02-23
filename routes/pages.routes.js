@@ -1,18 +1,32 @@
-const express = require('express')
-const i18n = require("i18n")
-const {
-    asyncRoute,
-    renderTemplateInLayout,
-    BACK_LINK,
-    LOGIN_LINK
-} = require('../utils/httpHelper')
-const { param, query, body } = require('express-validator')
-
-const { requirePermission } = require('../middlewares/permission')
-const { chkCaptcha } = require('../middlewares/chkCaptcha')
-
-const { validateRequest } = require('../middlewares/validation.js')
-const { requirePageAccess } = require('../middlewares/permission.js')
+import express from 'express'
+import i18n from 'i18n'
+import { asyncRoute, renderTemplateInLayout, BACK_LINK, LOGIN_LINK } from '../utils/httpHelper.js'
+import { param, query, body } from 'express-validator'
+import { requirePermission } from '../middlewares/permission.js'
+import { chkCaptcha } from '../middlewares/chkCaptcha.js'
+import { validateRequest } from '../middlewares/validation.js'
+import { requirePageAccess } from '../middlewares/permission.js'
+import viewHandler from '../pages/view.js'
+import previewController from '../controllers/pages/preview.js'
+import searchPage from '../pages/search.js'
+import navSearchPage from '../pages/navSearch.js'
+import protectGet from '../admin/protectGet.js'
+import protectPost from '../admin/protectPost.js'
+import rawGetController from '../controllers/pages/rawGet.js'
+import historyPage from '../pages/history.js'
+import diffPage from '../pages/diff.js'
+import pageListPage from '../pages/pagelist.js'
+import categoryPage from '../pages/category.js'
+import viewRankPage from '../pages/viewrank.js'
+import xrefPage from '../pages/xref.js'
+import editGetController from '../controllers/pages/editGet.js'
+import editPostController from '../controllers/pages/editPost.js'
+import moveGetController from '../controllers/pages/moveGet.js'
+import deleteGetController from '../controllers/pages/deleteGet.js'
+import revertGetPage from '../controllers/pages/revertGet.js'
+import revertPage from '../pages/revert.js'
+import movePostController from '../controllers/pages/movePost.js'
+import deletePage from '../pages/delete.js'
 
 function accessOptions(noAclMessageKey, extra = {}) {
     return {
@@ -25,7 +39,7 @@ function accessOptions(noAclMessageKey, extra = {}) {
     }
 }
 
-module.exports = (services, options = {}) => {
+export default (services, options = {}) => {
     const router = express.Router()
 
     const csrfProtection = options.csrfProtection
@@ -36,7 +50,6 @@ module.exports = (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            const viewHandler = require('../pages/view.js')
             await viewHandler(req, res)
         })
     )
@@ -50,23 +63,23 @@ module.exports = (services, options = {}) => {
         body('title').trim().notEmpty(),
         validateRequest,
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/preview.js')(req, res)
+            await previewController(req, res)
         }))
 
     router.get('/search', asyncRoute(async (req, res) => {
-        await require('../pages/search.js')(req, res, global.db.pages)
+        await searchPage(req, res, global.db.pages)
     }))
 
     router.post('/search', asyncRoute(async (req, res) => {
-        await require('../pages/navSearch.js')(req, res, global.db.pages)
+        await navSearchPage(req, res, global.db.pages)
     }))
 
     router.get('/protect/:name(*)', asyncRoute(async (req, res) => {
-        await require('../admin/protectGet.js')(req, res, global.db.perm, global.db.protect, global.db.block)
+        await protectGet(req, res, global.db.perm, global.db.protect, global.db.block)
     }))
 
     router.post('/protect/:name(*)', asyncRoute(async (req, res) => {
-        await require('../admin/protectPost.js')(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
+        await protectPost(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
     }))
 
     router.get('/raw/:name(*)',
@@ -75,16 +88,16 @@ module.exports = (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/rawGet.js')(req, res)
+            await rawGetController(req, res)
         })
     )
 
     router.get('/history/:name(*)', asyncRoute(async (req, res) => {
-        await require('../pages/history.js')(req, res, global.db.history)
+        await historyPage(req, res, global.db.history)
     }))
 
     router.get('/diff/:name(*)', asyncRoute(async (req, res) => {
-        await require('../pages/diff.js')(req, res, global.db.history, global.db.protect, global.db.perm, global.db.block)
+        await diffPage(req, res, global.db.history, global.db.protect, global.db.perm, global.db.block)
     }))
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
@@ -97,19 +110,19 @@ module.exports = (services, options = {}) => {
     }))
 
     router.get('/PageList', asyncRoute(async (req, res) => {
-        await require('../pages/pagelist.js')(req, res, global.db.pages)
+        await pageListPage(req, res, global.db.pages)
     }))
 
     router.get('/category/:name(*)', asyncRoute(async (req, res) => {
-        await require('../pages/category.js')(req, res, global.db.category)
+        await categoryPage(req, res, global.db.category)
     }))
 
     router.get('/viewrank', asyncRoute(async (req, res) => {
-        await require('../pages/viewrank.js')(req, res, global.db.viewcount)
+        await viewRankPage(req, res, global.db.viewcount)
     }))
 
     router.get('/xref/:name(*)', asyncRoute(async (req, res) => {
-        await require('../pages/xref.js')(req, res)
+        await xrefPage(req, res)
     }))
 
     router.get('/RandomPage', asyncRoute(async (req, res) => {
@@ -129,7 +142,7 @@ module.exports = (services, options = {}) => {
         param('name').trim().matches(global.legalTitleRegex),
         validateRequest,
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/editGet.js')(req, res)
+            await editGetController(req, res)
         })
     )
 
@@ -138,7 +151,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('edit', accessOptions('edit_noacl')),
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/editPost.js')(req, res)
+            await editPostController(req, res)
         })
     )
 
@@ -146,7 +159,7 @@ module.exports = (services, options = {}) => {
         csrfProtection,
         requirePageAccess('move', accessOptions('move_noacl')),
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/moveGet.js')(req, res)
+            await moveGetController(req, res)
         })
     )
 
@@ -156,7 +169,7 @@ module.exports = (services, options = {}) => {
             mode: 'enforce'
         }),
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/deleteGet.js')(req, res)
+            await deleteGetController(req, res)
         })
     )
 
@@ -167,7 +180,7 @@ module.exports = (services, options = {}) => {
         requirePageAccess('read', accessOptions('view_noacl')),
         csrfProtection,
         asyncRoute(async (req, res) => {
-            await require('../pages/revertGet.js')(req, res)
+            await revertGetPage(req, res)
         })
     )
 
@@ -179,7 +192,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            await require('../pages/revert.js')(req, res)
+            await revertPage(req, res)
         })
     )
 
@@ -188,7 +201,7 @@ module.exports = (services, options = {}) => {
         chkCaptcha,
         requirePageAccess('move', accessOptions('move_noacl')),
         asyncRoute(async (req, res) => {
-            await require('../controllers/pages/movePost.js')(req, res)
+            await movePostController(req, res)
         })
     )
 
@@ -201,7 +214,7 @@ module.exports = (services, options = {}) => {
             mode: 'enforce'
         }),
         asyncRoute(async (req, res) => {
-            await require('../pages/delete.js')(req, res)
+            await deletePage(req, res)
         })
     )
 

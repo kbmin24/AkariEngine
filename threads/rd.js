@@ -1,9 +1,11 @@
-const { Op } = require('sequelize')
-const date = require('date-and-time')
-const ejs = require('ejs')
-const paths = require('../utils/paths')
-const logger = require('../utils/logger.js')
-module.exports = async (req, res, recentdiscuss, thread) =>
+import { Op } from 'sequelize'
+import date from 'date-and-time'
+import ejs from 'ejs'
+import paths from '../utils/paths.js'
+import logger from '../utils/logger.js'
+import renderView from '../view.js'
+
+export default async (req, res, recentdiscuss, thread) =>
 {
 
     //remove 'old' ones
@@ -56,7 +58,7 @@ module.exports = async (req, res, recentdiscuss, thread) =>
             res.writeHead(500).write('Internal Server Error')
             return
         }
-        require('../view.js')(req, res,
+        renderView(req, res,
         {
             title: '최근 토론',
             content: html,

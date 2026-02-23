@@ -1,6 +1,6 @@
-const schedule = require('node-schedule')
-const Dequeue = require('dequeue')
-const logger = require('./utils/logger')
+import schedule from 'node-schedule'
+import Dequeue from 'dequeue'
+import logger from './utils/logger.js'
 
 async function updateOrphaned()
 {
@@ -60,7 +60,7 @@ async function updateOrphaned()
     global.orphaned = orphaned
 }
 
-module.exports = async () =>
+export default async () =>
 {
     updateOrphaned()
     schedule.scheduleJob('0 0 * * *', () =>
