@@ -49,9 +49,19 @@ class PermissionService {
     }
 
     async checkAccessDetailed(user, resource, action = 'read', context = {}) {
-
+        const revision = context.revision !== undefined && context.revision !== null
+            ? Number(context.revision)
+            : null
         const requiredLevelOverride = context.requiredLevel
-        const protection = requiredLevelOverride ? null : await this.protectRepo.findProtection(resource, action)
+        let protection = null
+        if (!requiredLevelOverride) {
+            if (Number.isInteger(revision)) {
+                protection = await this.protectRepo.findProtection(resource, action, revision)
+            }
+            if (!protection) {
+                protection = await this.protectRepo.findProtection(resource, action)
+            }
+        }
         let requiredLevel
         if (requiredLevelOverride)
         {

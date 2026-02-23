@@ -48,7 +48,9 @@ export default (services, options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
         validateRequest,
-        requirePageAccess('read', accessOptions('view_noacl')),
+        requirePageAccess('read', accessOptions('view_noacl', {
+            revisionQueryKeys: ['rev']
+        })),
         asyncRoute(async (req, res) => {
             await viewHandler(req, res)
         })
@@ -96,7 +98,14 @@ export default (services, options = {}) => {
         await historyPage(req, res, global.db.history)
     }))
 
-    router.get('/diff/:name(*)', asyncRoute(async (req, res) => {
+    router.get('/diff/:name(*)',
+        query('rev1').isInt(),
+        query('rev2').isInt(),
+        validateRequest,
+        requirePageAccess('read', accessOptions('view_noacl', {
+            revisionQueryKeys: ['rev1', 'rev2']
+        })),
+        asyncRoute(async (req, res) => {
         await diffPage(req, res, global.db.history, global.db.protect, global.db.perm, global.db.block)
     }))
 

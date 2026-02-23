@@ -21,7 +21,7 @@ class PageService {
 
     async getPage(title, options = {}) {
         const { rev, user } = options
-        await this.permissionService.requireReadAccess(user, title)
+        await this.permissionService.requireReadAccess(user, title, { revision: rev })
 
         let page
         if (rev) {

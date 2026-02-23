@@ -97,6 +97,14 @@ function requirePermission(permission, options = {}) {
 
 function requirePageAccess(action, options = {}) {
     const titleParam = options.titleParam || 'name'
+    const revisionQueryKey = options.revisionQueryKey || 'rev'
+    const revisionBodyKey = options.revisionBodyKey || 'rev'
+    const revisionQueryKeys = Array.isArray(options.revisionQueryKeys)
+        ? options.revisionQueryKeys
+        : null
+    const revisionBodyKeys = Array.isArray(options.revisionBodyKeys)
+        ? options.revisionBodyKeys
+        : null
     const method = resolveActionMethod(action)
     const mode = options.mode || 'enforce' // store or enforce
     const storeKey = options.storeKey || 'pageAccess'
@@ -110,10 +118,43 @@ function requirePageAccess(action, options = {}) {
             const title = req.params ? req.params[titleParam] : undefined
             const username = req.session ? req.session.username : undefined
             const services = req.app.locals.services
-            await services.permission[method](username, title, {
-                ipAddress: req.ipAddress
-            })
-            req[storeKey] = { allowed: true, action, title }
+
+            let revisions = []
+            if (action === 'read') {
+                if (revisionQueryKeys && revisionQueryKeys.length > 0) {
+                    revisions = revisions.concat(revisionQueryKeys.map((key) => req.query && req.query[key]))
+                } else {
+                    revisions.push(req.query && req.query[revisionQueryKey])
+                }
+
+                if (revisionBodyKeys && revisionBodyKeys.length > 0) {
+                    revisions = revisions.concat(revisionBodyKeys.map((key) => req.body && req.body[key]))
+                } else {
+                    revisions.push(req.body && req.body[revisionBodyKey])
+                }
+
+                revisions = [...new Set(revisions.filter((value) => value !== undefined && value !== null && value !== ''))]
+            }
+
+            if (action === 'read' && revisions.length > 0) {
+                for (const revision of revisions) {
+                    await services.permission[method](username, title, {
+                        ipAddress: req.ipAddress,
+                        revision
+                    })
+                }
+            } else {
+                await services.permission[method](username, title, {
+                    ipAddress: req.ipAddress,
+                    revision: action === 'read'
+                        ? ((req.query && req.query[revisionQueryKey] !== undefined)
+                            ? req.query[revisionQueryKey]
+                            : (req.body ? req.body[revisionBodyKey] : undefined))
+                        : undefined
+                })
+            }
+
+            req[storeKey] = { allowed: true, action, title, revisions }
             next()
         } catch (error) {
             const mapped = buildAccessError(req, error, {
@@ -126,6 +167,16 @@ function requirePageAccess(action, options = {}) {
                     allowed: false,
                     action,
                     title: req.params ? req.params[titleParam] : undefined,
+                    revisions: action === 'read'
+                        ? [...new Set([
+                            ...(revisionQueryKeys && revisionQueryKeys.length > 0
+                                ? revisionQueryKeys.map((key) => req.query && req.query[key])
+                                : [req.query && req.query[revisionQueryKey]]),
+                            ...(revisionBodyKeys && revisionBodyKeys.length > 0
+                                ? revisionBodyKeys.map((key) => req.body && req.body[key])
+                                : [req.body && req.body[revisionBodyKey]])
+                        ].filter((value) => value !== undefined && value !== null && value !== ''))]
+                        : [],
                     error: mapped
                 }
                 next()

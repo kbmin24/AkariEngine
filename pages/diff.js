@@ -15,11 +15,6 @@ export default async (req, res, history, protect, perm, block) =>
     //rule: OLD AND NEW
     var rev1 = req.query.rev1
     var rev2 = req.query.rev2
-    if (!rev1 || !rev2)
-    {
-        renderError(req, res, { description: `리비전이 지정되지 않았습니다.`, returnLink: '/', returnName: '메인 페이지', statusCode: 404 })
-        return
-    }
 
     if (rev1 * 1 > rev2 * 1) [rev1, rev2] = [rev2, rev1]
 
