@@ -17,13 +17,32 @@ class PageRepository extends BaseRepository {
         return this.model.findOne({ where: { title } })
     }
 
-    async searchByTitle(query, limit = 10) {
+    async searchByTitle(query, limit = 10, offset = 0) {
         return this.model.findAll({
             where: {
                 title: {
                     [Op.like]: `%${query}%`
                 }
             },
+            order: [
+                ['updatedAt', 'DESC']
+            ],
+            offset,
+            limit
+        })
+    }
+
+    async searchByContent(query, limit = 10, offset = 0) {
+        return this.model.findAll({
+            where: {
+                content: {
+                    [Op.like]: `%${query}%`
+                }
+            },
+            order: [
+                ['updatedAt', 'DESC']
+            ],
+            offset,
             limit
         })
     }
@@ -40,6 +59,19 @@ class PageRepository extends BaseRepository {
                 ['title', 'ASC']
             ],
             limit
+        })
+    }
+
+    async findBacklinksByTitle(title) {
+        if (!this.linkModel) {
+            return { rows: [], count: 0 }
+        }
+
+        return this.linkModel.findAndCountAll({
+            where: { dest: title },
+            order: [
+                ['source', 'ASC']
+            ]
         })
     }
 
@@ -302,6 +334,7 @@ class PageRepository extends BaseRepository {
 
         return { reverted: true, rev: nextRev }
     }
+    
 }
 
 export default PageRepository

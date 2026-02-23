@@ -25,7 +25,7 @@
 <br>
 <ul class="pagination">
     <% if (0 < from) { %>
-        <% var prevlink = `/search/?q=${searchtitle}&from=${Math.max(0, from - 10)}` %>
+        <% var prevlink = `/search/?q=${encodeURIComponent(searchtitle)}&from=${Math.max(0, from - 10)}` %>
         <li class="page-item">
             <a class="page-link" href=<%= prevlink %> aria-label="Previous">
                 이전
@@ -33,7 +33,7 @@
         </li>
     <% } %>
     <% if (resultTitle.length == 10 || resultContent.length == 10) { %>
-        <% var nextlink = `/search/?q=${searchtitle}&from=${from + 10}` %>
+        <% var nextlink = `/search/?q=${encodeURIComponent(searchtitle)}&from=${from + 10}` %>
         <li class="page-item">
             <a class="page-link" href=<%= nextlink %> aria-label="Next">
                 다음

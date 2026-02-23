@@ -1,6 +1,10 @@
 import BaseRepository from './BaseRepository.js'
 
 class ProtectRepository extends BaseRepository {
+    async findAllByTitle(title) {
+        return this.model.findAll({ where: { title } })
+    }
+
     async findProtection(title, task, revision = null) {
         const where = { title, task }
         if (revision !== null && revision !== undefined) {

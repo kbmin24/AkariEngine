@@ -4,6 +4,11 @@ import escapeHtml from '../utils/escapeHTML.js'
 import renderPage from './render.js'
 import renderView from '../view.js'
 import renderError from '../utils/error.js'
+import {
+    PageNotFoundError,
+    RevisionNotFoundError,
+} from '../services/errors.js'
+
 
 // TODO refactor to use PageService
 
@@ -67,12 +72,12 @@ async function updViewCount(title, viewcount, updateTime) {
 export default async (req, res) => {
     const repositories = req.app.locals.repositories
     const pagesRepo = repositories.pages
-    const historyRepo = repositories.history
     const permissionRepo = repositories.permissions
     const categoryRepo = repositories.categories
     const filesModel = global.db.mfile
     const viewcountModel = global.db.viewcount
     const updateTimeModel = global.db.updateTime
+    const pageService = req.app.locals.services.page
 
     //check read ACL
     req.params.name = req.params.name.trim()
@@ -107,7 +112,15 @@ export default async (req, res) => {
 
     if (rev === undefined) {
         //get the newest ver.
-        const page = await pagesRepo.findByTitle(req.params.name)
+        let page = null
+        try {
+            page = await pageService.getPage(req.params.name, {
+                user: req.session.username,
+                ipAddress: req.ipAddress
+            })
+        } catch (e) {
+            if (!(e instanceof PageNotFoundError)) throw e
+        }
 
         await (async () => {
             if (page && !page.deleted) //if page exists
@@ -159,7 +172,8 @@ export default async (req, res) => {
                     return
                 }
                 let hisText = ''
-                if (page) {
+                const existingPage = await pagesRepo.findByTitle(req.params.name)
+                if (existingPage) {
                     hisText = i18n.__("seeHistory", { link: escapeHtml(req.params.name) })
                 }
                 renderError(req, res, {
@@ -174,34 +188,52 @@ export default async (req, res) => {
     }
     else {
         //get the nth revision
-        const page = await historyRepo.findByPageAndRev(req.params.name, rev)
-        await (async () => {
-            if (page) {
-                //show the page
-                let content = await renderPage(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
-                if (content === true) return
-                let renderOpt = {
-                    title: page.page,
-                    content: content,
-                    canonical: `/w/${page.page}?rev=${rev}`,
-                    isPage: true,
-                    pageMode: "view",
-                    pagename: page.page
-                }
-                if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
-                renderView(req, res, renderOpt)
+        try {
+            const page = await pageService.getPage(req.params.name, {
+                rev,
+                user: req.session.username,
+                ipAddress: req.ipAddress
+            })
+
+            //show the page
+            let content = await renderPage(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
+            if (content === true) return
+            let renderOpt = {
+                title: page.title,
+                content: content,
+                canonical: `/w/${page.title}?rev=${rev}`,
+                isPage: true,
+                pageMode: "view",
+                pagename: page.title
             }
-            else {
+            if (titleSuffix != '') renderOpt['titleInfo'] = titleSuffix
+            renderView(req, res, renderOpt)
+        }
+        catch (e) {
+            if (e instanceof RevisionNotFoundError) {
+                renderError(req, res, {
+                    description: i18n.__("revision404"),
+                    returnLink: '/',
+                    returnName: i18n.__("mainpage"),
+                    statusCode: 404
+                })
+                return
+            }
+            else if (e instanceof PageNotFoundError) {
                 renderError(req, res, {
                     description: i18n.__("noPageMsg",
                         {
-                            name: escapeHtml(req.params.name),
+                            name: req.params.name,
                             hisText: ''
                         }),
                     returnLink: '/', returnName: i18n.__("mainpage"), statusCode: 404
                 })
+                return
             }
-        })()
+            else {
+                throw e
+            }
+        }
     }
 };
 

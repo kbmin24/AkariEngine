@@ -103,6 +103,18 @@ Notes:
 - Prefer `req.app.locals.services.*` from routes/controllers in refactor paths.
 - Reuse shared helpers from `utils/httpHelper.js` (`asyncRoute`, layout helpers).
 
+## Permission-check contract (important)
+- Treat service-layer permission checks as authoritative; do not rely only on route middleware for security.
+- Middleware permission checks are allowed as edge guards (early rejection, store-mode UX), but must delegate to `PermissionService`.
+- Do not duplicate ACL policy logic across routes/controllers/pages; centralize policy in `services/PermissionService.js`.
+- For service methods that read protected content (`getPage`, `getRawContent`, diff/revision reads), always enforce read access in service.
+- For write/mutation methods (`editPage`, `movePage`, `deletePage`, `revertPage`), always enforce write/admin permission in service.
+- Always pass full request context into permission checks when available:
+  - `user` (`req.session.username`)
+  - `ipAddress` (`req.ipAddress`)
+  - `revision` for revision-specific reads (`rev`, `rev1`, `rev2`)
+- Route-level checks and service-level checks must agree on context keys to avoid mismatch bugs.
+
 ## editPost good practices (reference pattern)
 - Treat `controllers/pages/editPost.js` as the model for write controllers in refactor paths.
 - Delegate all page mutation logic to service layer (`req.app.locals.services.page.editPage(...)`), not controller logic.

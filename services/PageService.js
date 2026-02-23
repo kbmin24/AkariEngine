@@ -1,6 +1,8 @@
 import paths from '../utils/paths.js'
 import fs from 'fs'
 import date from 'date-and-time'
+import diff2html from 'diff2html'
+import { createTwoFilesPatch } from 'diff'
 import logger from '../utils/logger.js'
 
 import {
@@ -20,8 +22,11 @@ class PageService {
     }
 
     async getPage(title, options = {}) {
-        const { rev, user } = options
-        await this.permissionService.requireReadAccess(user, title, { revision: rev })
+        const { rev, user, ipAddress } = options
+        await this.permissionService.requireReadAccess(user, title, {
+            revision: rev,
+            ipAddress
+        })
 
         let page
         if (rev) {
@@ -104,7 +109,7 @@ class PageService {
         }
     }
 
-    async getRawContent({ title, rev }) {
+    async getRawContent({ title, rev, user, ipAddress }) {
         if (!title) {
             throw new ValidationError({
                 i18nKey: 'illegalaccess',
@@ -113,12 +118,93 @@ class PageService {
             })
         }
 
+        await this.permissionService.requireReadAccess(user, title, {
+            ipAddress,
+            revision: rev
+        })
+
         const page = rev === undefined
             ? await this.pageRepo.findByTitle(title)
             : await this.historyRepo.findByPageAndRev(title, rev)
 
         if (!page || page.deleted) throw new PageNotFoundError(title)
         return page.content
+    }
+
+    async getDiffViewModel({ title, rev1, rev2, user, ipAddress }) {
+        if (!title) {
+            throw new ValidationError({
+                message: '리비전이 지정되지 않았습니다.',
+                statusCode: 404,
+                code: 'DIFF_TITLE_NEEDED'
+            })
+        }
+
+        if (rev1 === undefined || rev2 === undefined) {
+            throw new ValidationError({
+                message: '리비전이 지정되지 않았습니다.',
+                statusCode: 404,
+                code: 'DIFF_REV_NEEDED'
+            })
+        }
+
+        let firstRev = Number(rev1)
+        let secondRev = Number(rev2)
+
+        if (!Number.isInteger(firstRev) || !Number.isInteger(secondRev)) {
+            throw new ValidationError({
+                message: '리비전이 지정되지 않았습니다.',
+                statusCode: 404,
+                code: 'DIFF_REV_INVALID'
+            })
+        }
+
+        if (firstRev > secondRev) [firstRev, secondRev] = [secondRev, firstRev]
+
+        await this.permissionService.requireReadAccess(user, title, { ipAddress, revision: firstRev })
+        if (firstRev !== secondRev) {
+            await this.permissionService.requireReadAccess(user, title, { ipAddress, revision: secondRev })
+        }
+
+        const pagev1 = await this.historyRepo.findByPageAndRev(title, firstRev)
+        if (!pagev1) throw new RevisionNotFoundError(title, firstRev)
+
+        const pagev2 = await this.historyRepo.findByPageAndRev(title, secondRev)
+        if (!pagev2) throw new RevisionNotFoundError(title, secondRev)
+
+        const cont1 = String(pagev1.content || '').replace(/\r\n/g, '\n')
+        const cont2 = String(pagev2.content || '').replace(/\r\n/g, '\n')
+
+        const difference = createTwoFilesPatch(`r${firstRev}`, `r${secondRev}`, cont1, cont2)
+        const diffHtml = diff2html.html(difference, {
+            outputFormat: 'line-by-line',
+            drawFileList: false,
+            matching: 'lines'
+        })
+
+        return {
+            pagename: title,
+            rev1: firstRev,
+            rev2: secondRev,
+            diffHtml
+        }
+    }
+
+    async getXrefViewModel({ title }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 400,
+                code: 'XREF_TITLE_NEEDED'
+            })
+        }
+
+        const backlinks = await this.pageRepo.findBacklinksByTitle(title)
+        return {
+            title,
+            entries: backlinks.rows,
+            count: backlinks.count
+        }
     }
 
     async getMoveViewModel({ title, username }) {
@@ -317,6 +403,8 @@ class PageService {
         const actor = options.user
         const ipAddress = options.ipAddress
 
+        await this.permissionService.requireMoveAccess(actor, sourceTitle, { ipAddress })
+
         if (!sourceTitle || !targetTitle || targetTitle.length > 255) {
             throw new ValidationError('Invalid new title')
         }
@@ -350,6 +438,8 @@ class PageService {
             throw new ValidationError('Revision is required')
         }
 
+        await this.permissionService.requireWriteAccess(user, title, { ipAddress })
+
         const doneBy = user || ipAddress
         const mergedComment = `Revert to r${revertRev} - ${comment || ''}`
         const result = await this.pageRepo.revertPageToRevision({
@@ -372,6 +462,56 @@ class PageService {
 
     async searchPages(query, limit = 10) {
         return this.pageRepo.searchByTitle(query, limit)
+    }
+
+    async getSearchViewModel({ query, from = 0 }) {
+        const normalized = String(query || '').trim()
+        if (!normalized) {
+            throw new ValidationError({
+                message: 'Empty search',
+                statusCode: 400,
+                code: 'SEARCH_QUERY_EMPTY'
+            })
+        }
+
+        const offset = Number(from)
+        if (!Number.isInteger(offset) || offset < 0) {
+            throw new ValidationError({
+                message: 'The query must be a number.',
+                statusCode: 400,
+                code: 'SEARCH_FROM_INVALID'
+            })
+        }
+
+        const [resultTitle, resultContent] = await Promise.all([
+            this.pageRepo.searchByTitle(normalized, 10, offset),
+            this.pageRepo.searchByContent(normalized, 10, offset)
+        ])
+
+        return {
+            query: normalized,
+            from: offset,
+            resultTitle,
+            resultContent
+        }
+    }
+
+    async resolveSearchRedirect({ query }) {
+        const normalized = String(query || '').trim()
+        if (!normalized) {
+            throw new ValidationError({
+                message: 'The query is empty.',
+                statusCode: 400,
+                code: 'SEARCH_QUERY_EMPTY'
+            })
+        }
+
+        const page = await this.pageRepo.findByTitle(normalized)
+        if (page) {
+            return `/w/${normalized}`
+        }
+
+        return `/search?q=${encodeURIComponent(normalized)}`
     }
 
     async autocompletePages(query, limit = 10) {

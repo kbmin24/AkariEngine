@@ -133,6 +133,7 @@ function requirePageAccess(action, options = {}) {
                     revisions.push(req.body && req.body[revisionBodyKey])
                 }
 
+                // find sane values only
                 revisions = [...new Set(revisions.filter((value) => value !== undefined && value !== null && value !== ''))]
             }
 

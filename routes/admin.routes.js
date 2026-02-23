@@ -5,6 +5,8 @@ import { Op } from 'sequelize'
 import paths from '../utils/paths.js'
 import { asyncRoute } from '../utils/httpHelper.js'
 import { requirePermission } from '../middlewares/auth.js'
+import { param } from 'express-validator'
+import { validateRequest } from '../middlewares/validation.js'
 import logger from '../utils/logger.js'
 import renderView from '../view.js'
 import renderError from '../utils/error.js'
@@ -18,6 +20,7 @@ import changeThreadTitleAdmin from '../admin/changethreadtitle.js'
 import gongjiAdmin from '../admin/gongji.js'
 import developerGetHandler from '../admin/developerGetHandler.js'
 import adminLogHandler from '../admin/adminlog.js'
+import protectGet from '../controllers/admin/protectGet.js'
 
 export default (services, options = {}) => {
     const router = express.Router()
@@ -320,6 +323,13 @@ export default (services, options = {}) => {
             await adminLogHandler(req, res, global.db.adminlog)
         })
     )
+
+    router.get('/protect/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            await protectGet(req, res)
+        }))
 
     return router
 }

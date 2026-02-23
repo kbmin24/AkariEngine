@@ -149,8 +149,9 @@
                         <% if (locals.titleLink) { %><a class='pgTitleLink' href='<%= locals.titleLink %>'><% } %><%= title %><% if (locals.titleLink) { %></a><% } %>
                     </h1>
                     <h2 class="subtitle">
+                        <%- locals.titleInfo %>
                         <% if (locals.updatedAt) { %>
-                            <% if (locals.titleInfo) { %><%- locals.titleInfo %> / <% } %><%= locals.updatedAt %>에 마지막으로 수정됐습니다.
+                            <% if (locals.titleInfo) { %> / <% } %><%= locals.updatedAt %>에 마지막으로 수정됐습니다.
                         <% } %>
                     </h2>
                 </div>

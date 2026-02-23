@@ -8,17 +8,16 @@ import { validateRequest } from '../middlewares/validation.js'
 import { requirePageAccess } from '../middlewares/permission.js'
 import viewHandler from '../pages/view.js'
 import previewController from '../controllers/pages/preview.js'
-import searchPage from '../pages/search.js'
-import navSearchPage from '../pages/navSearch.js'
-import protectGet from '../admin/protectGet.js'
+import searchGetController from '../controllers/pages/searchGet.js'
+import searchPostController from '../controllers/pages/searchPost.js'
 import protectPost from '../admin/protectPost.js'
 import rawGetController from '../controllers/pages/rawGet.js'
 import historyPage from '../pages/history.js'
-import diffPage from '../pages/diff.js'
+import diffGetController from '../controllers/pages/diffGet.js'
 import pageListPage from '../pages/pagelist.js'
 import categoryPage from '../pages/category.js'
 import viewRankPage from '../pages/viewrank.js'
-import xrefPage from '../pages/xref.js'
+import xrefGetController from '../controllers/pages/xrefGet.js'
 import editGetController from '../controllers/pages/editGet.js'
 import editPostController from '../controllers/pages/editPost.js'
 import moveGetController from '../controllers/pages/moveGet.js'
@@ -68,21 +67,27 @@ export default (services, options = {}) => {
             await previewController(req, res)
         }))
 
-    router.get('/search', asyncRoute(async (req, res) => {
-        await searchPage(req, res, global.db.pages)
-    }))
+    router.get('/search',
+        query('q').trim().notEmpty(),
+        query('from').optional().isInt(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            await searchGetController(req, res)
+        }))
 
-    router.post('/search', asyncRoute(async (req, res) => {
-        await navSearchPage(req, res, global.db.pages)
-    }))
+    router.post('/search',
+        body('pagename').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            await searchPostController(req, res)
+        }))
 
-    router.get('/protect/:name(*)', asyncRoute(async (req, res) => {
-        await protectGet(req, res, global.db.perm, global.db.protect, global.db.block)
-    }))
-
-    router.post('/protect/:name(*)', asyncRoute(async (req, res) => {
-        await protectPost(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
-    }))
+    router.post('/protect/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            await protectPost(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
+        }))
 
     router.get('/raw/:name(*)',
         param('name').trim().notEmpty(),
@@ -94,9 +99,16 @@ export default (services, options = {}) => {
         })
     )
 
-    router.get('/history/:name(*)', asyncRoute(async (req, res) => {
-        await historyPage(req, res, global.db.history)
-    }))
+    router.get('/history/:name(*)',
+        param('name').trim().notEmpty(),
+        query('from').optional().isInt(),
+        query('to').optional().isInt(),
+        validateRequest,
+        requirePageAccess('read', accessOptions('view_noacl')),
+        asyncRoute(async (req, res) => {
+            await historyPage(req, res, global.db.history)
+        })
+    )
 
     router.get('/diff/:name(*)',
         query('rev1').isInt(),
@@ -106,8 +118,8 @@ export default (services, options = {}) => {
             revisionQueryKeys: ['rev1', 'rev2']
         })),
         asyncRoute(async (req, res) => {
-        await diffPage(req, res, global.db.history, global.db.protect, global.db.perm, global.db.block)
-    }))
+            await diffGetController(req, res)
+        }))
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
         await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: i18n.__ }, {
@@ -130,12 +142,16 @@ export default (services, options = {}) => {
         await viewRankPage(req, res, global.db.viewcount)
     }))
 
-    router.get('/xref/:name(*)', asyncRoute(async (req, res) => {
-        await xrefPage(req, res)
-    }))
+    router.get('/xref/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            await xrefGetController(req, res)
+        }))
 
     router.get('/RandomPage', asyncRoute(async (req, res) => {
-        const randomPage = await global.db.pages.findOne({ order: global.sequelize.random() })
+        // meh it's too thin, let's just leave it as is...
+        const randomPage = await req.app.locals.repositories.pages.getRandomPage()
         res.redirect(`/w/${randomPage.title}`)
     }))
 
