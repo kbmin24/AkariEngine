@@ -138,5 +138,6 @@
 	"orphaned_pages_desc": "<p>Shows all pages that cannot be reached by links from <a href='/w/FrontPage'>FrontPage</a>.</p><p>This page is updated every midnight.</p>",
 	"signupedisabled": "Account creation is disabled.",
 	"diffTitle": "{{{pagename}}}: Difference between r{{rev1}} and r{{rev2}}",
-	"xrefTo": "Pages linking to {{{page}}}"
+	"xrefTo": "Pages linking to {{{page}}}",
+	"ACLpermRequried": "ACL permission is required."
 }

@@ -5,8 +5,8 @@ import {
     PermissionDeniedError,
     AuthenticationRequiredError,
     ValidationError,
-} from '../services/errors.js'
-import renderError from '../utils/error.js'
+} from '../../services/errors.js'
+import renderError from '../../utils/error.js'
 
 export default async (req, res) =>
 {

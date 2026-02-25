@@ -14,11 +14,13 @@ import {
 } from './errors.js'
 
 class PageService {
-    constructor(pageRepo, historyRepo, categoryService, permissionService) {
+    constructor(pageRepo, historyRepo, categoryService, permissionService, protectRepo = null, recentChangeRepo = null) {
         this.pageRepo = pageRepo
         this.historyRepo = historyRepo
         this.categoryService = categoryService
         this.permissionService = permissionService
+        this.protectRepo = protectRepo
+        this.recentChangeRepo = recentChangeRepo
     }
 
     async getPage(title, options = {}) {
@@ -204,6 +206,40 @@ class PageService {
             title,
             entries: backlinks.rows,
             count: backlinks.count
+        }
+    }
+
+    async getHistoryViewModel({ title, from, to, user, ipAddress }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 400,
+                code: 'HISTORY_TITLE_NEEDED'
+            })
+        }
+
+        await this.permissionService.requireReadAccess(user, title, { ipAddress })
+
+        const changes = await this.historyRepo.findAndCountByPageDesc(title)
+        if (!changes || changes.count === 0) {
+            throw new PageNotFoundError(title)
+        }
+
+        const pgSize = 30
+        let normalizedFrom = Number(from)
+        let normalizedTo = Number(to)
+
+        if (!Number.isInteger(normalizedFrom) || normalizedFrom < 1) normalizedFrom = 1
+        if (!Number.isInteger(normalizedTo) || normalizedTo < 1) normalizedTo = pgSize
+        if (normalizedTo > changes.count) normalizedTo = changes.count
+
+        return {
+            title,
+            changes: changes.rows,
+            historyCount: changes.count,
+            from: normalizedFrom,
+            to: normalizedTo,
+            pgSize
         }
     }
 
@@ -458,6 +494,56 @@ class PageService {
 
         logger.info('Page reverted', { title, revertRev, doneBy })
         return result
+    }
+
+    async protectPage({ title, rules, user }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 400,
+                code: 'PROTECT_TITLE_NEEDED'
+            })
+        }
+
+        await this.permissionService.requirePermission(user, 'acl')
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+
+        const allowedTasks = new Set(['read', 'edit', 'move'])
+        const normalizedRules = Object.fromEntries(
+            Object.entries(rules || {}).filter(([task]) => allowedTasks.has(task))
+        )
+
+        if (!this.protectRepo || !this.recentChangeRepo) {
+            throw new Error('Protect/RecentChange repositories are required for protectPage')
+        }
+
+        await this.protectRepo.replacePageProtections(title, normalizedRules)
+
+        const nextRev = (page.currentRev || 0) + 1
+        await this.historyRepo.create({
+            page: title,
+            rev: nextRev,
+            content: page.content,
+            bytechange: 0,
+            editedby: user,
+            type: 'protect',
+            comment: JSON.stringify(normalizedRules)
+        })
+
+        await page.update({ currentRev: nextRev })
+
+        await this.recentChangeRepo.create({
+            page: title,
+            rev: nextRev,
+            bytechange: 0,
+            doneBy: user,
+            type: 'protect',
+            comment: JSON.stringify(normalizedRules)
+        })
+
+        return { title }
     }
 
     async searchPages(query, limit = 10) {

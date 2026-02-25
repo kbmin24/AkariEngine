@@ -21,6 +21,7 @@ import gongjiAdmin from '../admin/gongji.js'
 import developerGetHandler from '../admin/developerGetHandler.js'
 import adminLogHandler from '../admin/adminlog.js'
 import protectGet from '../controllers/admin/protectGet.js'
+import protectPost from '../controllers/admin/protectPost.js'
 
 export default (services, options = {}) => {
     const router = express.Router()
@@ -329,6 +330,13 @@ export default (services, options = {}) => {
         validateRequest,
         asyncRoute(async (req, res) => {
             await protectGet(req, res)
+        }))
+
+    router.post('/protect/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            await protectPost(req, res)
         }))
 
     return router

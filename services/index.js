@@ -23,7 +23,9 @@ class ServiceFactory {
             repositories.pages,
             repositories.history,
             this.category,
-            this.permission
+            this.permission,
+            repositories.protections,
+            repositories.recentchanges
         )
         this.recentChanges = new RecentChangeService(repositories.recentchanges)
         this.thread = new ThreadService(repositories.threads, repositories.threadcomments, this.permission)

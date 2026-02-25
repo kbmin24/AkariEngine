@@ -10,9 +10,8 @@ import viewHandler from '../pages/view.js'
 import previewController from '../controllers/pages/preview.js'
 import searchGetController from '../controllers/pages/searchGet.js'
 import searchPostController from '../controllers/pages/searchPost.js'
-import protectPost from '../admin/protectPost.js'
 import rawGetController from '../controllers/pages/rawGet.js'
-import historyPage from '../pages/history.js'
+import historyGetController from '../controllers/pages/historyGet.js'
 import diffGetController from '../controllers/pages/diffGet.js'
 import pageListPage from '../pages/pagelist.js'
 import categoryPage from '../pages/category.js'
@@ -25,7 +24,7 @@ import deleteGetController from '../controllers/pages/deleteGet.js'
 import revertGetPage from '../controllers/pages/revertGet.js'
 import revertPage from '../pages/revert.js'
 import movePostController from '../controllers/pages/movePost.js'
-import deletePage from '../pages/delete.js'
+import deletePageController from '../controllers/pages/deletePost.js'
 
 function accessOptions(noAclMessageKey, extra = {}) {
     return {
@@ -82,13 +81,6 @@ export default (services, options = {}) => {
             await searchPostController(req, res)
         }))
 
-    router.post('/protect/:name(*)',
-        param('name').trim().notEmpty(),
-        validateRequest,
-        asyncRoute(async (req, res) => {
-            await protectPost(req, res, global.db.perm, global.db.protect, global.db.pages, global.db.history, global.db.recentchanges, global.db.block)
-        }))
-
     router.get('/raw/:name(*)',
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
@@ -106,7 +98,7 @@ export default (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         asyncRoute(async (req, res) => {
-            await historyPage(req, res, global.db.history)
+            await historyGetController(req, res)
         })
     )
 
@@ -239,7 +231,7 @@ export default (services, options = {}) => {
             mode: 'enforce'
         }),
         asyncRoute(async (req, res) => {
-            await deletePage(req, res)
+            await deletePageController(req, res)
         })
     )
 
