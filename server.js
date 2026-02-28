@@ -1,11 +1,11 @@
 import express from 'express'
 const app = express()
-import paths from './utils/paths.js'
-import config from './config/index.js'
-import logger from './utils/logger.js'
-import { createSequelizeInstance } from './config/database.js'
-import RepositoryFactory from './repositories/index.js'
-import ServiceFactory from './services/index.js'
+import paths from './src/utils/paths.js'
+import config from './src/config/index.js'
+import logger from './src/utils/logger.js'
+import { createSequelizeInstance } from './src/config/database.js'
+import RepositoryFactory from './src/repositories/index.js'
+import ServiceFactory from './src/services/index.js'
 import path from 'node:path'
 import fs from 'node:fs'
 import session from 'express-session'
@@ -13,13 +13,13 @@ import cookieParser from 'cookie-parser'
 import sessionStoreFactory from 'express-session-sequelize'
 import csurf from 'csurf'
 import i18n from 'i18n'
-import taskScheduler from './taskScheduler.js'
-import escapeHTML from './utils/escapeHTML.js'
-import renderError from './utils/error.js'
-import registerRoutes from './routes/index.js'
+import taskScheduler from './src/taskScheduler.js'
+import escapeHTML from './src/utils/escapeHTML.js'
+import renderError from './src/utils/error.js'
+import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
-import renderPage from './pages/render.js'
-import adminCommand from './admin/command.js'
+import renderPage from './src/pages/render.js'
+import adminCommand from './src/admin/command.js'
 
 global.path = config.basePath
 global.conf = config.settings
@@ -77,42 +77,42 @@ app.use(express.urlencoded({ limit: "1mb", extended: false }))
 app.disable('x-powered-by')
 
 //db
-import usersFactory from './models/user.model.js'
+import usersFactory from './src/models/user.model.js'
 
 const users = usersFactory(sequelize);
-import pagesFactory from './models/page.model.js'
+import pagesFactory from './src/models/page.model.js'
 const pages = pagesFactory(sequelize);
-import recentchangesFactory from './models/recentchanges.model.js'
+import recentchangesFactory from './src/models/recentchanges.model.js'
 const recentchanges = recentchangesFactory(sequelize);
-import historyFactory from './models/history.model.js'
+import historyFactory from './src/models/history.model.js'
 const history = historyFactory(sequelize);
-import mfileFactory from './models/file.model.js'
+import mfileFactory from './src/models/file.model.js'
 const mfile = mfileFactory(sequelize);
-import permFactory from './models/perm.model.js'
+import permFactory from './src/models/perm.model.js'
 const perm = permFactory(sequelize);
-import protectFactory from './models/protect.model.js'
+import protectFactory from './src/models/protect.model.js'
 const protect = protectFactory(sequelize);
-import adminlogFactory from './models/adminlog.model.js'
+import adminlogFactory from './src/models/adminlog.model.js'
 const adminlog = adminlogFactory(sequelize);
-import blockFactory from './models/block.model.js'
+import blockFactory from './src/models/block.model.js'
 const block = blockFactory(sequelize);
-import loginhistoryFactory from './models/loginhistory.model.js'
+import loginhistoryFactory from './src/models/loginhistory.model.js'
 const loginhistory = loginhistoryFactory(sequelize);
-import categoryFactory from './models/category.model.js'
+import categoryFactory from './src/models/category.model.js'
 const category = categoryFactory(sequelize);
-import settingsFactory from './models/setting.model.js'
+import settingsFactory from './src/models/setting.model.js'
 const settings = settingsFactory(sequelize);
-import viewcountFactory from './models/viewcount.model.js'
+import viewcountFactory from './src/models/viewcount.model.js'
 const viewcount = viewcountFactory(sequelize);
-import updateTimeFactory from './models/updateTime.model.js'
+import updateTimeFactory from './src/models/updateTime.model.js'
 const updateTime = updateTimeFactory(sequelize);
-import threadFactory from './models/thread.model.js'
+import threadFactory from './src/models/thread.model.js'
 const thread = threadFactory(sequelize);
-import threadcommentFactory from './models/threadcomment.model.js'
+import threadcommentFactory from './src/models/threadcomment.model.js'
 const threadcomment = threadcommentFactory(sequelize);
-import recentdiscussFactory from './models/recentdiscuss.model.js'
+import recentdiscussFactory from './src/models/recentdiscuss.model.js'
 const recentdiscuss = recentdiscussFactory(sequelize);
-import linksFactory from './models/links.model.js'
+import linksFactory from './src/models/links.model.js'
 const links = linksFactory(sequelize);
 sequelize.sync()
 
@@ -231,8 +231,12 @@ app.use((req, res, next) => {
     // init'ise i18n
     i18n.init(req, res)
 
-    // inject IP address, also considering for proxy...
-    req.ipAddress = (req.headers['x-forwarded-for'] || req.socket.remoteAddress)
+    // combat IP spoofing
+    if (config.behindProxy) {
+        req.ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    } else {
+        req.ipAddress = req.socket.remoteAddress
+    }
 
     next()
 })
@@ -248,7 +252,7 @@ app.get('/lovelive', (req, res) => {
     return
 })
 
-import { errorHandler } from './middlewares/errorHandler.js'
+import { errorHandler } from './src/middlewares/errorHandler.js'
 app.use(errorHandler)
 
 //error handler

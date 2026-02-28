@@ -1,5 +1,5 @@
 //ext.js: extension manager
-import paths from '../utils/paths.js'
+import paths from '../src/utils/paths.js'
 
 import fs from 'node:fs'
 import path from 'node:path'

@@ -21,8 +21,8 @@ import editGetController from '../controllers/pages/editGet.js'
 import editPostController from '../controllers/pages/editPost.js'
 import moveGetController from '../controllers/pages/moveGet.js'
 import deleteGetController from '../controllers/pages/deleteGet.js'
-import revertGetPage from '../controllers/pages/revertGet.js'
-import revertPage from '../pages/revert.js'
+import revertGetController from '../controllers/pages/revertGet.js'
+import revertPostController from '../controllers/pages/revertPost.js'
 import movePostController from '../controllers/pages/movePost.js'
 import deletePageController from '../controllers/pages/deletePost.js'
 
@@ -42,6 +42,7 @@ export default (services, options = {}) => {
 
     const csrfProtection = options.csrfProtection
 
+    // TODO refactor this route after refactoring the renderer
     router.get('/w/:name(*)',
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
@@ -169,7 +170,7 @@ export default (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         csrfProtection,
-        asyncRoute(revertGetPage)
+        asyncRoute(revertGetController)
     )
 
     router.post('/revert/:name(*)',
@@ -179,7 +180,7 @@ export default (services, options = {}) => {
         csrfProtection,
         chkCaptcha,
         requirePageAccess('read', accessOptions('view_noacl')),
-        asyncRoute(revertPage)
+        asyncRoute(revertPostController)
     )
 
     router.post('/move/:name(*)',

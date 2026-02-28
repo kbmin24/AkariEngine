@@ -1,9 +1,9 @@
 import ejs from 'ejs'
 import sanitiseHtml from 'sanitize-html'
-import logger from '../../utils/logger.js'
+import logger from '../../src/utils/logger.js'
 import satisfyACL from './satisfyACL.js'
-import errorPage from '../../utils/error.js'
-import renderView from '../../view.js'
+import errorPage from '../../src/utils/error.js'
+import renderView from '../../src/view.js'
 import listPosts from './list.js'
 import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))

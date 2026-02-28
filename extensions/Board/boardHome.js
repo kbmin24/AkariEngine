@@ -1,6 +1,6 @@
 import ejs from 'ejs'
-import logger from '../../utils/logger.js'
-import renderView from '../../view.js'
+import logger from '../../src/utils/logger.js'
+import renderView from '../../src/view.js'
 
 import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))

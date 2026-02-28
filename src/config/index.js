@@ -2,15 +2,16 @@ import path from 'path'
 import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 
-import settings from '../LocalSettings.json' with { type: 'json' }
+import settings from '../../LocalSettings.json' with { type: 'json' }
 
 class Config {
     constructor() {
-        this.basePath = path.resolve(__dirname, '..')
+        this.basePath = path.resolve(__dirname, '../..')
         this.settings = settings
     }
 
     get port() { return this.settings.port }
+    get behindProxy() { return this.settings.behindProxy || false }
     get appName() { return this.settings.appname }
     get license() { return this.settings.licence }
     get dateTimeFormat() { return this.settings.dateTimeFormat }

@@ -1,6 +1,6 @@
 import i18n from 'i18n'
-import { PageNotFoundError, RevisionNotFoundError, ValidationError } from '../services/errors.js'
-import renderError from '../utils/error.js'
+import { PageNotFoundError, RevisionNotFoundError, ValidationError } from '../../services/errors.js'
+import renderError from '../../utils/error.js'
 
 export default async (req, res) => {
     try {
