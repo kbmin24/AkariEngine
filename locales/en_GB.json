@@ -117,6 +117,7 @@
 	"historyv2": "2nd version to compare (omit r)",
 	"compare": "Compare",
 	"revision": "Revision",
+	"norevision": "No revision is provided.",
 	"username": "User",
 	"editMade": "Edit",
 	"datetime": "Time",

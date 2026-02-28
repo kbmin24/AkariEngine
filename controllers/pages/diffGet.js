@@ -5,7 +5,7 @@ import renderError from '../../utils/error.js'
 
 export default async (req, res) => {
     try {
-        const model = await req.app.locals.services.page.getDiffViewModel({
+        const model = await req.app.locals.services.history.getDiffViewModel({
             title: req.params.name,
             rev1: req.query.rev1,
             rev2: req.query.rev2,

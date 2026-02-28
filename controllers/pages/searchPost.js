@@ -2,7 +2,7 @@ import { ValidationError } from '../../services/errors.js'
 
 export default async (req, res) => {
     try {
-        const target = await req.app.locals.services.page.resolveSearchRedirect({
+        const target = await req.app.locals.services.search.resolveSearchRedirect({
             query: req.body.q ?? req.body.pagename
         })
         res.redirect(target)

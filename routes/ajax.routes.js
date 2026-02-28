@@ -12,7 +12,7 @@ export default () => {
                 res.json({})
                 return
             }
-            const results = await req.app.locals.services.page.autocompletePages(query, 10)
+            const results = await req.app.locals.services.search.autocompletePages(query, 10)
             res.json(results)
         }))
 

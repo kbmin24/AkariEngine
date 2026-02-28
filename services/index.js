@@ -1,4 +1,6 @@
 import PageService from './PageService.js'
+import HistoryService from './HistoryService.js'
+import SearchService from './SearchService.js'
 import PermissionService from './PermissionService.js'
 import CategoryService from './CategoryService.js'
 import RecentChangeService from './RecentChangeService.js'
@@ -27,6 +29,12 @@ class ServiceFactory {
             repositories.protections,
             repositories.recentchanges
         )
+        this.history = new HistoryService(
+            repositories.history,
+            repositories.pages,
+            this.permission
+        )
+        this.search = new SearchService(repositories.pages)
         this.recentChanges = new RecentChangeService(repositories.recentchanges)
         this.thread = new ThreadService(repositories.threads, repositories.threadcomments, this.permission)
     }

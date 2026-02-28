@@ -4,7 +4,7 @@ import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 
 export default async (req, res) => {
     try {
-        const model = await req.app.locals.services.page.getSearchViewModel({
+        const model = await req.app.locals.services.search.getSearchViewModel({
             query: req.query.q,
             from: req.query.from || 0
         })

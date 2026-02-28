@@ -6,7 +6,7 @@ import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 
 export default async (req, res) => {
     try {
-        const model = await req.app.locals.services.page.getHistoryViewModel({
+        const model = await req.app.locals.services.history.getHistoryViewModel({
             title: req.params.name,
             from: req.query.from,
             to: req.query.to,

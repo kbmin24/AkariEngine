@@ -117,6 +117,7 @@
 	"historyv2": "비교할 버전 2(r 다음만 입력)",
 	"compare": "비교",
 	"revision": "리비전",
+	"norevision": "리비전이 지정되지 않았습니다.",
 	"username": "사용자명",
 	"editMade": "수정 사항",
 	"datetime": "일시",

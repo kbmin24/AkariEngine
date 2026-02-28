@@ -5,7 +5,7 @@ import renderError from '../utils/error.js'
 export default async (req, res) => {
     try {
         const ipAddress = req.ipAddress
-        await req.app.locals.services.page.revertPage({
+        await req.app.locals.services.history.revertPage({
             title: decodeURI(req.params.name),
             revertRev: req.body.rev,
             user: req.session.username,
