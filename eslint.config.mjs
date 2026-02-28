@@ -25,6 +25,22 @@ export default defineConfig([
     },
   },
   {
+    files: ["**/*.test.{js,mjs,cjs}", "**/*.spec.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: globals.jest,
+    },
+    rules: {
+      "no-unused-vars": [
+        "error",
+        {
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_"
+        }
+      ]
+    },
+  },
+  {
     files: ["public/js/**/*.js"],
     languageOptions: {
       sourceType: "script",
