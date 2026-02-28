@@ -132,9 +132,9 @@
 	"category": "분류",
 	"read_noacl": "문서의 읽기 권한이 {{acl}}이기 때문에 읽을 수 없습니다.",
 	"unknown_error": "알 수 없는 오류가 발생했습니다.",
-	"ip_blocked": "IP 주소 {{ip}}가 {{doneBy}}에 의해 {{until}}까지 차단되었습니다. 사유: {{comment}}",
+	"ip_blocked": "IP 주소 {{ip}}이(가) {{doneBy}}에 의해 {{{until}}}까지 차단되었습니다. 사유: {{comment}}",
 	"ip_blocked_forever": "IP 주소 {{ip}}가 {{doneBy}}에 의해 영구히 차단되었습니다. 사유: {{comment}}",
-	"user_blocked": "사용자 {{user}}가 {{doneBy}}에 의해 {{until}}까지 차단되었습니다. 사유: {{comment}}",
+	"user_blocked": "사용자 {{user}}이(가) {{doneBy}}에 의해 {{{until}}}까지 차단되었습니다. 사유: {{comment}}",
 	"user_blocked_forever": "사용자 {{user}}가 {{doneBy}}에 의해 영구히 차단되었습니다. 사유: {{comment}}",
 	"admin_required": "관리자 권한이 필요합니다.",
 	"orphaned_pages": "고립된 문서",
@@ -142,5 +142,6 @@
 	"signupdisabled": "계정 생성이 비활성화되어 있습니다.",
 	"diffTitle": "{{{pagename}}} r{{rev1}}, r{{rev2}} 비교",
 	"xrefTo": "{{{page}}}의 역링크",
-	"ACLpermRequried": "ACL 권한이 필요합니다."
+	"ACLpermRequried": "ACL 권한이 필요합니다.",
+	"threadOf": "{{{page}}}의 토론"
 }

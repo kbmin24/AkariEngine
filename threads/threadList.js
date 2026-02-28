@@ -1,10 +1,10 @@
 import ejs from 'ejs'
 import paths from '../utils/paths.js'
 import logger from '../utils/logger.js'
-import satisfyAcl from '../pages/satisfyACL.js'
 import renderError from '../utils/error.js'
 import { genCaptcha } from '../utils/captcha.js'
 import renderView from '../view.js'
+import i18n from 'i18n'
 
 export default async (req, res, dbs = {}) =>
 {
@@ -12,13 +12,14 @@ export default async (req, res, dbs = {}) =>
 
     const title = req.params.name
 
-    //block
-    const r = await satisfyAcl(req, res, ['everyone'], null, dbs['block'], true, true)
-
     //First check whether the page exists
     if (!(await dbs['pages'].findOne({where: {title: title}})))
     {
-        renderError(req, res, { description: 'No such thread.', returnLink: '/', returnName: 'the main page', statusCode: 404 })
+        renderError(req, res, {
+            description: i18n.__('page404'),
+            returnLink: '/',
+            returnName: i18n.__('mainpage'),
+            statusCode: 404 })
         return
     }
 
@@ -33,7 +34,10 @@ export default async (req, res, dbs = {}) =>
         captcha: captcha,
         openThreads: openThreads,
         closedThreads: closedThreads,
-        r: r
+        r: req.aclResult.allowed,
+        i18nKey: req.aclResult.error.i18nKey,
+        i18nParams: req.aclResult.error.i18nParams,
+        t: i18n.__
     }, (err, html) => 
     {
         if (err)
@@ -44,7 +48,7 @@ export default async (req, res, dbs = {}) =>
         }
         renderView(req, res,
         {
-            title: `${title}의 토론`,
+            title: i18n.__('threadOf', {page: title}),
             content: html,
             isPage: true,
             pageMode: "threads",

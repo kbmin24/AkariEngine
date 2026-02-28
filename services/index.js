@@ -6,6 +6,7 @@ import CategoryService from './CategoryService.js'
 import RecentChangeService from './RecentChangeService.js'
 import ThreadService from './ThreadService.js'
 import BlockService from './BlockService.js'
+import ViewcountService from './ViewcountService.js'
 
 class ServiceFactory {
     constructor(repositories) {
@@ -35,6 +36,7 @@ class ServiceFactory {
             this.permission
         )
         this.search = new SearchService(repositories.pages)
+        this.viewcount = new ViewcountService(repositories.viewcounts)
         this.recentChanges = new RecentChangeService(repositories.recentchanges)
         this.thread = new ThreadService(repositories.threads, repositories.threadcomments, this.permission)
     }

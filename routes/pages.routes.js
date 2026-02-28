@@ -13,9 +13,9 @@ import searchPostController from '../controllers/pages/searchPost.js'
 import rawGetController from '../controllers/pages/rawGet.js'
 import historyGetController from '../controllers/pages/historyGet.js'
 import diffGetController from '../controllers/pages/diffGet.js'
-import pageListPage from '../pages/pagelist.js'
-import categoryPage from '../pages/category.js'
-import viewRankPage from '../pages/viewrank.js'
+import pagelistGetController from '../controllers/pages/pagelistGet.js'
+import categoryGetController from '../controllers/pages/categoryGet.js'
+import viewrankGetController from '../controllers/pages/viewrankGet.js'
 import xrefGetController from '../controllers/pages/xrefGet.js'
 import editGetController from '../controllers/pages/editGet.js'
 import editPostController from '../controllers/pages/editPost.js'
@@ -49,9 +49,7 @@ export default (services, options = {}) => {
         requirePageAccess('read', accessOptions('view_noacl', {
             revisionQueryKeys: ['rev']
         })),
-        asyncRoute(async (req, res) => {
-            await viewHandler(req, res)
-        })
+        asyncRoute(viewHandler)
     )
 
     router.post('/w', asyncRoute(async (req, res) => {
@@ -62,33 +60,28 @@ export default (services, options = {}) => {
         body('content').trim().notEmpty(),
         body('title').trim().notEmpty(),
         validateRequest,
-        asyncRoute(async (req, res) => {
-            await previewController(req, res)
-        }))
+        asyncRoute(previewController)
+    )
 
     router.get('/search',
         query('q').trim().notEmpty(),
         query('from').optional().isInt(),
         validateRequest,
-        asyncRoute(async (req, res) => {
-            await searchGetController(req, res)
-        }))
+        asyncRoute(searchGetController)
+    )
 
     router.post('/search',
         body('pagename').trim().notEmpty(),
         validateRequest,
-        asyncRoute(async (req, res) => {
-            await searchPostController(req, res)
-        }))
+        asyncRoute(searchPostController)
+    )
 
     router.get('/raw/:name(*)',
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
-        asyncRoute(async (req, res) => {
-            await rawGetController(req, res)
-        })
+        asyncRoute(rawGetController)
     )
 
     router.get('/history/:name(*)',
@@ -97,9 +90,7 @@ export default (services, options = {}) => {
         query('to').optional().isInt(),
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
-        asyncRoute(async (req, res) => {
-            await historyGetController(req, res)
-        })
+        asyncRoute(historyGetController)
     )
 
     router.get('/diff/:name(*)',
@@ -109,9 +100,8 @@ export default (services, options = {}) => {
         requirePageAccess('read', accessOptions('view_noacl', {
             revisionQueryKeys: ['rev1', 'rev2']
         })),
-        asyncRoute(async (req, res) => {
-            await diffGetController(req, res)
-        }))
+        asyncRoute(diffGetController)
+    )
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
         await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: i18n.__ }, {
@@ -122,24 +112,17 @@ export default (services, options = {}) => {
         })
     }))
 
-    router.get('/PageList', asyncRoute(async (req, res) => {
-        await pageListPage(req, res, global.db.pages)
-    }))
+    router.get('/PageList', asyncRoute(pagelistGetController))
 
-    router.get('/category/:name(*)', asyncRoute(async (req, res) => {
-        await categoryPage(req, res, global.db.category)
-    }))
+    router.get('/category/:name(*)', asyncRoute(categoryGetController))
 
-    router.get('/viewrank', asyncRoute(async (req, res) => {
-        await viewRankPage(req, res, global.db.viewcount)
-    }))
+    router.get('/viewrank', asyncRoute(viewrankGetController))
 
     router.get('/xref/:name(*)',
         param('name').trim().notEmpty(),
         validateRequest,
-        asyncRoute(async (req, res) => {
-            await xrefGetController(req, res)
-        }))
+        asyncRoute(xrefGetController)
+    )
 
     router.get('/RandomPage', asyncRoute(async (req, res) => {
         // meh it's too thin, let's just leave it as is...
@@ -158,36 +141,26 @@ export default (services, options = {}) => {
         param('name').trim().isLength({ max: 255 }),
         param('name').trim().matches(global.legalTitleRegex),
         validateRequest,
-        asyncRoute(async (req, res) => {
-            await editGetController(req, res)
-        })
+        asyncRoute(editGetController)
     )
 
     router.post('/edit/:name(*)',
         csrfProtection,
         chkCaptcha,
         requirePageAccess('edit', accessOptions('edit_noacl')),
-        asyncRoute(async (req, res) => {
-            await editPostController(req, res)
-        })
+        asyncRoute(editPostController)
     )
 
     router.get('/move/:name(*)',
         csrfProtection,
         requirePageAccess('move', accessOptions('move_noacl')),
-        asyncRoute(async (req, res) => {
-            await moveGetController(req, res)
-        })
+        asyncRoute(moveGetController)
     )
 
     router.get('/delete/:name(*)',
         csrfProtection,
-        requirePermission('deletepage', {
-            mode: 'enforce'
-        }),
-        asyncRoute(async (req, res) => {
-            await deleteGetController(req, res)
-        })
+        requirePermission('deletepage', { mode: 'enforce' }),
+        asyncRoute(deleteGetController)
     )
 
     router.get('/revert/:name(*)',
@@ -196,9 +169,7 @@ export default (services, options = {}) => {
         validateRequest,
         requirePageAccess('read', accessOptions('view_noacl')),
         csrfProtection,
-        asyncRoute(async (req, res) => {
-            await revertGetPage(req, res)
-        })
+        asyncRoute(revertGetPage)
     )
 
     router.post('/revert/:name(*)',
@@ -208,18 +179,14 @@ export default (services, options = {}) => {
         csrfProtection,
         chkCaptcha,
         requirePageAccess('read', accessOptions('view_noacl')),
-        asyncRoute(async (req, res) => {
-            await revertPage(req, res)
-        })
+        asyncRoute(revertPage)
     )
 
     router.post('/move/:name(*)',
         csrfProtection,
         chkCaptcha,
         requirePageAccess('move', accessOptions('move_noacl')),
-        asyncRoute(async (req, res) => {
-            await movePostController(req, res)
-        })
+        asyncRoute(movePostController)
     )
 
     router.post('/delete/:name(*)',
@@ -227,12 +194,8 @@ export default (services, options = {}) => {
         validateRequest,
         csrfProtection,
         chkCaptcha,
-        requirePermission('deletepage', {
-            mode: 'enforce'
-        }),
-        asyncRoute(async (req, res) => {
-            await deletePageController(req, res)
-        })
+        requirePermission('deletepage', { mode: 'enforce' }),
+        asyncRoute(deletePageController)
     )
 
     return router

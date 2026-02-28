@@ -26,6 +26,11 @@ class CategoryService {
     async getCategoriesForPage(pageTitle) {
         return this.categoryRepo.findByPage(pageTitle)
     }
+
+    async getCategoryViewModel(category) {
+        const result = await this.categoryRepo.findAndCountByCategory(category)
+        return { category, pages: result }
+    }
 }
 
 export default CategoryService

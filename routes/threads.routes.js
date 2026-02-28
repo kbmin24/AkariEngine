@@ -11,7 +11,9 @@ export default (_services, options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
 
-    router.get('/threads/:name(*)', asyncRoute(async (req, res) => {
+    router.get('/threads/:name(*)',
+        requireEveryone({mode: 'store', storeKey: 'aclResult'}),
+        asyncRoute(async (req, res) => {
         await threadListHandler(req, res, {
             pages: global.db.pages,
             thread: global.db.thread,

@@ -140,5 +140,6 @@
 	"signupedisabled": "Account creation is disabled.",
 	"diffTitle": "{{{pagename}}}: Difference between r{{rev1}} and r{{rev2}}",
 	"xrefTo": "Pages linking to {{{page}}}",
-	"ACLpermRequried": "ACL permission is required."
+	"ACLpermRequried": "ACL permission is required.",
+	"threadOf": "Discussions of {{{page}}}"
 }

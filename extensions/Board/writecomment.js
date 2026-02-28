@@ -1,6 +1,6 @@
 
 import crypto from 'crypto'
-import satisfyACL from '../../pages/satisfyACL.js'
+import satisfyACL from './satisfyACL.js'
 import errorPage from '../../utils/error.js'
 
 export default async (req, res, boards, posts, boardcomment, block, perm) =>

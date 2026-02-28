@@ -1,7 +1,7 @@
 
 import crypto from 'crypto'
 import * as captchaUtils from '../../utils/captcha.js'
-import satisfyACL from '../../pages/satisfyACL.js'
+import satisfyACL from './satisfyACL.js'
 import errorPage from '../../utils/error.js'
 
 export default async (req, res, boards, posts, block, perm, boardfiles) =>

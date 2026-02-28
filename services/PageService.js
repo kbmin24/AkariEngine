@@ -192,6 +192,17 @@ class PageService {
         }
     }
 
+    async getPageListViewModel({ page = 1 } = {}) {
+        const pageSize = 50
+        const offset = (page - 1) * pageSize
+        const result = await this.pageRepo.findAllPaginated(offset, pageSize)
+        return {
+            pages: result.rows,
+            count: result.count,
+            currentPage: page
+        }
+    }
+
     async sign(req, settingsModel) {
         const dtnow = date.format(new Date(), global.dtFormat)
         if (req.session.username) {

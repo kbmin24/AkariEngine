@@ -1,6 +1,6 @@
 import ejs from 'ejs'
 import { Op } from 'sequelize'
-import satisfyACL from '../../pages/satisfyACL.js'
+import satisfyACL from './satisfyACL.js'
 import errorPage from '../../utils/error.js'
 import renderView from '../../view.js'
 

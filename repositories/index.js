@@ -8,6 +8,7 @@ import ProtectRepository from './ProtectRepository.js'
 import RecentChangeRepository from './RecentChangeRepository.js'
 import ThreadRepository from './ThreadRepository.js'
 import ThreadCommentRepository from './ThreadCommentRepository.js'
+import ViewcountRepository from './ViewcountRepository.js'
 
 class RepositoryFactory {
     constructor(db) {
@@ -29,6 +30,7 @@ class RepositoryFactory {
         this.threadcomments = new ThreadCommentRepository(db.threadcomment)
         this.blocks = new BlockRepository(db.block)
         this.protections = new ProtectRepository(db.protect)
+        this.viewcounts = new ViewcountRepository(db.viewcount)
     }
 }
 

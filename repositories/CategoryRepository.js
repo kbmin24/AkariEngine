@@ -5,6 +5,13 @@ class CategoryRepository extends BaseRepository {
         return this.model.findAll({ where: { category } })
     }
 
+    async findAndCountByCategory(category) {
+        return this.model.findAndCountAll({
+            where: { category },
+            order: [['page', 'ASC']]
+        })
+    }
+
     async findByPage(page) {
         return this.model.findAll({ where: { page } })
     }

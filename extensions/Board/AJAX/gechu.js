@@ -1,5 +1,5 @@
 
-import satisfyACL from '../../../pages/satisfyACL.js'
+import satisfyACL from '../satisfyACL.js'
 
 export default async (req, res, boards, posts, perm, block, boardgechu) =>
 {

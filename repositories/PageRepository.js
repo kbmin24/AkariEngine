@@ -47,6 +47,15 @@ class PageRepository extends BaseRepository {
         })
     }
 
+    async findAllPaginated(offset = 0, limit = 50) {
+        return this.model.findAndCountAll({
+            where: { deleted: false },
+            order: [['title', 'ASC']],
+            offset,
+            limit
+        })
+    }
+
     async autocompleteByPrefix(query, limit = 10) {
         return this.model.findAll({
             attributes: ['title'],
