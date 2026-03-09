@@ -1,0 +1,209 @@
+import { lexer } from './lexer.js'
+
+
+function lex(input) {
+    const result = lexer.tokenize(input)
+    return result
+}
+
+function tokenNames(input) {
+    return lex(input).tokens.map(t => t.tokenType.name)
+}
+
+function tokenImages(input) {
+    return lex(input).tokens.map(t => t.image)
+}
+
+describe('Lexer', () => {
+    describe('errors', () => {
+        test('produces no errors on valid input', () => {
+            expect(lex('hello world').errors).toHaveLength(0)
+            expect(lex("'''bold'''").errors).toHaveLength(0)
+            expect(lex('__underline__').errors).toHaveLength(0)
+        })
+    })
+
+    describe('Text', () => {
+        test('matches plain text', () => {
+            expect(tokenNames('hello')).toEqual(['Text'])
+        })
+
+        test('matches a lone apostrophe as text', () => {
+            expect(tokenNames("it's")).toEqual(['Text', 'Text', 'Text'])
+            expect(tokenImages("it's")).toEqual(["it", "'", "s"])
+        })
+
+        test('matches a lone underscore as text', () => {
+            expect(tokenNames('a_b')).toEqual(['Text', 'Text', 'Text'])
+            expect(tokenImages('a_b')).toEqual(['a', '_', 'b'])
+        })
+    })
+
+    describe('BoldItalicDelim', () => {
+        test("matches '''''", () => {
+            expect(tokenNames("'''''")).toEqual(['BoldItalicDelim'])
+        })
+
+        test("tokenizes '''''bold-italic''''' as BoldItalicDelim Text BoldItalicDelim", () => {
+            expect(tokenNames("'''''bold-italic'''''")).toEqual(['BoldItalicDelim', 'Text', 'BoldItalicDelim'])
+            expect(tokenImages("'''''bold-italic'''''")).toEqual(["'''''", 'bold-italic', "'''''"])
+        })
+    })
+
+    describe('BoldDelim', () => {
+        test("matches '''", () => {
+            expect(tokenNames("'''")).toEqual(['BoldDelim'])
+        })
+
+        test("tokenizes '''bold''' as BoldDelim Text BoldDelim", () => {
+            expect(tokenNames("'''bold'''")).toEqual(['BoldDelim', 'Text', 'BoldDelim'])
+            expect(tokenImages("'''bold'''")).toEqual(["'''", 'bold', "'''"])
+        })
+    })
+
+    describe('UnderlineDelim', () => {
+        test('matches __', () => {
+            expect(tokenNames('__')).toEqual(['UnderlineDelim'])
+        })
+
+        test('tokenizes __underline__ as UnderlineDelim Text UnderlineDelim', () => {
+            expect(tokenNames('__underline__')).toEqual(['UnderlineDelim', 'Text', 'UnderlineDelim'])
+            expect(tokenImages('__underline__')).toEqual(['__', 'underline', '__'])
+        })
+    })
+
+    describe('ItalicDelim', () => {
+        test("matches ''", () => {
+            expect(tokenNames("''")).toEqual(['ItalicDelim'])
+        })
+
+        test("tokenizes ''italic'' as ItalicDelim Text ItalicDelim", () => {
+            expect(tokenNames("''italic''")).toEqual(['ItalicDelim', 'Text', 'ItalicDelim'])
+            expect(tokenImages("''italic''")).toEqual(["''", 'italic', "''"])
+        })
+    })
+
+    describe('EscapeChar', () => {
+        test("matches a backslash followed by a special character", () => {
+            expect(tokenNames("\\'")).toEqual(['EscapeChar'])
+            expect(tokenNames('\\_')).toEqual(['EscapeChar'])
+            expect(tokenNames("\\\\")).toEqual(['EscapeChar'])
+        })
+        test("correctly tokenises escaped special characters", () => {
+            expect(tokenNames("\\'\\'\\'NOT BOLD\\'\\'\\'")).toEqual([
+                'EscapeChar', 'EscapeChar', 'EscapeChar', 'Text', 'EscapeChar', 'EscapeChar', 'EscapeChar',
+            ])
+            expect(tokenImages("\\'\\'\\'NOT BOLD\\'\\'\\'")).toEqual([
+                "\\'", "\\'", "\\'", "NOT BOLD", "\\'", "\\'", "\\'",
+            ])
+            expect(tokenNames("\\'''Actually Italic''\\'")).toEqual([
+                'EscapeChar', 'ItalicDelim', 'Text', 'ItalicDelim', 'EscapeChar',
+            ])
+        })
+    })
+
+    describe('Superscript', () => {
+        test('matches ^^', () => {
+            expect(tokenNames('^^')).toEqual(['SupDelim'])
+            expect(tokenImages('^^')).toEqual(['^^'])
+        })
+        test('tokenizes ^^superscript^^ as SupDelim Text SupDelim', () => {
+            expect(tokenNames('^^superscript^^')).toEqual(['SupDelim', 'Text', 'SupDelim'])
+            expect(tokenImages('^^superscript^^')).toEqual(['^^', 'superscript', '^^'])
+        })
+    })
+
+    describe('Subscript', () => {
+        test('matches ,,', () => {
+            expect(tokenNames(',,')).toEqual(['SubDelim'])
+            expect(tokenImages(',,')).toEqual([',,'])
+        })
+        test('tokenizes ,,subscript,, as SubDelim Text SubDelim', () => {
+            expect(tokenNames(',,subscript,,')).toEqual(['SubDelim', 'Text', 'SubDelim'])
+            expect(tokenImages(',,subscript,,')).toEqual([',,', 'subscript', ',,'])
+        })
+    })
+
+    describe('big', () => {
+        test('matches """', () => {
+            expect(tokenNames('"""')).toEqual(['BigDelim'])
+            expect(tokenImages('"""')).toEqual(['"""'])
+        })
+        test('tokenizes """big""" as BigDelim Text BigDelim', () => {
+            expect(tokenNames('"""big"""')).toEqual(['BigDelim', 'Text', 'BigDelim'])
+            expect(tokenImages('"""big"""')).toEqual(['"""', 'big', '"""'])
+        })
+    })
+
+    describe('Align', () => {
+        test('matches Left, Center, Right align delimeters', () => {
+            expect(tokenNames('[(]{{')).toEqual(['LeftAlignOpen'])
+            expect(tokenNames('[:]{{')).toEqual(['CenterAlignOpen'])
+            expect(tokenNames('[)]{{')).toEqual(['RightAlignOpen'])
+            expect(tokenNames('}}')).toEqual(['MultilineClose'])
+        })
+        test('Does not get mixed up with multiline macro', () => {
+            // Reserved
+        })
+    })
+
+    describe('line breaks', () => {
+        test('Skips CR', () => {
+            expect(tokenNames('\r')).toEqual([])
+        })
+
+        test('matches LF', () => {
+            expect(tokenNames('\n')).toEqual(['LF'])
+        })
+
+        test('matches CRLF as LF', () => {
+            expect(tokenNames('\r\n')).toEqual(['LF'])
+        })
+    })
+
+    describe('nesting', () => {
+        test("tokenizes __'''bold'''__ correctly", () => {
+            expect(tokenNames("__'''bold'''__")).toEqual([
+                'UnderlineDelim', 'BoldDelim', 'Text', 'BoldDelim', 'UnderlineDelim',
+            ])
+        })
+
+        test("tokenizes '''__bold-underline__''' correctly", () => {
+            expect(tokenNames("'''__bold-underline__'''")).toEqual([
+                'BoldDelim', 'UnderlineDelim', 'Text', 'UnderlineDelim', 'BoldDelim',
+            ])
+        })
+    })
+
+    describe('Comments', () => {
+        test('comment ignored', () => {
+            expect(tokenNames('// this is a comment\n')).toEqual([])
+        })
+        test('comment without newline ignored', () => {
+            expect(tokenNames('// this is a comment')).toEqual([])
+        })
+    })
+
+    describe('Headings', () => {
+        test('matches H1Open and H1Close', () => {
+            expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'H1Close'])
+            expect(tokenImages('= Heading 1 =')).toEqual(['=', ' Heading 1 ', '='])
+        })
+        test('matches h2, h3, h4, h5, h6', () => {
+            expect(tokenNames('== Heading 2 ==')).toEqual(['H2Open', 'Text', 'H2Close'])
+            expect(tokenImages('== Heading 2 ==')).toEqual(['==', ' Heading 2 ', '=='])
+
+            expect(tokenNames('=== Heading 3 ===')).toEqual(['H3Open', 'Text', 'H3Close'])
+            expect(tokenImages('=== Heading 3 ===')).toEqual(['===', ' Heading 3 ', '==='])
+
+            expect(tokenNames('==== Heading 4 ====')).toEqual(['H4Open', 'Text', 'H4Close'])
+            expect(tokenImages('==== Heading 4 ====')).toEqual(['====', ' Heading 4 ', '===='])
+
+            expect(tokenNames('===== Heading 5 =====')).toEqual(['H5Open', 'Text', 'H5Close'])
+            expect(tokenImages('===== Heading 5 =====')).toEqual(['=====', ' Heading 5 ', '====='])
+
+            expect(tokenNames('====== Heading 6 ======')).toEqual(['H6Open', 'Text', 'H6Close'])
+            expect(tokenImages('====== Heading 6 ======')).toEqual(['======', ' Heading 6 ', '======'])
+        })
+    })
+})

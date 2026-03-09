@@ -1,4 +1,25 @@
-/*Renderer*/
+/* Auxiliary CSS for renderer */
+
+.ren-textbf
+{
+    font-weight: bold;
+}
+
+.ren-italic
+{
+    font-style: italic;
+}
+
+.ren-underline
+{
+    text-decoration: underline;
+}
+
+.ren-big
+{
+    font-size: larger;
+}
+
 .ren-center
 {
     text-align: center;
