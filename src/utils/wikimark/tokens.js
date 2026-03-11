@@ -3,7 +3,7 @@ import { createToken, Lexer } from "chevrotain"
 // we need four slashes to bc it is escaped twice...
 const BSLASH = '\\\\'
 
-const SPECIAL_CHARS = `_'^,"/[\\](){}:=${BSLASH}\\r\\n`
+const SPECIAL_CHARS = `_'^,"/[\\](){}:=\\- ${BSLASH}\\r\\n`
 
 const EscapeChar = createToken({
     name: 'EscapeChar',
@@ -56,6 +56,11 @@ const ItalicDelim = createToken({
     pattern: /''/,
 })
 
+const StrikeDelim = createToken({
+    name: 'StrikeDelim',
+    pattern: /--/,
+})
+
 const SupDelim = createToken({
     name: 'SupDelim',
     pattern: /\^\^/,
@@ -69,6 +74,11 @@ const SubDelim = createToken({
 const BigDelim = createToken({
     name: 'BigDelim',
     pattern: /"""/,
+})
+
+const TOC = createToken({
+    name: 'TOC',
+    pattern: /\[(toc|목차)\]/i,
 })
 
 const CR = createToken({
@@ -89,7 +99,7 @@ const commentPattern = /\/\/[^\n]*\n?/y
 const Comment = createToken({
     name: 'Comment',
     pattern: (text, offset) => {
-        if (offset !== 0 && text[offset - 1] !== '\n') return null
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
         commentPattern.lastIndex = offset
         return commentPattern.exec(text)
     },
@@ -102,12 +112,12 @@ const Comment = createToken({
 const headingTokens = {}
 for (let n = 6; n >= 1; n--) {
     const eqStr = '='.repeat(n)
-    const openPat = new RegExp(eqStr, 'y')
-    const closePat = new RegExp(`${eqStr}[ \\t]*(?=\\n|$)`, 'y')
+    const openPat = new RegExp(eqStr + ' ', 'y')
+    const closePat = new RegExp(` ${eqStr}[ \\t]*(?=\\n|\\r|$)`, 'y')
     headingTokens[`H${n}Open`] = createToken({
         name: `H${n}Open`,
         pattern: (text, offset) => {
-            if (offset !== 0 && text[offset - 1] !== '\n') return null
+            if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
             openPat.lastIndex = offset
             return openPat.exec(text)
         },
@@ -139,9 +149,11 @@ export const T = {
     BoldItalicDelim,
     BoldDelim,
     ItalicDelim,
+    StrikeDelim,
     SupDelim,
     SubDelim,
     BigDelim,
+    TOC,
     CR,
     LF,
     Comment,
@@ -157,17 +169,18 @@ export const inlineTokens = new Set([
     BoldDelim,
     BoldItalicDelim,
     ItalicDelim,
+    StrikeDelim,
     SupDelim,
     SubDelim,
     BigDelim,
-    Text
-])
+    Text])
 
 export const symmetricTokens = new Set([
     UnderlineDelim,
     BoldItalicDelim,
     BoldDelim,
     ItalicDelim,
+    StrikeDelim,
     SupDelim,
     SubDelim,
     BigDelim

@@ -46,5 +46,29 @@ export function scanTokenMatches(tokens) {
         }
     }
 
-    return { openers, closers }
+    // scan for matched heading open/close pairs (line-scoped, asymmetric)
+    const matchedHeadingOpens = new Set()
+    let pendingHeading = null  // { token, level }
+
+    for (const tok of tokens) {
+        if (tok.tokenType === T.LF) {
+            pendingHeading = null
+            continue
+        }
+        for (let n = 1; n <= 6; n++) {
+            if (tok.tokenType === T[`H${n}Open`]) {
+                pendingHeading = { token: tok, level: n }
+                break
+            }
+            if (tok.tokenType === T[`H${n}Close`]) {
+                if (pendingHeading?.level === n) {
+                    matchedHeadingOpens.add(pendingHeading.token)
+                }
+                pendingHeading = null
+                break
+            }
+        }
+    }
+
+    return { openers, closers, matchedHeadingOpens }
 }

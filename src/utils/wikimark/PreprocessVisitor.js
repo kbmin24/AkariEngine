@@ -18,25 +18,21 @@ function buildHeadingName(headingCounts, depth, separator = '.') {
  * @param {Array} toc Array of heading objects.
  * @param {Map} headingNames Map of CST nodes to their names.
  */
-function normaliseHeadingDepth(toc, headingNames)
-{
+function normaliseHeadingDepth(toc, headingNames) {
     // determine 'offset'
     let offset = 6
-    for (let i = 0; i < toc.length; i++)
-    {
+    for (let i = 0; i < toc.length; i++) {
         offset = Math.min(offset, toc[i].depth - 1)
     }
 
     if (offset == 6) return // no headings, nothing to normalise
 
-    for (let i = 0; i < toc.length; i++)
-    {
+    for (let i = 0; i < toc.length; i++) {
         toc[i].depth -= offset
         toc[i].name = toc[i].name.split('.').slice(offset).join('.')
     }
 
-    for (let k of headingNames.keys())
-    {
+    for (let k of headingNames.keys()) {
         const name = headingNames.get(k)
         const parts = name.split('.').slice(offset)
         headingNames.set(k, parts.join('.'))
@@ -57,13 +53,17 @@ export class PreprocessVisitor extends BaseCstVisitor {
             // 'depth' is NOT the heading depth; it is depth relative to 'biggest'
             // heading in the document, e.g. h2 h3 h4 h2 => 1 2 3 2.
             toc: [],
-            
+
             // node => name
-            headingNames: new Map()
+            headingNames: new Map(), //id
+            headingTitles: new Map(), //the title shown to user i.e. the text between ='s
+
+            // node => Integer count of when the heading appears (1-indexed)
+            headingIndex: new Map()
 
         }
         this.headingCounts = [0, 0, 0, 0, 0, 0, 0] // 1-based indexing, so [0..6]
-
+        this.nextHeadingIndex = 1
         this.runFirst = true
 
         this.validateVisitor()
@@ -74,6 +74,8 @@ export class PreprocessVisitor extends BaseCstVisitor {
             throw new Error("document() should only be called ONCE")
         }
         this.runFirst = false
+
+        if (!ctx.block) return //empty document
 
         for (const block of ctx.block)
             this.visit(block)
@@ -106,6 +108,10 @@ export class PreprocessVisitor extends BaseCstVisitor {
 
         this.manifest.headingNames.set(ctx, headingName)
         this.manifest.toc.push({ name: headingName, depth, node: ctx })
+        this.manifest.headingIndex.set(ctx, this.nextHeadingIndex++)
+
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        this.manifest.headingTitles.set(ctx, inner)
     }
 
     h1(ctx) {
@@ -130,5 +136,68 @@ export class PreprocessVisitor extends BaseCstVisitor {
 
     h6(ctx) {
         this.handleHeadingVisit(ctx, 6, this.headingCounts)
+    }
+
+
+    // inline renderer for TOC
+    inline(ctx) {
+        if (ctx.bold) return this.visit(ctx.bold[0])
+        if (ctx.italic) return this.visit(ctx.italic[0])
+        if (ctx.underline) return this.visit(ctx.underline[0])
+        if (ctx.strikethru) return this.visit(ctx.strikethru[0])
+        if (ctx.superscript) return this.visit(ctx.superscript[0])
+        if (ctx.subscript) return this.visit(ctx.subscript[0])
+        if (ctx.big) return this.visit(ctx.big[0])
+        if (ctx.Text) return ctx.Text[0].image
+        if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
+
+        // unmatched delimiters — render as their literal characters
+        const orphanedTokens = [
+            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose", "BoldDelim",
+            "ItalicDelim", "UnderlineDelim", "SupDelim", "SubDelim", "BigDelim",
+            "H1Open", "H1Close", "H2Open", "H2Close", "H3Open",
+            "H3Close", "H4Open", "H4Close", "H5Open", "H5Close",
+            "H6Open", "H6Close",
+        ]
+        for (const tokenName of orphanedTokens) {
+            if (ctx[tokenName]) return ctx[tokenName][0].image
+        }
+
+        return ''
+    }
+
+     bold(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<span class="ren-textbf">${inner}</span>`
+    }
+
+    italic(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<span class="ren-italic">${inner}</span>`
+    }
+
+    underline(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<span class="ren-underline">${inner}</span>`
+    }
+
+    strikethru(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<s>${inner}</s>`
+    }
+
+    superscript(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<sup>${inner}</sup>`
+    }
+
+    subscript(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<sub>${inner}</sub>`
+    }
+
+    big(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<span class="ren-big">${inner}</span>`
     }
 }

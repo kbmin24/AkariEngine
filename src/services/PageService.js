@@ -54,12 +54,17 @@ class PageService {
         }
 
         const sectionIndex = Number(section)
-        const headLookupRegex = /(?=^(?:=+) (?:.*) =+(?: )*\r?\n)/gim
-        const splits = body.split(headLookupRegex)
-        let offset = 0
-        if (/^(?:=+) (?:.*) =+(?: )*\r?\n/igm.test(splits[0])) offset = -1
+        const headLookupRegex = /(?=^(={1,6})(?!=) (?:.*?) \1[ \t]*$)/gim
 
-        if (sectionIndex + offset > splits.length) {
+        // len=2*(number of sections) + (1 if the content does NOT start with a heading)
+        const splits = body.split(headLookupRegex)
+
+        let offset = 0
+        if (/^(={1,6})(?!=) (.*?) \1[ \t]*$/igm.test(splits[0])) offset = -2
+        
+        // loc in splits array
+        const targetIndex = 2 * sectionIndex + offset
+        if (targetIndex >= splits.length) {
             throw new ValidationError({
                 i18nKey: 'edit_noparagraph',
                 statusCode: 200,
@@ -67,9 +72,10 @@ class PageService {
             })
         }
 
-        for (let i = 0; i < sectionIndex + offset; i++) prefix += splits[i]
-        for (let i = sectionIndex + offset + 1; i < splits.length; i++) suffix += splits[i]
-        body = splits[sectionIndex + offset]
+        // targetIndex-1 is the heading, targetIndex+1 is the next heading
+        for (let i = 0; i < targetIndex - 1; i+=2) prefix += splits[i]
+        for (let i = targetIndex + 2; i < splits.length; i+=2) suffix += splits[i]
+        body = splits[targetIndex]
 
         return { prefix, suffix, content: body }
     }

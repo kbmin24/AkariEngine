@@ -1,3 +1,5 @@
+import dedent from 'dedent'
+
 import { WikiParser } from './wikiparser.js'
 
 const parserInstance = new WikiParser()
@@ -10,17 +12,24 @@ export class HTMLVisitor extends BaseCstVisitor {
     /**
      * Constructor for HTMLVisitor.
      * @param {Object} manifest k-v pairs of data collected by PreprocessVisitor
+     * @param {Object} prompts k-v pairs of prompts to show to the user. Required fields: 'edit'
+     * @param {Object} options k-v pairs of options.
+     * Currently supports: pagename (String), renderSectionEditButton (Boolean, requires pagename)
      */
-    constructor(manifest) {
+    constructor(manifest, prompts, options) {
         super()
         this.validateVisitor()
         this.headingCounts = [0, 0, 0, 0, 0, 0]
         this.manifest = manifest
+        this.prompts = prompts
+        this.options = options || {}
     }
 
     document(ctx) {
         // reinit'ise heading number counter
         this.headingCounts = [0, 0, 0, 0, 0, 0]
+
+        if (!ctx.block) return '' //empty document
 
         return ctx.block.map(block => this.visit(block)).join('')
     }
@@ -30,6 +39,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.leftalign) return this.visit(ctx.leftalign[0])
         if (ctx.centeralign) return this.visit(ctx.centeralign[0])
         if (ctx.rightalign) return this.visit(ctx.rightalign[0])
+        if (ctx.TOCBox) return this.visit(ctx.TOCBox[0])
         if (!ctx.paragraph) return ''
         return this.visit(ctx.paragraph[0])
     }
@@ -45,8 +55,17 @@ export class HTMLVisitor extends BaseCstVisitor {
 
     handleHeadingVisit(ctx, depth) {
         const headingName = this.manifest.headingNames.get(ctx)
+        const headingIndex = this.manifest.headingIndex.get(ctx)
         const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<h${depth}>${headingName} ${inner.trim()}</h${depth}>`
+
+        const editButton = this.options.renderSectionEditButton ?
+            `<a href="/edit/${this.options.pagename}?section=${headingIndex}" class="btn btn-primary">[${this.prompts.edit}]</a>` : ''
+
+        return dedent`
+            <h${depth} class='border-bottom ren-header' id='s${headingName}'>
+            <a href='#toc'>${headingName}.</a> ${inner.trim()} ${editButton}
+            </h${depth}>
+        `
     }
 
     h1(ctx) {
@@ -88,6 +107,22 @@ export class HTMLVisitor extends BaseCstVisitor {
         return `<div class="ren-right">${inner}</div>`
     }
 
+    TOCBox(_ctx)
+    {
+        // build TOC from manifest
+        let toc = `<div id='toc' class='border m-3 s-0 me-0 p-3 ren-toc'>`
+        toc += `<div style="font-weight:bold;margin-bottom: 1rem;">${this.prompts.toc}</div>`
+        for (let item of this.manifest.toc) {
+            // indent
+            for (let i = 1; i < item.depth; i++) toc += '&emsp;'
+            
+            let headingname = this.manifest.headingTitles.get(item.node)
+            toc += `<a href='#s${item.name}'>${item.name}.&nbsp;<span class='blackln'>${headingname}</span></a><br>`
+        }
+        toc += '</div>'
+        return toc
+    }
+
     paragraph(ctx) {
         const lines = ctx.line.map(line => this.visit(line)).join('<br>')
         return `<p>${lines}</p>`
@@ -102,6 +137,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.bold) return this.visit(ctx.bold[0])
         if (ctx.italic) return this.visit(ctx.italic[0])
         if (ctx.underline) return this.visit(ctx.underline[0])
+        if (ctx.strikethru) return this.visit(ctx.strikethru[0])
         if (ctx.superscript) return this.visit(ctx.superscript[0])
         if (ctx.subscript) return this.visit(ctx.subscript[0])
         if (ctx.big) return this.visit(ctx.big[0])
@@ -109,18 +145,17 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 
         // unmatched delimiters — render as their literal characters
-        if (ctx.LeftAlignOpen) return ctx.LeftAlignOpen[0].image
-        if (ctx.CenterAlignOpen) return ctx.CenterAlignOpen[0].image
-        if (ctx.RightAlignOpen) return ctx.RightAlignOpen[0].image
-        if (ctx.MultilineClose) return ctx.MultilineClose[0].image
-        if (ctx.BoldDelim) return ctx.BoldDelim[0].image
-        if (ctx.ItalicDelim) return ctx.ItalicDelim[0].image
-        if (ctx.UnderlineDelim) return ctx.UnderlineDelim[0].image
-        if (ctx.SupDelim) return ctx.SupDelim[0].image
-        if (ctx.SubDelim) return ctx.SubDelim[0].image
-        if (ctx.BigDelim) return ctx.BigDelim[0].image
-        if (ctx.h1Open) return ctx.h1Open[0].image
-        if (ctx.h1Close) return ctx.h1Close[0].image
+        const orphanedTokens = [
+            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose", "BoldDelim",
+            "ItalicDelim", "UnderlineDelim", "SupDelim", "SubDelim", "BigDelim",
+            "H1Open", "H1Close", "H2Open", "H2Close", "H3Open",
+            "H3Close", "H4Open", "H4Close", "H5Open", "H5Close",
+            "H6Open", "H6Close",
+        ]
+        for (const tokenName of orphanedTokens) {
+            if (ctx[tokenName]) return ctx[tokenName][0].image
+        }
+
         return ''
     }
 
@@ -137,6 +172,11 @@ export class HTMLVisitor extends BaseCstVisitor {
     underline(ctx) {
         const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
         return `<span class="ren-underline">${inner}</span>`
+    }
+
+    strikethru(ctx) {
+        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
+        return `<s>${inner}</s>`
     }
 
     superscript(ctx) {

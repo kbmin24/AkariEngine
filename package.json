@@ -13,6 +13,7 @@
     "cookie-parser": "^1.4.5",
     "csurf": "^1.11.0",
     "date-and-time": "^2.0.0",
+    "dedent": "^1.7.2",
     "dequeue": "^1.0.5",
     "diff": "^5.0.0",
     "diff2html": "^3.4.9",

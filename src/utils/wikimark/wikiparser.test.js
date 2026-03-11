@@ -49,6 +49,16 @@ describe('WikiParser', () => {
         })
     })
 
+    describe('Renders malformed inputs without errors', () => {
+        test('unmatched title regex', () => {
+            expect(parse("== AB =").errors).toHaveLength(0)
+        })
+        test('= AB', () =>
+        {
+            expect(parse("= AB").errors).toHaveLength(0)
+        })
+    })
+
     describe('error recovery', () => {
         test('unmatched bold delimiter produces no errors', () => {
             expect(parse("'''unmatched").errors).toHaveLength(0)

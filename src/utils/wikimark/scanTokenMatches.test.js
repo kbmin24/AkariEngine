@@ -71,4 +71,9 @@ describe('scanTokenMatches', () => {
         expect(openers.size).toBe(1)
         expect(closers.size).toBe(1)
     })
+
+    test ('matching headings', () => {
+        const { matchedHeadingOpens } = scan('= AB =\n== BC ==\n= B\n= A\n= C')
+        expect(matchedHeadingOpens.size).toBe(2)
+    })
 })

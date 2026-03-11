@@ -10,6 +10,7 @@ export class WikiParser extends CstParser {
 
         $.openers = new Set()
         $.closers = new Set()
+        $.matchedHeadingOpens = new Set()
 
         // helpers to match unmatched ones
         const isOpener = (type) => () => $.openers.has($.LA(1)) && $.LA(1).tokenType === type
@@ -25,10 +26,11 @@ export class WikiParser extends CstParser {
 
         $.RULE('block', () => {
             $.OR([
-                { ALT: () => $.SUBRULE($.heading) },
+                { GATE: () => $.matchedHeadingOpens.has($.LA(1)), ALT: () => $.SUBRULE($.heading) },
                 { ALT: () => $.SUBRULE($.leftalign) },
                 { ALT: () => $.SUBRULE($.centeralign) },
                 { ALT: () => $.SUBRULE($.rightalign) },
+                { ALT: () => $.SUBRULE($.TOCBox) },
                 // bare LF tokens (blank lines between/around blocks)
                 { ALT: () => $.CONSUME2(T.LF) },
                 { ALT: () => $.SUBRULE($.paragraph) },
@@ -97,6 +99,10 @@ export class WikiParser extends CstParser {
             $.CONSUME(T.MultilineClose)
         })
 
+        $.RULE('TOCBox', () => {
+            $.CONSUME(T.TOC)
+        })
+
         $.RULE('paragraph', () => {
             $.SUBRULE($.line)
             $.MANY({
@@ -125,12 +131,14 @@ export class WikiParser extends CstParser {
                 { GATE: isOpener(T.BoldDelim), ALT: () => $.SUBRULE($.bold) },
                 { GATE: isOpener(T.ItalicDelim), ALT: () => $.SUBRULE($.italic) },
                 { GATE: isOpener(T.UnderlineDelim), ALT: () => $.SUBRULE($.underline) },
+                { GATE: isOpener(T.StrikeDelim), ALT: () => $.SUBRULE($.strikethru) },
                 { GATE: isOpener(T.SupDelim), ALT: () => $.SUBRULE($.superscript) },
                 { GATE: isOpener(T.SubDelim), ALT: () => $.SUBRULE($.subscript) },
                 { GATE: isOpener(T.BigDelim), ALT: () => $.SUBRULE($.big) },
                 { ALT: () => $.CONSUME(T.Text) },
                 { ALT: () => $.CONSUME(T.EscapeChar) },
-                ...[1,2,3,4,5,6].map(n => ({ ALT: () => $.CONSUME(T[`H${n}Close`]) })),
+                ...[1, 2, 3, 4, 5, 6].map(n => ({ ALT: () => $.CONSUME(T[`H${n}Open`]) })),
+                ...[1, 2, 3, 4, 5, 6].map(n => ({ ALT: () => $.CONSUME(T[`H${n}Close`]) })),
 
                 // closer needs to be consumed elseware; prevent it from being consumed here.
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.BoldItalicDelim) },
@@ -167,6 +175,12 @@ export class WikiParser extends CstParser {
             $.CONSUME1(T.UnderlineDelim)
         })
 
+        $.RULE('strikethru', () => {
+            $.CONSUME(T.StrikeDelim)
+            $.MANY({ GATE: isNotCloser, DEF: () => $.SUBRULE($.inline) })
+            $.CONSUME1(T.StrikeDelim)
+        })
+
         $.RULE('superscript', () => {
             $.CONSUME(T.SupDelim)
             $.MANY({ GATE: isNotCloser, DEF: () => $.SUBRULE($.inline) })
@@ -190,9 +204,10 @@ export class WikiParser extends CstParser {
 
     parse(tokens) {
         // call this instead of the standard pattern
-        const { openers, closers } = scanTokenMatches(tokens)
+        const { openers, closers, matchedHeadingOpens } = scanTokenMatches(tokens)
         this.openers = openers
         this.closers = closers
+        this.matchedHeadingOpens = matchedHeadingOpens
         this.input = tokens
         return this.document()
     }

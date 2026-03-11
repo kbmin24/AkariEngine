@@ -44,9 +44,9 @@ describe('Lexer', () => {
             expect(tokenNames("'''''")).toEqual(['BoldItalicDelim'])
         })
 
-        test("tokenizes '''''bold-italic''''' as BoldItalicDelim Text BoldItalicDelim", () => {
-            expect(tokenNames("'''''bold-italic'''''")).toEqual(['BoldItalicDelim', 'Text', 'BoldItalicDelim'])
-            expect(tokenImages("'''''bold-italic'''''")).toEqual(["'''''", 'bold-italic', "'''''"])
+        test("tokenizes '''''bolditalic''''' as BoldItalicDelim Text BoldItalicDelim", () => {
+            expect(tokenNames("'''''bolditalic'''''")).toEqual(['BoldItalicDelim', 'Text', 'BoldItalicDelim'])
+            expect(tokenImages("'''''bolditalic'''''")).toEqual(["'''''", 'bolditalic', "'''''"])
         })
     })
 
@@ -90,13 +90,13 @@ describe('Lexer', () => {
             expect(tokenNames("\\\\")).toEqual(['EscapeChar'])
         })
         test("correctly tokenises escaped special characters", () => {
-            expect(tokenNames("\\'\\'\\'NOT BOLD\\'\\'\\'")).toEqual([
+            expect(tokenNames("\\'\\'\\'NOTBOLD\\'\\'\\'")).toEqual([
                 'EscapeChar', 'EscapeChar', 'EscapeChar', 'Text', 'EscapeChar', 'EscapeChar', 'EscapeChar',
             ])
-            expect(tokenImages("\\'\\'\\'NOT BOLD\\'\\'\\'")).toEqual([
-                "\\'", "\\'", "\\'", "NOT BOLD", "\\'", "\\'", "\\'",
+            expect(tokenImages("\\'\\'\\'NOTBOLD\\'\\'\\'")).toEqual([
+                "\\'", "\\'", "\\'", "NOTBOLD", "\\'", "\\'", "\\'",
             ])
-            expect(tokenNames("\\'''Actually Italic''\\'")).toEqual([
+            expect(tokenNames("\\'''ActuallyItalic''\\'")).toEqual([
                 'EscapeChar', 'ItalicDelim', 'Text', 'ItalicDelim', 'EscapeChar',
             ])
         })
@@ -161,6 +161,17 @@ describe('Lexer', () => {
         })
     })
 
+    describe('TOC', () => {
+        test('Matches [toc]', () => {
+            expect(tokenNames('[toc]')).toEqual(['TOC'])
+            expect(tokenNames('[ToC]')).toEqual(['TOC'])
+            expect(tokenNames('[목차]')).toEqual(['TOC'])
+        })
+        test('\\[toc] is not [toc]', () => {
+            expect(tokenNames('\\[toc]')).toEqual(['EscapeChar', 'Text', 'Text'])
+        })
+    })
+
     describe('nesting', () => {
         test("tokenizes __'''bold'''__ correctly", () => {
             expect(tokenNames("__'''bold'''__")).toEqual([
@@ -168,8 +179,8 @@ describe('Lexer', () => {
             ])
         })
 
-        test("tokenizes '''__bold-underline__''' correctly", () => {
-            expect(tokenNames("'''__bold-underline__'''")).toEqual([
+        test("tokenizes '''__boldunderline__''' correctly", () => {
+            expect(tokenNames("'''__boldunderline__'''")).toEqual([
                 'BoldDelim', 'UnderlineDelim', 'Text', 'UnderlineDelim', 'BoldDelim',
             ])
         })
@@ -186,24 +197,24 @@ describe('Lexer', () => {
 
     describe('Headings', () => {
         test('matches H1Open and H1Close', () => {
-            expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'H1Close'])
-            expect(tokenImages('= Heading 1 =')).toEqual(['=', ' Heading 1 ', '='])
+                       expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'Text', 'Text', 'H1Close'])
+            expect(tokenImages('= Heading 1 =')).toEqual(['= ', 'Heading', ' ', '1', ' ='])
         })
         test('matches h2, h3, h4, h5, h6', () => {
-            expect(tokenNames('== Heading 2 ==')).toEqual(['H2Open', 'Text', 'H2Close'])
-            expect(tokenImages('== Heading 2 ==')).toEqual(['==', ' Heading 2 ', '=='])
+            expect(tokenNames('== Heading 2 ==')).toEqual(['H2Open', 'Text', 'Text', 'Text', 'H2Close'])
+            expect(tokenImages('== Heading 2 ==')).toEqual(['== ', 'Heading', ' ', '2', ' =='])
 
-            expect(tokenNames('=== Heading 3 ===')).toEqual(['H3Open', 'Text', 'H3Close'])
-            expect(tokenImages('=== Heading 3 ===')).toEqual(['===', ' Heading 3 ', '==='])
+            expect(tokenNames('=== Heading 3 ===')).toEqual(['H3Open', 'Text', 'Text', 'Text', 'H3Close'])
+            expect(tokenImages('=== Heading 3 ===')).toEqual(['=== ', 'Heading', ' ', '3', ' ==='])
 
-            expect(tokenNames('==== Heading 4 ====')).toEqual(['H4Open', 'Text', 'H4Close'])
-            expect(tokenImages('==== Heading 4 ====')).toEqual(['====', ' Heading 4 ', '===='])
+            expect(tokenNames('==== Heading 4 ====')).toEqual(['H4Open', 'Text', 'Text', 'Text', 'H4Close'])
+            expect(tokenImages('==== Heading 4 ====')).toEqual(['==== ', 'Heading', ' ', '4', ' ===='])
 
-            expect(tokenNames('===== Heading 5 =====')).toEqual(['H5Open', 'Text', 'H5Close'])
-            expect(tokenImages('===== Heading 5 =====')).toEqual(['=====', ' Heading 5 ', '====='])
+            expect(tokenNames('===== Heading 5 =====')).toEqual(['H5Open', 'Text', 'Text', 'Text', 'H5Close'])
+            expect(tokenImages('===== Heading 5 =====')).toEqual(['===== ', 'Heading', ' ', '5', ' ====='])
 
-            expect(tokenNames('====== Heading 6 ======')).toEqual(['H6Open', 'Text', 'H6Close'])
-            expect(tokenImages('====== Heading 6 ======')).toEqual(['======', ' Heading 6 ', '======'])
+            expect(tokenNames('====== Heading 6 ======')).toEqual(['H6Open', 'Text', 'Text', 'Text', 'H6Close'])
+            expect(tokenImages('====== Heading 6 ======')).toEqual(['====== ', 'Heading', ' ', '6', ' ======'])
         })
     })
 })
