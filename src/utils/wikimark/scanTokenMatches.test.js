@@ -76,4 +76,13 @@ describe('scanTokenMatches', () => {
         const { matchedHeadingOpens } = scan('= AB =\n== BC ==\n= B\n= A\n= C')
         expect(matchedHeadingOpens.size).toBe(2)
     })
+
+    test('footnote-macro pairs', () => {
+        const tokens = lex("Footnote[* Contents]")
+        const { openers, closers } = scanTokenMatches(tokens)
+        expect(openers.size).toBe(1)
+        expect(closers.size).toBe(1)
+        expect(openers.has(tokens[1])).toBe(true)  // FootnoteOpener
+        expect(closers.has(tokens[4])).toBe(true)  // MacroCloser
+    })
 })

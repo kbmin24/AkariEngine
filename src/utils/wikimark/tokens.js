@@ -3,7 +3,7 @@ import { createToken, Lexer } from "chevrotain"
 // we need four slashes to bc it is escaped twice...
 const BSLASH = '\\\\'
 
-const SPECIAL_CHARS = `_'^,"/[\\](){}:=\\- ${BSLASH}\\r\\n`
+const SPECIAL_CHARS = `_'^,"/[(){}:=\\-${BSLASH}\\r\\n`
 
 const EscapeChar = createToken({
     name: 'EscapeChar',
@@ -81,6 +81,16 @@ const TOC = createToken({
     pattern: /\[(toc|목차)\]/i,
 })
 
+const FootnoteOpener = createToken({
+    name: 'FootnoteOpener',
+    pattern: /\[\*/
+})
+
+const MacroCloser = createToken({
+    name: 'MacroCloser',
+    pattern: /\]/
+})
+
 const CR = createToken({
     name: 'CR',
     pattern: /\r/,
@@ -132,10 +142,19 @@ for (let n = 6; n >= 1; n--) {
         line_breaks: false,
     })
 }
+const SpaceTab = createToken({
+    name: 'SpaceTab',
+    pattern: /( |\t)/,
+})
 
+/*
+we want to match everything thats not a space
+while keeping all special chars separate
+Does NOT include whitespace
+*/
 const Text = createToken({
     name: 'Text',
-    pattern: new RegExp(`[^${SPECIAL_CHARS}]+|[${SPECIAL_CHARS}]`),
+    pattern: new RegExp(`[^${SPECIAL_CHARS} \t\\]]+|[${SPECIAL_CHARS}]`),
     line_breaks: true,
 })
 
@@ -153,11 +172,14 @@ export const T = {
     SupDelim,
     SubDelim,
     BigDelim,
+    FootnoteOpener,
+    MacroCloser,
     TOC,
     CR,
     LF,
     Comment,
     ...headingTokens,
+    SpaceTab,
     Text
 }
 
@@ -173,6 +195,9 @@ export const inlineTokens = new Set([
     SupDelim,
     SubDelim,
     BigDelim,
+    FootnoteOpener,
+    MacroCloser,
+    SpaceTab,
     Text])
 
 export const symmetricTokens = new Set([
@@ -185,3 +210,26 @@ export const symmetricTokens = new Set([
     SubDelim,
     BigDelim
 ])
+
+/**
+ * Tokens that require matching pairs, but are asymmetric.
+ */
+export const assymetricTokens = [
+    [FootnoteOpener, MacroCloser],
+    [LeftAlignOpen, MultilineClose],
+    [CenterAlignOpen, MultilineClose],
+    [RightAlignOpen, MultilineClose]
+]
+
+// quick lookup
+export const assymetricOpeners = new Set(assymetricTokens.map(pair => pair[0]))
+export const assymetricClosers = new Set(assymetricTokens.map(pair => pair[1]))
+
+export function areMatchingAsymTokens(opener, closer) {
+    for (const [openTok, closeTok] of assymetricTokens) {
+        if (opener.tokenType === openTok && closer.tokenType === closeTok) {
+            return true
+        }
+    }
+    return false
+}

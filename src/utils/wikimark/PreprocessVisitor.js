@@ -148,6 +148,7 @@ export class PreprocessVisitor extends BaseCstVisitor {
         if (ctx.superscript) return this.visit(ctx.superscript[0])
         if (ctx.subscript) return this.visit(ctx.subscript[0])
         if (ctx.big) return this.visit(ctx.big[0])
+        if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 

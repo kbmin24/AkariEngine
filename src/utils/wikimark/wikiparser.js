@@ -121,7 +121,10 @@ export class WikiParser extends CstParser {
         })
 
         $.RULE('line', () => {
-            $.AT_LEAST_ONE(() => $.SUBRULE($.inline))
+            $.AT_LEAST_ONE({
+                GATE: () => !$.closers.has($.LA(1)),
+                DEF: () => $.SUBRULE($.inline)
+            })
         })
 
         $.RULE('inline', () => {
@@ -135,12 +138,15 @@ export class WikiParser extends CstParser {
                 { GATE: isOpener(T.SupDelim), ALT: () => $.SUBRULE($.superscript) },
                 { GATE: isOpener(T.SubDelim), ALT: () => $.SUBRULE($.subscript) },
                 { GATE: isOpener(T.BigDelim), ALT: () => $.SUBRULE($.big) },
+                { ALT: () => $.SUBRULE($.anonymousFootnote) },
+                { ALT: () => $.CONSUME(T.SpaceTab) },
                 { ALT: () => $.CONSUME(T.Text) },
                 { ALT: () => $.CONSUME(T.EscapeChar) },
                 ...[1, 2, 3, 4, 5, 6].map(n => ({ ALT: () => $.CONSUME(T[`H${n}Open`]) })),
                 ...[1, 2, 3, 4, 5, 6].map(n => ({ ALT: () => $.CONSUME(T[`H${n}Close`]) })),
 
                 // closer needs to be consumed elseware; prevent it from being consumed here.
+                { GATE: isNotCloser, ALT: () => $.CONSUME(T.MacroCloser) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.BoldItalicDelim) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.BoldDelim) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.ItalicDelim) },
@@ -148,6 +154,8 @@ export class WikiParser extends CstParser {
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.SupDelim) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.SubDelim) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.BigDelim) },
+                { GATE: isNotCloser, ALT: () => $.CONSUME(T.StrikeDelim) },
+                { GATE: isNotCloser, ALT: () => $.CONSUME(T.MultilineClose) }
             ])
         })
 
@@ -197,6 +205,14 @@ export class WikiParser extends CstParser {
             $.CONSUME(T.BigDelim)
             $.MANY({ GATE: isNotCloser, DEF: () => $.SUBRULE($.inline) })
             $.CONSUME1(T.BigDelim)
+        })
+
+        // footnote without identifier
+        $.RULE('anonymousFootnote', () => {
+            $.CONSUME(T.FootnoteOpener)
+            $.CONSUME(T.SpaceTab)
+            $.SUBRULE($.line) //contents
+            $.CONSUME(T.MacroCloser)
         })
 
         $.performSelfAnalysis()

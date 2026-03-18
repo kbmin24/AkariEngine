@@ -168,7 +168,8 @@ describe('Lexer', () => {
             expect(tokenNames('[목차]')).toEqual(['TOC'])
         })
         test('\\[toc] is not [toc]', () => {
-            expect(tokenNames('\\[toc]')).toEqual(['EscapeChar', 'Text', 'Text'])
+            // sounds a bit weird but it's an orphaned ']'
+            expect(tokenNames('\\[toc]')).toEqual(['EscapeChar', 'Text', 'MacroCloser'])
         })
     })
 
@@ -197,24 +198,30 @@ describe('Lexer', () => {
 
     describe('Headings', () => {
         test('matches H1Open and H1Close', () => {
-                       expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'Text', 'Text', 'H1Close'])
+                       expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'SpaceTab', 'Text', 'H1Close'])
             expect(tokenImages('= Heading 1 =')).toEqual(['= ', 'Heading', ' ', '1', ' ='])
         })
         test('matches h2, h3, h4, h5, h6', () => {
-            expect(tokenNames('== Heading 2 ==')).toEqual(['H2Open', 'Text', 'Text', 'Text', 'H2Close'])
+            expect(tokenNames('== Heading 2 ==')).toEqual(['H2Open', 'Text', 'SpaceTab', 'Text', 'H2Close'])
             expect(tokenImages('== Heading 2 ==')).toEqual(['== ', 'Heading', ' ', '2', ' =='])
 
-            expect(tokenNames('=== Heading 3 ===')).toEqual(['H3Open', 'Text', 'Text', 'Text', 'H3Close'])
+            expect(tokenNames('=== Heading 3 ===')).toEqual(['H3Open', 'Text', 'SpaceTab', 'Text', 'H3Close'])
             expect(tokenImages('=== Heading 3 ===')).toEqual(['=== ', 'Heading', ' ', '3', ' ==='])
 
-            expect(tokenNames('==== Heading 4 ====')).toEqual(['H4Open', 'Text', 'Text', 'Text', 'H4Close'])
+            expect(tokenNames('==== Heading 4 ====')).toEqual(['H4Open', 'Text', 'SpaceTab', 'Text', 'H4Close'])
             expect(tokenImages('==== Heading 4 ====')).toEqual(['==== ', 'Heading', ' ', '4', ' ===='])
 
-            expect(tokenNames('===== Heading 5 =====')).toEqual(['H5Open', 'Text', 'Text', 'Text', 'H5Close'])
+            expect(tokenNames('===== Heading 5 =====')).toEqual(['H5Open', 'Text', 'SpaceTab', 'Text', 'H5Close'])
             expect(tokenImages('===== Heading 5 =====')).toEqual(['===== ', 'Heading', ' ', '5', ' ====='])
 
-            expect(tokenNames('====== Heading 6 ======')).toEqual(['H6Open', 'Text', 'Text', 'Text', 'H6Close'])
+            expect(tokenNames('====== Heading 6 ======')).toEqual(['H6Open', 'Text', 'SpaceTab', 'Text', 'H6Close'])
             expect(tokenImages('====== Heading 6 ======')).toEqual(['====== ', 'Heading', ' ', '6', ' ======'])
+        })
+    })
+
+    describe('Footnotes', () => {
+        test('matches footnote opener and closer', () => {
+            expect(tokenNames('[* ABC]')).toEqual(['FootnoteOpener', 'SpaceTab', 'Text', 'MacroCloser'])
         })
     })
 })

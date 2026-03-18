@@ -132,4 +132,10 @@ describe('WikiParser', () => {
             expect(h1).toBeDefined()
         })
     })
+
+    describe('Footnote', () => {
+        test("footnote with text", () => {
+            expect(parse("Footnote[* Footnote contents]").errors).toHaveLength(0)
+        })
+    })
 })

@@ -8,7 +8,7 @@ const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()
 /**
  * Standard renderer
  */
-export class HTMLVisitor extends BaseCstVisitor {
+export class HTMLVisitor extends BaseCstVisitor {  
     /**
      * Constructor for HTMLVisitor.
      * @param {Object} manifest k-v pairs of data collected by PreprocessVisitor
@@ -59,7 +59,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
 
         const editButton = this.options.renderSectionEditButton ?
-            `<a href="/edit/${this.options.pagename}?section=${headingIndex}" class="btn btn-primary">[${this.prompts.edit}]</a>` : ''
+            `<a href="/edit/${this.options.pagename}?section=${headingIndex}" class="ren-header-edit">[${this.prompts.edit}]</a>` : ''
 
         return dedent`
             <h${depth} class='border-bottom ren-header' id='s${headingName}'>
@@ -141,6 +141,8 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.superscript) return this.visit(ctx.superscript[0])
         if (ctx.subscript) return this.visit(ctx.subscript[0])
         if (ctx.big) return this.visit(ctx.big[0])
+        if (ctx.anonymousFootnote) return this.visit(ctx.anonymousFootnote[0])
+        if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 
@@ -150,7 +152,7 @@ export class HTMLVisitor extends BaseCstVisitor {
             "ItalicDelim", "UnderlineDelim", "SupDelim", "SubDelim", "BigDelim",
             "H1Open", "H1Close", "H2Open", "H2Close", "H3Open",
             "H3Close", "H4Open", "H4Close", "H5Open", "H5Close",
-            "H6Open", "H6Close",
+            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser"
         ]
         for (const tokenName of orphanedTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
@@ -192,5 +194,9 @@ export class HTMLVisitor extends BaseCstVisitor {
     big(ctx) {
         const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
         return `<span class="ren-big">${inner}</span>`
+    }
+
+    anonymousFootnote(ctx) {
+        return `[1]`
     }
 }

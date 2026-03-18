@@ -1,4 +1,10 @@
-import { T, symmetricTokens } from './tokens.js'
+import {
+    T,
+    assymetricClosers,
+    assymetricOpeners,
+    symmetricTokens,
+    areMatchingAsymTokens
+} from './tokens.js'
 
 /**
  * Scans token stream to identify unmatched symmetric delimeters.
@@ -21,28 +27,48 @@ export function scanTokenMatches(tokens) {
             continue
         }
 
-        if (!symmetricTokens.has(tok.tokenType)) continue
+        if (symmetricTokens.has(tok.tokenType)) {
+            // (I) Symmetric tokens
 
-        // discard unmatched tokens only if this token is unresolved
-        while (stack.length > 0 &&
-            stack[stack.length - 1].tokenType !== tok.tokenType &&
-            seenTokenTypes.has(tok.tokenType)) {
-            stack.pop()
-        }
+            // discard unmatched tokens only if this token is unresolved
+            while (stack.length > 0 &&
+                stack[stack.length - 1].tokenType !== tok.tokenType &&
+                seenTokenTypes.has(tok.tokenType)) {
+                stack.pop()
+            }
 
-        if (stack.length !== 0 &&
-            stack[stack.length - 1].tokenType === tok.tokenType)
-        {
-            // close pair
-            openers.add(stack.pop())
-            closers.add(tok)
-            seenTokenTypes.delete(tok.tokenType)
+            if (stack.length !== 0 &&
+                stack[stack.length - 1].tokenType === tok.tokenType) {
+                // close pair
+                openers.add(stack.pop())
+                closers.add(tok)
+                seenTokenTypes.delete(tok.tokenType)
+            }
+            else {
+                // new opener
+                stack.push(tok)
+                seenTokenTypes.add(tok.tokenType)
+            }
         }
-        else
-        {
-            // new opener
+        else if (assymetricOpeners.has(tok.tokenType)) {
+            // (II) Assymetric openers
             stack.push(tok)
-            seenTokenTypes.add(tok.tokenType)
+        } else if (assymetricClosers.has(tok.tokenType)) {
+            // (III) Assymetric closers
+            let openerSeen = false
+            for (const opener of stack) {
+                openerSeen ||= areMatchingAsymTokens(opener, tok)
+            }
+            if (!openerSeen) continue // no matching opener in stack, ignore this closer
+            while (stack.length > 0) {
+                const top = stack[stack.length - 1]
+                if (areMatchingAsymTokens(top, tok)) {
+                    openers.add(stack.pop())
+                    closers.add(tok)
+                    break
+                }
+                stack.pop()
+            }
         }
     }
 
@@ -69,6 +95,21 @@ export function scanTokenMatches(tokens) {
             }
         }
     }
+
+    // scan for matched FootnoteOpener/MacroCloser pairs (asymmetric)
+    /*const footnoteStack = []
+    for (const tok of tokens) {
+        if (tok.tokenType === T.LF) {
+            footnoteStack.length = 0
+            continue
+        }
+        if (tok.tokenType === T.FootnoteOpener) {
+            footnoteStack.push(tok)
+        } else if (tok.tokenType === T.MacroCloser && footnoteStack.length > 0) {
+            openers.add(footnoteStack.pop())
+            closers.add(tok)
+        }
+    }*/
 
     return { openers, closers, matchedHeadingOpens }
 }
