@@ -28,12 +28,12 @@ function parse(input) {
     return html
 }
 
-const {tokens} = lexer.tokenize("[:]{{[youtube(LatorN4P9aA)]}}")
+const {tokens} = lexer.tokenize("[*")
 const { openers, closers } = scanTokenMatches(tokens)
 console.log(tokens)
 console.log(openers, closers)
 
-console.log(parse("[:]{{[youtube(LatorN4P9aA)]}}"))
+console.log(parse("[*"))
 
 /*const input = fs.readFileSync('src/utils/wikimark/.tests/in.wiki', 'utf-8')
 

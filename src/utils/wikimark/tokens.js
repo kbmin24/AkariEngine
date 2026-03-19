@@ -1,4 +1,5 @@
 import { createToken, Lexer } from "chevrotain"
+import { create } from "svg-captcha"
 
 // we need four slashes to bc it is escaped twice...
 const BSLASH = '\\\\'
@@ -79,6 +80,11 @@ const BigDelim = createToken({
 const TOC = createToken({
     name: 'TOC',
     pattern: /\[(toc|목차)\]/i,
+})
+
+const Footnote = createToken({
+    name: 'Footnote',
+    pattern: /\[(footnote|각주)\]/i,
 })
 
 const FootnoteOpener = createToken({
@@ -172,6 +178,7 @@ export const T = {
     SupDelim,
     SubDelim,
     BigDelim,
+    Footnote,
     FootnoteOpener,
     MacroCloser,
     TOC,

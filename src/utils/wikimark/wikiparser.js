@@ -14,6 +14,7 @@ export class WikiParser extends CstParser {
 
         // helpers to match unmatched ones
         const isOpener = (type) => () => $.openers.has($.LA(1)) && $.LA(1).tokenType === type
+        const isNotOpener = (type) => () => !isOpener(type)()
         const isNotCloser = () => !$.closers.has($.LA(1))
 
 
@@ -31,6 +32,7 @@ export class WikiParser extends CstParser {
                 { ALT: () => $.SUBRULE($.centeralign) },
                 { ALT: () => $.SUBRULE($.rightalign) },
                 { ALT: () => $.SUBRULE($.TOCBox) },
+                { ALT: () => $.SUBRULE($.footnoteList) },
                 // bare LF tokens (blank lines between/around blocks)
                 { ALT: () => $.CONSUME2(T.LF) },
                 { ALT: () => $.SUBRULE($.paragraph) },
@@ -103,6 +105,10 @@ export class WikiParser extends CstParser {
             $.CONSUME(T.TOC)
         })
 
+        $.RULE('footnoteList', () => {
+            $.CONSUME(T.Footnote)
+        })
+
         $.RULE('paragraph', () => {
             $.SUBRULE($.line)
             $.MANY({
@@ -138,7 +144,7 @@ export class WikiParser extends CstParser {
                 { GATE: isOpener(T.SupDelim), ALT: () => $.SUBRULE($.superscript) },
                 { GATE: isOpener(T.SubDelim), ALT: () => $.SUBRULE($.subscript) },
                 { GATE: isOpener(T.BigDelim), ALT: () => $.SUBRULE($.big) },
-                { ALT: () => $.SUBRULE($.anonymousFootnote) },
+                { GATE: isOpener(T.FootnoteOpener), ALT: () => $.SUBRULE($.anonymousFootnote) },
                 { ALT: () => $.CONSUME(T.SpaceTab) },
                 { ALT: () => $.CONSUME(T.Text) },
                 { ALT: () => $.CONSUME(T.EscapeChar) },
@@ -155,7 +161,10 @@ export class WikiParser extends CstParser {
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.SubDelim) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.BigDelim) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.StrikeDelim) },
-                { GATE: isNotCloser, ALT: () => $.CONSUME(T.MultilineClose) }
+                { GATE: isNotCloser, ALT: () => $.CONSUME(T.MultilineClose) },
+
+                // consumed orphaned footnoteOpener
+                { GATE: isNotOpener(T.FootnoteOpener), ALT: () => $.CONSUME(T.FootnoteOpener) }
             ])
         })
 

@@ -1,4 +1,5 @@
 import dedent from 'dedent'
+import sanitiseHtml from 'sanitize-html'
 
 import { WikiParser } from './wikiparser.js'
 
@@ -8,7 +9,7 @@ const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()
 /**
  * Standard renderer
  */
-export class HTMLVisitor extends BaseCstVisitor {  
+export class HTMLVisitor extends BaseCstVisitor {
     /**
      * Constructor for HTMLVisitor.
      * @param {Object} manifest k-v pairs of data collected by PreprocessVisitor
@@ -20,14 +21,18 @@ export class HTMLVisitor extends BaseCstVisitor {
         super()
         this.validateVisitor()
         this.headingCounts = [0, 0, 0, 0, 0, 0]
+        this.footnotes = []
+        this.footnoteCnt = 0
         this.manifest = manifest
         this.prompts = prompts
         this.options = options || {}
     }
 
     document(ctx) {
-        // reinit'ise heading number counter
+        // reinit'ise temporary variables
         this.headingCounts = [0, 0, 0, 0, 0, 0]
+        this.footnotes = []
+        this.footnoteCnt = 0
 
         if (!ctx.block) return '' //empty document
 
@@ -40,6 +45,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.centeralign) return this.visit(ctx.centeralign[0])
         if (ctx.rightalign) return this.visit(ctx.rightalign[0])
         if (ctx.TOCBox) return this.visit(ctx.TOCBox[0])
+        if (ctx.footnoteList) return this.visit(ctx.footnoteList[0])
         if (!ctx.paragraph) return ''
         return this.visit(ctx.paragraph[0])
     }
@@ -107,20 +113,30 @@ export class HTMLVisitor extends BaseCstVisitor {
         return `<div class="ren-right">${inner}</div>`
     }
 
-    TOCBox(_ctx)
-    {
+    TOCBox(_ctx) {
         // build TOC from manifest
         let toc = `<div id='toc' class='border m-3 s-0 me-0 p-3 ren-toc'>`
         toc += `<div style="font-weight:bold;margin-bottom: 1rem;">${this.prompts.toc}</div>`
         for (let item of this.manifest.toc) {
             // indent
             for (let i = 1; i < item.depth; i++) toc += '&emsp;'
-            
+
             let headingname = this.manifest.headingTitles.get(item.node)
             toc += `<a href='#s${item.name}'>${item.name}.&nbsp;<span class='blackln'>${headingname}</span></a><br>`
         }
         toc += '</div>'
         return toc
+    }
+
+    footnoteList(_ctx) {
+        if (this.footnotes.length === 0) return ''
+        let footnote = `<hr><b>${this.prompts.footnotes}</b><br><div id="footnotes">`
+        for (const [num, content] of this.footnotes) {
+            footnote += `<a id='foot_${num}' href='#foot_source${num}'>[${num}]</a> ${content}<br>`
+        }
+        footnote += '</div>'
+        this.footnotes = []
+        return footnote
     }
 
     paragraph(ctx) {
@@ -152,7 +168,8 @@ export class HTMLVisitor extends BaseCstVisitor {
             "ItalicDelim", "UnderlineDelim", "SupDelim", "SubDelim", "BigDelim",
             "H1Open", "H1Close", "H2Open", "H2Close", "H3Open",
             "H3Close", "H4Open", "H4Close", "H5Open", "H5Close",
-            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser"
+            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser",
+            "FootnoteOpener"
         ]
         for (const tokenName of orphanedTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
@@ -197,6 +214,13 @@ export class HTMLVisitor extends BaseCstVisitor {
     }
 
     anonymousFootnote(ctx) {
-        return `[1]`
+        const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
+        this.footnotes.push([++this.footnoteCnt, inner])
+        return dedent`
+        <span   class='fn_origin'
+                data-x='${this.footnoteCnt}'
+                data-y='${sanitiseHtml(inner, { allowedTags: [], allowedAttributes: {} })}'>\
+            ${inner}
+        </span>`
     }
 }

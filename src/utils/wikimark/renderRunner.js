@@ -15,7 +15,8 @@ export function renderNew(input) {
 
     const visitor = new HTMLVisitor(preprocessVisitor.manifest, {
         edit: 'Edit',
-        toc: 'Table of Contents'
+        toc: 'Table of Contents',
+        footnotes: 'Footnotes'
     }, {
         pagename: 'TestPage',
         renderSectionEditButton: true

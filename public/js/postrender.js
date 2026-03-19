@@ -14,10 +14,9 @@ window.onload = () =>
             let fnCount = parseInt(element.getAttribute('data-x'))
             let label = element.getAttribute('data-y')
             let text = element.innerHTML
-            let footnotes = document.getElementsByTagName('body')[0]
             element.innerHTML = `<sup><a data-bs-toggle='modal' data-bs-target='#fnModal_${fnCount}' id='foot_source${fnCount}' href='' title='${label}'>[${fnCount}]</a></sup>`
-            footnotes.innerHTML += `
-            <div class="modal fade" id="fnModal_${fnCount}" tabindex="-1" aria-labelledby="fnModalLabel_${fnCount}" aria-hidden="true">
+            
+            document.body.insertAdjacentHTML('beforeend', `<div class="modal fade" id="fnModal_${fnCount}" tabindex="-1" aria-labelledby="fnModalLabel_${fnCount}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -32,7 +31,7 @@ window.onload = () =>
                     </div>
                 </div>
             </div>
-        `
+        `)
         //<a href='#foot_${fnCount}'>[${fnCount}]</a>
         })
     document.querySelectorAll('.math').forEach(element =>
