@@ -144,7 +144,11 @@ export class WikiParser extends CstParser {
                 { GATE: isOpener(T.SupDelim), ALT: () => $.SUBRULE($.superscript) },
                 { GATE: isOpener(T.SubDelim), ALT: () => $.SUBRULE($.subscript) },
                 { GATE: isOpener(T.BigDelim), ALT: () => $.SUBRULE($.big) },
-                { GATE: isOpener(T.FootnoteOpener), ALT: () => $.SUBRULE($.anonymousFootnote) },
+                { GATE: () => {
+                    return isOpener(T.FootnoteOpener) &&
+                    $.LA(2).tokenType === T.SpaceTab
+                }, ALT: () => $.SUBRULE($.anonymousFootnote) },
+                { GATE: isOpener(T.FootnoteOpener), ALT: () => $.SUBRULE($.anonymousFootnoteFallback) },
                 { ALT: () => $.CONSUME(T.SpaceTab) },
                 { ALT: () => $.CONSUME(T.Text) },
                 { ALT: () => $.CONSUME(T.EscapeChar) },
@@ -220,6 +224,12 @@ export class WikiParser extends CstParser {
         $.RULE('anonymousFootnote', () => {
             $.CONSUME(T.FootnoteOpener)
             $.CONSUME(T.SpaceTab)
+            $.SUBRULE($.line) //contents
+            $.CONSUME(T.MacroCloser)
+        })
+
+        $.RULE('anonymousFootnoteFallback', () => {
+            $.CONSUME(T.FootnoteOpener)
             $.SUBRULE($.line) //contents
             $.CONSUME(T.MacroCloser)
         })

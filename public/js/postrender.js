@@ -9,12 +9,16 @@ function closefnModal(fnCount)
 }
 window.onload = () =>
 {
-    document.querySelectorAll('.fn_origin').forEach(element =>
+    // support up to footnote^6
+    for (let i = 0; i < 6; i++)
+    {
+        document.querySelectorAll('.fn_origin_unprocessed').forEach(element =>
         {
             let fnCount = parseInt(element.getAttribute('data-x'))
             let label = element.getAttribute('data-y')
             let text = element.innerHTML
             element.innerHTML = `<sup><a data-bs-toggle='modal' data-bs-target='#fnModal_${fnCount}' id='foot_source${fnCount}' href='' title='${label}'>[${fnCount}]</a></sup>`
+            element.classList.remove('fn_origin_unprocessed')
             
             document.body.insertAdjacentHTML('beforeend', `<div class="modal fade" id="fnModal_${fnCount}" tabindex="-1" aria-labelledby="fnModalLabel_${fnCount}" aria-hidden="true">
                 <div class="modal-dialog">
@@ -34,6 +38,7 @@ window.onload = () =>
         `)
         //<a href='#foot_${fnCount}'>[${fnCount}]</a>
         })
+    }
     document.querySelectorAll('.math').forEach(element =>
     {
         let org = element.innerHTML

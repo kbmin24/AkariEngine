@@ -36,7 +36,9 @@ export class HTMLVisitor extends BaseCstVisitor {
 
         if (!ctx.block) return '' //empty document
 
-        return ctx.block.map(block => this.visit(block)).join('')
+        let result = ctx.block.map(block => this.visit(block)).join('')
+        result += this.footnoteList(null)
+        return result
     }
 
     block(ctx) {
@@ -130,6 +132,8 @@ export class HTMLVisitor extends BaseCstVisitor {
 
     footnoteList(_ctx) {
         if (this.footnotes.length === 0) return ''
+        this.footnotes.sort()
+
         let footnote = `<hr><b>${this.prompts.footnotes}</b><br><div id="footnotes">`
         for (const [num, content] of this.footnotes) {
             footnote += `<a id='foot_${num}' href='#foot_source${num}'>[${num}]</a> ${content}<br>`
@@ -158,6 +162,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.subscript) return this.visit(ctx.subscript[0])
         if (ctx.big) return this.visit(ctx.big[0])
         if (ctx.anonymousFootnote) return this.visit(ctx.anonymousFootnote[0])
+        if (ctx.anonymousFootnoteFallback) return this.visit(ctx.anonymousFootnoteFallback[0])
         if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
@@ -214,13 +219,21 @@ export class HTMLVisitor extends BaseCstVisitor {
     }
 
     anonymousFootnote(ctx) {
+        // computing this later breaks footnotes within footnotes
+        let footnoteCount = ++this.footnoteCnt
         const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
-        this.footnotes.push([++this.footnoteCnt, inner])
+        this.footnotes.push([footnoteCount, inner])
+        
         return dedent`
-        <span   class='fn_origin'
-                data-x='${this.footnoteCnt}'
+        <span   class='fn_origin fn_origin_unprocessed'
+                data-x='${footnoteCount}'
                 data-y='${sanitiseHtml(inner, { allowedTags: [], allowedAttributes: {} })}'>\
             ${inner}
         </span>`
+    }
+
+    anonymousFootnoteFallback(ctx) {
+        const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
+        return `[*${inner}]`
     }
 }
