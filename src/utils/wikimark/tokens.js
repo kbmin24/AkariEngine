@@ -4,7 +4,7 @@ import { create } from "svg-captcha"
 // we need four slashes to bc it is escaped twice...
 const BSLASH = '\\\\'
 
-const SPECIAL_CHARS = `_'^,"/[(){}:=\\-${BSLASH}\\r\\n`
+const SPECIAL_CHARS = `_'^,"/[(){}:=\\-${BSLASH}\\*#\\r\\n`
 
 const EscapeChar = createToken({
     name: 'EscapeChar',
@@ -148,6 +148,28 @@ for (let n = 6; n >= 1; n--) {
         line_breaks: false,
     })
 }
+const listBulletPattern = /\*+(?= \S)/y
+const ULBullet = createToken({
+    name: 'ULBullet',
+    pattern: (text, offset) => {
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
+        listBulletPattern.lastIndex = offset
+        return listBulletPattern.exec(text)
+    },
+    line_breaks: false,
+})
+
+const olBulletPattern = /#+(?= \S)/y
+const OLBullet = createToken({
+    name: 'OLBullet',
+    pattern: (text, offset) => {
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
+        olBulletPattern.lastIndex = offset
+        return olBulletPattern.exec(text)
+    },
+    line_breaks: false,
+})
+
 const SpaceTab = createToken({
     name: 'SpaceTab',
     pattern: /( |\t)/,
@@ -186,6 +208,8 @@ export const T = {
     LF,
     Comment,
     ...headingTokens,
+    ULBullet,
+    OLBullet,
     SpaceTab,
     Text
 }
@@ -231,6 +255,9 @@ export const assymetricTokens = [
 // quick lookup
 export const assymetricOpeners = new Set(assymetricTokens.map(pair => pair[0]))
 export const assymetricClosers = new Set(assymetricTokens.map(pair => pair[1]))
+
+// align openers only appear at block position (start of line); never valid inline
+export const blockLevelOpeners = new Set([LeftAlignOpen, CenterAlignOpen, RightAlignOpen])
 
 export function areMatchingAsymTokens(opener, closer) {
     for (const [openTok, closeTok] of assymetricTokens) {

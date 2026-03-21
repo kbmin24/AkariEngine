@@ -224,4 +224,87 @@ describe('Lexer', () => {
             expect(tokenNames('[* ABC]')).toEqual(['FootnoteOpener', 'SpaceTab', 'Text', 'MacroCloser'])
         })
     })
+
+    describe('OLBullet', () => {
+        test('# text tokenizes as OLBullet SpaceTab Text', () => {
+            expect(tokenNames('# text')).toEqual(['OLBullet', 'SpaceTab', 'Text'])
+            expect(tokenImages('# text')).toEqual(['#', ' ', 'text'])
+        })
+
+        test('## text tokenizes as OLBullet with image length 2', () => {
+            expect(tokenNames('## text')).toEqual(['OLBullet', 'SpaceTab', 'Text'])
+            expect(tokenImages('## text')).toEqual(['##', ' ', 'text'])
+        })
+
+        test('### text tokenizes as OLBullet with image length 3', () => {
+            expect(tokenNames('### text')).toEqual(['OLBullet', 'SpaceTab', 'Text'])
+            expect(tokenImages('### text')).toEqual(['###', ' ', 'text'])
+        })
+
+        test('# at start of second line tokenizes as OLBullet', () => {
+            expect(tokenNames('foo\n# text')).toEqual(['Text', 'LF', 'OLBullet', 'SpaceTab', 'Text'])
+        })
+
+        test('# with no content after space is not an OLBullet', () => {
+            expect(tokenNames('# ')).not.toContain('OLBullet')
+            expect(tokenNames('# \n')).not.toContain('OLBullet')
+        })
+
+        test('#text with no space is not an OLBullet', () => {
+            expect(tokenNames('#text')).not.toContain('OLBullet')
+        })
+
+        test('# text not at line start is not an OLBullet', () => {
+            expect(tokenNames(' # text')).not.toContain('OLBullet')
+        })
+
+        test('inline # mid-sentence is not an OLBullet', () => {
+            expect(tokenNames('foo # bar')).not.toContain('OLBullet')
+        })
+
+        test('# and * do not interfere with each other', () => {
+            expect(tokenNames('* item')).not.toContain('OLBullet')
+            expect(tokenNames('# item')).not.toContain('ULBullet')
+        })
+    })
+
+    describe('ULBullet', () => {
+        test('* text tokenizes as ULBullet SpaceTab Text', () => {
+            expect(tokenNames('* text')).toEqual(['ULBullet', 'SpaceTab', 'Text'])
+            expect(tokenImages('* text')).toEqual(['*', ' ', 'text'])
+        })
+
+        test('** text tokenizes as ULBullet with image length 2', () => {
+            expect(tokenNames('** text')).toEqual(['ULBullet', 'SpaceTab', 'Text'])
+            expect(tokenImages('** text')).toEqual(['**', ' ', 'text'])
+        })
+
+        test('*** text tokenizes as ULBullet with image length 3', () => {
+            expect(tokenNames('*** text')).toEqual(['ULBullet', 'SpaceTab', 'Text'])
+            expect(tokenImages('*** text')).toEqual(['***', ' ', 'text'])
+        })
+
+        test('* at start of second line tokenizes as ULBullet', () => {
+            expect(tokenNames('foo\n* text')).toEqual(['Text', 'LF', 'ULBullet', 'SpaceTab', 'Text'])
+        })
+
+        test('* with no content after space is not a ULBullet', () => {
+            // trailing space only — (?= \S) rejects this
+            expect(tokenNames('* ')).not.toContain('ULBullet')
+            expect(tokenNames('* \n')).not.toContain('ULBullet')
+        })
+
+        test('*text with no space is not a ULBullet', () => {
+            expect(tokenNames('*text')).not.toContain('ULBullet')
+        })
+
+        test('* text not at line start is not a ULBullet', () => {
+            // leading space means offset > 0 and previous char is not newline
+            expect(tokenNames(' * text')).not.toContain('ULBullet')
+        })
+
+        test('inline * mid-sentence is not a ULBullet', () => {
+            expect(tokenNames('foo * bar')).not.toContain('ULBullet')
+        })
+    })
 })

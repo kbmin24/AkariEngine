@@ -28,11 +28,13 @@ export class WikiParser extends CstParser {
         $.RULE('block', () => {
             $.OR([
                 { GATE: () => $.matchedHeadingOpens.has($.LA(1)), ALT: () => $.SUBRULE($.heading) },
-                { ALT: () => $.SUBRULE($.leftalign) },
-                { ALT: () => $.SUBRULE($.centeralign) },
-                { ALT: () => $.SUBRULE($.rightalign) },
-                { ALT: () => $.SUBRULE($.TOCBox) },
-                { ALT: () => $.SUBRULE($.footnoteList) },
+                { GATE: () => $.LA(1).tokenType === T.LeftAlignOpen, ALT: () => $.SUBRULE($.leftalign) },
+                { GATE: () => $.LA(1).tokenType === T.CenterAlignOpen, ALT: () => $.SUBRULE($.centeralign) },
+                { GATE: () => $.LA(1).tokenType === T.RightAlignOpen, ALT: () => $.SUBRULE($.rightalign) },
+                { GATE: () => $.LA(1).tokenType === T.TOC, ALT: () => $.SUBRULE($.TOCBox) },
+                { GATE: () => $.LA(1).tokenType === T.Footnote, ALT: () => $.SUBRULE($.footnoteList) },
+                { GATE: () => $.LA(1).tokenType === T.ULBullet, ALT: () => $.SUBRULE($.unorderedList) },
+                { GATE: () => $.LA(1).tokenType === T.OLBullet, ALT: () => $.SUBRULE($.orderedList) },
                 // bare LF tokens (blank lines between/around blocks)
                 { ALT: () => $.CONSUME2(T.LF) },
                 { ALT: () => $.SUBRULE($.paragraph) },
@@ -101,6 +103,28 @@ export class WikiParser extends CstParser {
             $.CONSUME(T.MultilineClose)
         })
 
+        $.RULE('unorderedList', () => {
+            $.AT_LEAST_ONE(() => $.SUBRULE($.unorderedListItem))
+        })
+
+        $.RULE('unorderedListItem', () => {
+            $.CONSUME(T.ULBullet)
+            $.CONSUME(T.SpaceTab)
+            $.SUBRULE($.line)
+            $.OPTION(() => $.CONSUME(T.LF))
+        })
+
+        $.RULE('orderedList', () => {
+            $.AT_LEAST_ONE(() => $.SUBRULE($.orderedListItem))
+        })
+
+        $.RULE('orderedListItem', () => {
+            $.CONSUME(T.OLBullet)
+            $.CONSUME(T.SpaceTab)
+            $.SUBRULE($.line)
+            $.OPTION(() => $.CONSUME(T.LF))
+        })
+
         $.RULE('TOCBox', () => {
             $.CONSUME(T.TOC)
         })
@@ -144,10 +168,12 @@ export class WikiParser extends CstParser {
                 { GATE: isOpener(T.SupDelim), ALT: () => $.SUBRULE($.superscript) },
                 { GATE: isOpener(T.SubDelim), ALT: () => $.SUBRULE($.subscript) },
                 { GATE: isOpener(T.BigDelim), ALT: () => $.SUBRULE($.big) },
-                { GATE: () => {
-                    return isOpener(T.FootnoteOpener) &&
-                    $.LA(2).tokenType === T.SpaceTab
-                }, ALT: () => $.SUBRULE($.anonymousFootnote) },
+                {
+                    GATE: () => {
+                        return isOpener(T.FootnoteOpener) &&
+                            $.LA(2).tokenType === T.SpaceTab
+                    }, ALT: () => $.SUBRULE($.anonymousFootnote)
+                },
                 { GATE: isOpener(T.FootnoteOpener), ALT: () => $.SUBRULE($.anonymousFootnoteFallback) },
                 { ALT: () => $.CONSUME(T.SpaceTab) },
                 { ALT: () => $.CONSUME(T.Text) },
@@ -168,7 +194,17 @@ export class WikiParser extends CstParser {
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.MultilineClose) },
 
                 // consumed orphaned footnoteOpener
-                { GATE: isNotOpener(T.FootnoteOpener), ALT: () => $.CONSUME(T.FootnoteOpener) }
+                { GATE: isNotOpener(T.FootnoteOpener), ALT: () => $.CONSUME(T.FootnoteOpener) },
+
+                /*
+                consume tokens for block-level consturcts
+                obviously they shouldn't be here but they might appear in case of malicious inputs
+                */
+                { ALT: () => $.CONSUME(T.LeftAlignOpen) },
+                { ALT: () => $.CONSUME(T.CenterAlignOpen) },
+                { ALT: () => $.CONSUME(T.RightAlignOpen) },
+                { ALT: () => $.CONSUME(T.TOC) },
+                { ALT: () => $.CONSUME(T.Footnote) },
             ])
         })
 

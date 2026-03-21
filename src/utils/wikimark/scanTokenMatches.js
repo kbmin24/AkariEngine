@@ -2,6 +2,7 @@ import {
     T,
     assymetricClosers,
     assymetricOpeners,
+    blockLevelOpeners,
     symmetricTokens,
     areMatchingAsymTokens
 } from './tokens.js'
@@ -18,12 +19,14 @@ export function scanTokenMatches(tokens) {
     const closers = new Set() // MATCHED closers
     const stack = []
     const seenTokenTypes = new Set()
+    let inlineContentSeen = false // true once any token appears after LF/start
 
     for (const tok of tokens) {
         // reset stack for inline token
         if (tok.tokenType === T.LF) {
             stack.length = 0
             seenTokenTypes.clear()
+            inlineContentSeen = false
             continue
         }
 
@@ -52,14 +55,17 @@ export function scanTokenMatches(tokens) {
         }
         else if (assymetricOpeners.has(tok.tokenType)) {
             // (II) Assymetric openers
-            stack.push(tok)
+            // block-level openers (align) are only valid at the start of a line
+            if (!blockLevelOpeners.has(tok.tokenType) || !inlineContentSeen) {
+                stack.push(tok)
+            }
         } else if (assymetricClosers.has(tok.tokenType)) {
             // (III) Assymetric closers
             let openerSeen = false
             for (const opener of stack) {
                 openerSeen ||= areMatchingAsymTokens(opener, tok)
             }
-            if (!openerSeen) continue // no matching opener in stack, ignore this closer
+            if (!openerSeen) { inlineContentSeen = true; continue } // no matching opener in stack, ignore this closer
             while (stack.length > 0) {
                 const top = stack[stack.length - 1]
                 if (areMatchingAsymTokens(top, tok)) {
@@ -70,6 +76,7 @@ export function scanTokenMatches(tokens) {
                 stack.pop()
             }
         }
+        inlineContentSeen = true
     }
 
     // scan for matched heading open/close pairs (line-scoped, asymmetric)

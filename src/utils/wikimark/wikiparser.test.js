@@ -138,4 +138,178 @@ describe('WikiParser', () => {
             expect(parse("Footnote[* Footnote contents]").errors).toHaveLength(0)
         })
     })
+
+    describe('orderedList rules', () => {
+        test('single ordered list item produces no errors', () => {
+            expect(parse('# item').errors).toHaveLength(0)
+        })
+
+        test('multiple depths produce no errors', () => {
+            expect(parse('## item').errors).toHaveLength(0)
+            expect(parse('### item').errors).toHaveLength(0)
+        })
+
+        test('ordered list item produces an orderedList CST node inside block', () => {
+            const { cst } = parse('# item')
+            expect(cst.children.block[0].children.orderedList).toBeDefined()
+            expect(cst.children.block[0].children.orderedList[0].name).toBe('orderedList')
+        })
+
+        test('orderedList node contains an orderedListItem CST node', () => {
+            const { cst } = parse('# item')
+            const list = cst.children.block[0].children.orderedList[0]
+            expect(list.children.orderedListItem).toHaveLength(1)
+            expect(list.children.orderedListItem[0].name).toBe('orderedListItem')
+        })
+
+        test('depth 1 item has OLBullet image length 1', () => {
+            const { cst } = parse('# item')
+            const item = cst.children.block[0].children.orderedList[0].children.orderedListItem[0]
+            expect(item.children.OLBullet[0].image.length).toBe(1)
+        })
+
+        test('depth 2 item has OLBullet image length 2', () => {
+            const { cst } = parse('## item')
+            const item = cst.children.block[0].children.orderedList[0].children.orderedListItem[0]
+            expect(item.children.OLBullet[0].image.length).toBe(2)
+        })
+
+        test('consecutive ordered list items cluster into one orderedList block', () => {
+            const { cst, errors } = parse('# item1\n# item2\n# item3')
+            expect(errors).toHaveLength(0)
+            expect(cst.children.block).toHaveLength(1)
+            const list = cst.children.block[0].children.orderedList[0]
+            expect(list.children.orderedListItem).toHaveLength(3)
+        })
+
+        test('blank line splits ordered list items into separate orderedList blocks', () => {
+            const { cst, errors } = parse('# item1\n\n# item2')
+            expect(errors).toHaveLength(0)
+            const lists = cst.children.block.filter(b => b.children.orderedList)
+            expect(lists).toHaveLength(2)
+        })
+
+        test('ul and ol on adjacent lines form separate list blocks', () => {
+            const { cst, errors } = parse('* ul item\n# ol item')
+            expect(errors).toHaveLength(0)
+            const blocks = cst.children.block
+            expect(blocks.some(b => b.children.unorderedList)).toBe(true)
+            expect(blocks.some(b => b.children.orderedList)).toBe(true)
+        })
+
+        test('# with no content after space is not parsed as an ordered list item', () => {
+            expect(parse('# ').errors).toHaveLength(0)
+            expect(parse('# \n').errors).toHaveLength(0)
+        })
+
+        test('#text with no space is not parsed as an ordered list item', () => {
+            expect(parse('#text').errors).toHaveLength(0)
+            const { cst } = parse('#text')
+            expect(cst.children.block[0].children.orderedList).toBeUndefined()
+        })
+
+        test('ordered list item can contain inline markup', () => {
+            expect(parse("# '''bold''' item").errors).toHaveLength(0)
+        })
+    })
+
+    describe('list rules', () => {
+        test('single list item produces no errors', () => {
+            expect(parse('* item').errors).toHaveLength(0)
+        })
+
+        test('multiple depths produce no errors', () => {
+            expect(parse('** item').errors).toHaveLength(0)
+            expect(parse('*** item').errors).toHaveLength(0)
+        })
+
+        test('list item produces a list CST node inside block', () => {
+            const { cst } = parse('* item')
+            expect(cst.children.block[0].children.unorderedList).toBeDefined()
+            expect(cst.children.block[0].children.unorderedList[0].name).toBe('unorderedList')
+        })
+
+        test('unorderedList node contains an unorderedListItem CST node', () => {
+            const { cst } = parse('* item')
+            const list = cst.children.block[0].children.unorderedList[0]
+            expect(list.children.unorderedListItem).toHaveLength(1)
+            expect(list.children.unorderedListItem[0].name).toBe('unorderedListItem')
+        })
+
+        test('depth 1 item has ULBullet image length 1', () => {
+            const { cst } = parse('* item')
+            const listItem = cst.children.block[0].children.unorderedList[0].children.unorderedListItem[0]
+            expect(listItem.children.ULBullet[0].image.length).toBe(1)
+        })
+
+        test('depth 2 item has ULBullet image length 2', () => {
+            const { cst } = parse('** item')
+            const listItem = cst.children.block[0].children.unorderedList[0].children.unorderedListItem[0]
+            expect(listItem.children.ULBullet[0].image.length).toBe(2)
+        })
+
+        test('depth 3 item has ULBullet image length 3', () => {
+            const { cst } = parse('*** item')
+            const listItem = cst.children.block[0].children.unorderedList[0].children.unorderedListItem[0]
+            expect(listItem.children.ULBullet[0].image.length).toBe(3)
+        })
+
+        test('consecutive list items cluster into one list block', () => {
+            const { cst, errors } = parse('* item1\n* item2\n* item3')
+            expect(errors).toHaveLength(0)
+            expect(cst.children.block).toHaveLength(1)
+            const list = cst.children.block[0].children.unorderedList[0]
+            expect(list.children.unorderedListItem).toHaveLength(3)
+        })
+
+        test('mixed depths in one list cluster into one list block', () => {
+            const { cst, errors } = parse('* item1\n** nested\n* item2')
+            expect(errors).toHaveLength(0)
+            expect(cst.children.block).toHaveLength(1)
+            const items = cst.children.block[0].children.unorderedList[0].children.unorderedListItem
+            expect(items).toHaveLength(3)
+            expect(items[0].children.ULBullet[0].image.length).toBe(1)
+            expect(items[1].children.ULBullet[0].image.length).toBe(2)
+            expect(items[2].children.ULBullet[0].image.length).toBe(1)
+        })
+
+        test('blank line splits consecutive list items into separate list blocks', () => {
+            const { cst, errors } = parse('* item1\n\n* item2')
+            expect(errors).toHaveLength(0)
+            const lists = cst.children.block.filter(b => b.children.unorderedList)
+            expect(lists).toHaveLength(2)
+        })
+
+        test('* with no content after space is not parsed as a list item', () => {
+            // falls through to paragraph — must not error
+            expect(parse('* ').errors).toHaveLength(0)
+            expect(parse('* \n').errors).toHaveLength(0)
+        })
+
+        test('*text with no space is not parsed as a list item', () => {
+            expect(parse('*text').errors).toHaveLength(0)
+            const { cst } = parse('*text')
+            expect(cst.children.block[0].children.unorderedList).toBeUndefined()
+        })
+
+        test('list item not at line start is not parsed as a list item', () => {
+            // leading space — treated as paragraph inline content
+            expect(parse(' * text').errors).toHaveLength(0)
+            const { cst } = parse(' * text')
+            expect(cst.children.block[0].children.unorderedList).toBeUndefined()
+        })
+
+        test('list item can contain inline markup', () => {
+            expect(parse("* '''bold''' item").errors).toHaveLength(0)
+        })
+    })
+
+    describe('ul/ol nasty rules', () => {
+        test('block-level construct in bullet', () => {
+            expect(parse("* [toc]").errors).toHaveLength(0)
+            expect(parse("# [)]{{Align}}").errors).toHaveLength(0)
+            expect(parse("* [:]{{").errors).toHaveLength(0)
+            expect(parse("* [footnotE]").errors).toHaveLength(0)
+        })
+    })
 })

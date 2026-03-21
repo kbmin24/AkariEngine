@@ -48,6 +48,8 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.rightalign) return this.visit(ctx.rightalign[0])
         if (ctx.TOCBox) return this.visit(ctx.TOCBox[0])
         if (ctx.footnoteList) return this.visit(ctx.footnoteList[0])
+        if (ctx.unorderedList) return this.visit(ctx.unorderedList[0])
+        if (ctx.orderedList) return this.visit(ctx.orderedList[0])
         if (!ctx.paragraph) return ''
         return this.visit(ctx.paragraph[0])
     }
@@ -132,7 +134,9 @@ export class HTMLVisitor extends BaseCstVisitor {
 
     footnoteList(_ctx) {
         if (this.footnotes.length === 0) return ''
-        this.footnotes.sort()
+
+        // somehow just running sort results in 1>10...
+        this.footnotes.sort((a, b) => a[0] - b[0])
 
         let footnote = `<hr><b>${this.prompts.footnotes}</b><br><div id="footnotes">`
         for (const [num, content] of this.footnotes) {
@@ -167,15 +171,18 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 
-        // unmatched delimiters — render as their literal characters
+        // unmatched delimiters, render as their literal characters
+        /* @formatter:off */
         const orphanedTokens = [
-            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose", "BoldDelim",
-            "ItalicDelim", "UnderlineDelim", "SupDelim", "SubDelim", "BigDelim",
-            "H1Open", "H1Close", "H2Open", "H2Close", "H3Open",
-            "H3Close", "H4Open", "H4Close", "H5Open", "H5Close",
-            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser",
-            "FootnoteOpener"
+            "LeftAlignOpen",	"CenterAlignOpen",	"RightAlignOpen",	"MultilineClose",
+            "BoldDelim",	    "ItalicDelim",	    "UnderlineDelim",	"SupDelim",
+            "SubDelim",         "BigDelim",         "H1Open",	        "H1Close",
+            "H2Open",	        "H2Close",	        "H3Open",	        "H3Close",
+            "H4Open",	        "H4Close",	        "H5Open",	        "H5Close",
+            "H6Open",	        "H6Close",	        "FootnoteCloser",	"MacroCloser",
+            "FootnoteOpener",	"TOC",	            "Footnote"
         ]
+        /* @formatter:on */
         for (const tokenName of orphanedTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
         }
@@ -223,13 +230,66 @@ export class HTMLVisitor extends BaseCstVisitor {
         let footnoteCount = ++this.footnoteCnt
         const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
         this.footnotes.push([footnoteCount, inner])
-        
+
         return dedent`
         <span   class='fn_origin fn_origin_unprocessed'
                 data-x='${footnoteCount}'
                 data-y='${sanitiseHtml(inner, { allowedTags: [], allowedAttributes: {} })}'>\
             ${inner}
         </span>`
+    }
+
+    unorderedList(ctx) {
+        const items = (ctx.unorderedListItem ?? []).map(item => this.visit(item))
+        return this.renderList(items, 'ul')
+    }
+
+    unorderedListItem(ctx) {
+        const depth = ctx.ULBullet[0].image.length
+        const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
+        return { depth, inner }
+    }
+
+    orderedList(ctx) {
+        const items = (ctx.orderedListItem ?? []).map(item => this.visit(item))
+        return this.renderList(items, 'ol')
+    }
+
+    orderedListItem(ctx) {
+        const depth = ctx.OLBullet[0].image.length
+        const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
+        return { depth, inner }
+    }
+
+    // items: [{depth, inner}...], tagname: ul or li
+    renderList(items, tagname) {
+        let result = ''
+        let prevLevel = 0
+        let opener = `<${tagname}>`
+        let closer = `</${tagname}>`
+        for (const { depth, inner } of items) {
+            if (prevLevel < depth) {
+                for (let i = 0; i < depth - prevLevel; i++)
+                    result += opener + '<li>'
+                result += `${inner}</li>`
+            }
+            else if (prevLevel > depth) {
+                for (let i = 0; i < prevLevel - depth; i++)
+                    result += closer + '</li>'
+                result += `<li>${inner}</li>`
+            }
+            else {
+                result += `<li>${inner}</li>`
+            }
+            prevLevel = depth
+        }
+
+        // flush
+        for (let i = 1; i < prevLevel; i++)
+            result += closer + '</li>'
+        result += closer
+
+        return result
     }
 
     anonymousFootnoteFallback(ctx) {
