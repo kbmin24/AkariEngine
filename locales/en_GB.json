@@ -141,5 +141,8 @@
 	"diffTitle": "{{{pagename}}}: Difference between r{{rev1}} and r{{rev2}}",
 	"xrefTo": "Pages linking to {{{page}}}",
 	"ACLpermRequried": "ACL permission is required.",
-	"threadOf": "Discussions of {{{page}}}"
+	"threadOf": "Discussions of {{{page}}}",
+	"edit": "Edit",
+	"footnotes": "Footnotes",
+	"nsPage": "No such page"
 }

@@ -7,6 +7,7 @@ import RecentChangeService from './RecentChangeService.js'
 import ThreadService from './ThreadService.js'
 import BlockService from './BlockService.js'
 import ViewcountService from './ViewcountService.js'
+import RenderService from './RenderService.js'
 
 class ServiceFactory {
     constructor(repositories) {
@@ -39,6 +40,7 @@ class ServiceFactory {
         this.viewcount = new ViewcountService(repositories.viewcounts)
         this.recentChanges = new RecentChangeService(repositories.recentchanges)
         this.thread = new ThreadService(repositories.threads, repositories.threadcomments, this.permission)
+        this.render = new RenderService(repositories.pages, repositories.files)
     }
 }
 

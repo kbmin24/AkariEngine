@@ -1,4 +1,4 @@
-<%= t('orphaned_pages_desc') %>
+<%- t('orphaned_pages_desc') %>
 <ul>
     <% for (let o of global.orphaned) { %>
         <li><a href="/w/<%= o %>"><%= o %></a></li>

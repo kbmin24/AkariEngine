@@ -8,7 +8,6 @@ import {
     PageNotFoundError,
     RevisionNotFoundError,
 } from '../services/errors.js'
-import { renderNew } from '../utils/wikimark/renderRunner.js'
 
 
 // TODO refactor to use PageService
@@ -134,7 +133,7 @@ export default async (req, res) => {
                 }
                 let opt = await getOptions(page.content)
                 opt.renderSectionEditButton = true
-                let { result, html: content } = await renderNew(contentPrefix + page.content,
+                let { result, html: content } = await req.app.locals.services.render.render(contentPrefix + page.content,
                         { pagename: req.params.name, ...opt },
                         req.app.locals.repositories,
                     redirect)
