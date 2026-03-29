@@ -173,6 +173,81 @@ describe('Lexer', () => {
         })
     })
 
+    describe('Macro', () => {
+        function macroPayloads(input) {
+            return lex(input).tokens
+                .filter(t => t.tokenType.name === 'Macro')
+                .map(t => t.payload)
+        }
+
+        test('[hr] tokenizes as a single Macro token', () => {
+            expect(tokenNames('[hr]')).toEqual(['Macro'])
+        })
+
+        test('[hr()] tokenizes as a single Macro token', () => {
+            expect(tokenNames('[hr()]')).toEqual(['Macro'])
+        })
+
+        test('[hr(some option)] tokenizes as a single Macro token', () => {
+            expect(tokenNames('[hr(some option)]')).toEqual(['Macro'])
+        })
+
+        test('[hr] payload has name "hr" and option null', () => {
+            expect(macroPayloads('[hr]')).toEqual([{ name: 'hr', option: null }])
+        })
+
+        test('[hr()] payload has name "hr" and option ""', () => {
+            expect(macroPayloads('[hr()]')).toEqual([{ name: 'hr', option: '' }])
+        })
+
+        test('[hr(some option)] payload has name "hr" and option "some option"', () => {
+            expect(macroPayloads('[hr(some option)]')).toEqual([{ name: 'hr', option: 'some option' }])
+        })
+
+        test('macro image matches the full original text', () => {
+            expect(tokenImages('[hr]')).toEqual(['[hr]'])
+            expect(tokenImages('[hr()]')).toEqual(['[hr()]'])
+            expect(tokenImages('[hr(some option)]')).toEqual(['[hr(some option)]'])
+        })
+
+        test('[[link]] is not tokenized as Macro', () => {
+            expect(tokenNames('[[link]]')).not.toContain('Macro')
+            expect(tokenNames('[[link]]')).toEqual(['LinkOpen', 'Text', 'LinkClose'])
+        })
+
+        test('[toc] is tokenized as TOC, not Macro', () => {
+            expect(tokenNames('[toc]')).toEqual(['TOC'])
+            expect(tokenNames('[toc]')).not.toContain('Macro')
+        })
+
+        test('[footnote] is tokenized as Footnote, not Macro', () => {
+            expect(tokenNames('[footnote]')).toEqual(['Footnote'])
+            expect(tokenNames('[footnote]')).not.toContain('Macro')
+        })
+
+        test('[* text] is tokenized as FootnoteOpener, not Macro', () => {
+            expect(tokenNames('[* ABC]')).not.toContain('Macro')
+            expect(tokenNames('[* ABC]')[0]).toBe('FootnoteOpener')
+        })
+
+        test('[1invalid] is not a Macro (name must start with a letter)', () => {
+            expect(tokenNames('[1invalid]')).not.toContain('Macro')
+        })
+
+        test('macro can appear inline within text', () => {
+            expect(tokenNames('foo [hr] bar')).toContain('Macro')
+            expect(tokenNames('foo [hr] bar')).toEqual(['Text', 'SpaceTab', 'Macro', 'SpaceTab', 'Text'])
+        })
+
+        test('multiple macros on the same line', () => {
+            expect(tokenNames('[foo] [bar(opt)]')).toEqual(['Macro', 'SpaceTab', 'Macro'])
+            expect(macroPayloads('[foo] [bar(opt)]')).toEqual([
+                { name: 'foo', option: null },
+                { name: 'bar', option: 'opt' },
+            ])
+        })
+    })
+
     describe('nesting', () => {
         test("tokenizes __'''bold'''__ correctly", () => {
             expect(tokenNames("__'''bold'''__")).toEqual([
@@ -198,7 +273,7 @@ describe('Lexer', () => {
 
     describe('Headings', () => {
         test('matches H1Open and H1Close', () => {
-                       expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'SpaceTab', 'Text', 'H1Close'])
+            expect(tokenNames('= Heading 1 =')).toEqual(['H1Open', 'Text', 'SpaceTab', 'Text', 'H1Close'])
             expect(tokenImages('= Heading 1 =')).toEqual(['= ', 'Heading', ' ', '1', ' ='])
         })
         test('matches h2, h3, h4, h5, h6', () => {
@@ -305,6 +380,36 @@ describe('Lexer', () => {
 
         test('inline * mid-sentence is not a ULBullet', () => {
             expect(tokenNames('foo * bar')).not.toContain('ULBullet')
+        })
+    }),
+
+    describe("Category", () => {
+        test('Ignores category', () => {
+            expect(tokenNames('[[category:abc]]')).toEqual([])
+        })
+    }),
+
+    describe('TemplateArgOpen/Close', () => {
+        test('{{{name}}} tokenizes as TemplateArgOpen, content, TemplateArgClose', () => {
+            expect(tokenNames('{{{name}}}')).toEqual(['TemplateArgOpen', 'Text', 'TemplateArgClose'])
+        })
+
+        test('{{{ takes priority over {{ (MultilineClose)', () => {
+            expect(tokenNames('{{{')).toEqual(['TemplateArgOpen'])
+        })
+    }),
+
+    describe('Table', () => {
+        test('Correctly identifies delimeters', () => {
+            expect(tokenNames('||')).toEqual(['TableDelimStart'])
+            expect(tokenNames('|| ||')).toEqual(['TableDelimStart', 'SpaceTab', 'TableDelim'])
+        }),
+        test('Correctly identifies options in delimeters', () => {
+            expect(lex('||[opt]').tokens[0].payload).toEqual({ options: '[opt]' })
+            expect(lex('|| [opt][abd]').tokens[0].payload).toEqual({ options: ' [opt][abd]' })
+            expect(lex('|| [opt]\n[abd]').tokens[0].payload).toEqual({ options: ' [opt]' })
+            expect(lex('|| [opt]a[abd]').tokens[0].payload).toEqual({ options: ' [opt]' })
+            expect(lex('||').tokens[0].payload).toEqual({ options: '' })
         })
     })
 })

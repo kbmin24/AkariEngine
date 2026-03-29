@@ -2,6 +2,19 @@ import { CstParser, EOF } from "chevrotain"
 import { allTokens, T, inlineTokens } from "./tokens.js"
 import { scanTokenMatches } from "./scanTokenMatches.js"
 
+// tokens that terminate a link target; everything else is consumed as literal text
+const linkTargetStopTypes = new Set([T.Pipe, T.LinkClose, T.LF, T.CR, T.Comment])
+
+const hasLinkPipe = ($) => () => {
+    let i = 2 // start after LinkOpen
+    while (true) {
+        const tok = $.LA(i)
+        if (tok.tokenType === T.LinkClose || tok.tokenType === T.LF || tok.tokenTypeIdx === EOF.tokenTypeIdx) return false
+        if (tok.tokenType === T.Pipe) return true
+        i++
+    }
+}
+
 export class WikiParser extends CstParser {
     constructor() {
         super(allTokens, { maxLookahead: 1 })
@@ -11,11 +24,13 @@ export class WikiParser extends CstParser {
         $.openers = new Set()
         $.closers = new Set()
         $.matchedHeadingOpens = new Set()
+        $.matchedFenceOpens = new Set()
 
         // helpers to match unmatched ones
         const isOpener = (type) => () => $.openers.has($.LA(1)) && $.LA(1).tokenType === type
         const isNotOpener = (type) => () => !isOpener(type)()
         const isNotCloser = () => !$.closers.has($.LA(1))
+        const isValidTableDelim = () => $.validTableDelims.has($.LA(1))
 
 
         $.RULE('document', () => {
@@ -33,12 +48,59 @@ export class WikiParser extends CstParser {
                 { GATE: () => $.LA(1).tokenType === T.RightAlignOpen, ALT: () => $.SUBRULE($.rightalign) },
                 { GATE: () => $.LA(1).tokenType === T.TOC, ALT: () => $.SUBRULE($.TOCBox) },
                 { GATE: () => $.LA(1).tokenType === T.Footnote, ALT: () => $.SUBRULE($.footnoteList) },
+                { GATE: () => $.LA(1).tokenType === T.BQBullet, ALT: () => $.SUBRULE($.blockquote) },
                 { GATE: () => $.LA(1).tokenType === T.ULBullet, ALT: () => $.SUBRULE($.unorderedList) },
                 { GATE: () => $.LA(1).tokenType === T.OLBullet, ALT: () => $.SUBRULE($.orderedList) },
+                { GATE: () => $.matchedFenceOpens.has($.LA(1)), ALT: () => $.SUBRULE($.fencedCode) },
+                { GATE: () => $.LA(1).tokenType === T.MultilineMacro, ALT: () => $.SUBRULE($.multilineMacro) },
+                { GATE: isValidTableDelim, ALT: () => $.SUBRULE($.table) },
+
                 // bare LF tokens (blank lines between/around blocks)
                 { ALT: () => $.CONSUME2(T.LF) },
+                // orphaned (unmatched) FencedCode token — render as literal
+                { GATE: () => $.LA(1).tokenType === T.FencedCode, ALT: () => $.CONSUME(T.FencedCode) },
                 { ALT: () => $.SUBRULE($.paragraph) },
             ])
+        })
+
+        $.RULE('table', () => {
+            $.AT_LEAST_ONE({ GATE: isValidTableDelim, DEF: () => $.SUBRULE($.tableRow) })
+        })
+
+        $.RULE('tableRow', () => {
+            $.MANY({
+                GATE: () => {
+                    const la2 = $.LA(2)
+                    return la2.tokenTypeIdx !== EOF.tokenTypeIdx && la2.tokenType !== T.LF
+                },
+                DEF: () => $.SUBRULE($.tableCell)
+            })
+            $.CONSUME(T.TableDelim)
+            $.OPTION(() => {
+                $.CONSUME(T.LF)
+            })
+        })
+
+        $.RULE('tableCell', () => {
+            $.OR([
+                { ALT: () => $.CONSUME(T.TableDelimStart) },
+                { ALT: () => $.CONSUME(T.TableDelim) },
+            ])
+            $.SUBRULE($.line)
+        })
+
+        $.RULE('fencedCode', () => {
+            $.CONSUME(T.FencedCode)
+            $.MANY({
+                GATE: () => $.LA(1).tokenType !== T.FencedCode
+                    && $.LA(1).tokenTypeIdx !== EOF.tokenTypeIdx,
+                DEF: () => $.SUBRULE($.block)
+            })
+            $.CONSUME1(T.FencedCode)
+        })
+
+        $.RULE('multilineMacro', () => {
+            $.CONSUME(T.MultilineMacro)
         })
 
         // headings
@@ -101,6 +163,17 @@ export class WikiParser extends CstParser {
             })
             $.OPTION1(() => { $.CONSUME1(T.LF) })
             $.CONSUME(T.MultilineClose)
+        })
+
+        $.RULE('blockquote', () => {
+            $.AT_LEAST_ONE(() => $.SUBRULE($.blockquoteItem))
+        })
+
+        $.RULE('blockquoteItem', () => {
+            $.CONSUME(T.BQBullet)
+            $.OPTION(() => $.CONSUME(T.SpaceTab))
+            $.SUBRULE($.line)
+            $.OPTION1(() => $.CONSUME(T.LF))
         })
 
         $.RULE('unorderedList', () => {
@@ -175,6 +248,12 @@ export class WikiParser extends CstParser {
                     }, ALT: () => $.SUBRULE($.anonymousFootnote)
                 },
                 { GATE: isOpener(T.FootnoteOpener), ALT: () => $.SUBRULE($.anonymousFootnoteFallback) },
+                { GATE: () => isOpener(T.LinkOpen)() && hasLinkPipe($)(), ALT: () => $.SUBRULE($.namedLink) },
+                { GATE: isOpener(T.LinkOpen), ALT: () => $.SUBRULE($.simpleLink) },
+                { GATE: isOpener(T.TemplateArgOpen), ALT: () => $.SUBRULE($.templateArg) },
+                { ALT: () => $.CONSUME(T.Macro) },
+                { ALT: () => $.CONSUME(T.DisplayMath) },
+                { ALT: () => $.CONSUME(T.InlineMath) },
                 { ALT: () => $.CONSUME(T.SpaceTab) },
                 { ALT: () => $.CONSUME(T.Text) },
                 { ALT: () => $.CONSUME(T.EscapeChar) },
@@ -196,6 +275,15 @@ export class WikiParser extends CstParser {
                 // consumed orphaned footnoteOpener
                 { GATE: isNotOpener(T.FootnoteOpener), ALT: () => $.CONSUME(T.FootnoteOpener) },
 
+                // orphaned template arg tokens
+                { GATE: isNotOpener(T.TemplateArgOpen), ALT: () => $.CONSUME(T.TemplateArgOpen) },
+                { GATE: isNotCloser, ALT: () => $.CONSUME(T.TemplateArgClose) },
+
+                // orphaned link tokens
+                { GATE: isNotOpener(T.LinkOpen), ALT: () => $.CONSUME(T.LinkOpen) },
+                { GATE: isNotCloser, ALT: () => $.CONSUME(T.LinkClose) },
+                { ALT: () => $.CONSUME(T.Pipe) },
+
                 /*
                 consume tokens for block-level consturcts
                 obviously they shouldn't be here but they might appear in case of malicious inputs
@@ -206,6 +294,36 @@ export class WikiParser extends CstParser {
                 { ALT: () => $.CONSUME(T.TOC) },
                 { ALT: () => $.CONSUME(T.Footnote) },
             ])
+        })
+
+        // consumes any single token valid inside a link target (everything except stop tokens)
+        $.RULE('linkTargetToken', () => {
+            $.OR(
+                Object.values(T)
+                    .filter(tok => !linkTargetStopTypes.has(tok))
+                    .map(tok => ({ ALT: () => $.CONSUME(tok) }))
+            )
+        })
+
+        $.RULE('simpleLink', () => {
+            $.CONSUME(T.LinkOpen)
+            $.MANY({
+                GATE: () => $.LA(1).tokenType !== T.LinkClose && $.LA(1).tokenType !== T.LF,
+                DEF: () => $.SUBRULE($.linkTargetToken)
+            })
+            $.CONSUME(T.LinkClose)
+        })
+
+        $.RULE('namedLink', () => {
+            $.CONSUME(T.LinkOpen)
+            $.MANY({
+                GATE: () => $.LA(1).tokenType !== T.Pipe && $.LA(1).tokenType !== T.LF,
+                DEF: () => $.SUBRULE($.linkTargetToken)
+            })
+            $.CONSUME(T.Pipe)
+            // line already stops at closers; ]] will be in $.closers when properly matched
+            $.SUBRULE($.line)
+            $.CONSUME(T.LinkClose)
         })
 
         $.RULE('boldItalic', () => {
@@ -264,6 +382,12 @@ export class WikiParser extends CstParser {
             $.CONSUME(T.MacroCloser)
         })
 
+        $.RULE('templateArg', () => {
+            $.CONSUME(T.TemplateArgOpen)
+            $.SUBRULE($.line)
+            $.CONSUME(T.TemplateArgClose)
+        })
+
         $.RULE('anonymousFootnoteFallback', () => {
             $.CONSUME(T.FootnoteOpener)
             $.SUBRULE($.line) //contents
@@ -275,10 +399,12 @@ export class WikiParser extends CstParser {
 
     parse(tokens) {
         // call this instead of the standard pattern
-        const { openers, closers, matchedHeadingOpens } = scanTokenMatches(tokens)
+        const { openers, closers, matchedHeadingOpens, matchedFenceOpens, validTableDelims } = scanTokenMatches(tokens)
         this.openers = openers
         this.closers = closers
         this.matchedHeadingOpens = matchedHeadingOpens
+        this.matchedFenceOpens = matchedFenceOpens
+        this.validTableDelims = validTableDelims
         this.input = tokens
         return this.document()
     }

@@ -1,14 +1,13 @@
 import { createToken, Lexer } from "chevrotain"
-import { create } from "svg-captcha"
 
 // we need four slashes to bc it is escaped twice...
 const BSLASH = '\\\\'
 
-const SPECIAL_CHARS = `_'^,"/[(){}:=\\-${BSLASH}\\*#\\r\\n`
+const SPECIAL_CHARS = `_'^,"/[\\](){}:=\\-${BSLASH}\\*#\\r\\n|>`
 
 const EscapeChar = createToken({
     name: 'EscapeChar',
-    pattern: new RegExp(`\\\\[${SPECIAL_CHARS}]`),
+    pattern: new RegExp(`\\\\.`),
 })
 
 const LeftAlignOpen = createToken({
@@ -24,6 +23,16 @@ const CenterAlignOpen = createToken({
 const RightAlignOpen = createToken({
     name: 'RightAlignOpen',
     pattern: /\[\)\]{{/,
+})
+
+const TemplateArgOpen = createToken({
+    name: 'TemplateArgOpen',
+    pattern: /\{\{\{/,
+})
+
+const TemplateArgClose = createToken({
+    name: 'TemplateArgClose',
+    pattern: /\}\}\}(?!\})/,
 })
 
 /*
@@ -87,9 +96,66 @@ const Footnote = createToken({
     pattern: /\[(footnote|각주)\]/i,
 })
 
+const LinkOpen = createToken({
+    name: 'LinkOpen',
+    pattern: /\[\[/,
+})
+
+const LinkClose = createToken({
+    name: 'LinkClose',
+    pattern: /\]\]/,
+})
+
+const Pipe = createToken({
+    name: 'Pipe',
+    pattern: /\|/,
+})
+
 const FootnoteOpener = createToken({
     name: 'FootnoteOpener',
     pattern: /\[\*/
+})
+
+const DisplayMathPattern = /\$\$((?:[^$\\]|\\.|\\\n)+)\$\$/y
+const DisplayMath = createToken({
+    name: 'DisplayMath',
+    pattern: (text, offset) => {
+        DisplayMathPattern.lastIndex = offset
+        const match = DisplayMathPattern.exec(text)
+        if (!match) return null
+        match.payload = { content: match[1] }
+        return match
+    },
+    line_breaks: false,
+})
+
+const inlineMathPattern = /\$((?:[^$\\]|\\.|\\\n)+)\$/y
+const InlineMath = createToken({
+    name: 'InlineMath',
+    pattern: (text, offset) => {
+        inlineMathPattern.lastIndex = offset
+        const match = inlineMathPattern.exec(text)
+        if (!match) return null
+        match.payload = { content: match[1] }
+        return match
+    },
+    line_breaks: false,
+})
+
+const macroPattern = /\[([A-Za-z][A-Za-z0-9_-]*)(?:\(((?:[^)\\]|\\.)*)\))?\]/y
+const Macro = createToken({
+    name: 'Macro',
+    pattern: (text, offset) => {
+        macroPattern.lastIndex = offset
+        const match = macroPattern.exec(text)
+        if (!match) return null
+        match.payload = {
+            name: match[1],
+            option: match[2] ?? null,
+        }
+        return match
+    },
+    line_breaks: false,
 })
 
 const MacroCloser = createToken({
@@ -110,6 +176,52 @@ const LF = createToken({
     line_breaks: true,
 })
 
+const Category = createToken({
+    name: 'Category',
+    pattern:/\[\[(?:Category|분류):(.*?)\]\]/i,
+    group: Lexer.SKIPPED
+})
+
+const multilineMacroPattern = /\[([A-Za-z][A-Za-z0-9_-]*)\]\{\{([\s\S]*?)\}\}/y
+const MultilineMacro = createToken({
+    name: 'MultilineMacro',
+    pattern: (text, offset) => {
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
+        multilineMacroPattern.lastIndex = offset
+        const match = multilineMacroPattern.exec(text)
+        if (!match) return null
+        match.payload = {
+            name: match[1],
+            content: match[2],
+        }
+        return match
+    },
+    line_breaks: true,
+})
+
+const fencedCodePattern = /```[ \t]*(?:\n|$)/y
+const FencedCode = createToken({
+    name: 'FencedCode',
+    pattern: (text, offset) => {
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
+        fencedCodePattern.lastIndex = offset
+        return fencedCodePattern.exec(text)
+    },
+    line_breaks: true,
+})
+
+const optionsFrontmatterPattern = /(?:Option \w+ \w+\r?\n)+/iy
+const OptionsFrontmatter = createToken({
+    name: 'OptionsFrontmatter',
+    pattern: (text, offset) => {
+        if (offset !== 0) return null
+        optionsFrontmatterPattern.lastIndex = 0
+        return optionsFrontmatterPattern.exec(text)
+    },
+    line_breaks: true,
+    group: Lexer.SKIPPED,
+})
+
 const commentPattern = /\/\/[^\n]*\n?/y
 
 const Comment = createToken({
@@ -122,6 +234,39 @@ const Comment = createToken({
     line_breaks: true,
     group: Lexer.SKIPPED,
 })
+
+// matches || followed by string consisted only [...], allowing preceding whitespacetax
+const macros = ["include", "hr", "br", "file", "color", "youtube", "anchor", "dday", "agek", "age", "map", "pagecount", "syntax"]
+const TableDelimPattern = new RegExp(`\\|\\|((?:(?:\\t| )*\\[(?!${macros.join('|')})[^\\r\\n]*?\\])*)?`, 'y')
+
+// TableDelim at start of line
+const TableDelimStart = createToken({
+    name: 'TableDelimStart',
+    pattern: (text, offset) => {
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
+        TableDelimPattern.lastIndex = offset
+        const match = TableDelimPattern.exec(text)
+        if (!match) return null
+        match.payload = { options: match[1] ?? '' }
+        return match
+    },
+    line_breaks: true,
+})
+
+const TableDelim = createToken({
+    name: 'TableDelim',
+    pattern: (text, offset) => {
+        if (offset === 0 || text[offset - 1] === '\n' || text[offset - 1] === '\r') return null
+        TableDelimPattern.lastIndex = offset
+        const match = TableDelimPattern.exec(text)
+        if (!match) return null
+        match.payload = { options: match[1] ?? '' }
+        return match
+    },
+    line_breaks: true,
+})
+
+
 
 // generate tokens for h1-6
 // going backwards since going forwards would cause greedy matching issues
@@ -148,6 +293,17 @@ for (let n = 6; n >= 1; n--) {
         line_breaks: false,
     })
 }
+const bqBulletPattern = />+(?=\S)/y
+const BQBullet = createToken({
+    name: 'BQBullet',
+    pattern: (text, offset) => {
+        if (offset !== 0 && text[offset - 1] !== '\n' && text[offset - 1] !== '\r') return null
+        bqBulletPattern.lastIndex = offset
+        return bqBulletPattern.exec(text)
+    },
+    line_breaks: false,
+})
+
 const listBulletPattern = /\*+(?= \S)/y
 const ULBullet = createToken({
     name: 'ULBullet',
@@ -187,11 +343,20 @@ const Text = createToken({
 })
 
 export const T = {
+    OptionsFrontmatter,
+    MultilineMacro,
+    FencedCode,
+    DisplayMath,
+    InlineMath,
     EscapeChar,
     LeftAlignOpen,
     CenterAlignOpen,
     RightAlignOpen,
+    TemplateArgOpen,
+    TemplateArgClose,
     MultilineClose,
+    TableDelimStart,
+    TableDelim,
     UnderlineDelim,
     BoldItalicDelim,
     BoldDelim,
@@ -200,14 +365,20 @@ export const T = {
     SupDelim,
     SubDelim,
     BigDelim,
+    Category,
+    LinkOpen,
+    LinkClose,
+    Pipe,
     Footnote,
     FootnoteOpener,
     MacroCloser,
     TOC,
+    Macro,
     CR,
     LF,
     Comment,
     ...headingTokens,
+    BQBullet,
     ULBullet,
     OLBullet,
     SpaceTab,
@@ -217,6 +388,8 @@ export const T = {
 export const allTokens = Object.values(T)
 
 export const inlineTokens = new Set([
+    DisplayMath,
+    InlineMath,
     EscapeChar,
     UnderlineDelim,
     BoldDelim,
@@ -226,8 +399,14 @@ export const inlineTokens = new Set([
     SupDelim,
     SubDelim,
     BigDelim,
+    LinkOpen,
+    LinkClose,
+    Pipe,
     FootnoteOpener,
+    Macro,
     MacroCloser,
+    TemplateArgOpen,
+    TemplateArgClose,
     SpaceTab,
     Text])
 
@@ -247,6 +426,8 @@ export const symmetricTokens = new Set([
  */
 export const assymetricTokens = [
     [FootnoteOpener, MacroCloser],
+    [LinkOpen, LinkClose],
+    [TemplateArgOpen, TemplateArgClose],
     [LeftAlignOpen, MultilineClose],
     [CenterAlignOpen, MultilineClose],
     [RightAlignOpen, MultilineClose]

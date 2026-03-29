@@ -1,5 +1,6 @@
 import {
     T,
+    inlineTokens,
     assymetricClosers,
     assymetricOpeners,
     blockLevelOpeners,
@@ -7,14 +8,7 @@ import {
     areMatchingAsymTokens
 } from './tokens.js'
 
-/**
- * Scans token stream to identify unmatched symmetric delimeters.
- * In other words, only returns openers/closers that are matched only if opener and closer are the same token.
- * Used by parser to fallback unmatched tokens.
- * @param {Token[]} tokens - token stream to scan
- * @returns {{openers: Set<Token>, closers: Set<Token>}} sets of matched openers and closers
- */
-export function scanTokenMatches(tokens) {
+function scanInlineMatches(tokens) {
     const openers = new Set() // MATCHED openers
     const closers = new Set() // MATCHED closers
     const stack = []
@@ -78,8 +72,10 @@ export function scanTokenMatches(tokens) {
         }
         inlineContentSeen = true
     }
+    return { openers, closers }
+}
 
-    // scan for matched heading open/close pairs (line-scoped, asymmetric)
+function scanHeadingMatches(tokens) {
     const matchedHeadingOpens = new Set()
     let pendingHeading = null  // { token, level }
 
@@ -102,21 +98,99 @@ export function scanTokenMatches(tokens) {
             }
         }
     }
+    return matchedHeadingOpens
+}
 
-    // scan for matched FootnoteOpener/MacroCloser pairs (asymmetric)
-    /*const footnoteStack = []
+function scanMatchedFencedCode(tokens) {
+    const matchedFenceOpens = new Set()
+    const fenceStack = []
     for (const tok of tokens) {
-        if (tok.tokenType === T.LF) {
-            footnoteStack.length = 0
-            continue
+        if (tok.tokenType !== T.FencedCode) continue
+        if (fenceStack.length > 0) {
+            matchedFenceOpens.add(fenceStack.pop())
+        } else {
+            fenceStack.push(tok)
         }
-        if (tok.tokenType === T.FootnoteOpener) {
-            footnoteStack.push(tok)
-        } else if (tok.tokenType === T.MacroCloser && footnoteStack.length > 0) {
-            openers.add(footnoteStack.pop())
-            closers.add(tok)
-        }
-    }*/
+    }
+    return matchedFenceOpens
+}
 
-    return { openers, closers, matchedHeadingOpens }
+/**
+ * Determine if the TableRow matches the pattern:
+ *   TableRow := TableDelimStart (inline* TableDelim)+
+ * and that
+ *  - TableDelim occurs right before $
+ *  -No non-inline token occurs in between (ie TableDelim + inlineTokens)
+ * * Last TableDelim shouldn't have any options
+ */
+function scanValidTableDelims(tokens) {
+    const validTableDelims = new Set()
+    let pendingTableDelimStart = null
+    let pendingTableDelims = []
+    let lastToken = null // only updated if pendingTableDelimStart is something
+    for (const [i, tok] of tokens.entries()) {
+        // we wouldn't expect TableDelimStart before LF or ^ appears
+        if (tok.tokenType === T.TableDelimStart) {
+            pendingTableDelimStart = tok
+        }
+
+        if (pendingTableDelimStart === null) continue
+
+        if (tok.tokenType === T.LF) {
+            // check if last token seen is TableDelim AND it has no payload
+            if (lastToken?.tokenType === T.TableDelim && !lastToken.payload?.options) {
+                validTableDelims.add(pendingTableDelimStart)
+                validTableDelims.add(...pendingTableDelims)
+            }
+            pendingTableDelimStart = null
+            pendingTableDelims = []
+        }
+        else if (i === tokens.length - 1) {
+            // EOF, do the same
+            if (tok.tokenType === T.TableDelim && !tok.payload?.options) {
+                validTableDelims.add(pendingTableDelimStart)
+                if (pendingTableDelims.length > 0) {
+                    validTableDelims.add(...pendingTableDelims)
+                }
+                validTableDelims.add(tok)
+            }
+            pendingTableDelimStart = null
+            pendingTableDelims = []
+        }
+        // invalid token in between, discard pending start
+        else if (!inlineTokens.has(tok.tokenType) &&
+            tok.tokenType !== T.TableDelim &&
+            tok.tokenType !== T.TableDelimStart) {
+            pendingTableDelimStart = null
+            pendingTableDelims = []
+        }
+
+        if (tok.tokenType === T.TableDelim) {
+            pendingTableDelims.push(tok)
+        }
+        lastToken = tok
+    }
+    return validTableDelims
+}
+
+/**
+ * Scans token stream to identify unmatched symmetric delimeters.
+ * In other words, only returns openers/closers that are matched only if opener and closer are the same token.
+ * Used by parser to fallback unmatched tokens.
+ * @param {Token[]} tokens - token stream to scan
+ * @returns {{openers: Set<Token>, closers: Set<Token>, matchedHeadingOpens: Set<Token>, matchedFenceOpens: Set<Token>, validTableDelims: Set<Token>}} sets of matched openers and closers
+ */
+export function scanTokenMatches(tokens) {
+    const { openers, closers } = scanInlineMatches(tokens)
+
+    // scan for matched heading open/close pairs (line-scoped, asymmetric)
+    const matchedHeadingOpens = scanHeadingMatches(tokens)
+
+    // scan for matched FencedCode pairs (block-scoped, symmetric)
+    const matchedFenceOpens = scanMatchedFencedCode(tokens)
+
+    // scan for valid TableDelims
+    const validTableDelims = scanValidTableDelims(tokens)
+
+    return { openers, closers, matchedHeadingOpens, matchedFenceOpens, validTableDelims }
 }

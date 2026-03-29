@@ -1,4 +1,5 @@
 import PageRepository from './PageRepository.js'
+import FileRepository from './FileRepository.js'
 import UserRepository from './UserRepository.js'
 import PermissionRepository from './PermissionRepository.js'
 import CategoryRepository from './CategoryRepository.js'
@@ -31,6 +32,7 @@ class RepositoryFactory {
         this.blocks = new BlockRepository(db.block)
         this.protections = new ProtectRepository(db.protect)
         this.viewcounts = new ViewcountRepository(db.viewcount)
+        this.files = new FileRepository(db.mfile)
     }
 }
 

@@ -41,7 +41,6 @@
     "boardDescriptions": {
         "free": "주저리주저리절절"
     },
-    "mapKey": "Kakao map key",
     "gaenyumThreshold": 5,
     "disableDarkMode": false,
     "upload_types": [

@@ -1,3 +1,5 @@
+import { Op } from 'sequelize'
+
 class BaseRepository {
     constructor(model) {
         this.model = model
@@ -34,6 +36,10 @@ class BaseRepository {
 
     async count(where = {}) {
         return this.model.count({ where })
+    }
+
+    async findByFieldBatch(field, values) {
+        return this.model.findAll({ where: { [field]: { [Op.in]: values } }, attributes: [field] })
     }
 }
 

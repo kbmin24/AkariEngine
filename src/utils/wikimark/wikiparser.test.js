@@ -304,12 +304,242 @@ describe('WikiParser', () => {
         })
     })
 
+    describe('simpleLink', () => {
+        test('basic link produces no errors', () => {
+            expect(parse('[[Article Name]]').errors).toHaveLength(0)
+        })
+
+        test('produces a simpleLink CST node', () => {
+            const { cst } = parse('[[Article Name]]')
+            const inline = cst.children.block[0].children.paragraph[0].children.line[0].children.inline[0]
+            expect(inline.children.simpleLink[0].name).toBe('simpleLink')
+        })
+
+        test('target containing markup tokens is consumed without errors', () => {
+            expect(parse("[['''not bold]]").errors).toHaveLength(0)
+        })
+
+        test('unmatched [[ is consumed as literal text without errors', () => {
+            const { cst, errors } = parse('[[unfinished')
+            expect(errors).toHaveLength(0)
+            const inline = cst.children.block[0].children.paragraph[0].children.line[0].children.inline[0]
+            expect(inline.children.simpleLink).toBeUndefined()
+        })
+
+        test('works inside a list item', () => {
+            expect(parse('* [[Article]]').errors).toHaveLength(0)
+        })
+    })
+
+    describe('namedLink', () => {
+        test('basic named link produces no errors', () => {
+            expect(parse('[[Article Name|display name]]').errors).toHaveLength(0)
+        })
+
+        test('produces a namedLink CST node', () => {
+            const { cst } = parse('[[Article Name|display name]]')
+            const inline = cst.children.block[0].children.paragraph[0].children.line[0].children.inline[0]
+            expect(inline.children.namedLink[0].name).toBe('namedLink')
+        })
+
+        test('display name with inline markup produces no errors', () => {
+            expect(parse("[[Article|'''bold display''']]").errors).toHaveLength(0)
+        })
+
+        test('display name with markup produces a line child with inline markup nodes', () => {
+            const { cst } = parse("[[Article|'''bold display''']]")
+            const namedLink = cst.children.block[0].children.paragraph[0].children.line[0].children.inline[0].children.namedLink[0]
+            const displayLine = namedLink.children.line[0]
+            expect(displayLine).toBeDefined()
+            expect(displayLine.children.inline[0].children.bold).toBeDefined()
+        })
+
+        test('target containing markup tokens is consumed without errors', () => {
+            expect(parse("[[Article''name|display]]").errors).toHaveLength(0)
+        })
+
+        test('without matching ]] is consumed as literal text without errors', () => {
+            expect(parse('[[Article|display').errors).toHaveLength(0)
+        })
+
+        test('works inside a list item', () => {
+            expect(parse('* [[Article|display]]').errors).toHaveLength(0)
+        })
+    })
+
+    describe('blockquote rules', () => {
+        test('single blockquote line produces no errors', () => {
+            expect(parse('>text').errors).toHaveLength(0)
+        })
+
+        test('blockquote line produces a blockquote CST node inside block', () => {
+            const { cst } = parse('>text')
+            expect(cst.children.block[0].children.blockquote).toBeDefined()
+            expect(cst.children.block[0].children.blockquote[0].name).toBe('blockquote')
+        })
+
+        test('blockquote node contains a blockquoteItem CST node', () => {
+            const { cst } = parse('>text')
+            const bq = cst.children.block[0].children.blockquote[0]
+            expect(bq.children.blockquoteItem).toHaveLength(1)
+            expect(bq.children.blockquoteItem[0].name).toBe('blockquoteItem')
+        })
+
+        test('consecutive blockquote lines cluster into one blockquote block', () => {
+            const { cst, errors } = parse('>line1\n>line2\n>line3')
+            expect(errors).toHaveLength(0)
+            expect(cst.children.block).toHaveLength(1)
+            const bq = cst.children.block[0].children.blockquote[0]
+            expect(bq.children.blockquoteItem).toHaveLength(3)
+        })
+
+        test('blank line splits blockquote lines into separate blockquote blocks', () => {
+            const { cst, errors } = parse('>line1\n\n>line2')
+            expect(errors).toHaveLength(0)
+            const bqs = cst.children.block.filter(b => b.children.blockquote)
+            expect(bqs).toHaveLength(2)
+        })
+
+        test('blockquote can contain inline markup', () => {
+            expect(parse(">'''bold''' text").errors).toHaveLength(0)
+        })
+
+        test('nested blockquote (>>) clusters into same blockquote block', () => {
+            const { cst, errors } = parse('>line1\n>>nested\n>line2')
+            expect(errors).toHaveLength(0)
+            expect(cst.children.block).toHaveLength(1)
+            const items = cst.children.block[0].children.blockquote[0].children.blockquoteItem
+            expect(items).toHaveLength(3)
+            expect(items[0].children.BQBullet[0].image.length).toBe(1)
+            expect(items[1].children.BQBullet[0].image.length).toBe(2)
+            expect(items[2].children.BQBullet[0].image.length).toBe(1)
+        })
+
+        test('> not at line start is not parsed as blockquote', () => {
+            expect(parse('text > not blockquote').errors).toHaveLength(0)
+            const { cst } = parse('text > not blockquote')
+            expect(cst.children.block[0].children.blockquote).toBeUndefined()
+        })
+    })
+
     describe('ul/ol nasty rules', () => {
         test('block-level construct in bullet', () => {
             expect(parse("* [toc]").errors).toHaveLength(0)
             expect(parse("# [)]{{Align}}").errors).toHaveLength(0)
             expect(parse("* [:]{{").errors).toHaveLength(0)
             expect(parse("* [footnotE]").errors).toHaveLength(0)
+        })
+    })
+
+    describe('templateArg', () => {
+        test('{{{name}}} parses without errors', () => {
+            expect(parse('{{{name}}}').errors).toHaveLength(0)
+        })
+
+        test('{{{name}}} produces a templateArg CST node in inline context', () => {
+            const { cst } = parse('{{{name}}}')
+            const inline = cst.children.block[0].children.paragraph[0].children.line[0].children.inline[0]
+            expect(inline.children.templateArg).toBeDefined()
+        })
+
+        test('unmatched {{{ is consumed as literal text without errors', () => {
+            expect(parse('{{{unmatched').errors).toHaveLength(0)
+        })
+    })
+
+    describe('table', () => {
+        describe('no errors', () => {
+            test('single-cell table (1 row, 1 col)', () => {
+                expect(parse('|| a ||').errors).toHaveLength(0)
+            })
+
+            test('single row, 2 columns', () => {
+                expect(parse('|| a || b ||').errors).toHaveLength(0)
+            })
+
+            test('2 rows, 1 column', () => {
+                expect(parse('|| a ||\n|| b ||').errors).toHaveLength(0)
+            })
+
+            test('2 rows, 2 columns', () => {
+                expect(parse('|| a || b ||\n|| c || d ||').errors).toHaveLength(0)
+            })
+
+            test('table followed by LF', () => {
+                expect(parse('|| a ||\n').errors).toHaveLength(0)
+            })
+        })
+
+        describe('CST structure', () => {
+            test('table appears as a table node inside block', () => {
+                const { cst } = parse('|| a ||')
+                const table = cst.children.block[0].children.table[0]
+                expect(table).toBeDefined()
+                expect(table.name).toBe('table')
+            })
+
+            test('single-cell table produces 1 row with 1 cell', () => {
+                const { cst } = parse('|| a ||')
+                const table = cst.children.block[0].children.table[0]
+                expect(table.children.tableRow).toHaveLength(1)
+                const row = table.children.tableRow[0]
+                expect(row.children.tableCell).toHaveLength(1)
+            })
+
+            test('single-cell row: cell opens with TableDelimStart and contains a line', () => {
+                const { cst } = parse('|| a ||')
+                const cell = cst.children.block[0].children.table[0]
+                    .children.tableRow[0].children.tableCell[0]
+                expect(cell.children.TableDelimStart).toHaveLength(1)
+                expect(cell.children.line).toHaveLength(1)
+            })
+
+            test('single row, 2 columns: row has 2 cells', () => {
+                const { cst } = parse('|| a || b ||')
+                const row = cst.children.block[0].children.table[0].children.tableRow[0]
+                expect(row.children.tableCell).toHaveLength(2)
+            })
+
+            test('single row, 2 columns: first cell opens with TableDelimStart, second with TableDelim', () => {
+                const { cst } = parse('|| a || b ||')
+                const cells = cst.children.block[0].children.table[0]
+                    .children.tableRow[0].children.tableCell
+                expect(cells[0].children.TableDelimStart).toHaveLength(1)
+                expect(cells[1].children.TableDelim).toHaveLength(1)
+            })
+
+            test('single row, 2 columns: row terminator is a TableDelim on the row node', () => {
+                const { cst } = parse('|| a || b ||')
+                const row = cst.children.block[0].children.table[0].children.tableRow[0]
+                // The closing || is consumed directly on the row, not as a cell
+                expect(row.children.TableDelim).toHaveLength(1)
+            })
+
+            test('2 rows, 1 column: table has 2 rows each with 1 cell', () => {
+                const { cst } = parse('|| a ||\n|| b ||')
+                const table = cst.children.block[0].children.table[0]
+                expect(table.children.tableRow).toHaveLength(2)
+                expect(table.children.tableRow[0].children.tableCell).toHaveLength(1)
+                expect(table.children.tableRow[1].children.tableCell).toHaveLength(1)
+            })
+
+            test('2 rows, 2 columns: table has 2 rows each with 2 cells', () => {
+                const { cst } = parse('|| a || b ||\n|| c || d ||')
+                const table = cst.children.block[0].children.table[0]
+                expect(table.children.tableRow).toHaveLength(2)
+                expect(table.children.tableRow[0].children.tableCell).toHaveLength(2)
+                expect(table.children.tableRow[1].children.tableCell).toHaveLength(2)
+            })
+
+            test('each cell contains a line node', () => {
+                const { cst } = parse('|| a || b ||\n|| c || d ||')
+                const rows = cst.children.block[0].children.table[0].children.tableRow
+                for (const row of rows) {
+                    for (const cell of row.children.tableCell) {
+                        expect(cell.children.line).toHaveLength(1)
+                    }
+                }
+            })
         })
     })
 })

@@ -84,7 +84,7 @@ class Config {
                     margin: [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
                     'margin-top': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
                     'margin-bottom': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
-                    'margin-left': [/^ *(-|\+)?(\d|.)+(?:px|em|%) *$/],
+                    'margin-left': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
                     'margin-right': [/^ *(((-|\+)?(\d|.)+(px|em|%) *)+|auto) *$/],
                     'max-width': [/^.*?$/],
                     'max-height': [/^.*?$/],

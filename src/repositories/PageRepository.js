@@ -17,6 +17,14 @@ class PageRepository extends BaseRepository {
         return this.model.findOne({ where: { title } })
     }
 
+    async findByTitleBatch(titles) {
+        return this.findByFieldBatch('title', titles)
+    }
+
+    async findManyByTitles(titles) {
+        return this.model.findAll({ where: { title: { [Op.in]: titles } } })
+    }
+
     async searchByTitle(query, limit = 10, offset = 0) {
         return this.model.findAll({
             where: {
@@ -343,7 +351,7 @@ class PageRepository extends BaseRepository {
 
         return { reverted: true, rev: nextRev }
     }
-    
+
 }
 
 export default PageRepository

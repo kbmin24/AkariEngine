@@ -21,7 +21,7 @@ export async function getCategory(title, category, categorys) {
     const cardEnd = `</div>`
 
     if (categories.length == 0) {
-        if (!categorySwitch) return '' //we don't need category for user page
+        if (!categorySwitch) return '' //we don't need empty category for user page
         return cardBeginning + i18n.__('none') + cardEnd
     }
 
@@ -133,16 +133,16 @@ export default async (req, res) => {
                     titleSuffix = i18n.__('page_redirectedfrom', { page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>` }), `&nbsp;` + titleSuffix
                 }
                 let opt = await getOptions(page.content)
-                opt.showSectionEditButton = 'on'
-                let content
-                // EXPERIMENTAL: use the new renderer
-                if (global.conf.useNewRenderer) {
-                    content = renderNew(contentPrefix + page.content)
-                } else {
-                    content = await renderPage(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, redirect, true, {}, opt)
+                opt.renderSectionEditButton = true
+                let { result, html: content } = await renderNew(contentPrefix + page.content,
+                        { pagename: req.params.name, ...opt },
+                        req.app.locals.repositories,
+                    redirect)
+                
+                if (result === 'redirect') {
+                    return res.redirect(`/w/${content}?redirect=true&from=${encodeURIComponent(req.params.name)}`)
                 }
 
-                if (content === true) return
                 content = (await getCategory(req.params.name, categoryRepo, opt['category'])) + content
                 let renderOpt = {
                     title: page.title,

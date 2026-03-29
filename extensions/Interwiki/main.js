@@ -12,12 +12,12 @@ function linkfix(t)
     else return t
 }
 
-let onCall = (pagename, data, req, res, redirect, incl, args, renderOptions) =>
+let onCall = (input, renderOptions, repositories, canRedirect) =>
 {
     for (let i in mapping)
     {
         let r = new RegExp(`\\[\\[${i}:([^|\\r\\n]*?)\\]\\]`, 'igm')
-        data = data.replace(r, (_match, p1, _offset, _string, _groups) =>
+        input = input.replace(r, (_match, p1, _offset, _string, _groups) =>
         {
             p1 = linkfix(p1)
             let p1Tooltip = i + p1.replace(/'/g,`&apos;`)
@@ -25,17 +25,17 @@ let onCall = (pagename, data, req, res, redirect, incl, args, renderOptions) =>
         })
 
         let r2 = new RegExp(`\\[\\[${i}:(.*?)\\|(.*?)\\]\\]`, 'igm')
-        data = data.replace(r2, (_match, p1, p2, _offset, _string, _groups) =>
+        input = input.replace(r2, (_match, p1, p2, _offset, _string, _groups) =>
         {
             p1 = linkfix(p1)
             let p1Tooltip = i + p1.replace(/'/g,`&apos;`)
             return `<a href='${mapping[i] + p1}' rel='nofollow noopener noreferrer' title='${p1Tooltip}'>${p2}</a>`
         })
     }
-    return {pagename, data, req, res, redirect, incl, args, renderOptions}
+    return {input, renderOptions, repositories, canRedirect}
 }
 
 export default async (app, registerHook, _registerDB) =>
 {
     registerHook('beginRender', onCall)
-};
+}

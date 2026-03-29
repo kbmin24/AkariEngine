@@ -1,11 +1,12 @@
 import { WikiParser } from './wikiparser.js'
+import { getMacroRequest } from './macro.js'
 
 const parserInstance = new WikiParser()
 const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()
 
 function buildHeadingName(headingCounts, depth, separator = '.') {
     let res = ''
-    for (var i = 1; i <= depth; i++) {
+    for (let i = 1; i <= depth; i++) {
         res += headingCounts[i].toString()
         if (i != depth) res += separator
     }
@@ -59,7 +60,12 @@ export class PreprocessVisitor extends BaseCstVisitor {
             headingTitles: new Map(), //the title shown to user i.e. the text between ='s
 
             // node => Integer count of when the heading appears (1-indexed)
-            headingIndex: new Map()
+            headingIndex: new Map(),
+
+            pageRefs: new Set(),
+
+            // {repo, query}
+            macroRequests: [],
 
         }
         this.headingCounts = [0, 0, 0, 0, 0, 0, 0] // 1-based indexing, so [0..6]
@@ -80,27 +86,37 @@ export class PreprocessVisitor extends BaseCstVisitor {
         for (const block of ctx.block)
             this.visit(block)
 
-
         // postprocess: normalise heading 'depths'
         normaliseHeadingDepth(this.manifest.toc, this.manifest.headingNames)
     }
 
     block(ctx) {
-        if (ctx.heading) return this.visit(ctx.heading[0])
+        if (ctx.heading) this.visit(ctx.heading[0])
+        if (ctx.leftalign) this.visit(ctx.leftalign[0])
+        if (ctx.centeralign) this.visit(ctx.centeralign[0])
+        if (ctx.rightalign) this.visit(ctx.rightalign[0])
+        if (ctx.TOCBox) this.visit(ctx.TOCBox[0])
+        if (ctx.footnoteList) this.visit(ctx.footnoteList[0])
+        if (ctx.unorderedList) this.visit(ctx.unorderedList[0])
+        if (ctx.orderedList) this.visit(ctx.orderedList[0])
+        if (ctx.fencedCode) this.visit(ctx.fencedCode[0])
+        if (ctx.table) this.visit(ctx.table[0])
+        if (!ctx.paragraph) return
+        this.visit(ctx.paragraph[0])
     }
 
     heading(ctx) {
-        if (ctx.h1) return this.visit(ctx.h1[0])
-        if (ctx.h2) return this.visit(ctx.h2[0])
-        if (ctx.h3) return this.visit(ctx.h3[0])
-        if (ctx.h4) return this.visit(ctx.h4[0])
-        if (ctx.h5) return this.visit(ctx.h5[0])
-        if (ctx.h6) return this.visit(ctx.h6[0])
+        if (ctx.h1) this.visit(ctx.h1[0])
+        if (ctx.h2) this.visit(ctx.h2[0])
+        if (ctx.h3) this.visit(ctx.h3[0])
+        if (ctx.h4) this.visit(ctx.h4[0])
+        if (ctx.h5) this.visit(ctx.h5[0])
+        if (ctx.h6) this.visit(ctx.h6[0])
     }
 
     handleHeadingVisit(ctx, depth, headingCounts) {
         //clear heading counts after current depth
-        for (var i = depth + 1; i < headingCounts.length; i++) {
+        for (let i = depth + 1; i < headingCounts.length; i++) {
             headingCounts[i] = 0
         }
         headingCounts[depth]++
@@ -138,9 +154,35 @@ export class PreprocessVisitor extends BaseCstVisitor {
         this.handleHeadingVisit(ctx, 6, this.headingCounts)
     }
 
+    leftalign(ctx) {
+        if (ctx.block) ctx.block.forEach(block => this.visit(block))
+    }
 
-    // inline renderer for TOC
+    centeralign(ctx) {
+        if (ctx.block) ctx.block.forEach(block => this.visit(block))
+    }
+
+    rightalign(ctx) {
+        if (ctx.block) ctx.block.forEach(block => this.visit(block))
+    }
+
+    TOCBox(_ctx) { }
+
+    footnoteList(_ctx) { }
+
+    paragraph(ctx) {
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+    }
+
+    line(ctx) {
+        if (ctx.inline) ctx.inline.forEach(inline => this.visit(inline))
+    }
+
     inline(ctx) {
+        if (ctx.Macro) {
+            const req = getMacroRequest(ctx.Macro[0].payload.name, ctx.Macro[0].payload.option)
+            if (req) this.manifest.macroRequests.push(req)
+        }
         if (ctx.bold) return this.visit(ctx.bold[0])
         if (ctx.italic) return this.visit(ctx.italic[0])
         if (ctx.underline) return this.visit(ctx.underline[0])
@@ -148,18 +190,27 @@ export class PreprocessVisitor extends BaseCstVisitor {
         if (ctx.superscript) return this.visit(ctx.superscript[0])
         if (ctx.subscript) return this.visit(ctx.subscript[0])
         if (ctx.big) return this.visit(ctx.big[0])
+        if (ctx.anonymousFootnote) return this.visit(ctx.anonymousFootnote[0])
+        if (ctx.anonymousFootnoteFallback) return this.visit(ctx.anonymousFootnoteFallback[0])
+        if (ctx.simpleLink) return this.visit(ctx.simpleLink[0])
+        if (ctx.namedLink) return this.visit(ctx.namedLink[0])
         if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 
         // unmatched delimiters — render as their literal characters
+        /* @formatter:off */
         const orphanedTokens = [
-            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose", "BoldDelim",
-            "ItalicDelim", "UnderlineDelim", "SupDelim", "SubDelim", "BigDelim",
-            "H1Open", "H1Close", "H2Open", "H2Close", "H3Open",
-            "H3Close", "H4Open", "H4Close", "H5Open", "H5Close",
-            "H6Open", "H6Close",
+            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose",
+            "BoldDelim", "ItalicDelim", "UnderlineDelim", "SupDelim",
+            "SubDelim", "BigDelim", "H1Open", "H1Close",
+            "H2Open", "H2Close", "H3Open", "H3Close",
+            "H4Open", "H4Close", "H5Open", "H5Close",
+            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser",
+            "FootnoteOpener", "TOC", "Footnote", "LinkOpen",
+            "LinkClose", "Pipe"
         ]
+        /* @formatter:on */
         for (const tokenName of orphanedTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
         }
@@ -167,38 +218,94 @@ export class PreprocessVisitor extends BaseCstVisitor {
         return ''
     }
 
-     bold(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<span class="ren-textbf">${inner}</span>`
+    bold(ctx) {
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
     }
 
     italic(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<span class="ren-italic">${inner}</span>`
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
     }
 
     underline(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<span class="ren-underline">${inner}</span>`
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
     }
 
     strikethru(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<s>${inner}</s>`
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
     }
 
     superscript(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<sup>${inner}</sup>`
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
     }
 
     subscript(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<sub>${inner}</sub>`
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
     }
 
     big(ctx) {
-        const inner = ctx.inline ? ctx.inline.map(i => this.visit(i)).join('') : ''
-        return `<span class="ren-big">${inner}</span>`
+        if (ctx.inline) ctx.inline.forEach(i => this.visit(i))
+    }
+
+    anonymousFootnote(ctx) {
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+    }
+
+    unorderedList(ctx) {
+        if (ctx.unorderedListItem) ctx.unorderedListItem.forEach(item => this.visit(item))
+    }
+
+    unorderedListItem(ctx) {
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+    }
+
+    orderedList(ctx) {
+        if (ctx.orderedListItem) ctx.orderedListItem.forEach(item => this.visit(item))
+    }
+
+    orderedListItem(ctx) {
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+    }
+
+    fencedCode(ctx) {
+        if (ctx.block) ctx.block.forEach(block => this.visit(block))
+    }
+
+    table(ctx) {
+        if (ctx.tableRow) ctx.tableRow.forEach(row => this.visit(row))
+    }
+
+    tableRow(ctx) {
+        if (ctx.tableCell) ctx.tableCell.forEach(cell => this.visit(cell))
+    }
+
+    tableCell(ctx) {
+        if (ctx.line) this.visit(ctx.line[0])
+    }
+
+    anonymousFootnoteFallback(ctx) {
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+    }
+
+    templateArg(ctx) {
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+    }
+
+    #targetFromCtx(ctx) {
+        return (ctx.linkTargetToken ?? [])
+            .map(node => Object.values(node.children)[0][0].image)
+            .join('')
+    }
+
+    simpleLink(ctx) {
+        if (ctx.linkTargetToken) {
+            this.manifest.pageRefs.add(this.#targetFromCtx(ctx))
+        }
+    }
+
+    namedLink(ctx) {
+        if (ctx.linkTargetToken) {
+            this.manifest.pageRefs.add(this.#targetFromCtx(ctx))
+        }
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
     }
 }

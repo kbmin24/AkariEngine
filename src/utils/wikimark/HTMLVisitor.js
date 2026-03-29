@@ -2,6 +2,9 @@ import dedent from 'dedent'
 import sanitiseHtml from 'sanitize-html'
 
 import { WikiParser } from './wikiparser.js'
+import { macroHandler } from './macro.js'
+
+import validateColor from 'validate-color'
 
 const parserInstance = new WikiParser()
 const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()
@@ -13,11 +16,15 @@ export class HTMLVisitor extends BaseCstVisitor {
     /**
      * Constructor for HTMLVisitor.
      * @param {Object} manifest k-v pairs of data collected by PreprocessVisitor
-     * @param {Object} prompts k-v pairs of prompts to show to the user. Required fields: 'edit'
+     * @param {Object} prompts k-v pairs of prompts to show to the user.
+     * @param {Set<string>} missingPages Set of page names that are referenced but not found
+     * @param {Object} macroResult k-v pairs of macro results resolved by the service.
      * @param {Object} options k-v pairs of options.
-     * Currently supports: pagename (String), renderSectionEditButton (Boolean, requires pagename)
+     * Currently supports:  pagename (String),
+     *                      renderSectionEditButton (Boolean, requires pagename),
+     *                      isTemplate (Boolean, if true, paragraphs render as spans to prevent unwanted margins)
      */
-    constructor(manifest, prompts, options) {
+    constructor(manifest, prompts, missingPages, macroResult, options) {
         super()
         this.validateVisitor()
         this.headingCounts = [0, 0, 0, 0, 0, 0]
@@ -25,6 +32,8 @@ export class HTMLVisitor extends BaseCstVisitor {
         this.footnoteCnt = 0
         this.manifest = manifest
         this.prompts = prompts
+        this.missingPages = missingPages
+        this.macroResult = macroResult || {}
         this.options = options || {}
     }
 
@@ -48,10 +57,242 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.rightalign) return this.visit(ctx.rightalign[0])
         if (ctx.TOCBox) return this.visit(ctx.TOCBox[0])
         if (ctx.footnoteList) return this.visit(ctx.footnoteList[0])
+        if (ctx.blockquote) return this.visit(ctx.blockquote[0])
         if (ctx.unorderedList) return this.visit(ctx.unorderedList[0])
         if (ctx.orderedList) return this.visit(ctx.orderedList[0])
+        if (ctx.fencedCode) return this.visit(ctx.fencedCode[0])
+        if (ctx.multilineMacro) return this.visit(ctx.multilineMacro[0])
+        if (ctx.table) return this.visit(ctx.table[0])
+        if (ctx.FencedCode) return ctx.FencedCode[0].image.trimEnd()
         if (!ctx.paragraph) return ''
         return this.visit(ctx.paragraph[0])
+    }
+
+    multilineMacro(ctx) {
+        const { name, content } = ctx.MultilineMacro[0].payload
+        const { result, output } = macroHandler(name, content, this.macroResult)
+        if (result === 'unprocessed') return ctx.MultilineMacro[0].image
+        return output
+    }
+
+    table(ctx) {
+        let innerHTML = ''
+        let tableOptions = []
+        for (const row of ctx.tableRow ?? []) {
+            const { html: rowHtml, tableOptions: rowOptions } = this.visit(row)
+            innerHTML += rowHtml
+            tableOptions.push(...rowOptions)
+        }
+
+        const props = this.#aggregateTableOptions(tableOptions)
+        const style = this.#buildTableStyle(props)
+        const captionHTML = props.caption ? `<caption style='text-align:center'>${props.caption}</caption>` : ''
+
+        return `<table class="table table-bordered ren-table" style="${style}">${captionHTML}<tbody>${innerHTML}</tbody></table>`
+    }
+
+    #aggregateTableOptions(tableOptions) {
+        let tableFloat, caption, borderColor, borderWidth, bgColor, width, maxWidth, height
+        let noMargin = false
+        for (const option of tableOptions) {
+            // honour values seen first
+            switch (option.option) {
+                case 'float-left':       tableFloat  ??= 'left'; break
+                case 'float-right':      tableFloat  ??= 'right'; break
+                case 'float-center':     tableFloat  ??= 'center'; break
+                case 'caption':          caption     ??= option.value; break
+                case 'tableBorderColor': borderColor ??= option.value; break
+                case 'tableBorderWidth': borderWidth ??= option.value; break
+                case 'tableBgColor':     bgColor     ??= option.value; break
+                case 'width':            width       ??= option.value; break
+                case 'maxWidth':         maxWidth    ??= option.value; break
+                case 'height':           height      ??= option.value; break
+                case 'noMargin':         noMargin = true; break
+            }
+        }
+        return { tableFloat, caption, borderColor, borderWidth, bgColor, width, maxWidth, height, noMargin }
+    }
+
+    #buildTableStyle({ tableFloat, borderColor, borderWidth, bgColor, width, height, maxWidth, noMargin }) {
+        let style = ''
+        if (tableFloat === 'center') style += 'margin-left: auto; margin-right: auto;'
+        else if (tableFloat)         style += `float: ${tableFloat};`
+        if (borderColor) style += `border-color: ${borderColor};`
+        if (borderWidth) style += `border-width: ${borderWidth};`
+        if (bgColor)     style += `background-color: ${bgColor};`
+        if (width)       style += `width: ${width};`
+        if (height)      style += `height: ${height};`
+        if (maxWidth)    style += `max-width: ${maxWidth};`
+        if (noMargin)    style += 'margin: 0;'
+        return style
+    }
+
+    tableRow(ctx) {
+        let innerHTML = ''
+        let rowBgColor = undefined
+        let tableOptions = []
+        for (let cell of ctx.tableCell ?? []) {
+            const { rowBgColor: rowBgColorCandidate,
+                html: cellHtml,
+                tableOptions: tableOptionsCandidate } = this.visit(cell)
+            innerHTML += cellHtml
+            tableOptions.push(...tableOptionsCandidate)
+            if (rowBgColor === undefined) rowBgColor = rowBgColorCandidate
+        }
+
+        let rowStyle = rowBgColor ? `style="background-color: ${rowBgColor};"` : ''
+
+        return {
+            html: `<tr ${rowStyle}>${innerHTML}</tr>`,
+            tableOptions
+        }
+    }
+
+    tableCell(ctx) {
+        // options string format: "[opt1][opt2] [opt3]" — extract bracket contents
+        const optionsStr = (ctx.TableDelim || ctx.TableDelimStart)[0].payload.options ?? ''
+        const options = [...optionsStr.matchAll(/\[([^\]]*)\]/g)].map(m => m[1].trim())
+        const { tableOptions, rowBgColor, cellStyle, cellAttrs } = this.#parseCellOptions(options)
+        const inner = ctx.line ? this.visit(ctx.line[0]) : ''
+        return { rowBgColor, tableOptions, html: `<td ${cellAttrs}style="${cellStyle}">${inner}</td>` }
+    }
+
+    #parseCellOptions(options) {
+        const tableOptions = []
+        let rowBgColor
+        let cellStyle = ''
+        let cellAttrs = ''
+
+        for (const option of options) {
+            // --- Table-level options ---
+            const tableFloatMatch = option.match(/^tablefloat *= *(.+)$/i)
+            if (tableFloatMatch) {
+                const dir = tableFloatMatch[1].toLowerCase()
+                if (dir === 'left' || dir === 'right' || dir === 'center')
+                    tableOptions.push({ option: `float-${dir}` })
+                continue
+            }
+
+            const captionMatch = option.match(/^caption *= *(.+)$/i)
+            if (captionMatch) {
+                tableOptions.push({ option: 'caption', value: captionMatch[1] })
+                continue
+            }
+
+            const tableBorderColorMatch = option.match(/^tablebordercolor=(.+)$/i)
+            if (tableBorderColorMatch) {
+                tableOptions.push({ option: 'tableBorderColor', value: tableBorderColorMatch[1] })
+                continue
+            }
+
+            const tableBorderWidthMatch = option.match(/^tableborderwidth=(.+)$/i)
+            if (tableBorderWidthMatch) {
+                tableOptions.push({ option: 'tableBorderWidth', value: tableBorderWidthMatch[1] })
+                continue
+            }
+
+            const tableBgColorMatch = option.match(/^table(?:background|bg)color=(.+)$/i)
+            if (tableBgColorMatch) {
+                tableOptions.push({ option: 'tableBgColor', value: tableBgColorMatch[1] })
+                continue
+            }
+
+            const tableWidthMatch = option.match(/^tablewidth=(.+)$/i)
+            if (tableWidthMatch) {
+                tableOptions.push({ option: 'width', value: tableWidthMatch[1] })
+                continue
+            }
+
+            const tableMaxWidthMatch = option.match(/^tablemaxwidth=(.+)$/i)
+            if (tableMaxWidthMatch) {
+                tableOptions.push({ option: 'maxWidth', value: tableMaxWidthMatch[1] })
+                continue
+            }
+
+            const tableHeightMatch = option.match(/^tableheight=(.+)$/i)
+            if (tableHeightMatch) {
+                tableOptions.push({ option: 'height', value: tableHeightMatch[1] })
+                continue
+            }
+
+            if (option.toLowerCase() === 'nomargin') {
+                tableOptions.push({ option: 'noMargin' })
+                continue
+            }
+
+            // --- Row-level options ---
+            const rowBgColorMatch = option.match(/^row(?:background|bg)color=(.+)$/i)
+            if (rowBgColorMatch) {
+                rowBgColor ??= rowBgColorMatch[1]
+                continue
+            }
+
+            // --- Cell-level options ---
+            const colspanMatch = option.match(/^-(\d+)$/)
+            if (colspanMatch) {
+                cellAttrs += `colspan="${colspanMatch[1]}" `
+                continue
+            }
+
+            const rowspanMatch = option.match(/^\|(\d+)$/)
+            if (rowspanMatch) {
+                cellAttrs += `rowspan="${rowspanMatch[1]}" `
+                continue
+            }
+
+            switch (option) {
+                case ':': cellStyle += 'text-align: center;'; continue
+                case '(': cellStyle += 'text-align: left;'; continue
+                case ')': cellStyle += 'text-align: right;'; continue
+                case '^': cellStyle += 'vertical-align: top;'; continue
+                case '=': cellStyle += 'vertical-align: middle;'; continue
+                case 'v': cellStyle += 'vertical-align: bottom;'; continue
+            }
+
+            const borderColorMatch = option.match(/^bordercolor=(.+)$/i)
+            if (borderColorMatch) {
+                cellStyle += `border-color: ${borderColorMatch[1]};`
+                continue
+            }
+
+            const borderWidthMatch = option.match(/^borderwidth=(.+)$/i)
+            if (borderWidthMatch) {
+                cellStyle += `border-width: ${borderWidthMatch[1]};`
+                continue
+            }
+
+            const bgColorMatch = option.match(/^(?:bg|background)color=(.+)$/i)
+            if (bgColorMatch) {
+                cellStyle += `background-color: ${bgColorMatch[1]};`
+                continue
+            }
+
+            const widthMatch = option.match(/^width=(.+)$/i)
+            if (widthMatch) {
+                cellStyle += `width: ${widthMatch[1]};`
+                continue
+            }
+
+            const heightMatch = option.match(/^height=(.+)$/i)
+            if (heightMatch) {
+                cellStyle += `height: ${heightMatch[1]};`
+                continue
+            }
+
+            if (validateColor.default(option)) {
+                cellStyle += `background-color: ${option};`
+            }
+        }
+
+        return { tableOptions, rowBgColor, cellStyle, cellAttrs }
+    }
+
+    fencedCode(ctx) {
+        const prev = this.options.noBreak
+        this.options.noBreak = true
+        const inner = ctx.block ? ctx.block.map(b => this.visit(b)).join('') : ''
+        this.options.noBreak = prev
+        return inner
     }
 
     heading(ctx) {
@@ -148,7 +389,11 @@ export class HTMLVisitor extends BaseCstVisitor {
     }
 
     paragraph(ctx) {
+        if (this.options.noBreak) {
+            return ctx.line.map(line => this.visit(line)).join('')
+        }
         const lines = ctx.line.map(line => this.visit(line)).join('<br>')
+        if (this.options.isTemplate) return `<span>${lines}</span>`
         return `<p>${lines}</p>`
     }
 
@@ -158,6 +403,12 @@ export class HTMLVisitor extends BaseCstVisitor {
     }
 
     inline(ctx) {
+        if (ctx.Macro) {
+            const { result, output } = macroHandler(ctx.Macro[0].payload.name, ctx.Macro[0].payload.option, this.macroResult)
+            if (result === 'unprocessed') return ctx.Macro[0].image
+            else return output
+        }
+        if (ctx.templateArg) return this.visit(ctx.templateArg[0])
         if (ctx.bold) return this.visit(ctx.bold[0])
         if (ctx.italic) return this.visit(ctx.italic[0])
         if (ctx.underline) return this.visit(ctx.underline[0])
@@ -167,20 +418,33 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.big) return this.visit(ctx.big[0])
         if (ctx.anonymousFootnote) return this.visit(ctx.anonymousFootnote[0])
         if (ctx.anonymousFootnoteFallback) return this.visit(ctx.anonymousFootnoteFallback[0])
+        if (ctx.simpleLink) return this.visit(ctx.simpleLink[0])
+        if (ctx.namedLink) return this.visit(ctx.namedLink[0])
         if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 
+        if (ctx.DisplayMath) {
+            const content = ctx.DisplayMath[0].payload.content
+            return `<span class='mathd'>${content}</span>`
+        }
+
+        if (ctx.InlineMath) {
+            const content = ctx.InlineMath[0].payload.content
+            return `<span class='math'>${content}</span>`
+        }
+
         // unmatched delimiters, render as their literal characters
         /* @formatter:off */
         const orphanedTokens = [
-            "LeftAlignOpen",	"CenterAlignOpen",	"RightAlignOpen",	"MultilineClose",
-            "BoldDelim",	    "ItalicDelim",	    "UnderlineDelim",	"SupDelim",
-            "SubDelim",         "BigDelim",         "H1Open",	        "H1Close",
-            "H2Open",	        "H2Close",	        "H3Open",	        "H3Close",
-            "H4Open",	        "H4Close",	        "H5Open",	        "H5Close",
-            "H6Open",	        "H6Close",	        "FootnoteCloser",	"MacroCloser",
-            "FootnoteOpener",	"TOC",	            "Footnote"
+            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose",
+            "BoldDelim", "ItalicDelim", "UnderlineDelim", "SupDelim",
+            "SubDelim", "BigDelim", "H1Open", "H1Close",
+            "H2Open", "H2Close", "H3Open", "H3Close",
+            "H4Open", "H4Close", "H5Open", "H5Close",
+            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser",
+            "FootnoteOpener", "TOC", "Footnote", "LinkOpen",
+            "LinkClose", "Pipe", "TemplateArgOpen", "TemplateArgClose"
         ]
         /* @formatter:on */
         for (const tokenName of orphanedTokens) {
@@ -239,6 +503,46 @@ export class HTMLVisitor extends BaseCstVisitor {
         </span>`
     }
 
+    blockquote(ctx) {
+        const items = (ctx.blockquoteItem ?? []).map(item => this.visit(item))
+        return this.renderBlockquote(items)
+    }
+
+    blockquoteItem(ctx) {
+        const depth = ctx.BQBullet[0].image.length
+        const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
+        return { depth, inner }
+    }
+
+    renderBlockquote(items) {
+        const BQ_OPENER = `<blockquote class='ren-quote'><table><tbody><tr><td class='ren-quote-content'>`
+        const BQ_CLOSER = `</td><td class='ren-quote-icon'><i class="fa fa-quote-left" aria-hidden="true"></i></td></tr></tbody></table></blockquote>`
+
+        let result = ''
+        let prevLevel = 0
+        for (let { depth, inner } of items) {
+            depth = Math.min(depth, 10)
+            if (prevLevel < depth) {
+                for (let i = 0; i < depth - prevLevel; i++)
+                    result += BQ_OPENER
+                result += inner
+            } else if (prevLevel > depth) {
+                for (let i = 0; i < prevLevel - depth; i++)
+                    result += BQ_CLOSER
+                result += inner
+            } else {
+                result += '<br>' + inner
+            }
+            prevLevel = depth
+        }
+
+        // flush remaining open blockquotes
+        for (let i = 0; i < prevLevel; i++)
+            result += BQ_CLOSER
+
+        return result
+    }
+
     unorderedList(ctx) {
         const items = (ctx.unorderedListItem ?? []).map(item => this.visit(item))
         return this.renderList(items, 'ul')
@@ -267,7 +571,8 @@ export class HTMLVisitor extends BaseCstVisitor {
         let prevLevel = 0
         let opener = `<${tagname}>`
         let closer = `</${tagname}>`
-        for (const { depth, inner } of items) {
+        for (let { depth, inner } of items) {
+            depth = Math.min(depth, 10)
             if (prevLevel < depth) {
                 for (let i = 0; i < depth - prevLevel; i++)
                     result += opener + '<li>'
@@ -295,5 +600,69 @@ export class HTMLVisitor extends BaseCstVisitor {
     anonymousFootnoteFallback(ctx) {
         const inner = ctx.line ? ctx.line.map(i => this.visit(i)).join('') : ''
         return `[*${inner}]`
+    }
+
+    #targetFromCtx(ctx) {
+        return (ctx.linkTargetToken ?? [])
+            .map(node => Object.values(node.children)[0][0].image)
+            .join('')
+    }
+
+    #encodeTargetExternal(target) {
+        return encodeURI(target).replace(/'/g, '%27').replace(/"/g, '%22')
+    }
+
+    #encodeTarget(target) {
+        return encodeURIComponent(target).replace(/'/g, '%27').replace(/"/g, '%22')
+    }
+
+    #renderLink(target, display) {
+        const titleAttr = target.replace(/"/g, '&quot;')
+        if (target.startsWith('http:') || target.startsWith('https:')) {
+            return dedent`<a href='${this.#encodeTargetExternal(target)}'
+            target='_blank'
+            rel='nofollow noopener noreferrer'
+            title='${titleAttr}'
+            class='ren-extlink'>
+                <i class="fas fa-external-link-square-alt ren-extlink-icon"></i>
+                ${display}
+            </a>`
+        }
+
+        // could be false negative if the link goes like pagename#s1.1
+        const autoLinkClass = target == this.options.pagename ? 'ren_thispage' : ''
+        const isMissing = this.missingPages.has(target)
+        const page404Prompt = isMissing ? ` (${this.prompts.page404})` : ''
+        const page404class = isMissing ? 'ren_nosuchpage' : ''
+        return dedent`<a href="/w/${this.#encodeTarget(target)}"
+        title="${titleAttr}${page404Prompt}"
+        class="${autoLinkClass} ${page404class}">${display}</a>`
+    }
+
+    simpleLink(ctx) {
+        const target = this.#targetFromCtx(ctx)
+        return this.#renderLink(target, target)
+    }
+
+    namedLink(ctx) {
+        const target = this.#targetFromCtx(ctx)
+        const display = ctx.line ? this.visit(ctx.line[0]) : target
+        return this.#renderLink(target, display)
+    }
+
+    templateArg(ctx) {
+        const name = ctx.line ? this.#rawText(ctx.line[0]) : ''
+        const value = this.options.args?.[name]
+        if (value !== undefined) return value
+        return ctx.line ? this.visit(ctx.line[0]) : ''
+    }
+
+    #rawText(node) {
+        if ('image' in node) return node.image
+        return Object.values(node.children)
+            .flat()
+            .sort((a, b) => (a.startOffset ?? 0) - (b.startOffset ?? 0))
+            .map(n => this.#rawText(n))
+            .join('')
     }
 }
