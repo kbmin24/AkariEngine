@@ -17,15 +17,9 @@ const hasLinkPipe = ($) => () => {
 
 export class WikiParser extends CstParser {
     constructor() {
-        // define LL(1) parser
-        // kind of because pre-processing does all the heavy lifting
         super(allTokens, { maxLookahead: 1 })
 
         const $ = this
-
-        // cache
-        $.cblock = undefined
-        $.cinline = undefined
 
         $.openers = new Set()
         $.closers = new Set()
@@ -46,9 +40,8 @@ export class WikiParser extends CstParser {
             })
         })
 
-        // https://chevrotain.io/docs/guide/performance.html#caching-arrays-of-alternatives
         $.RULE('block', () => {
-            $.OR($.cblock || ($.cblock = [
+            $.OR([
                 { GATE: () => $.matchedHeadingOpens.has($.LA(1)), ALT: () => $.SUBRULE($.heading) },
                 { GATE: () => $.LA(1).tokenType === T.LeftAlignOpen, ALT: () => $.SUBRULE($.leftalign) },
                 { GATE: () => $.LA(1).tokenType === T.CenterAlignOpen, ALT: () => $.SUBRULE($.centeralign) },
@@ -67,7 +60,7 @@ export class WikiParser extends CstParser {
                 // orphaned (unmatched) FencedCode token — render as literal
                 { GATE: () => $.LA(1).tokenType === T.FencedCode, ALT: () => $.CONSUME(T.FencedCode) },
                 { ALT: () => $.SUBRULE($.paragraph) },
-            ]))
+            ])
         })
 
         $.RULE('table', () => {
@@ -75,25 +68,26 @@ export class WikiParser extends CstParser {
         })
 
         $.RULE('tableRow', () => {
+            $.CONSUME(T.TableDelimStart)
+            $.SUBRULE($.line)
             $.MANY({
+                // Continue only when the next || is a valid interior separator,
+                // i.e. something follows it before LF/EOF (that would be the closer).
                 GATE: () => {
                     const la2 = $.LA(2)
-                    return la2.tokenTypeIdx !== EOF.tokenTypeIdx && la2.tokenType !== T.LF
+                    return isValidTableDelim()
+                        && la2.tokenTypeIdx !== EOF.tokenTypeIdx
+                        && la2.tokenType !== T.LF
                 },
-                DEF: () => $.SUBRULE($.tableCell)
+                DEF: () => {
+                    $.CONSUME(T.TableDelim)
+                    $.SUBRULE1($.line)
+                }
             })
-            $.CONSUME(T.TableDelim)
+            $.CONSUME1(T.TableDelim)
             $.OPTION(() => {
                 $.CONSUME(T.LF)
             })
-        })
-
-        $.RULE('tableCell', () => {
-            $.OR([
-                { ALT: () => $.CONSUME(T.TableDelimStart) },
-                { ALT: () => $.CONSUME(T.TableDelim) },
-            ])
-            $.SUBRULE($.line)
         })
 
         $.RULE('fencedCode', () => {
@@ -232,13 +226,13 @@ export class WikiParser extends CstParser {
 
         $.RULE('line', () => {
             $.AT_LEAST_ONE({
-                GATE: () => !$.closers.has($.LA(1)),
+                GATE: () => !$.closers.has($.LA(1)) && !isValidTableDelim(),
                 DEF: () => $.SUBRULE($.inline)
             })
         })
 
         $.RULE('inline', () => {
-            $.OR($.cinline || ($.cinline = [
+            $.OR([
                 // identify if this is a matched opener
                 { GATE: isOpener(T.BoldItalicDelim), ALT: () => $.SUBRULE($.boldItalic) },
                 { GATE: isOpener(T.BoldDelim), ALT: () => $.SUBRULE($.bold) },
@@ -291,8 +285,12 @@ export class WikiParser extends CstParser {
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.LinkClose) },
                 { ALT: () => $.CONSUME(T.Pipe) },
 
+                // orphaned table delims
+                { GATE: () => !isValidTableDelim(), ALT: () => $.CONSUME(T.TableDelim) },
+                { GATE: () => !isValidTableDelim(), ALT: () => $.CONSUME(T.TableDelimStart) },
+
                 /*
-                consume tokens for block-level constructs
+                consume tokens for block-level consturcts
                 obviously they shouldn't be here but they might appear in case of malicious inputs
                 */
                 { ALT: () => $.CONSUME(T.LeftAlignOpen) },
@@ -300,7 +298,7 @@ export class WikiParser extends CstParser {
                 { ALT: () => $.CONSUME(T.RightAlignOpen) },
                 { ALT: () => $.CONSUME(T.TOC) },
                 { ALT: () => $.CONSUME(T.Footnote) },
-            ]))
+            ])
         })
 
         // consumes any single token valid inside a link target (everything except stop tokens)

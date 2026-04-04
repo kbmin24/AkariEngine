@@ -1,3 +1,4 @@
+import dedent from 'dedent'
 import { WikiParser } from './wikiparser.js'
 import { getMacroRequest } from './macro.js'
 import { orphanableTokens } from './tokens.js'
@@ -263,11 +264,7 @@ export class PreprocessVisitor extends BaseCstVisitor {
     }
 
     tableRow(ctx) {
-        if (ctx.tableCell) ctx.tableCell.forEach(cell => this.visit(cell))
-    }
-
-    tableCell(ctx) {
-        if (ctx.line) this.visit(ctx.line[0])
+        if (ctx.line) ctx.line.forEach(line => this.visit(line))
     }
 
     anonymousFootnoteFallback(ctx) {
@@ -278,22 +275,51 @@ export class PreprocessVisitor extends BaseCstVisitor {
         if (ctx.line) ctx.line.forEach(line => this.visit(line))
     }
 
+    #encodeTargetExternal(target) {
+        return encodeURI(target).replace(/'/g, '%27').replace(/"/g, '%22')
+    }
+
+    #encodeTarget(target) {
+        return encodeURIComponent(target).replace(/'/g, '%27').replace(/"/g, '%22')
+    }
+
     #targetFromCtx(ctx) {
         return (ctx.linkTargetToken ?? [])
             .map(node => Object.values(node.children)[0][0].image)
             .join('')
     }
 
+    #renderLink(target, display) {
+        const titleAttr = target.replace(/"/g, '&quot;')
+        if (target.startsWith('http:') || target.startsWith('https:')) {
+            return dedent`<a href='${this.#encodeTargetExternal(target)}'
+            target='_blank'
+            rel='nofollow noopener noreferrer'
+            title='${titleAttr}'
+            class='ren-extlink'>
+                <i class="fas fa-external-link-square-alt ren-extlink-icon"></i>
+                ${display}
+            </a>`
+        }
+
+        return dedent`<a href="/w/${this.#encodeTarget(target)}"
+        title="${titleAttr}">${display}</a>`
+    }
+
     simpleLink(ctx) {
         if (ctx.linkTargetToken) {
             this.manifest.pageRefs.add(this.#targetFromCtx(ctx))
         }
+        const target = this.#targetFromCtx(ctx)
+        return this.#renderLink(target, target)
     }
 
     namedLink(ctx) {
         if (ctx.linkTargetToken) {
             this.manifest.pageRefs.add(this.#targetFromCtx(ctx))
         }
-        if (ctx.line) ctx.line.forEach(line => this.visit(line))
+        const target = this.#targetFromCtx(ctx)
+        const display = ctx.line ? this.visit(ctx.line[0]) : target
+        return this.#renderLink(target, display)
     }
 }

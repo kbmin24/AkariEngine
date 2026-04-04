@@ -140,7 +140,7 @@ function scanValidTableDelims(tokens) {
             // check if last token seen is TableDelim AND it has no payload
             if (lastToken?.tokenType === T.TableDelim && !lastToken.payload?.options) {
                 validTableDelims.add(pendingTableDelimStart)
-                validTableDelims.add(...pendingTableDelims)
+                for (const d of pendingTableDelims) validTableDelims.add(d)
             }
             pendingTableDelimStart = null
             pendingTableDelims = []
@@ -149,9 +149,7 @@ function scanValidTableDelims(tokens) {
             // EOF, do the same
             if (tok.tokenType === T.TableDelim && !tok.payload?.options) {
                 validTableDelims.add(pendingTableDelimStart)
-                if (pendingTableDelims.length > 0) {
-                    validTableDelims.add(...pendingTableDelims)
-                }
+                for (const d of pendingTableDelims) validTableDelims.add(d)
                 validTableDelims.add(tok)
             }
             pendingTableDelimStart = null

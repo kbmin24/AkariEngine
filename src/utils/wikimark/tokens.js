@@ -237,7 +237,7 @@ const Comment = createToken({
 
 // matches || followed by string consisted only [...], allowing preceding whitespacetax
 const macros = ["include", "hr", "br", "file", "color", "youtube", "anchor", "dday", "agek", "age", "map", "pagecount", "syntax"]
-const TableDelimPattern = new RegExp(`\\|\\|((?:(?:\\t| )*\\[(?!${macros.join('|')})[^\\r\\n]*?\\])*)?`, 'y')
+const TableDelimPattern = new RegExp(`\\|\\|((?:(?:\\t| )*\\[(?!${macros.join('|')})[^\\r\\n\\[]*?\\])*)?`, 'y')
 
 // TableDelim at start of line
 const TableDelimStart = createToken({
@@ -458,6 +458,7 @@ export const orphanableTokens = [
     "H4Open",           "H4Close",          "H5Open",           "H5Close",
     "H6Open",           "H6Close",          "FootnoteCloser",   "MacroCloser",
     "FootnoteOpener",   "TOC",              "Footnote",         "LinkOpen",
-    "LinkClose",        "Pipe",             "TemplateArgOpen",  "TemplateArgClose"
+    "LinkClose",        "Pipe",             "TemplateArgOpen",  "TemplateArgClose",
+    "TableDelim",      "TableDelimStart",
 ]
 /* @formatter:on */

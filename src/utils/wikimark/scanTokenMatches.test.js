@@ -114,6 +114,16 @@ describe('scanTokenMatches', () => {
             const { validTableDelims } = scanTokenMatches(tokens)
             expect(validTableDelims.size).toBe(3)
         })
+        test('3 cells (all delimiters valid)', () => {
+            const tokens = lex("|| cell1 || cell2 || cell3 ||")
+            const { validTableDelims } = scanTokenMatches(tokens)
+            expect(validTableDelims.size).toBe(4)
+        })
+        test('2 cells with LF (closing || before LF is valid)', () => {
+            const tokens = lex("|| cell1 || cell2 ||\n")
+            const { validTableDelims } = scanTokenMatches(tokens)
+            expect(validTableDelims.size).toBe(3)
+        })
         test('valid table option', () => {
             const tokens = lex("||[tablecolor=#aaa] ||")
             const { validTableDelims } = scanTokenMatches(tokens)

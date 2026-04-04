@@ -134,30 +134,28 @@ export class HTMLVisitor extends BaseCstVisitor {
         let innerHTML = ''
         let rowBgColor = undefined
         let tableOptions = []
-        for (let cell of ctx.tableCell ?? []) {
-            const { rowBgColor: rowBgColorCandidate,
-                html: cellHtml,
-                tableOptions: tableOptionsCandidate } = this.visit(cell)
-            innerHTML += cellHtml
-            tableOptions.push(...tableOptionsCandidate)
-            if (rowBgColor === undefined) rowBgColor = rowBgColorCandidate
+
+        const lines = ctx.line ?? []
+        for (let i = 0; i < lines.length; i++) {
+            // cell 0 options come from TableDelimStart; cell i>0 options from TableDelim[i-1]
+            const delimTok = i === 0
+                ? ctx.TableDelimStart[0]
+                : ctx.TableDelim[i - 1]
+            const optionsStr = delimTok.payload?.options ?? ''
+            const options = [...optionsStr.matchAll(/\[([^\]]*)\]/g)].map(m => m[1].trim())
+            const { tableOptions: cellTableOpts, rowBgColor: cellRowBgColor, cellStyle, cellAttrs } =
+                this.#parseCellOptions(options)
+            const inner = this.visit(lines[i])
+            innerHTML += `<td ${cellAttrs}style="${cellStyle}">${inner}</td>`
+            tableOptions.push(...cellTableOpts)
+            if (rowBgColor === undefined) rowBgColor = cellRowBgColor
         }
 
-        let rowStyle = rowBgColor ? `style="background-color: ${rowBgColor};"` : ''
-
+        const rowStyle = rowBgColor ? `style="background-color: ${rowBgColor};"` : ''
         return {
             html: `<tr ${rowStyle}>${innerHTML}</tr>`,
             tableOptions
         }
-    }
-
-    tableCell(ctx) {
-        // options string format: "[opt1][opt2] [opt3]" — extract bracket contents
-        const optionsStr = (ctx.TableDelim || ctx.TableDelimStart)[0].payload.options ?? ''
-        const options = [...optionsStr.matchAll(/\[([^\]]*)\]/g)].map(m => m[1].trim())
-        const { tableOptions, rowBgColor, cellStyle, cellAttrs } = this.#parseCellOptions(options)
-        const inner = ctx.line ? this.visit(ctx.line[0]) : ''
-        return { rowBgColor, tableOptions, html: `<td ${cellAttrs}style="${cellStyle}">${inner}</td>` }
     }
 
     #parseCellOptions(options) {

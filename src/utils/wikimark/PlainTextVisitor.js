@@ -80,12 +80,8 @@ export class PlainTextVisitor extends BaseCstVisitor {
     }
 
     tableRow(ctx) {
-        if (!ctx.tableCell) return ''
-        return ctx.tableCell.map(cell => this.visit(cell)).filter(s => s).join(' ')
-    }
-
-    tableCell(ctx) {
-        return ctx.line ? this.visit(ctx.line[0]) : ''
+        if (!ctx.line) return ''
+        return ctx.line.map(line => this.visit(line)).filter(s => s).join(' ')
     }
 
     paragraph(ctx) {

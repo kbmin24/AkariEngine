@@ -457,6 +457,10 @@ describe('WikiParser', () => {
                 expect(parse('|| a || b ||').errors).toHaveLength(0)
             })
 
+            test('single row, 3 columns', () => {
+                expect(parse('|| a || b || c ||').errors).toHaveLength(0)
+            })
+
             test('2 rows, 1 column', () => {
                 expect(parse('|| a ||\n|| b ||').errors).toHaveLength(0)
             })
@@ -468,6 +472,14 @@ describe('WikiParser', () => {
             test('table followed by LF', () => {
                 expect(parse('|| a ||\n').errors).toHaveLength(0)
             })
+
+            test('multiline cell content (|| A\\nB ||) does not crash — parsed as paragraph', () => {
+                expect(parse('|| A\nB ||').errors).toHaveLength(0)
+            })
+
+            test('cell containing [br] macro', () => {
+                expect(parse('|| [br] ||').errors).toHaveLength(0)
+            })
         })
 
         describe('CST structure', () => {
@@ -478,65 +490,65 @@ describe('WikiParser', () => {
                 expect(table.name).toBe('table')
             })
 
-            test('single-cell table produces 1 row with 1 cell', () => {
+            test('single-cell table produces 1 row with 1 line', () => {
                 const { cst } = parse('|| a ||')
                 const table = cst.children.block[0].children.table[0]
                 expect(table.children.tableRow).toHaveLength(1)
                 const row = table.children.tableRow[0]
-                expect(row.children.tableCell).toHaveLength(1)
+                // one line per cell; no tableCell node
+                expect(row.children.line).toHaveLength(1)
             })
 
-            test('single-cell row: cell opens with TableDelimStart and contains a line', () => {
+            test('single-cell row: row opens with TableDelimStart and closes with TableDelim', () => {
                 const { cst } = parse('|| a ||')
-                const cell = cst.children.block[0].children.table[0]
-                    .children.tableRow[0].children.tableCell[0]
-                expect(cell.children.TableDelimStart).toHaveLength(1)
-                expect(cell.children.line).toHaveLength(1)
+                const row = cst.children.block[0].children.table[0].children.tableRow[0]
+                expect(row.children.TableDelimStart).toHaveLength(1)
+                expect(row.children.TableDelim).toHaveLength(1) // just the closer
+                expect(row.children.line).toHaveLength(1)
             })
 
-            test('single row, 2 columns: row has 2 cells', () => {
+            test('single row, 2 columns: row has 2 lines', () => {
                 const { cst } = parse('|| a || b ||')
                 const row = cst.children.block[0].children.table[0].children.tableRow[0]
-                expect(row.children.tableCell).toHaveLength(2)
+                expect(row.children.line).toHaveLength(2)
             })
 
-            test('single row, 2 columns: first cell opens with TableDelimStart, second with TableDelim', () => {
-                const { cst } = parse('|| a || b ||')
-                const cells = cst.children.block[0].children.table[0]
-                    .children.tableRow[0].children.tableCell
-                expect(cells[0].children.TableDelimStart).toHaveLength(1)
-                expect(cells[1].children.TableDelim).toHaveLength(1)
-            })
-
-            test('single row, 2 columns: row terminator is a TableDelim on the row node', () => {
+            test('single row, 2 columns: row has 1 TableDelimStart + 2 TableDelims (1 interior + 1 closer)', () => {
                 const { cst } = parse('|| a || b ||')
                 const row = cst.children.block[0].children.table[0].children.tableRow[0]
-                // The closing || is consumed directly on the row, not as a cell
-                expect(row.children.TableDelim).toHaveLength(1)
+                expect(row.children.TableDelimStart).toHaveLength(1)
+                expect(row.children.TableDelim).toHaveLength(2)
             })
 
-            test('2 rows, 1 column: table has 2 rows each with 1 cell', () => {
+            test('single row, 3 columns: row has 3 lines and 3 TableDelims (2 interior + 1 closer)', () => {
+                const { cst } = parse('|| a || b || c ||')
+                const row = cst.children.block[0].children.table[0].children.tableRow[0]
+                expect(row.children.line).toHaveLength(3)
+                expect(row.children.TableDelim).toHaveLength(3)
+            })
+
+            test('2 rows, 1 column: table has 2 rows each with 1 line', () => {
                 const { cst } = parse('|| a ||\n|| b ||')
                 const table = cst.children.block[0].children.table[0]
                 expect(table.children.tableRow).toHaveLength(2)
-                expect(table.children.tableRow[0].children.tableCell).toHaveLength(1)
-                expect(table.children.tableRow[1].children.tableCell).toHaveLength(1)
+                expect(table.children.tableRow[0].children.line).toHaveLength(1)
+                expect(table.children.tableRow[1].children.line).toHaveLength(1)
             })
 
-            test('2 rows, 2 columns: table has 2 rows each with 2 cells', () => {
+            test('2 rows, 2 columns: table has 2 rows each with 2 lines', () => {
                 const { cst } = parse('|| a || b ||\n|| c || d ||')
                 const table = cst.children.block[0].children.table[0]
                 expect(table.children.tableRow).toHaveLength(2)
-                expect(table.children.tableRow[0].children.tableCell).toHaveLength(2)
-                expect(table.children.tableRow[1].children.tableCell).toHaveLength(2)
+                expect(table.children.tableRow[0].children.line).toHaveLength(2)
+                expect(table.children.tableRow[1].children.line).toHaveLength(2)
             })
 
-            test('each cell contains a line node', () => {
+            test('each row line node is defined', () => {
                 const { cst } = parse('|| a || b ||\n|| c || d ||')
                 const rows = cst.children.block[0].children.table[0].children.tableRow
                 for (const row of rows) {
-                    for (const cell of row.children.tableCell) {
-                        expect(cell.children.line).toHaveLength(1)
+                    for (const line of row.children.line) {
+                        expect(line).toBeDefined()
                     }
                 }
             })
