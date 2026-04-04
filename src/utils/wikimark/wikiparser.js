@@ -17,9 +17,15 @@ const hasLinkPipe = ($) => () => {
 
 export class WikiParser extends CstParser {
     constructor() {
+        // define LL(1) parser
+        // kind of because pre-processing does all the heavy lifting
         super(allTokens, { maxLookahead: 1 })
 
         const $ = this
+
+        // cache
+        $.cblock = undefined
+        $.cinline = undefined
 
         $.openers = new Set()
         $.closers = new Set()
@@ -40,8 +46,9 @@ export class WikiParser extends CstParser {
             })
         })
 
+        // https://chevrotain.io/docs/guide/performance.html#caching-arrays-of-alternatives
         $.RULE('block', () => {
-            $.OR([
+            $.OR($.cblock || ($.cblock = [
                 { GATE: () => $.matchedHeadingOpens.has($.LA(1)), ALT: () => $.SUBRULE($.heading) },
                 { GATE: () => $.LA(1).tokenType === T.LeftAlignOpen, ALT: () => $.SUBRULE($.leftalign) },
                 { GATE: () => $.LA(1).tokenType === T.CenterAlignOpen, ALT: () => $.SUBRULE($.centeralign) },
@@ -60,7 +67,7 @@ export class WikiParser extends CstParser {
                 // orphaned (unmatched) FencedCode token — render as literal
                 { GATE: () => $.LA(1).tokenType === T.FencedCode, ALT: () => $.CONSUME(T.FencedCode) },
                 { ALT: () => $.SUBRULE($.paragraph) },
-            ])
+            ]))
         })
 
         $.RULE('table', () => {
@@ -231,7 +238,7 @@ export class WikiParser extends CstParser {
         })
 
         $.RULE('inline', () => {
-            $.OR([
+            $.OR($.cinline || ($.cinline = [
                 // identify if this is a matched opener
                 { GATE: isOpener(T.BoldItalicDelim), ALT: () => $.SUBRULE($.boldItalic) },
                 { GATE: isOpener(T.BoldDelim), ALT: () => $.SUBRULE($.bold) },
@@ -285,7 +292,7 @@ export class WikiParser extends CstParser {
                 { ALT: () => $.CONSUME(T.Pipe) },
 
                 /*
-                consume tokens for block-level consturcts
+                consume tokens for block-level constructs
                 obviously they shouldn't be here but they might appear in case of malicious inputs
                 */
                 { ALT: () => $.CONSUME(T.LeftAlignOpen) },
@@ -293,7 +300,7 @@ export class WikiParser extends CstParser {
                 { ALT: () => $.CONSUME(T.RightAlignOpen) },
                 { ALT: () => $.CONSUME(T.TOC) },
                 { ALT: () => $.CONSUME(T.Footnote) },
-            ])
+            ]))
         })
 
         // consumes any single token valid inside a link target (everything except stop tokens)

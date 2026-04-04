@@ -1,6 +1,7 @@
 import ejs from 'ejs'
 import logger from '../../src/utils/logger.js'
 import renderView from '../../src/view.js'
+import boardConf from './settings.js'
 
 import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
@@ -9,7 +10,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url))
 export default async (req, res, boards, posts) =>
 {
     let boardMatome = [] //includes HTML
-    for( const val of global.conf.boardHome.boards)
+    for( const val of boardConf.boardHome.boards)
     {
         let id = val.id
         let bd = await boards.findOne({where: {boardID: id}})
@@ -24,7 +25,7 @@ export default async (req, res, boards, posts) =>
             [
                 ['id', 'DESC']
             ],
-            limit: Math.min(global.conf.boardHome.postCount, bd.postCount)
+            limit: Math.min(boardConf.boardHome.postCount, bd.postCount)
         })
         let HTML = await ejs.renderFile(__dirname + '/views/boardHomeElement.ejs',
         {

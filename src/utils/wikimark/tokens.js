@@ -448,3 +448,16 @@ export function areMatchingAsymTokens(opener, closer) {
     }
     return false
 }
+
+/* @formatter:off */
+export const orphanableTokens = [
+    "LeftAlignOpen",    "CenterAlignOpen",  "RightAlignOpen",   "MultilineClose",
+    "BoldDelim",        "ItalicDelim",      "UnderlineDelim",   "SupDelim",
+    "SubDelim",         "BigDelim",         "H1Open",           "H1Close",
+    "H2Open",           "H2Close",          "H3Open",           "H3Close",
+    "H4Open",           "H4Close",          "H5Open",           "H5Close",
+    "H6Open",           "H6Close",          "FootnoteCloser",   "MacroCloser",
+    "FootnoteOpener",   "TOC",              "Footnote",         "LinkOpen",
+    "LinkClose",        "Pipe",             "TemplateArgOpen",  "TemplateArgClose"
+]
+/* @formatter:on */

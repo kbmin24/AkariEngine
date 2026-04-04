@@ -1,7 +1,6 @@
 import date from 'date-and-time'
 import i18n from 'i18n'
 import escapeHtml from '../utils/escapeHTML.js'
-import renderPage from './render.js'
 import renderView from '../view.js'
 import renderError from '../utils/error.js'
 import {
@@ -74,7 +73,6 @@ export default async (req, res) => {
     const pagesRepo = repositories.pages
     const permissionRepo = repositories.permissions
     const categoryRepo = repositories.categories
-    const filesModel = global.db.mfile
     const viewcountModel = global.db.viewcount
     const updateTimeModel = global.db.updateTime
     const pageService = req.app.locals.services.page
@@ -131,13 +129,14 @@ export default async (req, res) => {
                 if (req.query.from) {
                     titleSuffix = i18n.__('page_redirectedfrom', { page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>` }), `&nbsp;` + titleSuffix
                 }
+
                 let opt = await getOptions(page.content)
-                opt.renderSectionEditButton = true
+
                 let { result, html: content } = await req.app.locals.services.render.render(contentPrefix + page.content,
-                        { pagename: req.params.name, ...opt },
-                        req.app.locals.repositories,
+                    { pagename: req.params.name, renderSectionEditButton: true },
+                    req.app.locals.repositories,
                     redirect)
-                
+
                 if (result === 'redirect') {
                     return res.redirect(`/w/${content}?redirect=true&from=${encodeURIComponent(req.params.name)}`)
                 }
@@ -203,8 +202,15 @@ export default async (req, res) => {
             })
 
             //show the page
-            let content = await renderPage(req.params.name, contentPrefix + page.content, true, global.db.pages, filesModel, req, res, false, true, {}, await getOptions(page.content))
-            if (content === true) return
+            let opt = await getOptions(page.content)
+            let { html: content } = await req.app.locals.services.render.render(contentPrefix + page.content,
+                { pagename: req.params.name, renderSectionEditButton: false },
+                req.app.locals.repositories,
+                false)
+
+            // category
+            content = (await getCategory(req.params.name, categoryRepo, opt['category'])) + content
+
             let renderOpt = {
                 title: page.title,
                 content: content,

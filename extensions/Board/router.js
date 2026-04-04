@@ -10,6 +10,7 @@ import paths from '../../src/utils/paths.js'
 import logger from '../../src/utils/logger.js'
 import renderView from '../../src/view.js'
 import boardHome from './boardHome.js'
+import boardConf from './settings.js'
 import boardWrite from './write.js'
 import writeComment from './writecomment.js'
 import boardRead from './read.js'
@@ -80,7 +81,7 @@ export default async (app, sequelize, csrfProtection) => {
             {
                 title: boardNow.boardTitle,
                 titleLink: `/board/${boardNow.boardID}`,
-                description: Object.hasOwn(global.conf.boardDescriptions, boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
+                description: Object.hasOwn(boardConf.boardDescriptions, boardNow.boardID) ? boardConf.boardDescriptions[boardNow.boardID] : '',
                 content: html,
                 username: req.session.username,
                 ipaddr: req.ipAddress,

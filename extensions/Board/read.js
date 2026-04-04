@@ -5,6 +5,7 @@ import satisfyACL from './satisfyACL.js'
 import errorPage from '../../src/utils/error.js'
 import renderView from '../../src/view.js'
 import listPosts from './list.js'
+import boardConf from './settings.js'
 import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
 
@@ -161,7 +162,7 @@ export default async (req, res, boards, posts, block, perm, comments, gongji) =>
             content: html,
             canonical: `/board/read/${boardNow.boardID}?no=${req.query.no}`,
             username: req.session.username,
-            description: Object.hasOwn(global.conf.boardDescriptions, boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : ''            
+            description: Object.hasOwn(boardConf.boardDescriptions, boardNow.boardID) ? boardConf.boardDescriptions[boardNow.boardID] : ''            
         })
     })
 }

@@ -1,6 +1,6 @@
 import express from 'express'
 import i18n from 'i18n'
-import { asyncRoute, renderTemplateInLayout, BACK_LINK, LOGIN_LINK } from '../utils/httpHelper.js'
+import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 import { param, query, body } from 'express-validator'
 import { requirePermission } from '../middlewares/permission.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
@@ -26,16 +26,6 @@ import revertPostController from '../controllers/pages/revertPost.js'
 import movePostController from '../controllers/pages/movePost.js'
 import deletePageController from '../controllers/pages/deletePost.js'
 
-function accessOptions(noAclMessageKey, extra = {}) {
-    return {
-        noAclMessageKey,
-        permissionReturnLink: BACK_LINK,
-        permissionReturnName: 'previousPage',
-        authReturnLink: LOGIN_LINK,
-        authReturnName: 'loginpage',
-        ...extra
-    }
-}
 
 export default (services, options = {}) => {
     const router = express.Router()
@@ -47,9 +37,10 @@ export default (services, options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
         validateRequest,
-        requirePageAccess('read', accessOptions('view_noacl', {
+        requirePageAccess('read', {
+            noAclMessageKey: 'view_noacl',
             revisionQueryKeys: ['rev']
-        })),
+        }),
         asyncRoute(viewHandler)
     )
 
@@ -81,7 +72,7 @@ export default (services, options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),
         validateRequest,
-        requirePageAccess('read', accessOptions('view_noacl')),
+        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         asyncRoute(rawGetController)
     )
 
@@ -90,7 +81,7 @@ export default (services, options = {}) => {
         query('from').optional().isInt(),
         query('to').optional().isInt(),
         validateRequest,
-        requirePageAccess('read', accessOptions('view_noacl')),
+        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         asyncRoute(historyGetController)
     )
 
@@ -98,9 +89,10 @@ export default (services, options = {}) => {
         query('rev1').isInt(),
         query('rev2').isInt(),
         validateRequest,
-        requirePageAccess('read', accessOptions('view_noacl', {
+        requirePageAccess('read', {
+            noAclMessageKey: 'view_noacl',
             revisionQueryKeys: ['rev1', 'rev2']
-        })),
+        }),
         asyncRoute(diffGetController)
     )
 
@@ -133,11 +125,12 @@ export default (services, options = {}) => {
 
     router.get('/edit/:name(*)',
         csrfProtection,
-        requirePageAccess('read', accessOptions('view_noacl')), // We do this because not having edit access gives out the page's source code
-        requirePageAccess('edit', accessOptions('edit_noacl', {
+        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }), // We do this because not having edit access gives out the page's source code
+        requirePageAccess('edit', {
+            noAclMessageKey: 'edit_noacl',
             mode: 'store',
             storeKey: 'editAcl',
-        })),
+        }),
         param('name').trim().notEmpty(),
         param('name').trim().isLength({ max: 255 }),
         param('name').trim().matches(global.legalTitleRegex),
@@ -148,13 +141,13 @@ export default (services, options = {}) => {
     router.post('/edit/:name(*)',
         csrfProtection,
         chkCaptcha,
-        requirePageAccess('edit', accessOptions('edit_noacl')),
+        requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
         asyncRoute(editPostController)
     )
 
     router.get('/move/:name(*)',
         csrfProtection,
-        requirePageAccess('move', accessOptions('move_noacl')),
+        requirePageAccess('move', { noAclMessageKey: 'move_noacl' }),
         asyncRoute(moveGetController)
     )
 
@@ -168,7 +161,7 @@ export default (services, options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').isInt(),
         validateRequest,
-        requirePageAccess('read', accessOptions('view_noacl')),
+        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         csrfProtection,
         asyncRoute(revertGetController)
     )
@@ -179,14 +172,14 @@ export default (services, options = {}) => {
         validateRequest,
         csrfProtection,
         chkCaptcha,
-        requirePageAccess('read', accessOptions('view_noacl')),
+        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         asyncRoute(revertPostController)
     )
 
     router.post('/move/:name(*)',
         csrfProtection,
         chkCaptcha,
-        requirePageAccess('move', accessOptions('move_noacl')),
+        requirePageAccess('move', { noAclMessageKey: 'move_noacl' }),
         asyncRoute(movePostController)
     )
 

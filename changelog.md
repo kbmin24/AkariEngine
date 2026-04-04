@@ -3,6 +3,7 @@ v4.0 (2026-??-??)
 * Refactored backend to be more maintainable
 * New parser
 * map macro now uses Openstreetmap instead of Kakaomap
+* Board now has its own `LocalSettings.json`
 * Supports meilisearch as full-text search engine
 * Some bugfixes
 

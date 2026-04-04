@@ -58,10 +58,6 @@ h6 {
   font-weight: normal;
 }
 
-ul {
-  list-style: none;
-}
-
 button,
 input,
 select,
@@ -7627,7 +7623,7 @@ a.navbar-link.is-active {
   .pagination {
     -webkit-box-pack: justify;
         -ms-flex-pack: justify;
-            justify-content: space-between;
+            justify-content: inherit;
   }
   .pagination.is-centered .pagination-previous {
     -webkit-box-ordinal-group: 2;

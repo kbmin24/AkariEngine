@@ -1,0 +1,3 @@
+`Chevrotain`-based new parser implementation.
+
+Look at `services/RenderService.js` to learn how to use this parser.

@@ -30,17 +30,6 @@
         "host": "http://127.0.0.1:7700",
         "apiKey": "(insert api key here)"
     },
-    "boardHome": {
-        "boards": [
-            {
-                "id": "free"
-            }
-        ],
-        "postCount": 5
-    },
-    "boardDescriptions": {
-        "free": "주저리주저리절절"
-    },
     "gaenyumThreshold": 5,
     "disableDarkMode": false,
     "upload_types": [

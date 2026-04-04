@@ -18,7 +18,6 @@ import escapeHTML from './src/utils/escapeHTML.js'
 import renderError from './src/utils/error.js'
 import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
-import renderPage from './src/pages/render.js'
 import adminCommand from './src/admin/command.js'
 
 global.path = config.basePath
@@ -156,7 +155,7 @@ i18n.configure({
     defaultLocale: config.defaultLocale,
     directory: paths.locales,
     objectNotation: true
-});
+})
 
 //regex for testing whether page title is legal or not
 global.legalTitleRegex = /^[^[\]{}|#\n]*$/m
@@ -331,6 +330,8 @@ const server = app.listen(port, '0.0.0.0', () => {
 
 //Console
 import { Server } from 'socket.io'
+import RenderService from './src/services/RenderService.js'
+const threadRenderer = new RenderService(repositories.pages, repositories.files)
 
 const io = new Server(server)
 io.use(expressSocketIoSession(sess, { autoSave: true }))
@@ -347,6 +348,7 @@ io.on('connection', async socket => {
             }
         }
         else {
+            // thread room
             socket.join(data.roomId)
         }
     })
@@ -397,7 +399,8 @@ io.on('connection', async socket => {
         )
 
         //render to wikitext
-        data.message = await renderPage('', data.message, true, pages, mfile, null, null, false, true, {}, {})
+        data.message = (await threadRenderer.render(data.message, {}, false)).html
+
         io.sockets.in(data.roomId).emit('message', data)
     })
     socket.on('input', async data => {

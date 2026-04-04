@@ -1,5 +1,8 @@
 import sanitiseHtml from 'sanitize-html'
-import renderPage from '../../pages/render.js'
+import RenderService from '../../services/RenderService.js'
+import repositories from '../../repositories/index.js'
+
+const threadRenderer = new RenderService(repositories.pages, repositories.files)
 
 export default async (req, res) => {
     const query = req.query ? req.query.q : undefined
@@ -17,10 +20,13 @@ export default async (req, res) => {
             content = ''
         }
 
+        //render to wikitext
+        const contentHTML = (await threadRenderer.render(content, {}, false)).html
+
         results.push({
             type: comment.type,
             username: sanitiseHtml(comment.doneBy, { allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape }),
-            content: await renderPage('', content, true, global.db.pages, global.db.mfile, null, null, false, false, {}, {}),
+            content: contentHTML,
             date: comment.createdAt,
             isHidden: comment.isHidden
         })

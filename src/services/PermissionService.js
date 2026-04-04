@@ -48,6 +48,7 @@ class PermissionService {
         return res
     }
 
+    // main logics for checking ACL
     async checkAccessDetailed(user, resource, action = 'read', context = {}) {
         const revision = context.revision !== undefined && context.revision !== null
             ? Number(context.revision)

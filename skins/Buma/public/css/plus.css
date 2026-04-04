@@ -97,7 +97,6 @@ button#save:hover {
 }
 
 .section .container ul {
-    list-style: disc outside;
     margin-bottom: 1em;
     margin: .4em 0 .4em 1.5em;
 }

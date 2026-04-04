@@ -1,0 +1,14 @@
+{
+    "_comment": "Board extension local settings. Copy this file to LocalSettings.json and configure it.",
+    "boardHome": {
+        "boards": [
+            {
+                "id": "free"
+            }
+        ],
+        "postCount": 5
+    },
+    "boardDescriptions": {
+        "free": "Board description here."
+    }
+}

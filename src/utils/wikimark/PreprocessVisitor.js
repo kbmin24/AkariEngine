@@ -1,5 +1,6 @@
 import { WikiParser } from './wikiparser.js'
 import { getMacroRequest } from './macro.js'
+import { orphanableTokens } from './tokens.js'
 
 const parserInstance = new WikiParser()
 const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()
@@ -46,8 +47,8 @@ function normaliseHeadingDepth(toc, headingNames) {
  * Warning: document() should only be called ONCE
  */
 export class PreprocessVisitor extends BaseCstVisitor {
-    constructor() {
-        super()
+
+    initialise() {
         this.manifest = {
             // each array is Object {name: string, depth: number, node: Byref CSTNode}
             // assumes that it is in order of appearance in the document
@@ -70,17 +71,15 @@ export class PreprocessVisitor extends BaseCstVisitor {
         }
         this.headingCounts = [0, 0, 0, 0, 0, 0, 0] // 1-based indexing, so [0..6]
         this.nextHeadingIndex = 1
-        this.runFirst = true
+    }
 
+    constructor() {
+        super()
+        this.initialise()
         this.validateVisitor()
     }
 
     document(ctx) {
-        if (!this.runFirst) {
-            throw new Error("document() should only be called ONCE")
-        }
-        this.runFirst = false
-
         if (!ctx.block) return //empty document
 
         for (const block of ctx.block)
@@ -199,19 +198,8 @@ export class PreprocessVisitor extends BaseCstVisitor {
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
 
         // unmatched delimiters — render as their literal characters
-        /* @formatter:off */
-        const orphanedTokens = [
-            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose",
-            "BoldDelim", "ItalicDelim", "UnderlineDelim", "SupDelim",
-            "SubDelim", "BigDelim", "H1Open", "H1Close",
-            "H2Open", "H2Close", "H3Open", "H3Close",
-            "H4Open", "H4Close", "H5Open", "H5Close",
-            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser",
-            "FootnoteOpener", "TOC", "Footnote", "LinkOpen",
-            "LinkClose", "Pipe"
-        ]
-        /* @formatter:on */
-        for (const tokenName of orphanedTokens) {
+
+        for (const tokenName of orphanableTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
         }
 

@@ -12,12 +12,25 @@ const errString = '<span style="color:red;font-weight:bold;">Parser crashed</spa
 
 // Render pipeline: RenderService -> Parser -> PreprocessVisitor -> HTMLVisitor
 
+/**
+ * Converts raw wikimark source into sanitised HTML.
+ *
+ * 1. Process pre-render extension hooks.
+ * 2. Determine if the input is a redirect directive and return early if so.
+ * 3. Lexing and parsing to prduct a CST.
+ * 4. PreprocessVisitor collects elements that require async lookups.
+ * 5. async lookups from (4) are resolved.
+ * 6. HTMLVisitor traverses CST to produce HTML.
+ * 7. Process post-render extension hooks.
+ * 8. sanitize-html sanitises the output.
+ */
 class RenderService {
     constructor(pageRepository, fileRepository) {
         this.pageRepository = pageRepository
         this.fileRepository = fileRepository
     }
 
+    // applies extension hooks
     applyHooks(hooks, input, renderOptions, canRedirect) {
         for (const f of hooks) {
             const res = f(input, renderOptions, canRedirect)
@@ -39,6 +52,7 @@ class RenderService {
         return isSafe ? target : null
     }
 
+    // lexer + parser + preprocessVisitor
     parseAndPreprocess(input) {
         const { tokens } = lexer.tokenize(input)
         const cst = parser.parse(tokens)
@@ -56,6 +70,8 @@ class RenderService {
         return { cst, manifest: preprocessVisitor.manifest }
     }
 
+    // resolves file() macro as identified by PreprocessVisitor
+    // returns to macroQueryResult.files.
     async resolveFilesRepo(requests, macroQueryResult) {
         const filenames = requests.map(r => r.query.filename)
         const found = await this.fileRepository.findByFilenameBatch(filenames)
@@ -66,10 +82,12 @@ class RenderService {
         }
     }
 
+    // resolves pagecount.
     async resolvePagesRepo(macroQueryResult) {
         macroQueryResult.pages = { total: await this.pageRepository.count() }
     }
 
+    // resolves include. saves to macroQueryResult.includes.
     async resolveIncludesRepo(requests, renderOptions, macroQueryResult) {
         macroQueryResult.includes = {}
         if (renderOptions?.isTemplate) return
@@ -98,6 +116,8 @@ class RenderService {
         }))
     }
 
+    // resolves all async requests.
+    // returns { missingPages: Set<string>, macroQueryResult: object }
     async resolvePageRefsAndMacros(pageRefs, macroRequests, renderOptions) {
         const requestsByRepo = {}
         for (const req of macroRequests) {
@@ -112,6 +132,8 @@ class RenderService {
                 case 'includes': return this.resolveIncludesRepo(requests, renderOptions, macroQueryResult)
             }
         })
+        
+        // wikilink check
         const [foundPageModels] = await Promise.all([
             pageRefs.size > 0 && pageRefs.size <= 1024
                 ? this.pageRepository.findByTitleBatch(Array.from(pageRefs))
@@ -123,6 +145,21 @@ class RenderService {
         return { missingPages, macroQueryResult }
     }
 
+    /**
+     * Renders wikimark source text into sanitised HTML.
+     *
+     * Return value shape:
+     * - `{ result: 'ok',       html: string }` — successful render.
+     * - `{ result: 'redirect', html: string }` — input was a redirect directive;
+     *   `html` contains the target page title.
+     * - `{ result: 'error',   html: string }` — parser or visitor crashed;
+     *   `html` contains a styled error placeholder.
+     *
+     * @param {string} input - Raw wikimark source text.
+     * @param {object} [renderOptions] Options forwarded to visitors and macro resolvers. For more information, see `HTMLVisitor`.
+     * @param {boolean} [canRedirect=true] Whether `#redirect` directives should be followed.
+     * @returns {Promise<{ result: 'ok'|'redirect'|'error', html: string }>}
+     */
     async render(input, renderOptions, canRedirect = true) {
         const begin = this.applyHooks(global.hooks.beginRender, input, renderOptions, canRedirect)
         input = begin.input
@@ -154,9 +191,7 @@ class RenderService {
             return { result: 'error', html: errString }
         }
 
-        for (const f of global.hooks.endRender) {
-            f(input, renderOptions, canRedirect)
-        }
+        this.applyHooks(global.hooks.endRender, input, renderOptions, canRedirect)
 
         html = sanitizeHtml(html, global.sanitiseOptions)
         return { result: 'ok', html }

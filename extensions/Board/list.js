@@ -3,6 +3,7 @@ import { Op } from 'sequelize'
 import satisfyACL from './satisfyACL.js'
 import errorPage from '../../src/utils/error.js'
 import renderView from '../../src/view.js'
+import boardConf from './settings.js'
 
 import { fileURLToPath } from "url"
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
@@ -149,7 +150,7 @@ export default async (isHTML, req, res, boards, posts, block, perm, gongji, curr
         title: boardNow.boardTitle,
         titleLink: `/board/${boardNow.boardID}`,
         canonical: `/board/${boardNow.boardID}`,
-        description: Object.hasOwn(global.conf.boardDescriptions, boardNow.boardID) ? global.conf.boardDescriptions[boardNow.boardID] : '',
+        description: Object.hasOwn(boardConf.boardDescriptions, boardNow.boardID) ? boardConf.boardDescriptions[boardNow.boardID] : '',
         content: html,
         username: req.session.username,
         ipaddr: req.ipAddress,

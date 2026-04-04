@@ -3,6 +3,7 @@ import sanitiseHtml from 'sanitize-html'
 
 import { WikiParser } from './wikiparser.js'
 import { macroHandler } from './macro.js'
+import { orphanableTokens } from './tokens.js'
 
 import validateColor from 'validate-color'
 
@@ -13,23 +14,27 @@ const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()
  * Standard renderer
  */
 export class HTMLVisitor extends BaseCstVisitor {
+    initialise() {
+        this.headingCounts = [0, 0, 0, 0, 0, 0]
+        this.footnotes = []
+        this.footnoteCnt = 0
+    }
     /**
      * Constructor for HTMLVisitor.
-     * @param {Object} manifest k-v pairs of data collected by PreprocessVisitor
-     * @param {Object} prompts k-v pairs of prompts to show to the user.
-     * @param {Set<string>} missingPages Set of page names that are referenced but not found
-     * @param {Object} macroResult k-v pairs of macro results resolved by the service.
-     * @param {Object} options k-v pairs of options.
-     * Currently supports:  pagename (String),
-     *                      renderSectionEditButton (Boolean, requires pagename),
-     *                      isTemplate (Boolean, if true, paragraphs render as spans to prevent unwanted margins)
+     * @param {Object} [manifest] k-v pairs of data collected by PreprocessVisitor
+     * @param {Object} [prompts] k-v pairs of prompts to show to the user.
+     * @param {Set<string>} [missingPages] Set of page names that are referenced but not found
+     * @param {Object} [macroResult] k-v pairs of macro results resolved by the service.
+     * @param {Object} [options] k-v pairs of options.
+     * @param {string} [options.pagename] Optional. Page name used for section edit links and autolink detection.
+     * @param {boolean} [options.renderSectionEditButton] Optional. Requires `options.pagename`. If true, renders the [edit] button next to each heading.
+     * @param {boolean} [options.isTemplate] Optional. If true, paragraphs render as spans to prevent unwanted margins.
+     * @param {Object} [options.args] Optional. k-v pairs of template options.
      */
     constructor(manifest, prompts, missingPages, macroResult, options) {
         super()
         this.validateVisitor()
-        this.headingCounts = [0, 0, 0, 0, 0, 0]
-        this.footnotes = []
-        this.footnoteCnt = 0
+        this.initialise()
         this.manifest = manifest
         this.prompts = prompts
         this.missingPages = missingPages
@@ -39,9 +44,7 @@ export class HTMLVisitor extends BaseCstVisitor {
 
     document(ctx) {
         // reinit'ise temporary variables
-        this.headingCounts = [0, 0, 0, 0, 0, 0]
-        this.footnotes = []
-        this.footnoteCnt = 0
+        this.initialise()
 
         if (!ctx.block) return '' //empty document
 
@@ -97,17 +100,17 @@ export class HTMLVisitor extends BaseCstVisitor {
         for (const option of tableOptions) {
             // honour values seen first
             switch (option.option) {
-                case 'float-left':       tableFloat  ??= 'left'; break
-                case 'float-right':      tableFloat  ??= 'right'; break
-                case 'float-center':     tableFloat  ??= 'center'; break
-                case 'caption':          caption     ??= option.value; break
+                case 'float-left': tableFloat ??= 'left'; break
+                case 'float-right': tableFloat ??= 'right'; break
+                case 'float-center': tableFloat ??= 'center'; break
+                case 'caption': caption ??= option.value; break
                 case 'tableBorderColor': borderColor ??= option.value; break
                 case 'tableBorderWidth': borderWidth ??= option.value; break
-                case 'tableBgColor':     bgColor     ??= option.value; break
-                case 'width':            width       ??= option.value; break
-                case 'maxWidth':         maxWidth    ??= option.value; break
-                case 'height':           height      ??= option.value; break
-                case 'noMargin':         noMargin = true; break
+                case 'tableBgColor': bgColor ??= option.value; break
+                case 'width': width ??= option.value; break
+                case 'maxWidth': maxWidth ??= option.value; break
+                case 'height': height ??= option.value; break
+                case 'noMargin': noMargin = true; break
             }
         }
         return { tableFloat, caption, borderColor, borderWidth, bgColor, width, maxWidth, height, noMargin }
@@ -116,14 +119,14 @@ export class HTMLVisitor extends BaseCstVisitor {
     #buildTableStyle({ tableFloat, borderColor, borderWidth, bgColor, width, height, maxWidth, noMargin }) {
         let style = ''
         if (tableFloat === 'center') style += 'margin-left: auto; margin-right: auto;'
-        else if (tableFloat)         style += `float: ${tableFloat};`
+        else if (tableFloat) style += `float: ${tableFloat};`
         if (borderColor) style += `border-color: ${borderColor};`
         if (borderWidth) style += `border-width: ${borderWidth};`
-        if (bgColor)     style += `background-color: ${bgColor};`
-        if (width)       style += `width: ${width};`
-        if (height)      style += `height: ${height};`
-        if (maxWidth)    style += `max-width: ${maxWidth};`
-        if (noMargin)    style += 'margin: 0;'
+        if (bgColor) style += `background-color: ${bgColor};`
+        if (width) style += `width: ${width};`
+        if (height) style += `height: ${height};`
+        if (maxWidth) style += `max-width: ${maxWidth};`
+        if (noMargin) style += 'margin: 0;'
         return style
     }
 
@@ -435,19 +438,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         }
 
         // unmatched delimiters, render as their literal characters
-        /* @formatter:off */
-        const orphanedTokens = [
-            "LeftAlignOpen", "CenterAlignOpen", "RightAlignOpen", "MultilineClose",
-            "BoldDelim", "ItalicDelim", "UnderlineDelim", "SupDelim",
-            "SubDelim", "BigDelim", "H1Open", "H1Close",
-            "H2Open", "H2Close", "H3Open", "H3Close",
-            "H4Open", "H4Close", "H5Open", "H5Close",
-            "H6Open", "H6Close", "FootnoteCloser", "MacroCloser",
-            "FootnoteOpener", "TOC", "Footnote", "LinkOpen",
-            "LinkClose", "Pipe", "TemplateArgOpen", "TemplateArgClose"
-        ]
-        /* @formatter:on */
-        for (const tokenName of orphanedTokens) {
+        for (const tokenName of orphanableTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
         }
 
