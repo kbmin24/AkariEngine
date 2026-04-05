@@ -31,7 +31,7 @@ class RepositoryFactory {
         this.threadcomments = new ThreadCommentRepository(db.threadcomment)
         this.blocks = new BlockRepository(db.block)
         this.protections = new ProtectRepository(db.protect)
-        this.viewcounts = new ViewcountRepository(db.viewcount)
+        this.viewcounts = new ViewcountRepository(db.viewcount, db.updateTime)
         this.files = new FileRepository(db.mfile)
     }
 }

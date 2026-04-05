@@ -6,7 +6,7 @@ import { requirePermission } from '../middlewares/permission.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { validateRequest } from '../middlewares/validation.js'
 import { requirePageAccess } from '../middlewares/permission.js'
-import viewHandler from '../pages/view.js'
+import viewController from '../controllers/pages/viewGet.js'
 import previewController from '../controllers/pages/preview.js'
 import searchGetController from '../controllers/pages/searchGet.js'
 import searchPostController from '../controllers/pages/searchPost.js'
@@ -41,7 +41,7 @@ export default (services, options = {}) => {
             noAclMessageKey: 'view_noacl',
             revisionQueryKeys: ['rev']
         }),
-        asyncRoute(viewHandler)
+        asyncRoute(viewController)
     )
 
     router.post('/w', asyncRoute(async (req, res) => {
