@@ -1,3 +1,4 @@
+import AdminLogRepository from './AdminLogRepository.js'
 import PageRepository from './PageRepository.js'
 import FileRepository from './FileRepository.js'
 import UserRepository from './UserRepository.js'
@@ -33,6 +34,7 @@ class RepositoryFactory {
         this.protections = new ProtectRepository(db.protect)
         this.viewcounts = new ViewcountRepository(db.viewcount, db.updateTime)
         this.files = new FileRepository(db.mfile)
+        this.adminlog = new AdminLogRepository(db.adminlog)
     }
 }
 

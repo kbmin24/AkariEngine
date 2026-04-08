@@ -19,7 +19,7 @@ import changeThreadStatusAdmin from '../admin/changethreadstatus.js'
 import changeThreadTitleAdmin from '../admin/changethreadtitle.js'
 import gongjiAdmin from '../admin/gongji.js'
 import developerGetHandler from '../admin/developerGetHandler.js'
-import adminLogHandler from '../admin/adminlog.js'
+import adminlogGetHandler from '../controllers/admin/adminlogGet.js'
 import protectGet from '../controllers/admin/protectGet.js'
 import protectPost from '../controllers/admin/protectPost.js'
 
@@ -321,7 +321,7 @@ export default (services, options = {}) => {
 
     router.get('/adminlog',
         asyncRoute(async (req, res) => {
-            await adminLogHandler(req, res, global.db.adminlog)
+            await adminlogGetHandler(req, res)
         })
     )
 

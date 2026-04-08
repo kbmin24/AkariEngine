@@ -163,10 +163,39 @@ class PageRepository extends BaseRepository {
 
     async replaceLinksForPage(title, content) {
         if (!this.linkModel) return
-        await this.linkModel.destroy({ where: { source: title } })
-        const links = this.extractLinks(title, content)
-        if (links.length > 0) {
-            await this.linkModel.bulkCreate(links)
+        const transaction = await this.linkModel.sequelize.transaction()
+
+        try {
+            // identify links to add and remove (i.e. if set A => B then set A - B, B - A)
+            const oldLinks = await this.linkModel.findAll({ where: { source: title }, transaction })
+            const newLinks = this.extractLinks(title, content)
+
+            const oldDests = new Set(oldLinks.map(link => link.dest))
+            const newDests = new Set(newLinks.map(link => link.dest))
+
+            const linksToAdd = newLinks.filter(link => !oldDests.has(link.dest))
+            const destsToRemove = oldDests.difference(newDests)
+
+            if (linksToAdd.length > 0) {
+                await this.linkModel.bulkCreate(linksToAdd, { transaction })
+            }
+
+            if (destsToRemove.size > 0) {
+                await this.linkModel.destroy({
+                    where:
+                    {
+                        source: title,
+                        dest: { [Op.in]: Array.from(destsToRemove) }
+                    },
+                    transaction
+                })
+            }
+
+            transaction.commit()
+
+        } catch (err) {
+            await transaction.rollback()
+            throw err
         }
     }
 
