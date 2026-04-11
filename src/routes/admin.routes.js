@@ -5,7 +5,7 @@ import { Op } from 'sequelize'
 import paths from '../utils/paths.js'
 import { asyncRoute } from '../utils/httpHelper.js'
 import { requirePermission } from '../middlewares/auth.js'
-import { param } from 'express-validator'
+import { param, query } from 'express-validator'
 import { validateRequest } from '../middlewares/validation.js'
 import logger from '../utils/logger.js'
 import renderView from '../view.js'
@@ -308,7 +308,7 @@ export default (services, options = {}) => {
     router.post('/admin/gongji',
         csrfProtection,
         asyncRoute(async (req, res) => {
-            await gongjiAdmin(req, res, global.db.gongji)
+            await gongjiAdmin(req, res, global.db.boardgongji)
         })
     )
 
@@ -320,6 +320,10 @@ export default (services, options = {}) => {
     )
 
     router.get('/adminlog',
+        query('doneBy').optional().isString(),
+        query('job').optional().isString(),
+        query('from').optional().isInt(),
+        validateRequest,
         asyncRoute(async (req, res) => {
             await adminlogGetHandler(req, res)
         })
