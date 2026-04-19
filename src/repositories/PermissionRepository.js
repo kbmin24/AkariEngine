@@ -31,6 +31,11 @@ class PermissionRepository extends BaseRepository {
     async isAdmin(username) {
         return this.hasPermission(username, 'admin')
     }
+
+    async findAllPermissions(username) {
+        const perms = await this.model.findAll({ where: { username } })
+        return perms.map(p => p.perm)
+    }
 }
 
 export default PermissionRepository

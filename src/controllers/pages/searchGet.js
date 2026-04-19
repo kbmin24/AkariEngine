@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { ValidationError } from '../../services/errors.js'
 import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 
@@ -15,7 +14,7 @@ export default async (req, res) => {
             resultContent: model.resultContent,
             from: model.from
         }, {
-            title: i18n.__('searchResults', { q: model.query })
+            title: res.__('searchResults', { q: model.query })
         })
     } catch (error) {
         if (error instanceof ValidationError) {

@@ -191,17 +191,17 @@ app.use((req, res, next) => {
 
     if (url.startsWith('/signup')) {
         return renderError(req, res, {
-            description: global.i18n.__('signupdisabled'),
+            description: res.__('signupdisabled'),
             returnLink: '/login',
-            returnName: i18n.__('loginpage'),
+            returnName: res.__('loginpage'),
             statusCode: 403
         })
     }
 
     return renderError(req, res, {
-        description: global.i18n.__('loginneeded'),
+        description: res.__('loginneeded'),
         returnLink: '/login',
-        returnName: i18n.__('loginpage'),
+        returnName: res.__('loginpage'),
         statusCode: 403
     })
 })

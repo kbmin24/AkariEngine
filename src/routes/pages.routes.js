@@ -1,5 +1,4 @@
 import express from 'express'
-import i18n from 'i18n'
 import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 import { param, query, body } from 'express-validator'
 import { requirePermission } from '../middlewares/permission.js'
@@ -97,8 +96,8 @@ export default (services, options = {}) => {
     )
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: i18n.__ }, {
-            title: i18n.__('recentChanges'),
+        await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: res.__ }, {
+            title: res.__('recentChanges'),
             isPage: false,
             username: req.session.username,
             ipaddr: req.ipAddress

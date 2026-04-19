@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { AuthenticationRequiredError, PermissionDeniedError, PageNotFoundError, ValidationError } from '../../services/errors.js'
 import renderError from '../../utils/error.js'
 
@@ -15,9 +14,9 @@ export default async (req, res) =>
     } catch (error) {
         if (error instanceof AuthenticationRequiredError) {
             renderError(req, res, {
-                description: i18n.__('loginneeded'),
+                description: res.__('loginneeded'),
                 returnLink: '/login',
-                returnName: i18n.__('loginpage'),
+                returnName: res.__('loginpage'),
                 statusCode: 403
             })
             return
@@ -25,9 +24,9 @@ export default async (req, res) =>
 
         if (error instanceof PermissionDeniedError) {
             renderError(req, res, {
-                description: i18n.__('ACLpermRequried'),
+                description: res.__('ACLpermRequried'),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 403
             })
             return
@@ -35,9 +34,9 @@ export default async (req, res) =>
 
         if (error instanceof PageNotFoundError) {
             renderError(req, res, {
-                description: i18n.__('page404'),
+                description: res.__('page404'),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 404
             })
             return
@@ -47,7 +46,7 @@ export default async (req, res) =>
             renderError(req, res, {
                 description: error.message,
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: error.statusCode || 400
             })
             return

@@ -1,5 +1,4 @@
 import express from 'express'
-import i18n from 'i18n'
 import multer from 'multer'
 import fs from 'fs'
 import paths from '../utils/paths.js'
@@ -76,7 +75,7 @@ export default (_services, _options = {}) => {
     })
 
     router.get('/Upload',
-        requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
+        requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: 'mainpage'}),
         asyncRoute(async (req, res) => {
         const username = req.session.username
         const captchaSVG = await genCaptcha()
@@ -86,14 +85,14 @@ export default (_services, _options = {}) => {
             filetypes: getFileTypes().join(', '),
             fileLimit
         }, {
-            title: i18n.__('upload'),
+            title: res.__('upload'),
             username,
             ipaddr: req.ipAddress
         })
     }))
 
     router.post('/Upload',
-        requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: i18n.__('mainpage')}),
+        requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: 'mainpage'}),
         chkCaptcha,
         upload.single('inputFile'),
         asyncRoute(async (req, res) => {

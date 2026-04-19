@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { PageNotFoundError, RevisionNotFoundError, ValidationError } from '../../services/errors.js'
 import renderError from '../../utils/error.js'
 
@@ -16,15 +15,15 @@ export default async (req, res) => {
     }
     catch (error) {
         if (error instanceof RevisionNotFoundError) {
-            renderError(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: res.__('revision404'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof PageNotFoundError) {
-            renderError(req, res, { description: i18n.__('page404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: res.__('page404'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 404 })
             return
         }
         if (error instanceof ValidationError) {
-            renderError(req, res, { description: i18n.__('revision404'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 404 })
+            renderError(req, res, { description: res.__('revision404'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 404 })
             return
         }
         throw error

@@ -17,11 +17,11 @@ import protectRevisionAdmin from '../admin/protectRevision.js'
 import hideThreadCommentAdmin from '../admin/hidethreadcomment.js'
 import changeThreadStatusAdmin from '../admin/changethreadstatus.js'
 import changeThreadTitleAdmin from '../admin/changethreadtitle.js'
-import gongjiAdmin from '../admin/gongji.js'
 import developerGetHandler from '../admin/developerGetHandler.js'
 import adminlogGetHandler from '../controllers/admin/adminlogGet.js'
 import protectGet from '../controllers/admin/protectGet.js'
 import protectPost from '../controllers/admin/protectPost.js'
+import grantGet from '../controllers/admin/grantGet.js'
 
 export default (services, options = {}) => {
     const router = express.Router()
@@ -42,49 +42,11 @@ export default (services, options = {}) => {
 
     router.get('/admin/grant',
         csrfProtection,
+        requirePermission('deletepage', { mode: 'grant' }),
+        param('grantTo').optional().isString(),
+        validateRequest,
         asyncRoute(async (req, res) => {
-            const username = req.session.username
-            if (username === undefined) {
-                renderError(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
-                return
-            }
-
-            const p = await global.db.perm.findOne({ where: { username, perm: 'grant' } })
-            if (!p) {
-                logger.admin('Unauthorised grant attempt', username, { ip: req.ipAddress })
-                renderError(req, res, { description: 'You do not have a grant permission.', returnLink: '/admin', returnName: 'the admin page' })
-                return
-            }
-
-            if (req.query.grantTo === undefined) {
-                const html = await ejs.renderFile(paths.view('admin/grantName.ejs'), {})
-                renderView(req, res, {
-                    title: 'Select username to grant to',
-                    content: html,
-                    username,
-                    ipaddr: req.ipAddress
-                })
-                return
-            }
-
-            const u = await global.db.users.findOne({ where: { username: req.query.grantTo } })
-            if (!u) {
-                renderError(req, res, { description: 'No such user.', returnLink: '/admin/grant', returnName: 'the grant page' })
-                return
-            }
-
-            const permissions = await global.db.perm.findAll({ where: { username: req.query.grantTo } })
-            const html = await ejs.renderFile(paths.view('admin/grant.ejs'), {
-                grantTo: req.query.grantTo,
-                perms: JSON.stringify(permissions),
-                csrfToken: req.csrfToken()
-            })
-            renderView(req, res, {
-                title: 'Grant to ' + req.query.grantTo,
-                content: html,
-                username,
-                ipaddr: req.ipAddress
-            })
+            await grantGet(req, res)
         })
     )
 
@@ -214,32 +176,6 @@ export default (services, options = {}) => {
         })
     )
 
-    router.get('/admin/gongji',
-        csrfProtection,
-        asyncRoute(async (req, res) => {
-            // TODO move this to extension. Why is it even here??
-            const username = req.session.username
-            if (username === undefined) {
-                renderError(req, res, { description: '로그인이 필요합니다.', returnLink: '/login', returnName: '로그인 페이지', statusCode: 404 })
-                return
-            }
-
-            const p = await global.db.perm.findOne({ where: { username, perm: 'board' } })
-            if (!p) {
-                renderError(req, res, { description: 'You do not have a board permission.', returnLink: '/admin', returnName: 'the admin page' })
-                return
-            }
-
-            const html = await ejs.renderFile(paths.view('admin/gongji.ejs'), { csrfToken: req.csrfToken() })
-            renderView(req, res, {
-                title: '게시판 공지 변경',
-                content: html,
-                username,
-                ipaddr: req.ipAddress
-            })
-        })
-    )
-
     router.post('/admin/grant',
         csrfProtection,
         asyncRoute(async (req, res) => {
@@ -302,13 +238,6 @@ export default (services, options = {}) => {
                 thread: global.db.thread,
                 threadcomment: global.db.threadcomment
             })
-        })
-    )
-
-    router.post('/admin/gongji',
-        csrfProtection,
-        asyncRoute(async (req, res) => {
-            await gongjiAdmin(req, res, global.db.boardgongji)
         })
     )
 

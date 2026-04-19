@@ -1,5 +1,4 @@
 //error.js: display error to the user.
-import i18n from 'i18n'
 import renderView from '../view.js'
 
 export default (req, res, options = {}) => {
@@ -14,10 +13,10 @@ export default (req, res, options = {}) => {
         statusCode
     } = options
 
-    const content = i18n.__('error_returnInfo', {
-        description: description || i18n.__('unknown_error'),
+    const content = res.__('error_returnInfo', {
+        description: description || res.__('unknown_error'),
         link: returnLink || '/',
-        linkname: returnName || i18n.__('mainpage'),
+        linkname: returnName || res.__('mainpage'),
         interpolation: { escapeValue: false }
     })
 

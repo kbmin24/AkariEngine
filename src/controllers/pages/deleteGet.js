@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { PageNotFoundError } from '../../services/errors.js'
 import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 import renderError from '../../utils/error.js'
@@ -12,11 +11,11 @@ export default async (req, res) => {
 
         await renderTemplateInLayout(req, res, 'pages/delete.ejs', {
             title: model.title,
-            l: i18n.__,
+            l: res.__,
             username: model.username,
             csrfToken: req.csrfToken()
         }, {
-            title: i18n.__('deletepg', { name: req.params.name }),
+            title: res.__('deletepg', { name: req.params.name }),
             isPage: true,
             pageMode: 'delete',
             pagename: model.pagename
@@ -24,9 +23,9 @@ export default async (req, res) => {
     } catch (error) {
         if (error instanceof PageNotFoundError) {
             renderError(req, res, {
-                description: `${i18n.__('page404')} <a href="/edit/${req.params.name}">${i18n.__('page_asknew')}</a>`,
+                description: `${res.__('page404')} <a href="/edit/${req.params.name}">${res.__('page_asknew')}</a>`,
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 404
             })
             return

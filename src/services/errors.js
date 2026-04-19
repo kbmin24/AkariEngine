@@ -6,6 +6,7 @@ function getDefaultLocale() {
     return 'en_GB'
 }
 
+// translate to default locale
 function translate(i18nKey, params = {}, locale = getDefaultLocale(), fallback = '') {
     if (!i18nKey) return fallback
     if (!i18n || typeof i18n.__ !== 'function') return fallback || i18nKey
@@ -41,19 +42,7 @@ class AppError extends Error {
     getLocalizedMessage(req) {
         if (!this.i18nKey) return this.message
 
-        if (req && typeof req.__ === 'function') {
-            try {
-                return req.__(this.i18nKey, this.i18nParams)
-            } catch (_error) {
-                return this.message
-            }
-        }
-
-        if (req && req.locale) {
-            return translate(this.i18nKey, this.i18nParams, req.locale, this.message)
-        }
-
-        return this.message
+        return req.__(this.i18nKey, this.i18nParams)
     }
 }
 

@@ -146,5 +146,7 @@
 	"ACLpermRequried": "ACL 권한이 필요합니다.",
 	"threadOf": "{{{page}}}의 토론",
 	"footnotes": "각주",
-	"nsPage": "문서를 찾을 수 없음"
+	"nsPage": "문서를 찾을 수 없음",
+	"selectUsernameToGrantTo": "권한을 부여할 사용자명 선택",
+	"grantTo": "{{{username}}}에게 권한 부여"
 }

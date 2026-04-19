@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { ValidationError } from '../../services/errors.js'
 import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 import renderError from '../../utils/error.js'
@@ -13,7 +12,7 @@ export default async (req, res) => {
             entries: model.entries,
             count: model.count
         }, {
-            title: i18n.__('xrefTo', { page: model.title }),
+            title: res.__('xrefTo', { page: model.title }),
             username: req.session.username,
             isPage: true,
             pageMode: 'xref',
@@ -22,9 +21,9 @@ export default async (req, res) => {
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey) {
             renderError(req, res, {
-                description: i18n.__(error.i18nKey),
+                description: res.__(error.i18nKey),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: error.statusCode || 400
             })
             return

@@ -144,5 +144,7 @@
 	"threadOf": "Discussions of {{{page}}}",
 	"edit": "Edit",
 	"footnotes": "Footnotes",
-	"nsPage": "No such page"
+	"nsPage": "No such page",
+	"selectUsernameToGrantTo": "Select username to grant to",
+	"grantTo": "Grant to {{{username}}}"
 }

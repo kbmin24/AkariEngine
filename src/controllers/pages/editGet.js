@@ -1,5 +1,4 @@
 import ejs from 'ejs'
-import i18n from 'i18n'
 import paths from '../../utils/paths.js'
 import { renderLayout } from '../../utils/httpHelper.js'
 import { ValidationError } from '../../services/errors.js'
@@ -21,7 +20,7 @@ export default async (req, res) => {
             prefix: editModel.prefix,
             suffix: editModel.suffix,
             username: editModel.username,
-            l: i18n.__,
+            l: res.__,
             csrfToken: req.csrfToken(),
             disabled: editModel.disabled
         }
@@ -34,7 +33,7 @@ export default async (req, res) => {
 
         const html = await ejs.renderFile(paths.view('pages/edit.ejs'), templateData)
         renderLayout(req, res, {
-            title: i18n.__('edit_pg', { name: req.params.name }),
+            title: res.__('edit_pg', { name: req.params.name }),
             content: html,
             isPage: true,
             pageMode: editModel.disabled ? undefined : 'edit',
@@ -44,9 +43,9 @@ export default async (req, res) => {
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey) {
             renderError(req, res, {
-                description: i18n.__(error.i18nKey),
+                description: res.__(error.i18nKey),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: error.statusCode || 200
             })
             return

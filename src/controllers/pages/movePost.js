@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { PageNotFoundError, PageExistsError, ValidationError } from '../../services/errors.js'
 import renderError from '../../utils/error.js'
 
@@ -8,7 +7,7 @@ export default async (req, res) =>
 
     if (req.params.name.toLowerCase().startsWith('file:'))
     {
-        renderError(req, res, { description: i18n.__('move_nofile'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+        renderError(req, res, { description: res.__('move_nofile'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 400 })
         return
     }
 
@@ -27,17 +26,17 @@ export default async (req, res) =>
     {
         if (error instanceof PageExistsError)
         {
-            renderError(req, res, { description: i18n.__('move_alreadyexists'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            renderError(req, res, { description: res.__('move_alreadyexists'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof PageNotFoundError)
         {
-            renderError(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            renderError(req, res, { description: res.__('illegalaccess'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 400 })
             return
         }
         if (error instanceof ValidationError)
         {
-            renderError(req, res, { description: i18n.__('illegalaccess'), returnLink: '/', returnName: i18n.__('mainpage'), statusCode: 400 })
+            renderError(req, res, { description: res.__('illegalaccess'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 400 })
             return
         }
         throw error

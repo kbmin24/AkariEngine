@@ -269,6 +269,16 @@ class PermissionService {
         return await this.permissionRepo.hasPermission(user, permission)
     }
 
+    /**
+     * Finds all permissions the user has. Returns an empty list
+     * @param {String} user 
+     * @returns {Promise<Array<String>>} List of permissions the user has
+     */
+    async findAllPermissions(user) {
+        if (!user) return []
+        return await this.permissionRepo.findAllPermissions(user)
+    }
+
     async grantPermission(adminUser, targetUser, permission) {
         await this.requirePermission(adminUser, 'grant')
         await this.permissionRepo.grantPermission(targetUser, permission, adminUser)

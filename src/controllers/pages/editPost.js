@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { ValidationError } from '../../services/errors.js'
 import renderError from '../../utils/error.js'
 
@@ -18,18 +17,18 @@ export default async (req, res) => {
     } catch (error) {
         if (error instanceof ValidationError && error.i18nKey === 'edit_titleneeded') {
             renderError(req, res, {
-                description: i18n.__('edit_titleneeded'),
+                description: res.__('edit_titleneeded'),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 200
             })
             return
         }
         if (error instanceof ValidationError && error.i18nKey === 'pagename_illegalfile') {
             renderError(req, res, {
-                description: i18n.__('pagename_illegalfile'),
+                description: res.__('pagename_illegalfile'),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 200
             })
             return

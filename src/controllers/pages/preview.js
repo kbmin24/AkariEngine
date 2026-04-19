@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { getCategory, getOptions } from '../../utils/wikimark/keywordHelper.js'
 import renderView from '../../view.js'
 
@@ -12,10 +11,10 @@ export default async (req, res) => {
                     req.app.locals.repositories,
                     false)
     renderedContent = (await getCategory(title, req.app.locals.repositories.categories, opt['category'])) + renderedContent
-    renderedContent = `<div class='alert alert-warning' role='alert'>${i18n.__('previewWarning')}</div>` + renderedContent
+    renderedContent = `<div class='alert alert-warning' role='alert'>${res.__('previewWarning')}</div>` + renderedContent
     let renderOpt = {
         title,
-        titleInfo: `(<i>${i18n.__('preview')}</i>)`,
+        titleInfo: `(<i>${res.__('preview')}</i>)`,
         content: renderedContent,
         isPage: true,
         pagename: title,

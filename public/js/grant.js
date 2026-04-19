@@ -4,6 +4,6 @@ $(() =>
     const perms = JSON.parse(document.getElementById('perms').innerHTML)
     perms.forEach(p =>
     {
-        $('#cb' + p['perm']).attr('checked', true)
+        $('#cb' + p).attr('checked', true)
     })
 })

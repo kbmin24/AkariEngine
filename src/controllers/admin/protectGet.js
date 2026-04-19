@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 
 export default async (req, res) =>
@@ -16,7 +15,7 @@ export default async (req, res) =>
         hasACL: hasAcl,
         perms: JSON.stringify(permsPresent)
     }, {
-        title: i18n.__('protectPage', { page: req.params.name }),
+        title: res.__('protectPage', { page: req.params.name }),
         isPage: true,
         pageMode: 'protect',
         pagename: req.params.name,

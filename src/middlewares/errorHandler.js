@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import logger from '../utils/logger.js'
 import renderError from '../utils/error.js'
 
@@ -10,12 +9,12 @@ import {
     CaptchaError,
 } from '../services/errors.js'
 
-function getEnglishMessage(err) {
+function getEnglishMessage(res, err) {
     if (!err) return 'Unknown error'
 
-    if (err.i18nKey && i18n && typeof i18n.__ === 'function') {
+    if (err.i18nKey) {
         try {
-            return i18n.__({ phrase: err.i18nKey, locale: 'en_GB' }, err.i18nParams || {})
+            return res.__({ phrase: err.i18nKey, locale: 'en_GB' }, err.i18nParams || {})
         } catch (_error) {
             return err.message || 'Unknown error'
         }
@@ -39,7 +38,7 @@ function errorHandler(err, req, res, next) {
         return next(err) // pass it to legacy handler
     }
 
-    const englishMessage = getEnglishMessage(err)
+    const englishMessage = getEnglishMessage(res, err)
     logger.error(`Request error: ${englishMessage}`, getStackForLogging(err, englishMessage))
 
     const localizedMessage = (err && typeof err.getLocalizedMessage === 'function')
@@ -53,7 +52,7 @@ function errorHandler(err, req, res, next) {
             {
                 description: localizedMessage,
                 returnLink: err.returnLink || '/',
-                returnName: i18n.__(err.returnName || 'mainpage'),
+                returnName: res.__(err.returnName || 'mainpage'),
                 statusCode: err.statusCode || 403
             }
         )
@@ -71,9 +70,9 @@ function errorHandler(err, req, res, next) {
             req,
             res,
             {
-                description: localizedMessage || i18n.__('loginneeded'),
+                description: localizedMessage || res.__('loginneeded'),
                 returnLink: err.returnLink || '/login',
-                returnName: i18n.__(err.returnName || 'loginpage'),
+                returnName: res.__(err.returnName || 'loginpage'),
                 statusCode: err.statusCode || 403
             }
         )
@@ -93,7 +92,7 @@ function errorHandler(err, req, res, next) {
             {
                 description: localizedMessage,
                 returnLink: err.returnLink || 'javascript:window.history.back()',
-                returnName: i18n.__(err.returnName || 'previousPage'),
+                returnName: res.__(err.returnName || 'previousPage'),
                 statusCode: err.statusCode || 400
             }
         )

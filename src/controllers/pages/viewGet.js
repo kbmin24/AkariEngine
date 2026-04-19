@@ -1,5 +1,4 @@
 import date from 'date-and-time'
-import i18n from 'i18n'
 import escapeHtml from '../../utils/escapeHTML.js'
 import { renderLayout } from '../../utils/httpHelper.js'
 import renderError from '../../utils/error.js'
@@ -18,7 +17,7 @@ export default async (req, res) => {
     if (usernameRegex.test(name)) {
         const username = usernameRegex.exec(name)[1]
         if (username && await services.permission.hasPermission(username, 'admin')) {
-            titleSuffix += `(${i18n.__('admin')})`
+            titleSuffix += `(${res.__('admin')})`
         }
     }
 
@@ -31,7 +30,7 @@ export default async (req, res) => {
         } else if (/^(.*?\.pdf)$/gi.test(filename)) {
             contentPrefix = `[file(${filename}|width=100%|height=500px)]\n<a href='/uploads/${filename}'>Download</a>`
         } else {
-            contentPrefix = `<p><span class="fw-bold text-danger">${i18n.__('error')}:</span> ${i18n.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${i18n.__('file_innewtab')}</a></p>`
+            contentPrefix = `<p><span class="fw-bold text-danger">${res.__('error')}:</span> ${res.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${res.__('file_innewtab')}</a></p>`
         }
     }
 
@@ -51,7 +50,7 @@ export default async (req, res) => {
 
             const redirect = !(req.query.redirect == 'true' || req.query.from)
             if (req.query.from) {
-                titleSuffix = i18n.__('page_redirectedfrom', { page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>` }) + `&nbsp;` + titleSuffix
+                titleSuffix = res.__('page_redirectedfrom', { page: `<a href='/w/${escapeHtml(req.query.from)}'>${escapeHtml(req.query.from)}</a>` }) + `&nbsp;` + titleSuffix
             }
 
             const opt = await getOptions(page.content)
@@ -84,10 +83,10 @@ export default async (req, res) => {
         } else {
             if (/User:.*?/igm.test(name)) {
                 const content = name.split(':')[1] == req.session.username
-                    ? i18n.__('noUserPage_user', { link: escapeHtml(name) })
-                    : i18n.__('noUserPage')
+                    ? res.__('noUserPage_user', { link: escapeHtml(name) })
+                    : res.__('noUserPage')
                 renderLayout(req, res, {
-                    title: i18n.__('error'),
+                    title: res.__('error'),
                     content,
                     isPage: false,
                     username: req.session.username,
@@ -98,12 +97,12 @@ export default async (req, res) => {
             let hisText = ''
             const existingPage = await repositories.pages.findByTitle(name)
             if (existingPage) {
-                hisText = i18n.__('seeHistory', { link: escapeHtml(name) })
+                hisText = res.__('seeHistory', { link: escapeHtml(name) })
             }
             renderError(req, res, {
-                description: i18n.__('noPageMsg', { name: escapeHtml(name), hisText }),
+                description: res.__('noPageMsg', { name: escapeHtml(name), hisText }),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 404
             })
         }
@@ -140,16 +139,16 @@ export default async (req, res) => {
         } catch (e) {
             if (e instanceof RevisionNotFoundError) {
                 renderError(req, res, {
-                    description: i18n.__('revision404'),
+                    description: res.__('revision404'),
                     returnLink: '/',
-                    returnName: i18n.__('mainpage'),
+                    returnName: res.__('mainpage'),
                     statusCode: 404
                 })
             } else if (e instanceof PageNotFoundError) {
                 renderError(req, res, {
-                    description: i18n.__('noPageMsg', { name, hisText: '' }),
+                    description: res.__('noPageMsg', { name, hisText: '' }),
                     returnLink: '/',
-                    returnName: i18n.__('mainpage'),
+                    returnName: res.__('mainpage'),
                     statusCode: 404
                 })
             } else {

@@ -1,6 +1,6 @@
 // TODO rename this file
 
-import renderError from '../utils/error.js'
+import renderError from '../../src/utils/error.js'
 
 
 export default async (req, res, gongji) =>

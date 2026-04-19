@@ -1,5 +1,4 @@
 import express from 'express'
-import i18n from 'i18n'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 import { genCaptcha } from '../utils/captcha.js'
@@ -15,8 +14,8 @@ export default (_services, options = {}) => {
 
     router.get('/signup', asyncRoute(async (req, res) => {
         const captchaSVG = await genCaptcha()
-        await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: i18n.__ }, {
-            title: i18n.__('register'),
+        await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: res.__ }, {
+            title: res.__('register'),
             username: req.session.username,
             ipaddr: req.ipAddress
         })
@@ -29,8 +28,8 @@ export default (_services, options = {}) => {
     }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'user/login.ejs', { csrfToken: req.csrfToken(), l: i18n.__ }, {
-            title: i18n.__('login'),
+        await renderTemplateInLayout(req, res, 'user/login.ejs', { csrfToken: req.csrfToken(), l: res.__ }, {
+            title: res.__('login'),
             username: req.session.username,
             ipaddr: req.ipAddress
         })
@@ -58,9 +57,9 @@ export default (_services, options = {}) => {
             csrfToken: req.csrfToken(),
             sign,
             username,
-            l: i18n.__
+            l: res.__
         }, {
-            title: i18n.__('settings'),
+            title: res.__('settings'),
             username,
             ipaddr: req.ipAddress
         })

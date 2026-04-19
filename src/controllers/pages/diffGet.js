@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import { RevisionNotFoundError, ValidationError } from '../../services/errors.js'
 import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 import renderError from '../../utils/error.js'
@@ -16,7 +15,7 @@ export default async (req, res) => {
         await renderTemplateInLayout(req, res, 'pages/diff.ejs', {
             diffHtml: model.diffHtml
         }, {
-            title: i18n.__('diffTitle', {
+            title: res.__('diffTitle', {
                 pagename: req.params.name,
                 rev1: model.rev1,
                 rev2: model.rev2
@@ -31,7 +30,7 @@ export default async (req, res) => {
             renderError(req, res, {
                 description: error.message,
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: error.statusCode || 404
             })
             return
@@ -39,9 +38,9 @@ export default async (req, res) => {
 
         if (error instanceof RevisionNotFoundError) {
             renderError(req, res, {
-                description: i18n.__('revision404'),
+                description: res.__('revision404'),
                 returnLink: '/',
-                returnName: i18n.__('mainpage'),
+                returnName: res.__('mainpage'),
                 statusCode: 404
             })
             return
