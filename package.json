@@ -25,7 +25,7 @@
     "express-validator": "^7.2.1",
     "highlight.js": "^11.2.0",
     "html-minifier": "^4.0.0",
-    "i18n": "^0.15.1",
+    "i18n": "0.15.1",
     "ip-address": "^8.1.0",
     "ip-cidr": "^4.0.2",
     "ip-range-check": "^0.2.0",
