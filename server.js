@@ -167,6 +167,22 @@ global.escapeHTML = escapeHTML
 app.set('view engine', 'ejs')
 app.set('views', paths.views)
 
+//Middlewares
+app.use((req, res, next) => {
+    // init'ise i18n
+    i18n.init(req, res)
+
+    // combat IP spoofing
+    if (config.behindProxy) {
+        req.ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    } else {
+        req.ipAddress = req.socket.remoteAddress
+    }
+
+    next()
+})
+
+
 // Private Mode?
 app.use((req, res, next) => {
     const url = req.url.trim()
@@ -223,22 +239,6 @@ config.skins.forEach(e => {
 import ext from './extensions/extensionManager.js'
 
 ext(app)
-
-
-//Middlewares
-app.use((req, res, next) => {
-    // init'ise i18n
-    i18n.init(req, res)
-
-    // combat IP spoofing
-    if (config.behindProxy) {
-        req.ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-    } else {
-        req.ipAddress = req.socket.remoteAddress
-    }
-
-    next()
-})
 
 //Register routes
 registerRoutes(app, services, { csrfProtection })
