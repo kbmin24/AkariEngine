@@ -21,6 +21,13 @@ class AdminLogRepository extends BaseRepository {
         })
         return { logs: result.rows, count: result.count }
     }
+
+    async insertLog(doneBy, description) {
+        await this.model.create({
+            username: doneBy,
+            job: description
+        })
+    }
 }
 
 export default AdminLogRepository

@@ -1,4 +1,5 @@
 import AdminLogRepository from './AdminLogRepository.js'
+import LoginHistoryRepository from './LoginHistoryRepository.js'
 import PageRepository from './PageRepository.js'
 import FileRepository from './FileRepository.js'
 import UserRepository from './UserRepository.js'
@@ -35,6 +36,7 @@ class RepositoryFactory {
         this.viewcounts = new ViewcountRepository(db.viewcount, db.updateTime)
         this.files = new FileRepository(db.mfile)
         this.adminlog = new AdminLogRepository(db.adminlog)
+        this.loginHistory = new LoginHistoryRepository(db.loginhistory)
     }
 }
 

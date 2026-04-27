@@ -1,20 +1,46 @@
-// service for misc admin functions
+import { AuthenticationRequiredError, PermissionDeniedError, PageNotFoundError, ValidationError } from './errors.js'
+
 class AdminService {
-    constructor(adminlogRepository) {
+    constructor(adminlogRepository, permissionRepository, pageRepository, protectRepository) {
         this.adminlogRepository = adminlogRepository
+        this.permissionRepository = permissionRepository
+        this.pageRepository = pageRepository
+        this.protectRepository = protectRepository
     }
 
-    /**
-     * Finds and counts admin logs.
-     * @param {Object} options - Options for finding logs
-     * @param {string} [options.doneBy] - Filter by username who performed the action
-     * @param {string} [options.job] - Filter by job (i.e. action) done
-     * @param {number} [options.limit=30] - Number of logs to return
-     * @param {number} [options.offset=0] - Number of logs to skip for pagination
-     * @returns {Promise<{logs: Array, count: number}>} Logs and total count
-     */
     async getAdminLogAndCount({ doneBy, job, from }) {
         return await this.adminlogRepository.findLogsAndCount({ doneBy, job, offset: from })
+    }
+
+    async insertAdminLog(doneBy, description) {
+        await this.adminlogRepository.insertLog(doneBy, description)
+    }
+
+    async hideRevision({ title, revision, level, actor }) {
+        if (!actor) {
+            throw new AuthenticationRequiredError()
+        }
+
+        if (!Number.isFinite(revision) || revision < 1) {
+            throw new ValidationError({ message: 'rev must be a valid positive number.' })
+        }
+
+        const hasPermission = await this.permissionRepository.hasPermission(actor, 'acl')
+        if (!hasPermission) {
+            throw new PermissionDeniedError('acl', null, { message: 'You need ACL permission.' })
+        }
+
+        const page = await this.pageRepository.findByTitle(title)
+        if (!page) {
+            throw new PageNotFoundError(title)
+        }
+
+        if (page.currentRev < revision) {
+            throw new ValidationError({ message: 'No such revision.' })
+        }
+
+        await this.protectRepository.setRevisionProtection(title, revision, level)
+        await this.adminlogRepository.insertLog(actor, `protected ${title} r${revision} to ${level}`)
     }
 }
 

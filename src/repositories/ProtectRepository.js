@@ -19,6 +19,11 @@ class ProtectRepository extends BaseRepository {
         })))
     }
 
+    async setRevisionProtection(title, revision, protectionLevel) {
+        await this.model.destroy({ where: { title, revision } })
+        await this.model.create({ title, task: 'read', revision, protectionLevel })
+    }
+
     async findProtection(title, task, revision = null) {
         const where = { title, task }
         if (revision !== null && revision !== undefined) {

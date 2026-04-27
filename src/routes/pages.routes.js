@@ -31,7 +31,6 @@ export default (services, options = {}) => {
 
     const csrfProtection = options.csrfProtection
 
-    // TODO refactor this route after refactoring the renderer
     router.get('/w/:name(*)',
         param('name').trim().notEmpty(),
         query('rev').optional().isInt(),

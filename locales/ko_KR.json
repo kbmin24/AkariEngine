@@ -148,5 +148,11 @@
 	"footnotes": "각주",
 	"nsPage": "문서를 찾을 수 없음",
 	"selectUsernameToGrantTo": "권한을 부여할 사용자명 선택",
-	"grantTo": "{{{username}}}에게 권한 부여"
+	"grantTo": "{{{username}}}에게 권한 부여",
+	"blockIpAddr": "IP주소 차단",
+	"loginHistoryOf": "{{{username}}} 로그인 기록",
+	"loginHistoryUsernameSelect": "로그인 기록을 조회할 사용자명 입력",
+	"done": "완료되었습니다.",
+	"hiderev": "리비전 숨기기",
+	"adminpage": "관리자 메뉴"
 }

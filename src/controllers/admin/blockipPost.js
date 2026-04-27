@@ -1,9 +1,9 @@
-import logger from '../utils/logger.js'
-import { ValidationError, PermissionDeniedError } from '../services/errors.js'
-import renderInfo from '../info.js'
-import renderError from '../utils/error.js'
+import logger from '../../utils/logger.js'
+import { ValidationError, PermissionDeniedError } from '../../services/errors.js'
+import renderInfo from '../../info.js'
+import renderError from '../../utils/error.js'
 
-export default async (req, res, _users, _perm, _block, adminlog) => {
+export default async (req, res) => {
     const username = req.session.username
 
     try {
@@ -15,12 +15,12 @@ export default async (req, res, _users, _perm, _block, adminlog) => {
             comment: req.body.comment || ''
         })
 
-        await adminlog.create({
+        await req.app.locals.services.admin.insertAdminLog(
             username,
-            job: result.description
-        })
+            result.description
+        )
 
-        renderInfo(req, res, null, 'Done.', '/admin', 'the admin page')
+        renderInfo(req, res, null, res.__('done'), '/admin', res.__('adminpage'))
     } catch (error) {
         if (error instanceof PermissionDeniedError) {
             logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })

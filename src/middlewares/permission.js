@@ -200,9 +200,8 @@ function requirePageAccess(action, options = {}) {
                     next()
                     return
                 }
-
-                next(mapped)
             }
+            next(mapped)
         }
     }
 }

@@ -146,5 +146,11 @@
 	"footnotes": "Footnotes",
 	"nsPage": "No such page",
 	"selectUsernameToGrantTo": "Select username to grant to",
-	"grantTo": "Grant to {{{username}}}"
+	"grantTo": "Grant to {{{username}}}",
+	"blockIpAddr": "Block IP Address",
+	"loginHistoryOf": "Login History of {{{username}}}",
+	"loginHistoryUsernameSelect": "Select username to view login history",
+	"done": "Done.",
+	"hiderev": "Hide specific revision of a page",
+	"adminpage": "admin page"
 }
