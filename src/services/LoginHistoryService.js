@@ -9,6 +9,11 @@ class LoginHistoryService {
         await this.adminlogRepository.insertLog(viewedBy, `viewed login history of ${targetUsername}`)
         return this.loginHistoryRepository.findByUsername(targetUsername)
     }
+
+    async createLoginRecord(username, ipaddr) {
+        await this.loginHistoryRepository.pruneOldRecords()
+        await this.loginHistoryRepository.createNewRecord(username, ipaddr)
+    }
 }
 
 export default LoginHistoryService

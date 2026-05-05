@@ -3,14 +3,14 @@ import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 import { requirePermission } from '../middlewares/auth.js'
 import { param, query } from 'express-validator'
 import { validateRequest } from '../middlewares/validation.js'
-import grantAdmin from '../admin/grant.js'
+import grantPost from '../controllers/admin/grantPost.js'
 import blockUserPost from '../controllers/admin/blockUserPost.js'
 import blockipPost from '../controllers/admin/blockipPost.js'
 import hiderevGet from '../controllers/admin/hiderevGet.js'
 import hiderevPost from '../controllers/admin/hiderevPost.js'
-import hideThreadCommentAdmin from '../admin/hidethreadcomment.js'
-import changeThreadStatusAdmin from '../admin/changethreadstatus.js'
-import changeThreadTitleAdmin from '../admin/changethreadtitle.js'
+import hideThreadCommentPost from '../controllers/admin/hideThreadCommentPost.js'
+import changeThreadStatusPost from '../controllers/admin/changeThreadStatusPost.js'
+import changeThreadTitlePost from '../controllers/admin/changeThreadTitlePost.js'
 import adminlogGetHandler from '../controllers/admin/adminlogGet.js'
 import loginhistoryGetHandler from '../controllers/admin/loginhistoryGet.js'
 import protectGet from '../controllers/admin/protectGet.js'
@@ -71,9 +71,8 @@ export default (services, options = {}) => {
 
     router.post('/admin/grant',
         csrfProtection,
-        asyncRoute(async (req, res) => {
-            await grantAdmin(req, res, global.db.users, global.db.perm, global.db.adminlog)
-        })
+        requirePermission('grant'),
+        asyncRoute(grantPost)
     )
 
     router.post('/admin/blockuser',
@@ -96,34 +95,20 @@ export default (services, options = {}) => {
 
     router.post('/admin/hidethread',
         csrfProtection,
-        asyncRoute(async (req, res) => {
-            await hideThreadCommentAdmin(req, res, {
-                perm: global.db.perm,
-                threadcomment: global.db.threadcomment
-            })
-        })
+        requirePermission('thread'),
+        asyncRoute(hideThreadCommentPost)
     )
 
     router.post('/admin/changethreadstatus',
         csrfProtection,
-        asyncRoute(async (req, res) => {
-            await changeThreadStatusAdmin(req, res, {
-                perm: global.db.perm,
-                thread: global.db.thread,
-                threadcomment: global.db.threadcomment
-            })
-        })
+        requirePermission('thread'),
+        asyncRoute(changeThreadStatusPost)
     )
 
     router.post('/admin/changethreadname',
         csrfProtection,
-        asyncRoute(async (req, res) => {
-            await changeThreadTitleAdmin(req, res, {
-                perm: global.db.perm,
-                thread: global.db.thread,
-                threadcomment: global.db.threadcomment
-            })
-        })
+        requirePermission('thread'),
+        asyncRoute(changeThreadTitlePost)
     )
 
     router.get('/admin/developer',

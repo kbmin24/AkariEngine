@@ -1,4 +1,4 @@
-import AdminLogRepository from './AdminLogRepository.js'
+﻿import AdminLogRepository from './AdminLogRepository.js'
 import LoginHistoryRepository from './LoginHistoryRepository.js'
 import PageRepository from './PageRepository.js'
 import FileRepository from './FileRepository.js'
@@ -12,6 +12,7 @@ import RecentChangeRepository from './RecentChangeRepository.js'
 import ThreadRepository from './ThreadRepository.js'
 import ThreadCommentRepository from './ThreadCommentRepository.js'
 import ViewcountRepository from './ViewcountRepository.js'
+import SettingsRepository from './SettingsRepository.js'
 
 class RepositoryFactory {
     constructor(db) {
@@ -37,6 +38,7 @@ class RepositoryFactory {
         this.files = new FileRepository(db.mfile)
         this.adminlog = new AdminLogRepository(db.adminlog)
         this.loginHistory = new LoginHistoryRepository(db.loginhistory)
+        this.settings = new SettingsRepository(db.settings)
     }
 }
 

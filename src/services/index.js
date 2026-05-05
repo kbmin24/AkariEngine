@@ -1,4 +1,4 @@
-import PageService from './PageService.js'
+﻿import PageService from './PageService.js'
 import HistoryService from './HistoryService.js'
 import SearchService from './SearchService.js'
 import PermissionService from './PermissionService.js'
@@ -10,6 +10,7 @@ import ViewcountService from './ViewcountService.js'
 import RenderService from './RenderService.js'
 import AdminService from './AdminService.js'
 import LoginHistoryService from './LoginHistoryService.js'
+import UserService from './UserService.js'
 
 class ServiceFactory {
     constructor(repositories) {
@@ -47,9 +48,11 @@ class ServiceFactory {
             repositories.adminlog,
             repositories.permissions,
             repositories.pages,
-            repositories.protections
+            repositories.protections,
+            repositories.users
         )
         this.loginHistory = new LoginHistoryService(repositories.loginHistory, repositories.adminlog)
+        this.user = new UserService(repositories.users, repositories.settings)
     }
 }
 

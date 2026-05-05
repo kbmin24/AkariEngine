@@ -138,6 +138,11 @@ class HistoryService {
         logger.info('Page reverted', { title, revertRev, doneBy })
         return result
     }
+
+    // gets user/ip's contributions. Entity can be either id or username.
+    async getContributions(entity, showfrom = 0) {
+        return this.historyRepo.findByUsernameDesc(entity, 100, showfrom)
+    }
 }
 
 export default HistoryService

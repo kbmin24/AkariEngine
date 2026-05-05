@@ -167,5 +167,8 @@
 	"userAlreadyBlocked": "사용자가 이미 차단되어 있습니다.",
 	"invalidCIDR": "유효하지 않은 CIDR입니다.",
 	"ipNotBlocked": "IP 주소가 차단되어 있지 않습니다.",
-	"ipAlreadyBlocked": "IP 주소가 이미 차단되어 있습니다."
+	"ipAlreadyBlocked": "IP 주소가 이미 차단되어 있습니다.",
+	"invalidpassword": "잘못된 비밀번호입니다.",
+	"contribListOf": "{{{user}}}의 기여 목록",
+	"loginRequired": "로그인이 필요합니다."
 }

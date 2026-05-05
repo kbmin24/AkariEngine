@@ -18,6 +18,10 @@ class LoginHistoryRepository extends BaseRepository {
             order: [['createdAt', 'DESC']]
         })
     }
+
+    async createNewRecord(username, ipaddr) {
+        return this.model.create({ username, ipaddr })
+    }
 }
 
 export default LoginHistoryRepository

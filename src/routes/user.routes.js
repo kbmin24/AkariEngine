@@ -2,11 +2,14 @@ import express from 'express'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 import { genCaptcha } from '../utils/captcha.js'
-import signupHandler from '../user/signup.js'
-import loginHandler from '../user/login.js'
-import settingsHandler from '../user/settings.js'
-import contributionHandler from '../user/contribution.js'
+import signupPost from '../controllers/user/signupPost.js'
+import loginPost from '../controllers/user/loginPost.js'
+import settingsPost from '../controllers/user/settingsPost.js'
+import contributionGet from '../controllers/user/contributionGet.js'
 import renderView from '../view.js'
+import { param, query, body } from 'express-validator'
+
+import { validateRequest } from '../middlewares/validation.js'
 
 export default (_services, options = {}) => {
     const router = express.Router()
@@ -15,16 +18,18 @@ export default (_services, options = {}) => {
     router.get('/signup', asyncRoute(async (req, res) => {
         const captchaSVG = await genCaptcha()
         await renderTemplateInLayout(req, res, 'user/signup.ejs', { captcha: captchaSVG, l: res.__ }, {
-            title: res.__('register'),
-            username: req.session.username,
-            ipaddr: req.ipAddress
+            title: res.__('register')
         })
     }))
 
     router.post('/signup',
         chkCaptcha,
+        body('id').trim().notEmpty(),
+        body('password').notEmpty(),
+        body('passwordConfirm').notEmpty(),
+        validateRequest,
         asyncRoute(async (req, res) => {
-        await signupHandler(req, res, global.db.users)
+        await signupPost(req, res)
     }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
@@ -35,8 +40,13 @@ export default (_services, options = {}) => {
         })
     }))
 
-    router.post('/login', csrfProtection, asyncRoute(async (req, res) => {
-        await loginHandler(req, res, global.db.users, global.db.loginhistory)
+    router.post('/login',
+        body('id').trim().notEmpty(),
+        body('password').notEmpty(),
+        validateRequest,
+        csrfProtection,
+        asyncRoute(async (req, res) => {
+        await loginPost(req, res)
     }))
 
     router.get('/logout', (req, res) => {
@@ -44,18 +54,12 @@ export default (_services, options = {}) => {
         res.redirect('/')
     })
 
-    router.get('/settings', csrfProtection, asyncRoute(async (req, res) => {
+    router.get('/settings',
+        csrfProtection,
+        asyncRoute(async (req, res) => {
         const username = req.session.username ? req.session.username : null
-        const sR = await global.db.settings.findOne({
-            where: {
-                user: username,
-                key: 'sign'
-            }
-        })
-        const sign = sR ? sR.value : ''
         await renderTemplateInLayout(req, res, 'user/settings.ejs', {
             csrfToken: req.csrfToken(),
-            sign,
             username,
             l: res.__
         }, {
@@ -65,23 +69,23 @@ export default (_services, options = {}) => {
         })
     }))
 
-    router.post('/settings/:name(*)', csrfProtection, asyncRoute(async (req, res) => {
-        await settingsHandler(req, res, {
-            settings: global.db.settings,
-            users: global.db.users
-        })
-    }))
+    router.post('/settings/:name(*)', 
+        csrfProtection,
+        asyncRoute(settingsPost)
+    )
 
-    router.get('/contribution/:name(*)', asyncRoute(async (req, res) => {
-        await contributionHandler(req, res, global.db.history)
+    router.get('/contribution/:name(*)',
+        param('name').trim().notEmpty(),
+        query('from').optional().isInt(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+        await contributionGet(req, res)
     }))
 
     router.get('/whoami', (req, res) => {
         renderView(req, res, {
             title: 'You are',
-            content: `${req.session.username}<br>IP Address: ${req.ipAddress}`,
-            username: req.session.username,
-            ipaddr: req.ipAddress
+            content: `${req.session.username}<br>IP Address: ${req.ipAddress}`
         })
     })
 

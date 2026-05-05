@@ -1,3 +1,5 @@
+import { ValidationError } from './errors.js'
+
 class ThreadService {
     constructor(threadRepo, threadCommentRepo, permissionService) {
         this.threadRepo = threadRepo
@@ -37,6 +39,47 @@ class ThreadService {
             isOpen: thread.isOpen,
             r: access.allowed ? true : (access.message || false)
         }
+    }
+
+    async changeThreadStatus({ threadID, close, user, ipAddress }) {
+        await this.permissionService.requirePermission(user, 'thread')
+
+        const thread = await this.threadRepo.findByThreadId(threadID)
+        if (!thread) throw new ValidationError('No such thread.')
+
+        await thread.update({ isOpen: !close })
+        await this.threadCommentRepo.create({
+            type: close ? 'close' : 'open',
+            threadID,
+            doneBy: user,
+            content: '',
+            isHidden: false
+        })
+    }
+
+    async changeThreadTitle({ threadID, newTitle, user, ipAddress }) {
+        await this.permissionService.requirePermission(user, 'thread')
+
+        const thread = await this.threadRepo.findByThreadId(threadID)
+        if (!thread) throw new ValidationError('No such thread.')
+
+        await thread.update({ threadTitle: newTitle })
+        await this.threadCommentRepo.create({
+            type: 'changetitle',
+            threadID,
+            doneBy: user,
+            content: newTitle,
+            isHidden: false
+        })
+    }
+
+    async hideThreadComment({ threadID, threadNo, unhide, user, ipAddress }) {
+        await this.permissionService.requirePermission(user, 'thread')
+
+        const comment = await this.threadCommentRepo.findByThreadIdAtOffset(threadID, threadNo - 1)
+        if (!comment) throw new ValidationError('No such comment.')
+
+        await comment.update({ isHidden: !unhide })
     }
 
     async getThreadComments(query) {

@@ -11,6 +11,14 @@ class ThreadCommentRepository extends BaseRepository {
             ]
         })
     }
+
+    async findByThreadIdAtOffset(threadID, offset) {
+        return this.model.findOne({
+            where: { threadID },
+            order: [['createdAt', 'ASC']],
+            offset
+        })
+    }
 }
 
 export default ThreadCommentRepository

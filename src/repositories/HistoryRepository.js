@@ -12,6 +12,15 @@ class HistoryRepository extends BaseRepository {
         })
     }
 
+    async findByUsernameDesc(username, limit, offset) {
+        return this.model.findAndCountAll({
+            where: { editedBy: username },
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
+        })
+    }
+
     async movePageHistory(oldTitle, newTitle) {
         return this.model.update({ page: newTitle }, { where: { page: oldTitle } })
     }

@@ -165,5 +165,8 @@
 	"userAlreadyBlocked": "The user is already blocked.",
 	"invalidCIDR": "Invalid CIDR.",
 	"ipNotBlocked": "The IP address is not blocked.",
-	"ipAlreadyBlocked": "The IP address is already blocked."
+	"ipAlreadyBlocked": "The IP address is already blocked.",
+	"invalidpassword": "Invalid password.",
+	"contribListOf": "Contribution list of {{{user}}}",
+	"loginRequired": "Login required."
 }
