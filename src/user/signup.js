@@ -10,7 +10,7 @@ export default async (req, res, users) =>
     
     if (req.body.password != req.body.passwordConfirm)
     {
-        renderInfo(req, res, null, i18n.__('register_pwNotMatch'), '/signup', i18n.__('register'), 200, 'ko')
+        renderInfo(req, res, { description: res.__('register_pwNotMatch'), returnLink: '/signup', returnName: res.__('register') })
         return
     }
     //create hashed PW

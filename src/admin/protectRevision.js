@@ -55,5 +55,5 @@ export default async (req, res, tables={}) =>
             job: `protected ${title} r${rev} to ${level}`
         }
     )
-    renderInfo(req, res, null, 'Done.', '/admin', 'the admin page')
+    renderInfo(req, res, { description: 'Done.', returnLink: '/admin', returnName: 'the admin page' })
 }

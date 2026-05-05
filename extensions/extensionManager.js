@@ -1,4 +1,3 @@
-//ext.js: extension manager
 import paths from '../src/utils/paths.js'
 
 import fs from 'node:fs'
@@ -8,8 +7,9 @@ import { pathToFileURL } from 'node:url'
 let extensions = {}
 global.extensions = extensions
 global.hooks = {
-    'beginRender': [], //right after processing redirects
-    'endRender': [], //right before sanitising everything
+    'beginRender': [],
+    'endRender': [],
+    'adminMenu': []
 }
 let registerHook = async (hook, f) =>
 {

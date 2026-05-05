@@ -69,5 +69,5 @@ export default (req, res, users, perm, adminlog) =>
             return
         }
     })
-    renderInfo(req, res, null, 'Done.', '/admin', 'the admin page')
+    renderInfo(req, res, { description: 'Done.', returnLink: '/admin', returnName: 'the admin page' })
 }

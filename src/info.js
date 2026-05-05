@@ -1,28 +1,29 @@
-// similar to error.js but for information
-// TODO enforce use of i18n
-
 import renderView from './view.js'
 
-export default (req, res, username, description, returnlink, returnname, code=200, lang='en') =>
-{
-    username = req.session.username
-    res.status(code)
-    if (lang=='ko')
-    {
-        renderView(req, res,{
-            title: '정보',
-            content: description + '<br>' + '<a href="' + returnlink + '">' + returnname + '</a>(으)로 돌아갑니다.',
-            username: username,
-            ipaddr: req.ipAddress
-        })
+export default (req, res, options = {}) => {
+    if (!options || typeof options !== 'object' || Array.isArray(options)) {
+        throw new TypeError('info.js expects options object: { description, returnLink, returnName, statusCode }')
     }
-    else
-    {
-        renderView(req, res,{
-            title: 'Information',
-            content: description + '<br>Return to ' + '<a href="' + returnlink + '">' + returnname + '</a>.',
-            username: username,
-            ipaddr: req.ipAddress
-        })
-    }
+
+    const {
+        description,
+        returnLink,
+        returnName,
+        statusCode
+    } = options
+
+    const content = res.__('info_returnInfo', {
+        description: description || '',
+        link: returnLink || '/',
+        linkname: returnName || res.__('mainpage'),
+        interpolation: { escapeValue: false }
+    })
+
+    res.status(statusCode || 200)
+    renderView(req, res, {
+        title: 'Information',
+        content,
+        username: req.session.username,
+        ipaddr: req.ipAddress
+    })
 }

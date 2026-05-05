@@ -20,7 +20,7 @@ export default async (req, res, tables = {}) =>
                         key: 'sign',
                         value: req.body.sign
                 })
-            renderInfo(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+            renderInfo(req, res, { description: res.__('done'), returnLink: '/settings', returnName: res.__('settings') })
             return
             }
         case "changeSkin":
@@ -39,7 +39,7 @@ export default async (req, res, tables = {}) =>
                             value: skinName
                     })
                 }
-                renderInfo(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+                renderInfo(req, res, { description: res.__('done'), returnLink: '/settings', returnName: res.__('settings') })
                 return
         case 'changePassword':
             {
@@ -67,7 +67,7 @@ export default async (req, res, tables = {}) =>
                     {
                         if (err) throw new Error("Password generation failed")
                         await user.update({password: hashedPW.toString('base64')})
-                        renderInfo(req, res, null, '완료되었습니다.', '/settings', '설정 페이지', 200, 'ko')
+                        renderInfo(req, res, { description: res.__('done'), returnLink: '/settings', returnName: res.__('settings') })
                     })
                 })
                 return

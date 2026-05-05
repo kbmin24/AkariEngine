@@ -36,5 +36,5 @@ export default async (req, res, dbs = {}) =>
 
     await t.update({isHidden: !unhide})
 
-    renderInfo(req, res, null, 'Done.', 'javascript:window.history.back()', 'the thread')
+    renderInfo(req, res, { description: 'Done.', returnLink: 'javascript:window.history.back()', returnName: 'the thread' })
 }

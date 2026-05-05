@@ -4,7 +4,7 @@ import { requirePermission } from '../middlewares/auth.js'
 import { param, query } from 'express-validator'
 import { validateRequest } from '../middlewares/validation.js'
 import grantAdmin from '../admin/grant.js'
-import blockUserAdmin from '../admin/blockuser.js'
+import blockUserPost from '../controllers/admin/blockUserPost.js'
 import blockipPost from '../controllers/admin/blockipPost.js'
 import hiderevGet from '../controllers/admin/hiderevGet.js'
 import hiderevPost from '../controllers/admin/hiderevPost.js'
@@ -16,6 +16,7 @@ import loginhistoryGetHandler from '../controllers/admin/loginhistoryGet.js'
 import protectGet from '../controllers/admin/protectGet.js'
 import protectPost from '../controllers/admin/protectPost.js'
 import grantGet from '../controllers/admin/grantGet.js'
+import adminmenuGet from '../controllers/admin/adminmenuGet.js'
 
 export default (services, options = {}) => {
     const router = express.Router()
@@ -23,13 +24,7 @@ export default (services, options = {}) => {
 
     router.get('/admin',
         requirePermission('admin'),
-        asyncRoute(async (req, res) => {
-            await renderTemplateInLayout(req, res, 'admin/index.ejs', {}, {
-                title: 'Admin tools',
-                username: req.session.username,
-                ipaddr: req.ipAddress
-            })
-        })
+        asyncRoute(adminmenuGet)
     )
 
     router.get('/admin/grant',
@@ -83,9 +78,8 @@ export default (services, options = {}) => {
 
     router.post('/admin/blockuser',
         csrfProtection,
-        asyncRoute(async (req, res) => {
-            await blockUserAdmin(req, res, global.db.users, global.db.perm, global.db.block, global.db.adminlog)
-        })
+        requirePermission('block'),
+        asyncRoute(blockUserPost)
     )
 
     router.post('/admin/blockip',

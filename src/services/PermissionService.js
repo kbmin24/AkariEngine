@@ -63,7 +63,9 @@ class PermissionService {
                 protection = await this.protectRepo.findProtection(resource, action)
             }
         }
-        let requiredLevel
+
+        // attmpet to find overrides, use 'everyone' otherwise
+        let requiredLevel = 'everyone'
         if (requiredLevelOverride)
         {
             requiredLevel = requiredLevelOverride
@@ -76,14 +78,10 @@ class PermissionService {
         {
             requiredLevel = context.fallbackLevel
         }
-        else
-        {
-            requiredLevel = 'everyone'
-        }
 
         if (requiredLevel !== 'blocked') {
             const ipAddress = context.ipAddress
-            if (ipAddress && this.blockService) {
+            if (ipAddress) {
                 const ipBlock = await this.blockService.findIPBlock(ipAddress)
                 if (ipBlock && !(ipBlock.allowLogin && user)) {
                     let res = {
@@ -270,7 +268,7 @@ class PermissionService {
     }
 
     /**
-     * Finds all permissions the user has. Returns an empty list
+     * Finds all permissions the user has. Returns an empty list if user is undefined
      * @param {String} user 
      * @returns {Promise<Array<String>>} List of permissions the user has
      */

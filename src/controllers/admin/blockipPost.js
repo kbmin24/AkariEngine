@@ -20,7 +20,7 @@ export default async (req, res) => {
             result.description
         )
 
-        renderInfo(req, res, null, res.__('done'), '/admin', res.__('adminpage'))
+        renderInfo(req, res, { description: res.__('done'), returnLink: '/admin', returnName: res.__('adminpage') })
     } catch (error) {
         if (error instanceof PermissionDeniedError) {
             logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
@@ -33,12 +33,36 @@ export default async (req, res) => {
         }
 
         if (error instanceof ValidationError) {
-            renderError(req, res, {
-                description: error.message,
-                returnLink: '/admin/blockip',
-                returnName: 'blockip page'
-            })
-            return
+            switch (error.code) {
+                // localise messages
+                case 'INVALID_CIDR':
+                    {
+                        renderError(req, res, {
+                            description: res.__('invalidCIDR'),
+                            returnLink: '/admin/blockip',
+                            returnName: res.__('blockIpAddr')
+                        })
+                        break
+                    }
+                case 'IP_NOT_BLOCKED':
+                    {
+                        renderError(req, res, {
+                            description: res.__('ipNotBlocked'),
+                            returnLink: '/admin/blockip',
+                            returnName: res.__('blockIpAddr')
+                        })
+                        break
+                    }
+                case 'IP_ALREADY_BLOCKED':
+                    {
+                        renderError(req, res, {
+                            description: res.__('ipAlreadyBlocked'),
+                            returnLink: '/admin/blockip',
+                            returnName: res.__('blockIpAddr')
+                        })
+                        break
+                    }
+            }
         }
 
         throw error

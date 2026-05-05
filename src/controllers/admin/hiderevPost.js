@@ -11,7 +11,7 @@ export default async (req, res) => {
             level: req.body.level,
             actor: req.session.username
         })
-        renderInfo(req, res, null, res.__('done'), '/admin', 'the admin page')
+        renderInfo(req, res, { description: res.__('done'), returnLink: '/admin', returnName: res.__('adminpage') })
     } catch (error) {
         // fallback because we have middleware too
         if (error instanceof AuthenticationRequiredError) {
