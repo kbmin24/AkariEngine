@@ -11,6 +11,7 @@ import RenderService from './RenderService.js'
 import AdminService from './AdminService.js'
 import LoginHistoryService from './LoginHistoryService.js'
 import UserService from './UserService.js'
+import RecentDiscussService from './RecentDiscussService.js'
 
 class ServiceFactory {
     constructor(repositories) {
@@ -42,7 +43,12 @@ class ServiceFactory {
         this.search = new SearchService(repositories.pages)
         this.viewcount = new ViewcountService(repositories.viewcounts)
         this.recentChanges = new RecentChangeService(repositories.recentchanges)
-        this.thread = new ThreadService(repositories.threads, repositories.threadcomments, this.permission)
+        this.thread = new ThreadService(
+            repositories.threads,
+            repositories.threadcomments,
+            repositories.recentdiscuss,
+            repositories.pages,
+            this.permission)
         this.render = new RenderService(repositories.pages, repositories.files)
         this.admin = new AdminService(
             repositories.adminlog,
@@ -53,6 +59,7 @@ class ServiceFactory {
         )
         this.loginHistory = new LoginHistoryService(repositories.loginHistory, repositories.adminlog)
         this.user = new UserService(repositories.users, repositories.settings)
+        this.recentDiscuss = new RecentDiscussService(repositories.recentdiscuss, repositories.threads)
     }
 }
 

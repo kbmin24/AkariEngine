@@ -19,6 +19,14 @@ class ThreadCommentRepository extends BaseRepository {
             offset
         })
     }
+
+    async createNewComment(threadID, doneBy, content) {
+        return this.model.create({
+            type: 'comment',
+            threadID,
+            doneBy,
+            content})
+    }
 }
 
 export default ThreadCommentRepository

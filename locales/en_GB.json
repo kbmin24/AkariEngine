@@ -95,6 +95,7 @@
 	"deletepg": "Delete {{{name}}}",
 	"deletepgconfirm": "Delete {{{name}}}?",
 	"deletepermneeded": "Page delete permission required.",
+	"permissionRequried": "Permission required.",
 	"revert": "Revert",
 	"revert_title": "Revert {{{page}}} to r{{rev}}",
 	"revision404": "No such revision found.",
@@ -113,6 +114,7 @@
 	"searchResults": "Search results for {{{q}}}",
 	"protectPage": "Protect {{{p}}}",
 	"recentChanges": "Recent Changes",
+	"recentDiscuss": "Recent Discussions",
 	"historyOf": "History of {{{p}}}",
 	"historyv1": "1st version to compare (omit r)",
 	"historyv2": "2nd version to compare (omit r)",
@@ -168,5 +170,10 @@
 	"ipAlreadyBlocked": "The IP address is already blocked.",
 	"invalidpassword": "Invalid password.",
 	"contribListOf": "Contribution list of {{{user}}}",
-	"loginRequired": "Login required."
+	"loginRequired": "Login required.",
+	"titleRequired": "Title is required.",
+	"read_noacl": "read_noacl",
+	"thread_noacl": "Cannot open a new thread because READ permsision is {{acl}}.",
+	"thread404": "Cannot find the thread requested.",
+	"discussion": "discussion"
 }

@@ -1,47 +1,97 @@
 import { ValidationError } from './errors.js'
+import genArbitraryString from '../utils/genArbitraryString.js'
+import sanitizeHtml from 'sanitize-html'
 
 class ThreadService {
-    constructor(threadRepo, threadCommentRepo, permissionService) {
+    constructor(threadRepo, threadCommentRepo, pagesRepo, recentDiscussrepo, permissionService) {
         this.threadRepo = threadRepo
         this.threadCommentRepo = threadCommentRepo
+        this.pagesRepo = pagesRepo
+        this.recentDiscussrepo = recentDiscussrepo
         this.permissionService = permissionService
     }
 
-    async getOpenThreadsByPageName(query) {
+    async getThread(threadID) {
+        if (!threadID || typeof threadID !== 'string') return null
+        const normalized = threadID.trim()
+        if (!normalized) return null
+        return this.threadRepo.findByThreadId(normalized)
+    }
+
+    /**
+     * get a list of models of open threads associated with a page name.
+     * @param {String} query - Page name to look for.
+     * @param {String} username - The username of the user making the request.
+     * @param {String} ipAddress - The IP address of the user making the request.
+     * @returns {Promise<Array|null>} A list of open threads associated with the given page name, or null if the query is invalid.
+     */
+    async getOpenThreadsByPageName(query, username, ipAddress) {
         if (!query || typeof query !== 'string') return null
 
         const normalized = query.trim()
         if (!normalized) return null
 
+        await this.permissionService.requireReadAccess(username, normalized, { ipAddress })
+
         return this.threadRepo.findOpenByPageName(normalized)
     }
 
+    /**
+     * get a list of models of closed threads associated with a page name.
+     * @param {String} query - Page name to look for.
+     * @return {Promise<Array|null>} A list of closed threads associated with the given page name, or null if the query is invalid.
+     */
+    async getClosedThreadsByPageName(username, ipAddress, query) {
+        if (!query || typeof query !== 'string') return null
+
+        const normalized = query.trim()
+        if (!normalized) return null
+
+        await this.permissionService.requireReadAccess(username, normalized, { ipAddress })
+
+        return this.threadRepo.findClosedByPageName(normalized)
+    }
+
+    /**
+     * Get information about a thread.
+     * @param {String} query - The thread ID to look for.
+     * @param {Object} [context={}] - The context of the request.
+     * @param {String} [context.user] - The username of the user making the request.
+     * @param {String} [context.ipAddress] - The IP address of the user making the request.
+     * @returns {Promise<Object|null>} Information about the thread, or null if the query is invalid.
+     */
     async getThreadInfo(query, context = {}) {
         if (!query || typeof query !== 'string') return null
 
         const normalized = query.trim()
         if (!normalized) return null
 
-        const thread = await this.threadRepo.findByThreadId(normalized)
-        if (!thread) return null
+        let thread = await this.threadRepo.findByThreadId(query.trim())
+        let pagename = thread ? thread.pagename : null
+        if (!pagename) return null
 
-        const access = await this.permissionService.checkAccessDetailed(
-            context.user,
-            null,
-            'read',
-            {
-                ipAddress: context.ipAddress,
-                requiredLevel: 'everyone'
-            }
-        )
+        let allowed = true
+        try {
+            await this.permissionService.requireReadAccess(context.user, pagename, { ipAddress: context.ipAddress })
+        } catch {
+            allowed = false
+        }
 
         return {
             isOpen: thread.isOpen,
-            r: access.allowed ? true : (access.message || false)
+            r: allowed
         }
     }
 
-    async changeThreadStatus({ threadID, close, user, ipAddress }) {
+    // add JSDoc comments for the following methods
+    /**
+     * Change the status of a thread.
+     * @param {Object} param0 - The parameters for changing the thread status.
+     * @param {String} param0.threadID - The ID of the thread to change.
+     * @param {Boolean} param0.close - Whether to close the thread.
+     * @param {String} param0.user - The username of the user making the request.
+     */
+    async changeThreadStatus({ threadID, close, user }) {
         await this.permissionService.requirePermission(user, 'thread')
 
         const thread = await this.threadRepo.findByThreadId(threadID)
@@ -57,7 +107,14 @@ class ThreadService {
         })
     }
 
-    async changeThreadTitle({ threadID, newTitle, user, ipAddress }) {
+    /**
+     * Change the title of a thread.
+     * @param {Object} param0 - The parameters for changing the thread title.
+     * @param {String} param0.threadID - The ID of the thread to change.
+     * @param {String} param0.newTitle - The new title for the thread.
+     * @param {String} param0.user - The username of the user making the request.
+     */
+    async changeThreadTitle({ threadID, newTitle, user }) {
         await this.permissionService.requirePermission(user, 'thread')
 
         const thread = await this.threadRepo.findByThreadId(threadID)
@@ -73,7 +130,15 @@ class ThreadService {
         })
     }
 
-    async hideThreadComment({ threadID, threadNo, unhide, user, ipAddress }) {
+    /**
+     * Hide or unhide a comment in a thread.
+     * @param {Object} param0 - The parameters for hiding/unhiding the comment.
+     * @param {String} param0.threadID - The ID of the thread containing the comment.
+     * @param {Number} param0.threadNo - The offset of the comment in the thread.
+     * @param {Boolean} param0.unhide - Whether to unhide the comment.
+     * @param {String} param0.user - The username of the user making the request.
+     */
+    async hideThreadComment({ threadID, threadNo, unhide, user }) {
         await this.permissionService.requirePermission(user, 'thread')
 
         const comment = await this.threadCommentRepo.findByThreadIdAtOffset(threadID, threadNo - 1)
@@ -82,13 +147,74 @@ class ThreadService {
         await comment.update({ isHidden: !unhide })
     }
 
-    async getThreadComments(query) {
+    /**
+     * Get a list of comments associated with a thread ID.
+     * @param {String} username - The username of the user making the request.
+     * @param {String} ipAddress - The IP address of the user making the request.
+     * @param {String} query - The thread ID to look for.
+     * @returns {Promise<Array|null>} A list of comments associated with the given thread ID, or null if the query is invalid.
+     */
+    async getThreadComments(username, ipAddress, query) {
         if (!query || typeof query !== 'string') return null
+
+        let thread = await this.threadRepo.findByThreadId(query.trim())
+        let pagename = thread ? thread.pagename : null
+        if (!pagename) return null
+
+        try {
+            await this.permissionService.requireReadAccess(username, pagename, { ipAddress })
+        } catch {
+            return null
+        }
 
         const normalized = query.trim()
         if (!normalized) return null
 
         return this.threadCommentRepo.findByThreadIdOrdered(normalized)
+    }
+
+    /** 
+     * Create a new thread
+     * @param {String} username - The username of the user creating the thread. undefined for IP user.
+     * @param {String} ipAddress - The IP address of the user creating the thread.
+     * @param {String} title - The title of the thread.
+     * @param {String} pageName - The name of the page the thread is associated with.
+     * @param {String} comment - The content of the initial comment in the thread.
+     * @returns {Promise<String>} The ID of the newly created thread.
+    */
+    async createThread(username, ipAddress, title, pageName, comment) {
+        await this.permissionService.requireReadAccess(username, pageName, { ipAddress })
+        if (!(await this.pagesRepo.findByTitle(pageName))) {
+            throw new ValidationError({
+                message: 'No such page.',
+                i18nKey: 'page404'
+            })
+        }
+        if (!title || typeof title !== 'string' || !title.trim()) {
+            throw new ValidationError({
+                message: 'Title is required.',
+                i18nKey: 'titleRequired'
+            })
+        }
+
+        // add fallback comment
+        if (!comment || typeof comment !== 'string' || !comment.trim()) {
+            comment = "''No Description Given.''"
+        }
+
+        let threadID = ''
+        while (threadID === '') {
+            let newID = genArbitraryString(11) //somehow youtube uses 11 as well
+            if (!(await this.threadRepo.findByThreadId(newID))) threadID = newID
+        }
+
+        pageName = sanitizeHtml(pageName, { allowedTags: [], allowedAttributes: {}, disallowedTagsMode: 'escape' })
+
+        await this.threadRepo.createNewThread(pageName, threadID, title)
+        await this.threadCommentRepo.createNewComment(threadID, username || ipAddress, comment)
+        await this.recentDiscussrepo.createNewEntry(title, threadID, pageName)
+
+        return threadID
     }
 }
 

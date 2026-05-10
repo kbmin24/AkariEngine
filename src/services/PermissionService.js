@@ -180,6 +180,14 @@ class PermissionService {
         return result.allowed
     }
 
+    /**
+     * Checks if a user has read access to a page.
+     * @param {Object} user - The user object.
+     * @param {string} title - The title of the resource.
+     * @param {Object} context - The context for the access check.
+     * @param {Object} context.ipAddress - The IP address of the user.
+     * @returns {Promise<boolean>} - A promise resolving to a boolean indicating if the user has read access.
+     */
     async requireReadAccess(user, title, context = {}) {
         const result = await this.checkAccessDetailed(user, title, 'read', {...context, fallbackLevel: 'blocked'})
         if (!result.allowed) {
@@ -194,6 +202,14 @@ class PermissionService {
         }
     }
 
+    /**
+     * Requires write access for a user to a resource.
+     * @param {Object} user - The user object.
+     * @param {string} title - The title of the resource.
+     * @param {Object} context - The context for the access check.
+     * @param {Object} context.ipAddress - The IP address of the user.
+     * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
+     */
     async requireWriteAccess(user, title, context = {}) {
         const result = await this.checkAccessDetailed(user, title, 'edit', {...context, fallbackLevel: 'everyone'})
         if (!result.allowed) {
@@ -208,6 +224,14 @@ class PermissionService {
         }
     }
 
+    /**
+     * Requires move access for a user to a resource.
+     * @param {Object} user - The user object.
+     * @param {string} title - The title of the resource.
+     * @param {Object} context - The context for the access check.
+     * @param {Object} context.ipAddress - The IP address of the user.
+     * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
+     */
     async requireMoveAccess(user, title, context = {}) {
         const result = await this.checkAccessDetailed(user, title, 'move', {...context, fallbackLevel: 'login'})
         if (!result.allowed) {
@@ -222,6 +246,12 @@ class PermissionService {
         }
     }
 
+    /**
+     * Requires login access for a user.
+     * @param {Object} user - The user object.
+     * @param {Object} context - The context for the access check.
+     * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
+     */
     async requireLoginAccess(user, context = {}) {
         const result = await this.checkAccessDetailed(user, null, 'read', {
             ...context,
@@ -248,6 +278,12 @@ class PermissionService {
         }
     }
 
+    /**
+     * Requires a specific permission for a user.
+     * @param {Object} user - The user object.
+     * @param {string} permission - The permission to check.
+     * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
+     */
     async requirePermission(user, permission) {
         if (!user) throw new AuthenticationRequiredError()
 
@@ -255,7 +291,7 @@ class PermissionService {
         if (!hasPermission) {
             throw new PermissionDeniedError(permission, null, {
                 acl: permission,
-                i18nKey: 'deletepermneeded'
+                i18nKey: 'permissionRequried',
             })
         }
     }

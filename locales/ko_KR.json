@@ -96,6 +96,7 @@
 	"deletepg": "{{{name}}} 삭제",
 	"deletepgconfirm": "{{{name}}}을 삭제하시겠습니까?",
 	"deletepermneeded": "문서 삭제 권한이 필요합니다.",
+	"permissionRequried": "권한이 필요합니다.",
 	"revert": "되돌리기",
 	"revert_title": "{{{page}}}를 r{{rev}}(으)로 되돌리기",
 	"revision404": "요청하신 리비전이 존재하지 않습니다.",
@@ -114,6 +115,7 @@
 	"searchResults": "{{{q}}}의 검색 결과",
 	"protectPage": "{{{p}}} 보호",
 	"recentChanges": "최근 변경",
+	"recentDiscuss": "최근 토론",
 	"historyOf": "{{{p}}}의 역사",
 	"historyv1": "비교할 버전 1(r 다음만 입력)",
 	"historyv2": "비교할 버전 2(r 다음만 입력)",
@@ -170,5 +172,9 @@
 	"ipAlreadyBlocked": "IP 주소가 이미 차단되어 있습니다.",
 	"invalidpassword": "잘못된 비밀번호입니다.",
 	"contribListOf": "{{{user}}}의 기여 목록",
-	"loginRequired": "로그인이 필요합니다."
+	"loginRequired": "로그인이 필요합니다.",
+	"titleRequired": "제목이 필요합니다.",
+	"thread_noacl": "읽기 권한이 {{acl}}이기 때문에 새 토론을 열 수 없습니다.",
+	"thread404": "요청하신 토론을 찾을 수 없습니다.",
+	"discussion": "토론"
 }

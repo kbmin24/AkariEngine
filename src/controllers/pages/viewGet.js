@@ -13,6 +13,7 @@ export default async (req, res) => {
     let titleSuffix = ''
     if (rev) titleSuffix = `(r${rev})&nbsp;`
 
+    // if it's an admin user's page add some suffix
     const usernameRegex = /User:(.*)/
     if (usernameRegex.test(name)) {
         const username = usernameRegex.exec(name)[1]

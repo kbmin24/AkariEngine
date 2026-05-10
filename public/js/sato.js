@@ -1,6 +1,6 @@
 $(() =>
 {
-    let username = $('#hdusername').text()
+    let username = $('#hdusername').text().trim()
     if (!username) return
     $.ajax(
         {

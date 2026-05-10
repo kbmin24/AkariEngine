@@ -8,8 +8,7 @@ export default async (req, res) => {
         await req.app.locals.services.thread.changeThreadTitle({
             threadID: req.body.threadid,
             newTitle: req.body.newtitle,
-            user: req.session.username,
-            ipAddress: req.ipAddress
+            user: req.session.username
         })
         renderInfo(req, res, { description: 'Done.', returnLink: BACK_LINK, returnName: 'the thread' })
     } catch (error) {

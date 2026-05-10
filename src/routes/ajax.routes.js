@@ -37,7 +37,10 @@ export default () => {
 
     router.get('/ajax/threadlist', asyncRoute(async (req, res) => {
         const query = req.query ? req.query.q : undefined
-        const threads = await req.app.locals.services.thread.getOpenThreadsByPageName(query)
+        const threads = await req.app.locals.services.thread.getOpenThreadsByPageName(
+            req.session.username,
+            req.ipAddress,
+            query)
 
         if (!threads) {
             res.json({})

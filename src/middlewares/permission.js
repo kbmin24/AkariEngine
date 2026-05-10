@@ -182,24 +182,15 @@ function requirePageAccess(action, options = {}) {
             })
 
             if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
-                if (action === 'read' && revisionQueryKeys && revisionQueryKeys.length > 0) {
-
-                    req[storeKey] = {
-                        allowed: false,
-                        action,
-                        title: req.params ? req.params[titleParam] : undefined,
-                        revisions: action === 'read'
-                            ? [...new Set([
-                                ...(revisionQueryKeys && revisionQueryKeys.length > 0
-                                    ? revisionQueryKeys.map((key) => req.query && req.query[key])
-                                    : undefined),
-                            ].filter((value) => value !== undefined && value !== null && value !== ''))]
-                            : [],
-                        error: mapped
-                    }
-                    next()
-                    return
+                req[storeKey] = {
+                    allowed: false,
+                    action,
+                    title: req.params ? req.params[titleParam] : undefined,
+                    revisions,
+                    error: mapped
                 }
+                next()
+                return
             }
             next(mapped)
         }

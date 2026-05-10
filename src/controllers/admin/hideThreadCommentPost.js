@@ -9,8 +9,7 @@ export default async (req, res) => {
             threadID: req.body.threadid,
             threadNo: Number(req.body.threadNo),
             unhide: !!req.body.unhide,
-            user: req.session.username,
-            ipAddress: req.ipAddress
+            user: req.session.username
         })
         renderInfo(req, res, { description: 'Done.', returnLink: BACK_LINK, returnName: 'the thread' })
     } catch (error) {

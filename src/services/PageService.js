@@ -20,8 +20,26 @@ class PageService {
         this.recentChangeRepo = recentChangeRepo
     }
 
+    /**
+     * Fetches page model. Checks read permission, and if rev is provided, checks read access for the specific revision.
+     * @param {String} title 
+     * @param {Object} options
+     * @param {String} [options.rev] - Revision number to fetch. If not provided, fetches current revision.
+     * @param {String} [options.user] - Username of the user making the request. Required for logged in users.
+     * @param {String} options.ipAddress - IP address of the user making the request. Required.
+     * @returns {Promise<Object>} Sequelize model for page, with { title, content, currentRev, deleted }.
+     * @throws {ValidationError} if title is not provided or is invalid, if revision is invalid (and is provided), or if options.ipAddress is not provided.
+     * @throws {PageNotFoundError} If the page (or the revision, if provided) is not found or is deleted
+     * @throws {PermissionDeniedError} If the user/ip does not have sufficient READ permission.
+     */
     async getPage(title, options = {}) {
         const { rev, user, ipAddress } = options
+        if (rev) {
+            if (!Number.isInteger(rev)) throw new ValidationError('Illlegal revision')
+        }
+        if (ipAddress === undefined) {
+            throw new ValidationError('ip Address is required')
+        }
         await this.permissionService.requireReadAccess(user, title, {
             revision: rev,
             ipAddress
@@ -61,7 +79,7 @@ class PageService {
 
         let offset = 0
         if (/^(={1,6})(?!=) (.*?) \1[ \t]*$/igm.test(splits[0])) offset = -2
-        
+
         // loc in splits array
         const targetIndex = 2 * sectionIndex + offset
         if (targetIndex >= splits.length) {
@@ -73,8 +91,8 @@ class PageService {
         }
 
         // targetIndex-1 is the heading, targetIndex+1 is the next heading
-        for (let i = 0; i < targetIndex - 1; i+=2) prefix += splits[i]
-        for (let i = targetIndex + 2; i < splits.length; i+=2) suffix += splits[i]
+        for (let i = 0; i < targetIndex - 1; i += 2) prefix += splits[i]
+        for (let i = targetIndex + 2; i < splits.length; i += 2) suffix += splits[i]
         body = splits[targetIndex]
 
         return { prefix, suffix, content: body }

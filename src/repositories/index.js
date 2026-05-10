@@ -13,6 +13,7 @@ import ThreadRepository from './ThreadRepository.js'
 import ThreadCommentRepository from './ThreadCommentRepository.js'
 import ViewcountRepository from './ViewcountRepository.js'
 import SettingsRepository from './SettingsRepository.js'
+import RecentDiscussRepository from './RecentDiscussRepository.js'
 
 class RepositoryFactory {
     constructor(db) {
@@ -23,7 +24,8 @@ class RepositoryFactory {
             linkModel: db.links,
             fileModel: db.mfile,
             protectModel: db.protect,
-            threadModel: db.thread
+            threadModel: db.thread,
+            recentDiscussModel: db.recentdiscuss
         })
         this.users = new UserRepository(db.users)
         this.permissions = new PermissionRepository(db.perm)
@@ -39,6 +41,7 @@ class RepositoryFactory {
         this.adminlog = new AdminLogRepository(db.adminlog)
         this.loginHistory = new LoginHistoryRepository(db.loginhistory)
         this.settings = new SettingsRepository(db.settings)
+        this.recentdiscuss = new RecentDiscussRepository(db.recentdiscuss)
     }
 }
 

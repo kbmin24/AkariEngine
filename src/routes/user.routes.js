@@ -63,9 +63,7 @@ export default (_services, options = {}) => {
             username,
             l: res.__
         }, {
-            title: res.__('settings'),
-            username,
-            ipaddr: req.ipAddress
+            title: res.__('settings')
         })
     }))
 
