@@ -16,6 +16,7 @@ class PathResolver {
     get admin() { return this.resolve('src/admin') }
     get locales() { return this.resolve('locales') }
     get public() { return this.resolve('public') }
+    get uploads() { return this.resolve('uploads')}
     get services() { return this.resolve('src/services') }
     get middlewares() { return this.resolve('src/middlewares') }
     get utilities() { return this.resolve('src/utils') }

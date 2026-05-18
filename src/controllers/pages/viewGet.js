@@ -29,7 +29,7 @@ export default async (req, res) => {
         if (/^(.*?\.(?:png|jpg|jpeg|gif|webp|svg))$/gi.test(filename)) {
             contentPrefix = `[file(${filename})]\n`
         } else if (/^(.*?\.pdf)$/gi.test(filename)) {
-            contentPrefix = `[file(${filename}|width=100%|height=500px)]\n<a href='/uploads/${filename}'>Download</a>`
+            contentPrefix = `[file(${filename}, width=100%, height=500px)]\n<a href='/uploads/${filename}'>Download</a>`
         } else {
             contentPrefix = `<p><span class="fw-bold text-danger">${res.__('error')}:</span> ${res.__('file_nobrowser')} <a target='_blank' href="/uploads/${escapeHtml(filename)}">${res.__('file_innewtab')}</a></p>`
         }

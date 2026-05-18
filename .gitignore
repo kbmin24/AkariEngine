@@ -106,11 +106,12 @@ dist
 #macOS
 .DS_Store
 
-#DB file (because it includes my PW (even if it's hashed)
+#DB file
 db.sqlite
 
 #image files
 public/uploads/*
+uploads/*
 public/boarduploads/*
 
 LocalSettings.json

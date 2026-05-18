@@ -1,6 +1,5 @@
 import paths from '../utils/paths.js'
 import fs from 'fs'
-import date from 'date-and-time'
 import logger from '../utils/logger.js'
 
 import {
@@ -227,38 +226,13 @@ class PageService {
         }
     }
 
-    async sign(req, settingsModel) {
-        const dtnow = date.format(new Date(), global.dtFormat)
-        if (req.session.username) {
-            const s = await settingsModel.findOne({
-                where: {
-                    user: req.session.username,
-                    key: 'sign'
-                }
-            })
-            const prefix = s ? s.value : `[[User:${req.session.username}]]`
-            return `${prefix} ${dtnow}`
-        }
-
-        return `${req.ipAddress} ${dtnow}`
-    }
-
-    async signAsync(req, str, regex, settingsModel) {
-        const promises = []
-        str.replace(regex, () => {
-            promises.push(this.sign(req, settingsModel))
-        })
-        const data = await Promise.all(promises)
-        return str.replace(regex, () => data.shift())
-    }
-
-    async buildNormalizedEditContent({ req, content, editPrefix = '', editSuffix = '' }) {
+    async buildNormalizedEditContent({ content, editPrefix = '', editSuffix = '' }) {
         const rawBody = content.endsWith('\n') ? content : `${content}\n`
         const merged = `${editPrefix}${rawBody}${editSuffix}`.replace(/\r/g, '')
-        return this.signAsync(req, merged, /~~~~/igm, global.db.settings)
+        return merged
     }
 
-    async editPage({ title, content, user, comment, req, editPrefix = '', editSuffix = '', ipAddress }) {
+    async editPage({ title, content, user, comment, editPrefix = '', editSuffix = '', ipAddress, iscreatingFile = false }) {
         if (!title) {
             throw new ValidationError({
                 i18nKey: 'edit_titleneeded',
@@ -274,12 +248,10 @@ class PageService {
             })
         }
 
-        const normalizedContent = req
-            ? await this.buildNormalizedEditContent({ req, content, editPrefix, editSuffix })
-            : content
+        const normalizedContent = await this.buildNormalizedEditContent({ content, editPrefix, editSuffix })
 
         const existingPage = await this.pageRepo.findByTitle(title)
-        if (!existingPage && title.toLowerCase().startsWith('file:')) {
+        if (!existingPage && title.toLowerCase().startsWith('file:') && !iscreatingFile) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
                 statusCode: 200,

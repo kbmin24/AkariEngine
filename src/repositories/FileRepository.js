@@ -1,3 +1,4 @@
+import { Op } from 'sequelize'
 import BaseRepository from './BaseRepository.js'
 
 class FileRepository extends BaseRepository {
@@ -6,7 +7,16 @@ class FileRepository extends BaseRepository {
     }
 
     async findByFilenameBatch(filenames) {
-        return this.findByFieldBatch('filename', filenames)
+        return this.model.findAll({ where: { filename: { [Op.in]: filenames } }, attributes: ['filename', 'filenameOnDisk'] })
+    }
+
+    async create(filename, filenameOnDisk, uploader, explanation) {
+        return this.model.create({
+            filename,
+            filenameOnDisk,
+            uploader,
+            explanation
+        })
     }
 }
 

@@ -1,4 +1,5 @@
 import i18n from 'i18n'
+import { BACK_LINK, LOGIN_LINK } from '../utils/httpHelper.js'
 // Some standardised errors
 
 function getDefaultLocale() {
@@ -91,8 +92,8 @@ class PermissionDeniedError extends AppError {
         this.action = action
         this.resource = resource
         this.details = details
-        this.returnLink = details.returnLink || '/'
-        this.returnName = details.returnName || 'mainpage'
+        this.returnLink = details.returnLink || BACK_LINK
+        this.returnName = details.returnName || 'previousPage'
         this.lang = details.lang || 'ko'
     }
 }
@@ -105,7 +106,7 @@ class AuthenticationRequiredError extends AppError {
             i18nParams: details.i18nParams,
             statusCode: 401
         })
-        this.returnLink = details.returnLink || '/login'
+        this.returnLink = details.returnLink || LOGIN_LINK
         this.returnName = details.returnName || 'loginpage'
         this.lang = details.lang || 'ko'
     }
@@ -121,7 +122,7 @@ class CaptchaError extends AppError {
             i18nParams: options.i18nParams,
             statusCode: options.statusCode || 400
         })
-        this.returnLink = options.returnLink || 'javascript:window.history.back()'
+        this.returnLink = options.returnLink || BACK_LINK
         this.returnName = options.returnName || 'previousPage'
         this.lang = options.lang || 'ko'
     }

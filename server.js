@@ -158,7 +158,8 @@ i18n.configure({
 })
 
 //regex for testing whether page title is legal or not
-global.legalTitleRegex = /^[^[\]{}|#\n]*$/m
+global.legalTitleRegex = /^[^[\]{}|#\n]{1,255}$/m
+global.legalFilenameRegex = /^[^#?\\/<>:*|,]{1,255}$/m
 
 //load global tools
 global.escapeHTML = escapeHTML
@@ -223,6 +224,7 @@ app.use((req, res, next) => {
 })
 
 app.use(express.static(paths.public))
+app.use('/uploads', express.static(paths.uploads))
 
 //skins
 global.skins = []

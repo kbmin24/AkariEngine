@@ -247,7 +247,9 @@ class PermissionService {
     }
 
     /**
-     * Requires login access for a user.
+     * Requires login access for a user. Note that this is different from requiring login user.
+     * It is login & (ip not blocked or ip blocked with allowLogin).
+     * Throws either AuthenticationRequiredError or PermissionDeniedError.
      * @param {Object} user - The user object.
      * @param {Object} context - The context for the access check.
      * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
@@ -291,7 +293,7 @@ class PermissionService {
         if (!hasPermission) {
             throw new PermissionDeniedError(permission, null, {
                 acl: permission,
-                i18nKey: 'permissionRequried',
+                i18nKey: 'permissionRequired',
             })
         }
     }

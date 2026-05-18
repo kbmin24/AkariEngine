@@ -12,6 +12,7 @@ import AdminService from './AdminService.js'
 import LoginHistoryService from './LoginHistoryService.js'
 import UserService from './UserService.js'
 import RecentDiscussService from './RecentDiscussService.js'
+import FileService from './FileService.js'
 
 class ServiceFactory {
     constructor(repositories) {
@@ -60,6 +61,7 @@ class ServiceFactory {
         this.loginHistory = new LoginHistoryService(repositories.loginHistory, repositories.adminlog)
         this.user = new UserService(repositories.users, repositories.settings)
         this.recentDiscuss = new RecentDiscussService(repositories.recentdiscuss, repositories.threads)
+        this.file = new FileService(this.page, this.permission, repositories.files)
     }
 }
 

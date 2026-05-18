@@ -9,6 +9,12 @@ export default (sequelize) => {
                 type: DataTypes.STRING,
                 unique: true,
             },
+            filenameOnDisk:
+            {
+                allowNull: false,
+                type: DataTypes.STRING,
+                unique: true,
+            },
             uploader:
             {
                 type: DataTypes.STRING

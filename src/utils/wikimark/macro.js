@@ -83,6 +83,7 @@ const macroRegistry = {
             if (!filename) return { result: 'error', output: errMessage('FILE Macro Error', 'Filename is required') }
             if (!isFilenameValid(filename)) return { result: 'error', output: errMessage('FILE Macro Error', 'Invalid filename') }
             if (resolvedData === null) return { result: 'error', output: errMessage('FILE Macro Error', `File not found: ${filename}`) }
+            let filenameOnDisk = resolvedData.filenameOnDisk
 
             let res = ''
             if (options.width) res += `width="${options.width}" `
@@ -95,10 +96,10 @@ const macroRegistry = {
                 // todo: iframe attack?
                 return {
                     result: 'ok',
-                    output: `<a href='/w/File:${filename}'><iframe src="/uploads/${filename}" ${res}></a>`
+                    output: `<a href='/w/File:${filename}'><iframe src="/uploads/${filenameOnDisk}" ${res}></a>`
                 }
             }
-            return { result: 'ok', output: `<a href='/w/File:${filename}'><img class='ren-img img-fluid' src="/uploads/${filename}" ${res}/></a>` }
+            return { result: 'ok', output: `<a href='/w/File:${filename}'><img class='ren-img img-fluid' src="/uploads/${filenameOnDisk}" ${res}/></a>` }
         }
     },
     color: {
