@@ -106,6 +106,8 @@ dist
 #macOS
 .DS_Store
 
+package-lock.json
+
 #DB file
 db.sqlite
 
