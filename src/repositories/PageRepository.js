@@ -199,7 +199,7 @@ class PageRepository extends BaseRepository {
         }
     }
 
-    async deletePageWithHistory({ title, doneBy, comment = '', isFile = false, filename = '' }) {
+    async deletePageWithHistory({ title, doneBy, comment = '' }) {
         const page = await this.findByTitle(title)
         if (!page) {
             return { deleted: false, reason: 'not_found' }
@@ -216,10 +216,6 @@ class PageRepository extends BaseRepository {
 
         if (this.linkModel) {
             await this.linkModel.destroy({ where: { source: title } })
-        }
-
-        if (isFile && filename && this.fileModel) {
-            await this.fileModel.destroy({ where: { filename } })
         }
 
         if (this.recentChangesModel) {

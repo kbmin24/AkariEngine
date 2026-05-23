@@ -25,6 +25,7 @@ class PathResolver {
     model(name) { return this.resolve('src/models', `${name}.model.js`) }
     view(name) { return this.resolve('src/views', name) }
     middleware(name) { return this.resolve('src/middlewares', `${name}.js`) }
+    upload(name) { return this.resolve('uploads', name) }
     util(name) { return this.resolve('src/utils', `${name}.js`) }
     utils(name) { return this.resolve('src/utils', `${name}.js`) }
     tool(name) { return this.resolve('src/tools', `${name}.js`) }

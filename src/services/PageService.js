@@ -1,5 +1,3 @@
-import paths from '../utils/paths.js'
-import fs from 'fs'
 import logger from '../utils/logger.js'
 
 import {
@@ -294,38 +292,22 @@ class PageService {
 
     async deletePage({ title, user, comment }) {
         if (!title) throw new ValidationError('Page title is required')
+        if (title.toLowerCase().startsWith('file:')) {
+            throw new ValidationError("Delete file pages through the file service.")
+        }
+
         if (!user) throw new AuthenticationRequiredError()
         const page = await this.pageRepo.findByTitle(title)
         if (!page) throw new PageNotFoundError(title)
-
-
-        const isFile = title.toLowerCase().startsWith('file:')
-        if (isFile) {
-            await this.permissionService.requirePermission(user, 'deletefile')
-        }
         await this.permissionService.requirePermission(user, 'deletepage')
-        
-        let filename = ''
-        if (isFile) {
-            const m = /^File:(.*)$/i.exec(title)
-            filename = m && m[1] ? m[1] : ''
-            if (!filename) throw new ValidationError('Unknown Error')
-
-            const uploadPath = paths.resolve('public', 'uploads', filename)
-            if (fs.existsSync(uploadPath)) {
-                fs.unlinkSync(uploadPath)
-            }
-        }
 
         await this.pageRepo.deletePageWithHistory({
             title,
             doneBy: user,
-            comment,
-            isFile,
-            filename
+            comment
         })
 
-        logger.admin('Page deleted', user, { title, isFile })
+        logger.admin('Page deleted', user, { title })
         return true
     }
 

@@ -259,6 +259,7 @@ app.use(errorHandler)
 //error handler
 // TODO split this into new error handler
 app.use((err, req, res, _next) => {
+    // If anything aflls through this most likely something's wrong with our code...
     logger.error('Unhandled request error', err)
     switch (err.code) {
         case 'FILENAMENULL':

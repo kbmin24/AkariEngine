@@ -1,9 +1,18 @@
-import { ValidationError } from "./errors.js"
+import fs from 'fs'
+
+import {
+    ValidationError,
+    AuthenticationRequiredError
+} from "./errors.js"
+import paths from "../utils/paths.js"
+import logger from '../utils/logger.js'
+
 class FileService {
-    constructor(pageService, permissionService, fileRepository) {
+    constructor(pageService, permissionService, fileRepository, pageRepository) {
         this.pageService = pageService
         this.permissionService = permissionService
         this.fileRepository = fileRepository
+        this.pageRepository = pageRepository
     }
 
     defaultFileTypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
@@ -45,6 +54,31 @@ class FileService {
             ipAddress,
             iscreatingFile: true
         })
+    }
+
+    async deleteFile({ filename, user, comment }) {
+        if (!filename) throw new ValidationError('Filename is required')
+        if (!user) throw new AuthenticationRequiredError()
+        const file = await this.fileRepository.findByFilename(filename)
+        if (!file) throw new ValidationError('File not found')
+        await this.permissionService.requirePermission(user, 'deletefile')
+
+        // Because we are deleting file: page too
+        await this.permissionService.requirePermission(user, 'deletepage')
+
+        const uploadPath = paths.upload(file.filenameOnDisk)
+        if (fs.existsSync(uploadPath)) {
+            fs.unlinkSync(uploadPath)
+        }
+
+        await this.pageRepository.deletePageWithHistory({
+            title: `File:${filename}`,
+            doneBy: user,
+            comment,
+            filename
+        })
+
+        logger.admin('File deleted', user, { filename })
     }
 }
 

@@ -5,35 +5,43 @@ import {
     ValidationError,
 } from '../../services/errors.js'
 import renderError from '../../utils/error.js'
+import renderInfo from '../../info.js'
 
-export default async (req, res) =>
-{
+export default async (req, res) => {
     try {
-        await req.app.locals.services.page.deletePage({
-            title: req.params.name,
-            user: req.session.username,
-            comment: req.body.comment
-        })
+        const title = req.params.name
+        const user = req.session.username
+        const comment = req.body.comment
 
-        res.redirect('/')
+        if (title.toLowerCase().startsWith('file:')) {
+            const m = /^File:(.*)$/i.exec(title)
+            const filename = m && m[1] ? m[1] : ''
+            await req.app.locals.services.file.deleteFile({ filename, user, comment })
+        }
+        else {
+            await req.app.locals.services.page.deletePage({ title, user, comment })
+        }
+
+        renderInfo(req, res, {
+            description: res.__('done'),
+            returnLink: '/',
+            returnName: res.__('mainpage')
+        })
+        
     } catch (error) {
-        if (error instanceof AuthenticationRequiredError)
-        {
+        if (error instanceof AuthenticationRequiredError) {
             renderError(req, res, { description: res.__('loginneeded'), returnLink: '/login', returnName: res.__('loginpage'), statusCode: 403 })
             return
         }
-        if (error instanceof PermissionDeniedError)
-        {
+        if (error instanceof PermissionDeniedError) {
             renderError(req, res, { description: res.__('deletepermneeded'), returnLink: '/login', returnName: res.__('loginpage'), statusCode: 403 })
             return
         }
-        if (error instanceof PageNotFoundError)
-        {
+        if (error instanceof PageNotFoundError) {
             renderError(req, res, { description: res.__('page404'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 404 })
             return
         }
-        if (error instanceof ValidationError)
-        {
+        if (error instanceof ValidationError) {
             renderError(req, res, { description: res.__('unknown_error'), returnLink: '/', returnName: res.__('mainpage'), statusCode: 500 })
             return
         }
