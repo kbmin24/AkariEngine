@@ -36,8 +36,8 @@ export default () => {
 
     router.post('/Upload',
         requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: 'mainpage'}),
-        chkCaptcha,
         upload,
+        chkCaptcha,
         asyncRoute(uploadPostController)
     )
 
