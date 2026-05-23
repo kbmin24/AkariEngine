@@ -292,29 +292,19 @@ class PageService {
         return page
     }
 
-    async deletePage(arg1, arg2) {
-        const options = typeof arg1 === 'string'
-            ? { title: arg1, user: arg2 }
-            : (arg1 || {})
-
-        const title = options.title
-        const user = options.user
-        const ipAddress = options.ipAddress
-        const comment = options.comment || ''
-
+    async deletePage({ title, user, comment }) {
         if (!title) throw new ValidationError('Page title is required')
-
         if (!user) throw new AuthenticationRequiredError()
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+
 
         const isFile = title.toLowerCase().startsWith('file:')
         if (isFile) {
             await this.permissionService.requirePermission(user, 'deletefile')
         }
         await this.permissionService.requirePermission(user, 'deletepage')
-
-        const page = await this.pageRepo.findByTitle(title)
-        if (!page) throw new PageNotFoundError(title)
-
+        
         let filename = ''
         if (isFile) {
             const m = /^File:(.*)$/i.exec(title)
@@ -327,16 +317,15 @@ class PageService {
             }
         }
 
-        const doneBy = user || ipAddress
         await this.pageRepo.deletePageWithHistory({
             title,
-            doneBy,
+            doneBy: user,
             comment,
             isFile,
             filename
         })
 
-        logger.admin('Page deleted', doneBy, { title, isFile })
+        logger.admin('Page deleted', user, { title, isFile })
         return true
     }
 

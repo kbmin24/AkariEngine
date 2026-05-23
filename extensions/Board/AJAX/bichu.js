@@ -19,7 +19,7 @@ export default async (req, res, boards, posts, perm, block, boardbichu) =>
     {
         //do nothing
     }
-    else if (r === undefined)
+    else if (r == undefined)
     {
         return //error message already given out
     }

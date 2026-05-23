@@ -13,7 +13,7 @@ function getFileTypes() {
     return defaultFileTypes
 }
 
-export default (_services, _options = {}) => {
+export default () => {
     const router = express.Router()
     const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
 

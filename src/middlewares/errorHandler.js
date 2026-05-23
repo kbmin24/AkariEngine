@@ -33,15 +33,23 @@ function getStackForLogging(err, englishMessage) {
     return stackLines.join('\n')
 }
 
+// TODO: beautify this
 function errorHandler(err, req, res, next) {
-    if (err && err.code) {
+    if (!err) {
+        logger.error('Error handler called without an error object')
+        return res.status(500).render('error', {
+            title: 'Undefined Error',
+            message: 'An undefined error occurred. Please check the server logs for details.'
+        })
+    }
+    if (err.code) {
         return next(err) // pass it to legacy handler
     }
 
     const englishMessage = getEnglishMessage(res, err)
     logger.error(`Request error: ${englishMessage}`, getStackForLogging(err, englishMessage))
 
-    const localizedMessage = (err && typeof err.getLocalizedMessage === 'function')
+    const localizedMessage = (typeof err.getLocalizedMessage === 'function')
         ? err.getLocalizedMessage(req)
         : err.message
 

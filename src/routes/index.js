@@ -7,11 +7,11 @@ import ajaxRoutes from './ajax.routes.js'
 import miscRoutes from './misc.routes.js'
 
 export default (app, services, options = {}) => {
-    app.use('/', pagesRoutes(services, options))
-    app.use('/', adminRoutes(services, options))
-    app.use('/', userRoutes(services, options))
-    app.use('/', uploadRoutes(services, options))
-    app.use('/', threadsRoutes(services, options))
-    app.use('/', ajaxRoutes(services, options))
-    app.use('/', miscRoutes(services, options))
+    app.use('/', pagesRoutes(options))
+    app.use('/', adminRoutes(options))
+    app.use('/', userRoutes(options))
+    app.use('/', uploadRoutes())
+    app.use('/', threadsRoutes(options))
+    app.use('/', ajaxRoutes())
+    app.use('/', miscRoutes())
 }

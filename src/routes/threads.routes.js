@@ -7,7 +7,7 @@ import threadsPost from '../controllers/threads/threadsPost.js'
 import threadGet from '../controllers/threads/threadGet.js'
 import recentDiscussHandler from '../controllers/threads/recentDiscussGet.js'
 
-export default (_services, options = {}) => {
+export default (options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
 

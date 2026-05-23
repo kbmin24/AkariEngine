@@ -12,7 +12,6 @@ export default async (req, res) =>
         await req.app.locals.services.page.deletePage({
             title: req.params.name,
             user: req.session.username,
-            ipAddress: req.ipAddress,
             comment: req.body.comment
         })
 

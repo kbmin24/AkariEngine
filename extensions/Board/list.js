@@ -26,7 +26,7 @@ export default async (isHTML, req, res, boards, posts, block, perm, gongji, curr
     {
         //do nothing
     }
-    else if (r === undefined)
+    else if (r == undefined)
     {
         return //error message already given out
     }

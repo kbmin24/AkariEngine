@@ -42,13 +42,18 @@ export default async (app, sequelize, csrfProtection) => {
     app.get('/board/write/:board', csrfProtection, async (req, res) => {
         //존재하는 게시판인지 확인
         const boardNow = await boards.findOne({ where: { boardID: req.params.board } })
+        if (!boardNow) {
+            errorPage(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
+            return
+        }
+        
         const pro = boardNow.writeACL
         const acl = (pro == undefined ? 'everyone' : pro) //fallback
         const r = await satisfyACL(req, res, [acl], perm, block)
         if (r) {
             //do nothing
         }
-        else if (r === undefined) {
+        else if (r == undefined) {
             return //error message already given out
         }
         else {
@@ -56,10 +61,6 @@ export default async (app, sequelize, csrfProtection) => {
             return
         }
         const captchaSVG = await captchaUtils.genCaptcha()
-        if (!(boardNow)) {
-            errorPage(req, res, { description: '존재하지 않는 게시판입니다.', returnLink: '/board', returnName: '게시판 홈', statusCode: 404 })
-            return
-        }
         ejs.renderFile(__dirname + '/views/write.ejs',
             {
                 board: boardNow.boardID,
@@ -67,22 +68,22 @@ export default async (app, sequelize, csrfProtection) => {
                 captcha: captchaSVG,
                 csrfToken: req.csrfToken()
             }, (err, html) => {
-            if (err) {
-                logger.error('Board write page rendering failed', err)
-                res.writeHead(500).write('Internal Server Error')
-                return
-            }
-            renderView(req, res,
-                {
-                    title: boardNow.boardTitle,
-                    titleLink: `/board/${boardNow.boardID}`,
-                    description: Object.hasOwn(boardConf.boardDescriptions, boardNow.boardID) ? boardConf.boardDescriptions[boardNow.boardID] : '',
-                    content: html,
-                    username: req.session.username,
-                    ipaddr: req.ipAddress,
+                if (err) {
+                    logger.error('Board write page rendering failed', err)
+                    res.writeHead(500).write('Internal Server Error')
+                    return
+                }
+                renderView(req, res,
+                    {
+                        title: boardNow.boardTitle,
+                        titleLink: `/board/${boardNow.boardID}`,
+                        description: Object.hasOwn(boardConf.boardDescriptions, boardNow.boardID) ? boardConf.boardDescriptions[boardNow.boardID] : '',
+                        content: html,
+                        username: req.session.username,
+                        ipaddr: req.ipAddress,
 
-                })
-        })
+                    })
+            })
     })
     app.post('/board/write/:board', csrfProtection, async (req, res) => {
         boardWrite(req, res, boards, posts, block, perm, boardfiles)
@@ -157,20 +158,20 @@ export default async (app, sequelize, csrfProtection) => {
                 passReq: req.query.passReq,
                 csrfToken: req.csrfToken()
             }, (err, html) => {
-            if (err) {
-                logger.error('Board delete post verify rendering failed', err)
-                res.writeHead(500).write('Internal Server Error')
-                return
-            }
-            renderView(req, res,
-                {
-                    title: '정말로 글을 삭제하시겠습니까?',
-                    content: html,
-                    username: req.session.username,
-                    ipaddr: req.ipAddress,
+                if (err) {
+                    logger.error('Board delete post verify rendering failed', err)
+                    res.writeHead(500).write('Internal Server Error')
+                    return
+                }
+                renderView(req, res,
+                    {
+                        title: '정말로 글을 삭제하시겠습니까?',
+                        content: html,
+                        username: req.session.username,
+                        ipaddr: req.ipAddress,
 
-                })
-        })
+                    })
+            })
     })
     app.post('/board/deletepost', csrfProtection, async (req, res) => {
         let isAdmin = (req.session.username && (await perm.findOne({
@@ -233,20 +234,20 @@ export default async (app, sequelize, csrfProtection) => {
                 passReq: req.query.passReq,
                 csrfToken: req.csrfToken()
             }, (err, html) => {
-            if (err) {
-                logger.error('Board delete comment verify rendering failed', err)
-                res.writeHead(500).write('Internal Server Error')
-                return
-            }
-            renderView(req, res,
-                {
-                    title: '정말로 댓글을 삭제하시겠습니까?',
-                    content: html,
-                    username: req.session.username,
-                    ipaddr: req.ipAddress,
+                if (err) {
+                    logger.error('Board delete comment verify rendering failed', err)
+                    res.writeHead(500).write('Internal Server Error')
+                    return
+                }
+                renderView(req, res,
+                    {
+                        title: '정말로 댓글을 삭제하시겠습니까?',
+                        content: html,
+                        username: req.session.username,
+                        ipaddr: req.ipAddress,
 
-                })
-        })
+                    })
+            })
     })
     app.post('/board/deletecomment', csrfProtection, async (req, res) => {
         let isAdmin = (req.session.username && (await perm.findOne({

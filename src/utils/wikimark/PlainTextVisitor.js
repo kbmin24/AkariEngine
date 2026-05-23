@@ -1,5 +1,5 @@
 import { WikiParser } from './wikiparser.js'
-import { orphanableTokens } from './lexer.js'
+import { orphanableTokens } from './tokens.js'
 
 const parserInstance = new WikiParser()
 const BaseCstVisitor = parserInstance.getBaseCstVisitorConstructorWithDefaults()

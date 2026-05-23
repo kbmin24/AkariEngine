@@ -18,7 +18,7 @@ import protectPost from '../controllers/admin/protectPost.js'
 import grantGet from '../controllers/admin/grantGet.js'
 import adminmenuGet from '../controllers/admin/adminmenuGet.js'
 
-export default (services, options = {}) => {
+export default (options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
 

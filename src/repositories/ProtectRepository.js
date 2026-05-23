@@ -26,7 +26,7 @@ class ProtectRepository extends BaseRepository {
 
     async findProtection(title, task, revision = null) {
         const where = { title, task }
-        if (revision !== null && revision !== undefined) {
+        if (revision !== null) {
             where.revision = revision
         } else {
             // Page-level ACL: must not match revision-specific ACL rows.

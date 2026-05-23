@@ -26,7 +26,7 @@ import movePostController from '../controllers/pages/movePost.js'
 import deletePageController from '../controllers/pages/deletePost.js'
 
 
-export default (services, options = {}) => {
+export default (options = {}) => {
     const router = express.Router()
 
     const csrfProtection = options.csrfProtection

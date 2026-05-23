@@ -11,7 +11,7 @@ import { param, query, body } from 'express-validator'
 
 import { validateRequest } from '../middlewares/validation.js'
 
-export default (_services, options = {}) => {
+export default (options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
 

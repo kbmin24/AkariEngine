@@ -1,7 +1,7 @@
 import { AuthenticationRequiredError, PermissionDeniedError } from '../services/errors.js'
 import { BACK_LINK, LOGIN_LINK } from '../utils/httpHelper.js'
 
-function buildAccessError(req, error, options = {}) {
+function buildAccessError(error, options = {}) {
     // error from PermissionService is quite generic; transforms error to something that makes more sense
     const acl = (error && error.details && error.details.acl) || options.acl || 'everyone'
 
@@ -81,7 +81,7 @@ function requirePermission(permission, options = {}) {
             req[storeKey] = { allowed: true, permission }
             next()
         } catch (error) {
-            const mapped = buildAccessError(req, error, options)
+            const mapped = buildAccessError(error, options)
             if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
                 req[storeKey] = {
                     allowed: false,
@@ -176,7 +176,7 @@ function requirePageAccess(action, options = {}) {
             req[storeKey] = { allowed: true, action, title, revisions }
             next()
         } catch (error) {
-            const mapped = buildAccessError(req, error, {
+            const mapped = buildAccessError(error, {
                 ...options,
                 noAclMessageKey: options.noAclMessageKey || `${action}_noacl`
             })
@@ -214,7 +214,7 @@ function requireLogin(options = {}) {
             req[storeKey] = { allowed: true }
             next()
         } catch (error) {
-            const mapped = buildAccessError(req, error, options)
+            const mapped = buildAccessError(error, options)
 
             if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
                 req[storeKey] = {
@@ -259,7 +259,7 @@ function createRequireEveryoneMiddleware(options = {}) {
             req[storeKey] = { allowed: true }
             next()
         } catch (error) {
-            const mapped = buildAccessError(req, error, options)
+            const mapped = buildAccessError(error, options)
 
             if (mode === 'store' && (mapped instanceof AuthenticationRequiredError || mapped instanceof PermissionDeniedError)) {
                 req[storeKey] = {

@@ -43,7 +43,7 @@ export default async (req, res, boards, posts, block, perm, boardfiles) =>
     {
         //do nothing
     }
-    else if (r === undefined)
+    else if (r == undefined)
     {
         return //error message already given out
     }
