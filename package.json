@@ -11,7 +11,7 @@
     "chalk": "^4.1.2",
     "chevrotain": "^12.0.0",
     "cookie-parser": "^1.4.5",
-    "csurf": "^1.2.2",
+    "csrf-csrf": "^4.0.3",
     "date-and-time": "^2.0.0",
     "dedent": "^1.7.2",
     "dequeue": "^1.0.5",

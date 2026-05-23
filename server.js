@@ -11,7 +11,7 @@ import fs from 'node:fs'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import sessionStoreFactory from 'express-session-sequelize'
-import csurf from 'csurf'
+import { doubleCsrf } from 'csrf-csrf'
 import i18n from 'i18n'
 import taskScheduler from './src/taskScheduler.js'
 import escapeHTML from './src/utils/escapeHTML.js'
@@ -60,15 +60,28 @@ const sess = session({
         secure: config.ssl,
         samesite: 'strict',
         httpOnly: true, //so that the cookie cannot be taken away
-        maxAge: 30 * 86400 * 1000
+        maxAge: 30 * 86400 * 1000,
+        sameSite: 'lax'
     }
 })
 app.use(sess)
 
 //CSRF
-// TODO deprecated package, replace it
-const csrfProtection = csurf({})
-global.csrfProtection = csrfProtection
+const { generateToken, doubleCsrfProtection } = doubleCsrf({
+    getSecret: () => secret,
+    cookieName: 'x-csrf-token',
+    cookieOptions: {
+        sameSite: 'lax',
+        secure: config.ssl,
+        httpOnly: true,
+    },
+    getTokenFromRequest: (req) => req.body?._csrf ?? req.headers['x-csrf-token'],
+})
+
+app.use((req, res, next) => {
+    req.csrfToken = () => generateToken(req, res)
+    next()
+})
 
 app.use(express.json({ limit: "1mb" }))
 app.use(express.urlencoded({ limit: "1mb", extended: false }))
@@ -244,10 +257,7 @@ import ext from './extensions/extensionManager.js'
 ext(app)
 
 //Register routes
-registerRoutes(app, services, { csrfProtection })
-
-
-const fileLimit = (global.conf.upload_maxsize_mb ? global.conf.upload_maxsize_mb : 4)
+registerRoutes(app, services, { csrfProtection: doubleCsrfProtection })
 
 app.get('/lovelive', (req, res) => {
     res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')
@@ -258,69 +268,22 @@ import { errorHandler } from './src/middlewares/errorHandler.js'
 app.use(errorHandler)
 
 //error handler
-// TODO split this into new error handler
 app.use((err, req, res, _next) => {
     // If anything aflls through this most likely something's wrong with our code...
-    logger.error('Unhandled request error', err)
-    switch (err.code) {
-        case 'FILENAMENULL':
-            {
-                renderError(req, res, {
-                    description: '파일 이름이 비어 있습니다.',
-                    returnLink: 'javascript:window.history.back()',
-                    returnName: '이전 페이지',
-                    statusCode: 400
-                })
-            }
-            break
-        case 'FILEEXISTS':
-            {
-                renderError(req, res, {
-                    description: '파일이 이미 존재합니다. 다른 파일명으로 다시 시도해 주세요.',
-                    returnLink: 'javascript:window.history.back()',
-                    returnName: '이전 페이지',
-                    statusCode: 400
-                })
-            }
-            break
-        case 'BOARD_LIMIT_FILE_SIZE':
-            {
-                res.send(
-                    {
-                        'error':
-                        {
-                            'message': err.toString()
-                        }
-                    }
-                )
-            }
-            break
-        case 'BOARDUPLOAD_BADEXTENSION':
-            {
-                res.send({
-                    'error':
-                    {
-                        'message': err.toString()
-                    }
-                })
-            }
-            break
-        case 'LIMIT_FILE_SIZE':
-            {
-                renderError(req, res, {
-                    description: `선택된 파일의 크기가 너무 큽니다. 파일은 최대 ${fileLimit}MB여야 합니다.`,
-                    returnLink: 'javascript:window.history.back()',
-                    returnName: '이전 페이지',
-                    statusCode: 400
-                })
-            }
-            break
+    console.log(err)
+    switch (err.code)
+    {
+        case "EBADCSRFTOKEN":
+            logger.warn('Possible CSRF attack detected from IP: ' + req.ipAddress)
+            renderError(req, res, {
+                description: res.__('csrfMessage'),
+                returnLink: BACK_LINK,
+                returnName: res.__('previousPage'),
+                statusCode: 403
+            })
+            return
         default:
-            {
-                logger.error('Unhandled default error branch', err)
-                res.status(500).send(err.toString())
-            }
-            break
+            logger.error('Unhandled request error', err)
     }
 })
 
@@ -334,6 +297,7 @@ const server = app.listen(port, '0.0.0.0', () => {
 
 //Console
 import { Server } from 'socket.io'
+import { BACK_LINK } from './src/utils/httpHelper.js'
 import RenderService from './src/services/RenderService.js'
 const threadRenderer = new RenderService(repositories.pages, repositories.files)
 

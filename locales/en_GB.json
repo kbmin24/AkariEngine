@@ -177,5 +177,6 @@
 	"thread404": "Cannot find the thread requested.",
 	"discussion": "discussion",
 	"invalidFileType": "Unsupported file type.",
-	"illegalFileName": "Illegal file name."
+	"illegalFileName": "Illegal file name.",
+	"csrfMessage": "<p>The CSRF token does not match. Most common reasons for this are:</p><ol><li>Opening other edit page while editing the document</li><li>Cookies disabled on your browser</li></ol><p>Please retry after saving any changes made.</p>"
 }
