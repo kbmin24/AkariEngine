@@ -18,7 +18,7 @@ async function chkCaptcha(req, res, next) {
 
         const resKey = req.body['g-recaptcha-response']
         const url = `https://www.google.com/recaptcha/api/siteverify?secret=${config.settings.reCAPTCHA_prv}&response=${resKey}`
-        const verRes = await axios.post(url, null, { timeout: 10000 })
+        const verRes = await axios.post(url)
         const data = verRes.data || {}
         if (data.success === true) {
             return next()
