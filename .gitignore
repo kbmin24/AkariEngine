@@ -112,8 +112,8 @@ package-lock.json
 db.sqlite
 
 #image files
-public/uploads/*
 uploads/*
+!uploads/.gitkeep
 public/boarduploads/*
 
 LocalSettings.json
