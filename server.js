@@ -1,4 +1,4 @@
-﻿import express from 'express'
+import express from 'express'
 const app = express()
 import paths from './src/utils/paths.js'
 import config from './src/config/index.js'
@@ -33,7 +33,6 @@ global.appname = config.appName
 global.licence = config.license
 global.dtFormat = config.dateTimeFormat
 
-global.copyrightNotice = `이 문서를 편집함으로써 당신은 ${config.appName}가 당신의 기여를 ${config.license} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.`
 global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'deletepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
@@ -310,79 +309,49 @@ const server = app.listen(port, '0.0.0.0', () => {
 //Console
 import { Server } from 'socket.io'
 import { BACK_LINK } from './src/utils/httpHelper.js'
-import RenderService from './src/services/RenderService.js'
-const threadRenderer = new RenderService(repositories.pages, repositories.files)
 
 const io = new Server(server)
 io.use(expressSocketIoSession(sess, { autoSave: true }))
 
 io.on('connection', async socket => {
     socket.on('joinRoom', async data => {
-        if (data.notAThread === true && data.roomId === 'developerconsole') {
-            //developer console.
-            let username = socket.handshake.session.username
-            if (await perm.findOne({ where: { username: username, perm: 'developer' } })) {
-                await socket.join('developerconsole')
-                await socket.emit('joinok')
-                socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
+        try {
+            if (data.notAThread === true && data.roomId === 'developerconsole') {
+                const username = socket.handshake.session.username
+                if (await services.permission.hasPermission(username, 'developer')) {
+                    socket.join('developerconsole')
+                    socket.emit('joinok')
+                    socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
+                }
+            } else {
+                socket.join(data.roomId)
             }
-        }
-        else {
-            // thread room
-            socket.join(data.roomId)
+        } catch (err) {
+            logger.warn('Socket joinRoom error', { error: err.message })
         }
     })
+
     socket.on('message', async data => {
-        if (!data.message) return
-        let username = socket.handshake.session.username
-        let IP = socket.handshake.headers['x-real-ip'] || socket.handshake.address
+        try {
+            if (!data.message) return
+            const username = socket.handshake.session.username
+            const ipAddress = socket.handshake.headers['x-real-ip'] || socket.handshake.address
 
-        //get username
-        let doneBy = username ? username : IP
+            const { doneBy } = await services.thread.postComment({
+                threadID: data.roomId,
+                username,
+                ipAddress,
+                message: data.message
+            })
 
-        data.username = doneBy
-        let ipblock = await block.findOne({ where: { target: IP } })
-        if (ipblock) {
-            if (!username) return
-            if (!ipblock.allowLogin) return
+            data.username = doneBy
+            data.message = (await services.render.render(data.message, {}, false)).html
+            io.sockets.in(data.roomId).emit('message', data)
+        } catch (err) {
+            logger.warn('Socket message rejected', { error: err.message })
         }
-        if (username && (await block.findOne({ where: { target: username } }))) return
-
-        //put in DB
-        await threadcomment.create(
-            {
-                type: 'comment',
-                threadID: data.roomId,
-                doneBy: doneBy,
-                content: data.message,
-                isHidden: false
-            }
-        )
-        let t = await thread.findOne(
-            {
-                where: { threadID: data.roomId }
-            })
-
-        //RD should be unique
-        await recentdiscuss.destroy(
-            {
-                where: { threadID: data.roomId }
-            })
-
-        //And PUT
-        await recentdiscuss.create(
-            {
-                threadname: t.threadTitle,
-                threadID: data.roomId,
-                pagename: t.pagename
-            }
-        )
-
-        //render to wikitext
-        data.message = (await threadRenderer.render(data.message, {}, false)).html
-
-        io.sockets.in(data.roomId).emit('message', data)
     })
+
     socket.on('input', async data => {
         await adminCommand(socket, data.command)
     })

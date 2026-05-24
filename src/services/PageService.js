@@ -241,7 +241,7 @@ class PageService {
         }
         if (!content && content !== '') {
             throw new ValidationError({
-                i18nKey: 'edit_titleneeded',
+                i18nKey: 'edit_contentneeded',
                 statusCode: 200,
                 code: 'EDIT_CONTENT_NEEDED'
             })

@@ -63,6 +63,7 @@
 	"edit_noparagraph": "No such paragraph found.",
 	"edit_pg": "Edit {{name}}",
 	"edit_titleneeded": "Page title is needed.",
+	"edit_contentneeded": "Page content is needed.",
 	"edit_noacl": "Cannot edit the page because the page's ACL is {{acl}}.",
 	"view_noacl": "Cannot read the page because the page's ACL is {{acl}}.",
 	"move_noacl": "Cannot move the page because the page's ACL is {{acl}}.",
@@ -182,5 +183,6 @@
 	"titleMatch": "Title match",
 	"contentMatch": "Content match",
 	"noResults": "No results",
-	"lookingForPageEdit": "Looking for <a href='/edit/{{{searchtitle}}}'>page edit</a>?"
+	"lookingForPageEdit": "Looking for <a href='/edit/{{{searchtitle}}}'>page edit</a>?",
+	"copyrightNotice": "By saving this edit, you agree that {{appname}} may distribute your contribution under {{license}}. This consent cannot be withdrawn."
 }

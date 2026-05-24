@@ -50,8 +50,8 @@ class ServiceFactory {
         this.thread = new ThreadService(
             repositories.threads,
             repositories.threadcomments,
-            repositories.recentdiscuss,
             repositories.pages,
+            repositories.recentdiscuss,
             this.permission)
         this.render = new RenderService(repositories.pages, repositories.files)
         this.admin = new AdminService(

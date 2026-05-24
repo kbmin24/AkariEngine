@@ -56,7 +56,7 @@
     <% if (locals.username === undefined) { %>
     <p><span class='text-danger fw-bold'><%= l('warning') %>!</span> <%= l('ipshown') %> </p>
     <% } %>
-    <p><span class='text-danger fw-bold'><%= l('warning') %>!</span>    <%= global.copyrightNotice %></p>
+    <p><span class='text-danger fw-bold'><%= l('warning') %>!</span>    <%= l('copyrightNotice', { appname: appname, license: licence }) %></p>
     <button type='submit' type='button' class='btn btn-primary mt-3'><%= l('save') %></button>
     <button type='button' class='btn btn-secondary mt-3' onclick='previewButtonClick()'><%= l('preview') %></button>
     <% } %>

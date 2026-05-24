@@ -32,12 +32,16 @@ class RecentDiscussRepository extends BaseRepository {
         })
     }
 
-    async createnewEntry(threadname, threadID, pagename) {
+    async createNewEntry(threadname, threadID, pagename) {
         return this.model.create({
             threadname,
             threadID,
             pagename
         })
+    }
+
+    async destroyByThreadId(threadID) {
+        return this.model.destroy({ where: { threadID } })
     }
 }
 

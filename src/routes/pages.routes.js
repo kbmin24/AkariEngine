@@ -1,10 +1,9 @@
 import express from 'express'
 import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
 import { param, query, body } from 'express-validator'
-import { requirePermission } from '../middlewares/permission.js'
+import { requirePermission, requirePageAccess } from '../middlewares/permission.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { validateRequest } from '../middlewares/validation.js'
-import { requirePageAccess } from '../middlewares/permission.js'
 import viewController from '../controllers/pages/viewGet.js'
 import previewController from '../controllers/pages/preview.js'
 import searchGetController from '../controllers/pages/searchGet.js'
@@ -33,7 +32,7 @@ export default (options = {}) => {
 
     router.get('/w/:name(*)',
         param('name').trim().notEmpty(),
-        query('rev').optional().isInt(),
+        query('rev').optional().isInt().toInt(),
         validateRequest,
         requirePageAccess('read', {
             noAclMessageKey: 'view_noacl',
@@ -55,7 +54,7 @@ export default (options = {}) => {
 
     router.get('/search',
         query('q').trim().notEmpty(),
-        query('from').optional().isInt(),
+        query('from').optional().isInt().toInt(),
         validateRequest,
         asyncRoute(searchGetController)
     )
@@ -68,7 +67,7 @@ export default (options = {}) => {
 
     router.get('/raw/:name(*)',
         param('name').trim().notEmpty(),
-        query('rev').optional().isInt(),
+        query('rev').optional().isInt().toInt(),
         validateRequest,
         requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         asyncRoute(rawGetController)
@@ -76,16 +75,16 @@ export default (options = {}) => {
 
     router.get('/history/:name(*)',
         param('name').trim().notEmpty(),
-        query('from').optional().isInt(),
-        query('to').optional().isInt(),
+        query('from').optional().isInt().toInt(),
+        query('to').optional().isInt().toInt(),
         validateRequest,
         requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         asyncRoute(historyGetController)
     )
 
     router.get('/diff/:name(*)',
-        query('rev1').isInt(),
-        query('rev2').isInt(),
+        query('rev1').isInt().toInt(),
+        query('rev2').isInt().toInt(),
         validateRequest,
         requirePageAccess('read', {
             noAclMessageKey: 'view_noacl',
@@ -157,7 +156,7 @@ export default (options = {}) => {
 
     router.get('/revert/:name(*)',
         param('name').trim().notEmpty(),
-        query('rev').isInt(),
+        query('rev').isInt().toInt(),
         validateRequest,
         requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
         csrfProtection,
@@ -166,7 +165,7 @@ export default (options = {}) => {
 
     router.post('/revert/:name(*)',
         param('name').trim().notEmpty(),
-        body('rev').isInt(),
+        body('rev').isInt().toInt(),
         validateRequest,
         csrfProtection,
         chkCaptcha,

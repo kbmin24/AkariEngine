@@ -1,4 +1,4 @@
-v4.0 (2026-??-??)
+v4.0 (2026-05-24)
 * Under progress
 * Refactored backend to be more maintainable
 * New parser

@@ -8,7 +8,6 @@ import {
     ValidationError,
     CaptchaError,
 } from '../services/errors.js'
-import { reversePatch } from 'diff'
 
 function getEnglishMessage(res, err) {
     if (!err) return 'Unknown error'
@@ -43,7 +42,7 @@ function errorHandler(err, req, res, next) {
             message: 'An undefined error occurred. Please check the server logs for details.'
         })
     }
-    if (err.code) {
+    if (err.code === 'EBADCSRFTOKEN') {
         return next(err) // pass it to legacy handler
     }
 

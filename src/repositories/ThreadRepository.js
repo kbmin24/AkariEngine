@@ -48,7 +48,8 @@ class ThreadRepository extends BaseRepository {
             {
                 threadID,
                 threadTitle,
-                pagename
+                pagename,
+                isOpen: true
             })
     }
 }

@@ -182,6 +182,29 @@ class ThreadService {
      * @param {String} comment - The content of the initial comment in the thread.
      * @returns {Promise<String>} The ID of the newly created thread.
     */
+    async postComment({ threadID, username, ipAddress, message }) {
+        if (!message || typeof message !== 'string' || !message.trim()) {
+            throw new ValidationError('Message is required.')
+        }
+        if (message.length > 10000) {
+            throw new ValidationError('Message is too long.')
+        }
+
+        const thread = await this.threadRepo.findByThreadId(threadID)
+        if (!thread) throw new ValidationError('Thread not found.')
+        if (!thread.isOpen) throw new ValidationError('Thread is closed.')
+
+        await this.permissionService.requireReadAccess(username, thread.pagename, { ipAddress })
+
+        const doneBy = username || ipAddress
+        await this.threadCommentRepo.createNewComment(threadID, doneBy, message)
+
+        await this.recentDiscussrepo.destroyByThreadId(threadID)
+        await this.recentDiscussrepo.createNewEntry(thread.threadTitle, threadID, thread.pagename)
+
+        return { thread, doneBy }
+    }
+
     async createThread(username, ipAddress, title, pageName, comment) {
         await this.permissionService.requireReadAccess(username, pageName, { ipAddress })
         if (!(await this.pagesRepo.findByTitle(pageName))) {
