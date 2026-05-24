@@ -30,7 +30,6 @@
         "host": "http://127.0.0.1:7700",
         "apiKey": "(insert api key here)"
     },
-    "gaenyumThreshold": 5,
     "disableDarkMode": false,
     "upload_types": [
         "jpeg",
@@ -71,8 +70,7 @@
         "GECWiki"
     ],
     "extensions": [
-        "Interwiki",
-        "Board"
+        "Interwiki"
     ],
     "defaultLocale": "ko_KR",
     "isPrivate": false
