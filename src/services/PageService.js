@@ -8,13 +8,14 @@ import {
 } from './errors.js'
 
 class PageService {
-    constructor(pageRepo, historyRepo, categoryService, permissionService, protectRepo = null, recentChangeRepo = null) {
+    constructor(pageRepo, historyRepo, categoryService, permissionService, protectRepo = null, recentChangeRepo = null, msRepo = null) {
         this.pageRepo = pageRepo
         this.historyRepo = historyRepo
         this.categoryService = categoryService
         this.permissionService = permissionService
         this.protectRepo = protectRepo
         this.recentChangeRepo = recentChangeRepo
+        this.msRepo = msRepo
     }
 
     /**
@@ -286,6 +287,14 @@ class PageService {
             type: isNewPage ? 'create' : 'edit'
         })
 
+        if (this.msRepo) {
+            try {
+                await this.msRepo.addDocuments(page)
+            } catch (e) {
+                logger.warn('Meilisearch index update failed after edit', { title, error: e.message })
+            }
+        }
+
         logger.info('Page edited', { title, user: doneBy, rev: nextRev })
         return page
     }
@@ -306,6 +315,14 @@ class PageService {
             doneBy: user,
             comment
         })
+
+        if (this.msRepo) {
+            try {
+                await this.msRepo.deleteDocument(page.id)
+            } catch (e) {
+                logger.warn('Meilisearch index update failed after delete', { title, error: e.message })
+            }
+        }
 
         logger.admin('Page deleted', user, { title })
         return true
@@ -344,6 +361,19 @@ class PageService {
         }
         if (!result.moved && result.reason === 'not_found') {
             throw new PageNotFoundError(sourceTitle)
+        }
+
+        if (this.msRepo) {
+            try {
+                const [movedPage, redirectPage] = await Promise.all([
+                    this.pageRepo.findByTitle(targetTitle),
+                    this.pageRepo.findByTitle(sourceTitle)
+                ])
+                const toIndex = [movedPage, redirectPage].filter(Boolean)
+                if (toIndex.length > 0) await this.msRepo.addDocuments(toIndex)
+            } catch (e) {
+                logger.warn('Meilisearch index update failed after move', { from: sourceTitle, to: targetTitle, error: e.message })
+            }
         }
 
         logger.admin('Page moved', doneBy, { from: sourceTitle, to: targetTitle })

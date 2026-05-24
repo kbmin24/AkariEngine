@@ -1,4 +1,4 @@
-﻿import PageService from './PageService.js'
+import PageService from './PageService.js'
 import HistoryService from './HistoryService.js'
 import SearchService from './SearchService.js'
 import PermissionService from './PermissionService.js'
@@ -13,9 +13,11 @@ import LoginHistoryService from './LoginHistoryService.js'
 import UserService from './UserService.js'
 import RecentDiscussService from './RecentDiscussService.js'
 import FileService from './FileService.js'
+import MeilisearchRepository from '../repositories/MeilisearchRepository.js'
 
 class ServiceFactory {
-    constructor(repositories) {
+    constructor(repositories, { msIndex = null } = {}) {
+        const msRepo = msIndex ? new MeilisearchRepository(msIndex) : null
         this.category = new CategoryService(repositories.categories)
         this.block = new BlockService(
             repositories.blocks,
@@ -34,14 +36,15 @@ class ServiceFactory {
             this.category,
             this.permission,
             repositories.protections,
-            repositories.recentchanges
+            repositories.recentchanges,
+            msRepo
         )
         this.history = new HistoryService(
             repositories.history,
             repositories.pages,
             this.permission
         )
-        this.search = new SearchService(repositories.pages)
+        this.search = new SearchService(repositories.pages, msRepo)
         this.viewcount = new ViewcountService(repositories.viewcounts)
         this.recentChanges = new RecentChangeService(repositories.recentchanges)
         this.thread = new ThreadService(
@@ -65,4 +68,4 @@ class ServiceFactory {
     }
 }
 
-export default ServiceFactory;
+export default ServiceFactory

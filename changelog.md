@@ -3,7 +3,7 @@ v4.0 (2026-??-??)
 * Refactored backend to be more maintainable
 * New parser
 * map macro now uses Openstreetmap instead of Kakaomap
-* Board now has its own `LocalSettings.json`
+* Board extension discontinued
 * Supports meilisearch as full-text search engine
 * Some bugfixes
 
@@ -61,6 +61,7 @@ v2.3 (2022-04-17)
 
 v2.2
 * fixed flicker issue
+
 v2.1
 v2.0
 * board

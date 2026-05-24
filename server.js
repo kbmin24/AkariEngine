@@ -1,4 +1,4 @@
-import express from 'express'
+﻿import express from 'express'
 const app = express()
 import paths from './src/utils/paths.js'
 import config from './src/config/index.js'
@@ -19,6 +19,8 @@ import renderError from './src/utils/error.js'
 import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
 import adminCommand from './src/admin/command.js'
+import { initMeilisearch } from './src/utils/meilisearchClient.js'
+
 
 global.path = config.basePath
 global.conf = config.settings
@@ -67,19 +69,20 @@ const sess = session({
 app.use(sess)
 
 //CSRF
-const { generateToken, doubleCsrfProtection } = doubleCsrf({
+const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     getSecret: () => secret,
+    getSessionIdentifier: (req) => req.session?.id ?? req.ip,
     cookieName: 'x-csrf-token',
     cookieOptions: {
         sameSite: 'lax',
         secure: config.ssl,
         httpOnly: true,
     },
-    getTokenFromRequest: (req) => req.body?._csrf ?? req.headers['x-csrf-token'],
+    getCsrfTokenFromRequest: (req) => req.body?._csrf ?? req.headers['x-csrf-token'],
 })
 
 app.use((req, res, next) => {
-    req.csrfToken = () => generateToken(req, res)
+    req.csrfToken = () => generateCsrfToken(req, res)
     next()
 })
 
@@ -152,7 +155,10 @@ global.db =
 }
 
 const repositories = new RepositoryFactory(global.db)
-const services = new ServiceFactory(repositories)
+const msIndex = config.settings.meilisearch?.enabled
+    ? await initMeilisearch(config.settings.meilisearch)
+    : null
+const services = new ServiceFactory(repositories, { msIndex })
 app.locals.repositories = repositories
 app.locals.services = services
 
@@ -312,7 +318,7 @@ io.on('connection', async socket => {
             if (await perm.findOne({ where: { username: username, perm: 'developer' } })) {
                 await socket.join('developerconsole')
                 await socket.emit('joinok')
-                socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2023. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
+                socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
             }
         }
         else {
@@ -372,6 +378,6 @@ io.on('connection', async socket => {
         io.sockets.in(data.roomId).emit('message', data)
     })
     socket.on('input', async data => {
-        await adminCommand(io, socket, data.command, { perm: perm, file: mfile, pages: pages, history: history, category: category })
+        await adminCommand(socket, data.command)
     })
 })

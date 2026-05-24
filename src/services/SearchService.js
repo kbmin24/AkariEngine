@@ -1,8 +1,10 @@
 import { ValidationError } from './errors.js'
+import logger from '../utils/logger.js'
 
 class SearchService {
-    constructor(pageRepo) {
+    constructor(pageRepo, msRepo = null) {
         this.pageRepo = pageRepo
+        this.msRepo = msRepo
     }
 
     async searchPages(query, limit = 10) {
@@ -28,6 +30,25 @@ class SearchService {
             })
         }
 
+        try {
+            if (this.msRepo) {
+                const [resultTitle, resultContent] = await Promise.all([
+                    this.msRepo.searchByTitle(normalized, { limit: 10, offset }),
+                    this.msRepo.searchByContent(normalized, { limit: 10, offset })
+                ])
+                return {
+                    query: normalized,
+                    from: offset,
+                    mode: "enhanced",
+                    resultTitle,
+                    resultContent }
+            }
+        }
+        catch (e) {
+            logger.warn("Meilisearch failed: " + e.message)
+        }
+
+        // Fallback to DB search
         const [resultTitle, resultContent] = await Promise.all([
             this.pageRepo.searchByTitle(normalized, 10, offset),
             this.pageRepo.searchByContent(normalized, 10, offset)
@@ -36,6 +57,7 @@ class SearchService {
         return {
             query: normalized,
             from: offset,
+            mode: "basic",
             resultTitle,
             resultContent
         }
@@ -64,6 +86,10 @@ class SearchService {
 
         const normalized = query.trim()
         if (!normalized) return []
+
+        if (this.msRepo) {
+            return this.msRepo.autocomplete(normalized, limit)
+        }
 
         return this.pageRepo.autocompleteByPrefix(normalized, limit)
     }
