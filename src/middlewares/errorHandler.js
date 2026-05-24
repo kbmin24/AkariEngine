@@ -8,6 +8,7 @@ import {
     ValidationError,
     CaptchaError,
 } from '../services/errors.js'
+import { reversePatch } from 'diff'
 
 function getEnglishMessage(res, err) {
     if (!err) return 'Unknown error'
@@ -67,10 +68,16 @@ function errorHandler(err, req, res, next) {
     }
 
     if (err instanceof PageNotFoundError) {
-        return res.status(404).render('error', {
-            title: 'Page Not Found',
-            message: err.message
-        })
+        return renderError(
+            req,
+            res,
+            {
+                description: res.__('page404'),
+                returnLink: err.returnLink || '/',
+                returnName: res.__(err.returnName || 'mainpage'),
+                statusCode: err.statusCode || 404
+            }
+        )
     }
 
     if (err instanceof AuthenticationRequiredError) {

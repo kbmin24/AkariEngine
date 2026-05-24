@@ -16,6 +16,7 @@ import i18n from 'i18n'
 import taskScheduler from './src/taskScheduler.js'
 import escapeHTML from './src/utils/escapeHTML.js'
 import renderError from './src/utils/error.js'
+import { PageNotFoundError } from './src/services/errors.js'
 import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
 import adminCommand from './src/admin/command.js'
@@ -271,6 +272,11 @@ app.get('/lovelive', (req, res) => {
 })
 
 import { errorHandler } from './src/middlewares/errorHandler.js'
+
+app.use((req, res, next) => {
+    next(new PageNotFoundError(`${req.method} ${req.path}`))
+})
+
 app.use(errorHandler)
 
 //error handler
