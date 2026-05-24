@@ -1,26 +1,33 @@
-const {DataTypes} = require('sequelize')
-module.exports = (sequelize) =>
-{
+import { DataTypes } from 'sequelize'
+
+export default (sequelize) => {
     return sequelize.define('protect',
-    {
-        title:
         {
-            allowNull: false,
-            type: DataTypes.STRING
-        },
-        revision:
-        {
-            allowNull: true,
-            type: DataTypes.INTEGER
-        },
-        task:
-        {
-            allowNull: false,
-            type: DataTypes.STRING
-        },
-        protectionLevel:
-        {
-            type: DataTypes.STRING
-        }
+            title:
+            {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            revision:
+            {
+                allowNull: true,
+                type: DataTypes.INTEGER
+            },
+            task:
+            {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            protectionLevel:
+            {
+                type: DataTypes.STRING
+            }
+        }, {
+        indexes: [
+            {
+                using: 'BTREE',
+                fields: ['title', 'revision', 'task']
+            }
+        ]
     })
-}
+};

@@ -1,21 +1,24 @@
-module.exports = async (req, res, title, filename) =>
+import paths from './utils/paths.js'
+import logger from './utils/logger.js'
+import fs from 'node:fs'
+import renderView from './view.js'
+
+export default async (req, res, title, filename) =>
 {
-    const fs = require('fs')
-    await fs.readFile(global.path + filename, 'utf8', (err,data) =>
+    await fs.readFile(paths.resolve(filename.replace(/^\//, '')), 'utf8', (err,data) =>
     {
         if (err)
         {
-            console.error(err)
+            logger.error('Failed to read file for sendfile', err)
             res.status(500).send('Internal server error')
         }
         else
         {
-            console.log(data)
-            require(global.path + '/view.js')(req, res,
+            renderView(req, res,
             {
                 title: title,
                 content: data,
-                ipaddr: (req.headers['x-forwarded-for'] || req.socket.remoteAddress),
+                ipaddr: req.ipAddress,
                 username: req.session.username
             })
         }

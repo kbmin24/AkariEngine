@@ -1,5 +1,6 @@
-const {DataTypes} = require('sequelize')
-module.exports = (sequelize) =>
+import { DataTypes } from 'sequelize'
+
+export default (sequelize) =>
 {
     return sequelize.define('updateTime',
     {
@@ -11,5 +12,13 @@ module.exports = (sequelize) =>
         {
             type: DataTypes.DATE
         }
+    },
+    {
+        indexes: [
+            {
+                unique: true,
+                fields: ['key']
+            }
+        ]
     })
-}
+};

@@ -3,22 +3,20 @@
 
 ![Screenshot](wikiscreenshot.png)
 
-AkariEngine is a nodejs based wiki engine. When I was 15, I started this as a toy project and then developed for use in [GECWiki](https://gecwiki.kr).
+AkariEngine is a nodejs based wiki engine. It served as the wiki engine for the retired [GECWiki](https://gecwiki.kr) website from 2022 to 2024.
+
+## Features
+AkariEngine is a simple yet versatile wiki engine with the following features:
+* Simple and powerful markup (grammar) with features such as tables, videos and maps
+* To-the-point, no hassle configuration
+* Real time, thread-like discussion
+* Flexible database choice
+* Built in permission/ACL management
+* Extensible by design: various skins available to customise the look and an avilable extension system
+* Full text search via Meilisearch
 
 ## Getting Started
-Please refer to [installation page on the wiki](https://github.com/kbmin24/AkariEngine/wiki/Installation).
+Please refer to the wiki's [installation page](https://github.com/kbmin24/AkariEngine/wiki/Installation).
 
 ## Licence
 AkariEngine is distributed under GNU AGPL 3.0.
-
-## Why am I opening the code?
-I am making this project open source because:
- * I would like to record my progress (of learning how to code when I am in high school);
- * I am hoping that someone would find this project useful in developing their own wiki engines.
-
-I am '''not''' making this project open source because
- * I hope others to use this wiki engine right away. (It is OK to do so, but as this engine was made specifically for GECWiki, I do not guarantee its usability or liability.)
-
-## Disclaimer
- * AkariEngine is designed specifically for [GECWiki](https://gecwiki.kr); therefore, it may __not__ be suitable for general use.
- * All interfaces are in Korean. (If looking for english interface, please check [this version](https://github.com/kbmin24/AkariEngine/tree/a3c8afb6d532ca2704456efe13e19a8fb531f0fe) or older.

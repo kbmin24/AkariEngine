@@ -106,15 +106,23 @@ dist
 #macOS
 .DS_Store
 
-#DB file (because it includes my PW (even if it's hashed)
+package-lock.json
+
+#DB file
 db.sqlite
 
 #image files
-src/public/uploads/*
-src/public/boarduploads/*
+uploads/*
+!uploads/.gitkeep
+public/boarduploads/*
 
 LocalSettings.json
+extensions/Board/LocalSettings.json
 google3cb516e66b73224c.html 
 naver3e0ac11747bec50c1fe96401d179952c.html 
 favicon.ico
 robots.txt
+
+.claude/
+
+src/utils/wikimark/.tests/

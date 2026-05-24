@@ -1,45 +1,53 @@
-const {DataTypes} = require('sequelize')
-module.exports = (sequelize) =>
-{
+import { DataTypes } from 'sequelize'
+
+export default (sequelize) => {
     return sequelize.define('user',
-    {
-        id:
         {
-            allowNull: false,
-            autoIncrement: true,
-            primaryKey: true,
-            type: DataTypes.INTEGER
-        },
-        username:
-        {
-            allowNull: false,
-            type: DataTypes.STRING,
-            unique: true,
-            validate:
+            id:
             {
-                is: /^\w{3,}$/
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: DataTypes.INTEGER
+            },
+            username:
+            {
+                allowNull: false,
+                type: DataTypes.STRING,
+                unique: true,
+                validate:
+                {
+                    is: /^\w{3,}$/
+                }
+            },
+            password:
+            {
+                //hash
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            salt:
+            {
+                allowNull: false,
+                type: DataTypes.STRING
+            },
+            createdAt:
+            {
+                allowNull: true,
+                type: DataTypes.DATE
+            },
+            updatedAt:
+            {
+                allowNull: true,
+                type: DataTypes.DATE
             }
         },
-        password:
         {
-            //hash
-            allowNull: false,
-            type: DataTypes.STRING
-        },
-        salt:
-        {
-            allowNull: false,
-            type: DataTypes.STRING
-        },
-        createdAt:
-        {
-            allowNull: true,
-            type: DataTypes.DATE
-        },
-        updatedAt:
-        {
-            allowNull: true,
-            type: DataTypes.DATE
-        }
-    })
-}
+            indexes: [
+                {
+                    unique: true,
+                    fields: ['username']
+                }
+            ]
+        })
+};

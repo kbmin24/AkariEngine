@@ -1,5 +1,5 @@
-<p class='fw-bold'><a href='/edit/<%= searchtitle %>'>문서 편집</a>을 찾으시나요?</p>
-<h5>제목 일치</h5>
+<p class='fw-bold'><%- t('lookingForPageEdit', { searchtitle: encodeURIComponent(searchtitle) }) %></p>
+<h5><%= t('titleMatch') %></h5>
 <ul class="list-group list-group-flush">
     <% for (let i = 0; i < resultTitle.length; i++) { %>
         <li class="list-group-item">
@@ -8,35 +8,39 @@
     <% } %>
 </ul>
 <% if (resultTitle.length == 0) { %>
-    <p>결과 없음</p>
+    <p><%= t('noResults') %></p>
 <% } %>
 <br>
-<h5>내용 일치</h5>
+<h5><%= t('contentMatch') %></h5>
 <ul class="list-group list-group-flush">
     <% for (let i = 0; i < resultContent.length; i++) { %>
         <li class="list-group-item">
             <a href='/w/<%= resultContent[i].title %>'><%= resultContent[i].title %></a>
+            <% if (searchMode == "enhanced")  {%>
+                <!-- TODO WITH FRONTEND REFACTOR: ADD SOME STYLE -->
+                <p class="hitCroppedContent"><%- sanitizeHTML(resultContent[i].content) %></p>
+            <% } %>
         </li>
     <% } %>
 </ul>
 <% if (resultContent.length == 0) { %>
-    <p>결과 없음</p>
+    <p><%= t('noResults') %></p>
 <% } %>
 <br>
 <ul class="pagination">
     <% if (0 < from) { %>
-        <% var prevlink = `/search/?q=${searchtitle}&from=${Math.max(0, from - 10)}` %>
+        <% var prevlink = `/search/?q=${encodeURIComponent(searchtitle)}&from=${Math.max(0, from - 10)}` %>
         <li class="page-item">
             <a class="page-link" href=<%= prevlink %> aria-label="Previous">
-                이전
+                <%= t('previous') %>
             </a>
         </li>
     <% } %>
     <% if (resultTitle.length == 10 || resultContent.length == 10) { %>
-        <% var nextlink = `/search/?q=${searchtitle}&from=${from + 10}` %>
+        <% var nextlink = `/search/?q=${encodeURIComponent(searchtitle)}&from=${from + 10}` %>
         <li class="page-item">
             <a class="page-link" href=<%= nextlink %> aria-label="Next">
-                다음
+                <%= t('next') %>
             </a>
         </li>
     <% } %>
