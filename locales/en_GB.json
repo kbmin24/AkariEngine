@@ -185,5 +185,7 @@
 	"noResults": "No results",
 	"lookingForPageEdit": "Looking for <a href='/edit/{{{searchtitle}}}'>page edit</a>?",
 	"copyrightNotice": "By saving this edit, you agree that {{appname}} may distribute your contribution under {{license}}. This consent cannot be withdrawn.",
-	"pvtmodeSignupDisabled": "Signup is disabled in private mode."
+	"pvtmodeSignupDisabled": "Signup is disabled in private mode.",
+	"loading": "Loading...",
+	"previewDataNotFound": "Preview data not found."
 }

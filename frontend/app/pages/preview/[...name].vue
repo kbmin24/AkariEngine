@@ -1,5 +1,5 @@
 <template>
-    <div v-if="error" class="p-3">
+    <div v-if="error" class="alert alert-warning m-3" role="alert">
         <p v-html="$t(errorI18nKey)"></p>
     </div>
     <div v-else>
@@ -17,6 +17,7 @@
 <script setup>
 definePageMeta({
     layout: 'gec-wiki',
+    ssr: false,
 })
 
 const route = useRoute()
@@ -30,25 +31,18 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const storedContent = import.meta.client
-    ? sessionStorage.getItem(`preview:${pagename.value}`)
-    : null
-
-const error = ref(null)
-const data = ref(null)
-
-if (storedContent) {
-    try {
-        data.value = await csrfFetch('/api/preview', {
+const { data, error } = await useAsyncData(
+    `preview:${pagename.value}`,
+    async () => {
+        const stored = sessionStorage.getItem(`preview:${pagename.value}`)
+        if (!stored) throw { data: { i18nKey: 'previewDataNotFound' } }
+        return csrfFetch('/api/preview', {
             method: 'POST',
-            body: { title: pagename.value, content: storedContent },
+            body: { title: pagename.value, content: stored },
         })
-    } catch (e) {
-        error.value = e
-    }
-} else {
-    error.value = { data: { i18nKey: 'error' } }
-}
+    },
+    { server: false }
+)
 
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? 'error')
 
