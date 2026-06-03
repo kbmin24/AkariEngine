@@ -83,6 +83,10 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 
 app.use((req, res, next) => {
     req.csrfToken = () => generateCsrfToken(req, res)
+    if (!req.session.initialized) {
+      req.session.initialized = true
+      req.session.save(next)
+    }
     next()
 })
 
