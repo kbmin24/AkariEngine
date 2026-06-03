@@ -24,7 +24,7 @@ export default (req, res, options = {}) => {
         statusCode
     } = options
 
-    const content = res.__('error_returnInfo', {
+    const content = res.__('returnInfo', {
         description: description || res.__('unknown_error'),
         link: returnLink || '/',
         linkname: returnName || res.__('mainpage'),

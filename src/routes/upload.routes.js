@@ -1,5 +1,5 @@
 import express from 'express'
-import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
+import { asyncRoute } from '../utils/httpHelper.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { requireLogin } from '../middlewares/permission.js'
 import { genCaptcha } from '../utils/captcha.js'
@@ -22,15 +22,11 @@ export default () => {
     router.get('/Upload',
         requireLogin({mode: 'enforce', authReturnLink: '/', authReturnName: 'mainpage'}),
         asyncRoute(async (req, res) => {
-        const username = req.session.username
-        const captchaSVG = await genCaptcha()
-        await renderTemplateInLayout(req, res, 'files/upload.ejs', {
-            username,
-            captcha: captchaSVG,
-            filetypes: getFileTypes().join(', '),
+        res.json({
+            username: req.session.username,
+            captcha: await genCaptcha(),
+            filetypes: getFileTypes(),
             fileLimit
-        }, {
-            title: res.__('upload')
         })
     }))
 

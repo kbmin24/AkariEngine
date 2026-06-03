@@ -39,6 +39,11 @@ class UserService {
         return hash === user.password
     }
 
+    async getSkin(username) {
+        const setting = await this.settingsRepository.getSetting(username, 'skin')
+        return setting?.value ?? null
+    }
+
     async changeSkin(username, skinName) {
         await this.settingsRepository.setSetting(username, 'skin', skinName)
     }

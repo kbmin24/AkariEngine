@@ -1,5 +1,5 @@
 import express from 'express'
-import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
+import { asyncRoute } from '../utils/httpHelper.js'
 import { requirePermission } from '../middlewares/auth.js'
 import { param, query } from 'express-validator'
 import { validateRequest } from '../middlewares/validation.js'
@@ -39,9 +39,7 @@ export default (options = {}) => {
         csrfProtection,
         requirePermission('block'),
         asyncRoute(async (req, res) => {
-            await renderTemplateInLayout(req, res, 'admin/blockuser.ejs', { csrfToken: req.csrfToken() }, {
-                title: 'Block user'
-            })
+            res.json({ csrfToken: req.csrfToken() })
         })
     )
 
@@ -49,11 +47,7 @@ export default (options = {}) => {
         csrfProtection,
         requirePermission('block'),
         asyncRoute(async (req, res) => {
-            await renderTemplateInLayout(req, res, 'admin/blockIP.ejs', { csrfToken: req.csrfToken() }, {
-                title: res.__('blockIpAddr'),
-                username: req.session.username,
-                ipaddr: req.ipAddress
-            })
+            res.json({ csrfToken: req.csrfToken() })
         })
     )
 
@@ -115,9 +109,7 @@ export default (options = {}) => {
         csrfProtection,
         requirePermission('developer'),
         asyncRoute(async (req, res) => {
-            await renderTemplateInLayout(req, res, 'admin/developermenu.ejs', {}, {
-                title: 'Developer console',
-            })
+            res.json({ csrfToken: req.csrfToken() })
         })
     )
 

@@ -1,23 +1,19 @@
 import date from 'date-and-time'
-import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 
 export default async (req, res) => {
-    const username = req.session.username
     const showfrom = !isNaN(req.query.from) ? req.query.from : 0
 
     const { logs, count } = await req.app.locals.services.admin.getAdminLogAndCount({
-        doneBy: username,
+        doneBy: req.query.doneBy,
         job: req.query.job,
         offset: showfrom
     })
-    await renderTemplateInLayout(req, res, 'admin/adminlog.ejs', {
-        changes: logs,
-        count: count,
+
+    res.json({
+        logs: logs.map(l => ({ ...l, date: date.format(new Date(l.createdAt), global.dtFormat) })),
+        count,
         from: showfrom,
-        doneBy: req.query.doneBy,
-        job: req.query.job,
-        date: date
-    }, {
-        title: 'Admin Log',
+        doneBy: req.query.doneBy || null,
+        job: req.query.job || null
     })
 }

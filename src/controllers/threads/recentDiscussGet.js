@@ -1,12 +1,11 @@
 import date from 'date-and-time'
-import { renderTemplateInLayout } from '../../utils/httpHelper.js'
 
 export default async (req, res) => {
     const isopen = req.query.isopen !== 'false'
-    const filteredCh = await req.app.locals.services.recentDiscuss.getRecentDiscuss(isopen)
+    const changes = await req.app.locals.services.recentDiscuss.getRecentDiscuss(isopen)
 
-    await renderTemplateInLayout(req, res, 'threads/RecentDiscuss.ejs',
-        { changes: filteredCh, date },
-        { title: res.__('recentDiscuss'), isPage: false }
-    )
+    res.json({
+        changes: changes.map(c => ({ ...c, date: date.format(new Date(c.updatedAt || c.createdAt), global.dtFormat) })),
+        isopen
+    })
 }

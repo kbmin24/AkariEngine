@@ -1,5 +1,5 @@
 import express from 'express'
-import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
+import { asyncRoute } from '../utils/httpHelper.js'
 import { param, query, body } from 'express-validator'
 import { requirePermission, requirePageAccess } from '../middlewares/permission.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
@@ -42,7 +42,7 @@ export default (options = {}) => {
     )
 
     router.post('/w', asyncRoute(async (req, res) => {
-        await res.redirect('/w/' + req.body.pagename)
+        res.json({ redirect: '/w/' + req.body.pagename })
     }))
 
     router.post('/preview',
@@ -94,12 +94,8 @@ export default (options = {}) => {
     )
 
     router.get('/RecentChanges', asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: res.__ }, {
-            title: res.__('recentChanges'),
-            isPage: false,
-            username: req.session.username,
-            ipaddr: req.ipAddress
-        })
+        const changes = await req.app.locals.services.recentChanges.getRecentChanges({})
+        res.json({ changes })
     }))
 
     router.get('/PageList', asyncRoute(pagelistGetController))
@@ -115,9 +111,8 @@ export default (options = {}) => {
     )
 
     router.get('/RandomPage', asyncRoute(async (req, res) => {
-        // meh it's too thin, let's just leave it as is...
         const randomPage = await req.app.locals.repositories.pages.getRandomPage()
-        res.redirect(`/w/${randomPage.title}`)
+        res.json({ redirect: `/w/${randomPage.title}` })
     }))
 
     router.get('/edit/:name(*)',

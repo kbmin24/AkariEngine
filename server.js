@@ -15,8 +15,7 @@ import { doubleCsrf } from 'csrf-csrf'
 import i18n from 'i18n'
 import taskScheduler from './src/taskScheduler.js'
 import escapeHTML from './src/utils/escapeHTML.js'
-import renderError from './src/utils/error.js'
-import { PageNotFoundError } from './src/services/errors.js'
+import { PageNotFoundError, PermissionDeniedError } from './src/services/errors.js'
 import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
 import adminCommand from './src/admin/command.js'
@@ -91,6 +90,19 @@ app.use(express.urlencoded({ limit: "1mb", extended: false }))
 
 app.disable('x-powered-by')
 app.set('trust proxy', 'loopback')
+
+// CORS for Nuxt dev server
+if (config.isDevelopment) {
+    const nuxtOrigin = config.settings.nuxtDevUrl || 'http://localhost:3000'
+    app.use((req, res, next) => {
+        res.setHeader('Access-Control-Allow-Origin', nuxtOrigin)
+        res.setHeader('Access-Control-Allow-Credentials', 'true')
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-csrf-token')
+        if (req.method === 'OPTIONS') return res.sendStatus(204)
+        next()
+    })
+}
 
 //db
 import usersFactory from './src/models/user.model.js'
@@ -193,12 +205,7 @@ app.use((req, res, next) => {
     // init'ise i18n
     i18n.init(req, res)
 
-    // combat IP spoofing
-    if (config.behindProxy) {
-        req.ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
-    } else {
-        req.ipAddress = req.socket.remoteAddress
-    }
+    req.ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
 
     next()
 })
@@ -227,19 +234,15 @@ app.use((req, res, next) => {
     }
 
     if (url.startsWith('/signup')) {
-        return renderError(req, res, {
-            description: res.__('signupdisabled'),
-            returnLink: '/login',
-            returnName: res.__('loginpage'),
-            statusCode: 403
+        throw new PermissionDeniedError({
+            message: 'Signup is disabled in private mode',
+            i18nKey: 'pvtmodeSignupDisabled'
         })
     }
 
-    return renderError(req, res, {
-        description: res.__('loginneeded'),
-        returnLink: '/login',
-        returnName: res.__('loginpage'),
-        statusCode: 403
+    throw new PermissionDeniedError({
+        i18nKey: "loginneeded",
+        message: 'Login is required to access this page'
     })
 })
 
@@ -262,6 +265,33 @@ import ext from './extensions/extensionManager.js'
 
 ext(app)
 
+// Root redirect (for standalone Express access)
+app.get('/', (req, res) => res.redirect('/w/FrontPage'))
+
+// Auth info endpoint
+app.get('/api/me', async (req, res) => {
+    const username = req.session.username || null
+    const ipAddress = req.ipAddress
+    if (!username) return res.json({ username: null, ipAddress, isAdmin: false, permissions: [], skin: null })
+    try {
+        const { permission, user } = req.app.locals.services
+        const [permChecks, skin] = await Promise.all([
+            Promise.all((global.perms || []).map(async p => ({ p, ok: await permission.hasPermission(username, p) }))),
+            user.getSkin(username),
+        ])
+        const permissions = permChecks.filter(x => x.ok).map(x => x.p)
+        const isAdmin = permissions.includes('admin')
+        res.json({ username, ipAddress, isAdmin, permissions, skin })
+    } catch {
+        res.json({ username, ipAddress, isAdmin: false, permissions: [], skin: null })
+    }
+})
+
+// CSRF token endpoint
+app.get('/api/csrf-token', doubleCsrfProtection, (req, res) => {
+    res.json({ csrfToken: req.csrfToken() })
+})
+
 //Register routes
 registerRoutes(app, services, { csrfProtection: doubleCsrfProtection })
 
@@ -280,22 +310,12 @@ app.use(errorHandler)
 
 //error handler
 app.use((err, req, res, _next) => {
-    // If anything aflls through this most likely something's wrong with our code...
-    console.log(err)
-    switch (err.code)
-    {
-        case "EBADCSRFTOKEN":
-            logger.warn('Possible CSRF attack detected from IP: ' + req.ipAddress)
-            renderError(req, res, {
-                description: res.__('csrfMessage'),
-                returnLink: BACK_LINK,
-                returnName: res.__('previousPage'),
-                statusCode: 403
-            })
-            return
-        default:
-            logger.error('Unhandled request error', err)
+    if (err.code === 'EBADCSRFTOKEN') {
+        logger.warn('Possible CSRF attack detected from IP: ' + req.ipAddress)
+        return res.status(403).json({ error: true, i18nKey: 'csrfMessage' })
     }
+    logger.error('Unhandled request error', err)
+    res.status(500).json({ error: true, message: 'Internal server error' })
 })
 
 // Put server on
@@ -308,7 +328,6 @@ const server = app.listen(port, '0.0.0.0', () => {
 
 //Console
 import { Server } from 'socket.io'
-import { BACK_LINK } from './src/utils/httpHelper.js'
 
 const io = new Server(server)
 io.use(expressSocketIoSession(sess, { autoSave: true }))

@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AkariEngine is a Node.js wiki engine (ESM, `"type": "module"`) built on Express 4, Sequelize ORM, EJS templates, and Socket.IO. It supports SQLite and MariaDB. The UI and content are () primarily in Korean, but is undergoing a shift to i18n support.
+AkariEngine is a Node.js wiki engine (ESM, `"type": "module"`) built on Express 4, Sequelize ORM, and Socket.IO. It supports SQLite and MariaDB. The UI and content are primarily in Korean, but is undergoing a shift to i18n support.
 
-**This project is in a heavy backend refactor.** When style conflicts arise, follow the conventions in `src/routes/pages.routes.js` and its dependencies.
+**The backend refactor is largely complete.** When style conflicts arise, follow the conventions in `src/routes/pages.routes.js` and its dependencies.
+
+**The frontend is being migrated from EJS to Nuxt.** EJS templates currently live in `skins/` (e.g. `skins/GECWiki/*.ejs`). Scripts in `public/js/` will be transitioned into Nuxt incrementally. No frontend conventions are established yet — do not introduce new EJS templates or new files in `public/js/` unless explicitly asked.
 
 ## Commands
 
@@ -106,7 +108,7 @@ Use ESM `import`/`export` everywhere. The sole exception: if a CJS-only package 
 
 ## Code Style
 
-- **Formatting**: UTF-8, LF line endings, 2-space indent (see `.editorconfig`)
+- **Formatting**: UTF-8, LF line endings, 4-space indent (see `.editorconfig`)
 - **Quotes**: single quotes preferred; use double when escaping helps
 - **Naming**: `camelCase` for variables/functions, `PascalCase` for classes, `UPPER_SNAKE_CASE` for constants
 - **File naming**: `*.routes.js`, `*Service.js`, `*Repository.js`

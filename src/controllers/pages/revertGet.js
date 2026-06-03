@@ -1,29 +1,15 @@
-import { renderTemplateInLayout } from '../../utils/httpHelper.js'
-import renderError from '../../utils/error.js'
 import { genCaptcha } from '../../utils/captcha.js'
+import { PageNotFoundError } from '../../services/errors.js'
 
 export default async (req, res) => {
-    const username = req.session.username
     const p = await req.app.locals.repositories.pages.findByTitle(req.params.name)
-    if (!p) {
-        renderError(req, res, {
-            description: `${res.__('page404')} <a href="/edit/${req.params.name}">${res.__('page_asknew')}</a>`,
-            returnLink: '/',
-            returnName: res.__('mainpage'),
-            statusCode: 404
-        })
-        return
-    }
-    const captchaSVG = await genCaptcha()
+    if (!p) throw new PageNotFoundError(req.params.name)
 
-    await renderTemplateInLayout(req, res, 'pages/revert.ejs', {
+    res.json({
         pagename: req.params.name,
-        l: res.__,
-        username: username,
+        username: req.session.username,
         rev: req.query.rev,
-        captcha: captchaSVG,
+        captcha: await genCaptcha(),
         csrfToken: req.csrfToken()
-    }, {
-        title: res.__('revert_title', { page: req.params.name, rev: req.query.rev }),
     })
 }

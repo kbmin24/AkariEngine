@@ -23,7 +23,7 @@ export default (req, res, options = {}) => {
         statusCode
     } = options
 
-    const content = res.__('info_returnInfo', {
+    const content = res.__('returnInfo', {
         description: description || '',
         link: returnLink || '/',
         linkname: returnName || res.__('mainpage'),

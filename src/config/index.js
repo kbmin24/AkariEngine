@@ -11,7 +11,6 @@ class Config {
     }
 
     get port() { return this.settings.port }
-    get behindProxy() { return this.settings.behindProxy || false }
     get appName() { return this.settings.appname }
     get license() { return this.settings.licence }
     get dateTimeFormat() { return this.settings.dateTimeFormat }

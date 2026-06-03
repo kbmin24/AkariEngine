@@ -1,5 +1,4 @@
 import logger from '../utils/logger.js'
-import renderError from '../utils/error.js'
 
 import {
     PageNotFoundError,
@@ -7,6 +6,7 @@ import {
     AuthenticationRequiredError,
     ValidationError,
     CaptchaError,
+    RevisionNotFoundError
 } from '../services/errors.js'
 
 function getEnglishMessage(res, err) {
@@ -33,14 +33,19 @@ function getStackForLogging(err, englishMessage) {
     return stackLines.join('\n')
 }
 
-// TODO: beautify this
+function isApiRequest(req) {
+    return req.path.startsWith('/api') || req.path.startsWith('/api/')
+}
+
+function sendJsonError(res, statusCode, message, i18nKey) {
+    return res.status(statusCode).json({ error: true, message, i18nKey: i18nKey || null })
+}
+
 function errorHandler(err, req, res, next) {
     if (!err) {
         logger.error('Error handler called without an error object')
-        return res.status(500).render('error', {
-            title: 'Undefined Error',
-            message: 'An undefined error occurred. Please check the server logs for details.'
-        })
+        if (isApiRequest(req)) return sendJsonError(res, 500, 'An undefined error occurred')
+        return res.status(500).json({ error: true, message: 'An undefined error occurred' })
     }
     if (err.code === 'EBADCSRFTOKEN') {
         return next(err) // pass it to legacy handler
@@ -54,68 +59,31 @@ function errorHandler(err, req, res, next) {
         : err.message
 
     if (err instanceof PermissionDeniedError) {
-        return renderError(
-            req,
-            res,
-            {
-                description: localizedMessage,
-                returnLink: err.returnLink || '/',
-                returnName: res.__(err.returnName || 'mainpage'),
-                statusCode: err.statusCode || 403
-            }
-        )
+        return sendJsonError(res, err.statusCode || 403, localizedMessage, err.i18nKey)
     }
 
     if (err instanceof PageNotFoundError) {
-        return renderError(
-            req,
-            res,
-            {
-                description: res.__('page404'),
-                returnLink: err.returnLink || '/',
-                returnName: res.__(err.returnName || 'mainpage'),
-                statusCode: err.statusCode || 404
-            }
-        )
+        return sendJsonError(res, err.statusCode || 404, res.__('page404'), 'page404')
     }
 
     if (err instanceof AuthenticationRequiredError) {
-        return renderError(
-            req,
-            res,
-            {
-                description: localizedMessage || res.__('loginneeded'),
-                returnLink: err.returnLink || '/login',
-                returnName: res.__(err.returnName || 'loginpage'),
-                statusCode: err.statusCode || 403
-            }
-        )
+        return sendJsonError(res, err.statusCode || 401, localizedMessage || res.__('loginneeded'), err.i18nKey || 'loginneeded')
     }
 
     if (err instanceof ValidationError) {
-        return res.status(400).render('error', {
-            title: 'Validation Error',
-            message: localizedMessage
-        })
+        return sendJsonError(res, err.statusCode || 400, localizedMessage, err.i18nKey)
     }
 
     if (err instanceof CaptchaError) {
-        return renderError(
-            req,
-            res,
-            {
-                description: localizedMessage,
-                returnLink: err.returnLink || 'javascript:window.history.back()',
-                returnName: res.__(err.returnName || 'previousPage'),
-                statusCode: err.statusCode || 400
-            }
-        )
+        return sendJsonError(res, err.statusCode || 400, localizedMessage, err.i18nKey)
     }
 
-    return res.status(err.statusCode || 500).render('error', {
-        title: 'Error',
-        message: process.env.NODE_ENV === 'production' ? 'An error occurred' : err.message
-    })
+    if (err instanceof RevisionNotFoundError) {
+        return sendJsonError(res, err.statusCode || 404, localizedMessage || res.__('revision404'), err.i18nKey || 'revision404')
+    }
+
+    const message = process.env.NODE_ENV === 'production' ? 'An error occurred' : err.message
+    return sendJsonError(res, err.statusCode || 500, message)
 }
 
 export { errorHandler }

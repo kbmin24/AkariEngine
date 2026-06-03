@@ -2,6 +2,7 @@ import logger from '../utils/logger.js'
 
 import {
     PageNotFoundError,
+    RevisionNotFoundError,
     PageExistsError,
     ValidationError,
     AuthenticationRequiredError
@@ -27,7 +28,7 @@ class PageService {
      * @param {String} options.ipAddress - IP address of the user making the request. Required.
      * @returns {Promise<Object>} Sequelize model for page, with { title, content, currentRev, deleted }.
      * @throws {ValidationError} if title is not provided or is invalid, if revision is invalid (and is provided), or if options.ipAddress is not provided.
-     * @throws {PageNotFoundError} If the page (or the revision, if provided) is not found or is deleted
+     * @throws {PageNotFoundError} If the page (or the revision, if provided) is not found or is deleted. This error is not thrown when a revision for a deleted page is requested.
      * @throws {PermissionDeniedError} If the user/ip does not have sufficient READ permission.
      */
     async getPage(title, options = {}) {
@@ -44,9 +45,12 @@ class PageService {
         })
 
         let page
+
+        page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
         if (rev) {
             page = await this.historyRepo.findByPageAndRev(title, rev)
-            if (!page) throw new PageNotFoundError(title)
+            if (!page) throw new RevisionNotFoundError(title, rev)
             return {
                 title: page.page,
                 content: page.content,
@@ -54,9 +58,7 @@ class PageService {
                 fromHistory: true
             }
         }
-
-        page = await this.pageRepo.findByTitle(title)
-        if (!page || page.deleted) throw new PageNotFoundError(title)
+        if (page.deleted) throw new PageNotFoundError(title)
         return page
     }
 
@@ -97,6 +99,7 @@ class PageService {
     }
 
     async getEditViewModel({ title, section, aclState, username }) {
+        // must be called after requirePageAccess with `store` mode which populates req.(key)
         title = title.trim()
 
         const page = await this.pageRepo.findByTitle(title)
