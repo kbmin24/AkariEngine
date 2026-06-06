@@ -31,7 +31,10 @@
             </i18n-t>
         </p>
     </div>
-    <div v-else ref="articleRef" v-html="data?.content ?? ''"></div>
+    <div v-else>
+        <Categories v-if="showCategory" :categories="categories" />
+        <div v-html="data.content" ref="articleRef"></div>
+    </div>
 </template>
 
 <style>
@@ -68,12 +71,15 @@ const { data, error, pending } = await useFetch(
     }
 )
 
+usePostRender(articleRef, data)
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'page404')
 const hasHistory = computed(() => !!(error.value?.data?.hasHistory ?? data.value?.hasHistory))
 const userPageEditLink = computed(() => `User:${pagename.value.split(':')[1] ?? pagename.value}`)
 const isRedirect = computed(() => route.query.redirect === 'true')
+const showCategory = computed(() => data.value?.showCategory ?? true)
+const categories = computed(() => data.value?.categories ?? [])
 const processRedirection = async (val) => {
     if (isRedirect.value) return
     if (val?.redirect) {

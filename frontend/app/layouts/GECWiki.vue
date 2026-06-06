@@ -6,7 +6,11 @@
                 <div class="article-wrapper h-75 border rounded-top row flex-grow-1">
 
                     <div v-if="satoboxVisible" class="alert alert-info" id="satobox" role="alert">
-                        <NuxtLink :to="`/threads/User:${store.username}`" id="satoboxlink">사용자 토론</NuxtLink>이 열려 있습니다.
+                        <i18n-t key="userDiscussionOpen" tag="span">
+                            <template #link>
+                                <NuxtLink :to="`/threads/User:${store.username}`" id="satoboxlink">{{ $t('userDiscussion') }}</NuxtLink>
+                            </template>
+                        </i18n-t>
                     </div>
 
                     <div class="pb-2 mt-2 mb-3 titleArea">
@@ -21,7 +25,7 @@
                         <GECWikiPageTools v-if="header.isPage" :pagename="header.pagename" />
                         <template v-if="header.updatedAt">
                             <div style="clear: both;"></div>
-                            <span style="float: right;">최근 편집 시각: {{ header.updatedAt }}</span>
+                            <span style="float: right;">{{ $t('recentlyEditedAt') }}: {{ $d(new Date(header.updatedAt), 'full') }}</span>
                         </template>
                         <div v-if="header.description" class="text-muted">{{ header.description }}</div>
                     </div>
@@ -51,6 +55,7 @@ useHead({
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css', crossorigin: 'anonymous' },
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', crossorigin: 'anonymous' },
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css', crossorigin: 'anonymous' },
+        { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' },
         { rel: 'stylesheet', href: '//fonts.googleapis.com/earlyaccess/nanumgothic.css' },
         { rel: 'stylesheet', href: '/skins/GECWiki/css/mainview.css' },
         { rel: 'stylesheet', href: '/skins/GECWiki/css/rcsidebar.css' },
@@ -58,6 +63,8 @@ useHead({
     ],
     script: [
         { src: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
+        { src: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
+        { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', tagPosition: 'bodyClose' },
     ],
 })
 

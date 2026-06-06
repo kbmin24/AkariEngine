@@ -187,5 +187,16 @@
 	"copyrightNotice": "By saving this edit, you agree that {{appname}} may distribute your contribution under {{license}}. This consent cannot be withdrawn.",
 	"pvtmodeSignupDisabled": "Signup is disabled in private mode.",
 	"loading": "Loading...",
-	"previewDataNotFound": "Preview data not found."
+	"previewDataLoadError": "Could not load preview data. Please try again later.",
+	"recentlyEditedAt": "Recently edited at",
+	"userDiscussionOpen": "A {{link}} is open.",
+	"userDiscussion": "user page discussion",
+	"monthDay": "{{monthShort}} {{day}}",
+	"tools": "Tools",
+	"randomPage": "Random page",
+	"pageList": "Page list",
+	"adminLog": "Admin log",
+	"viewRank": "Pageview ranking",
+	"licence": "Licence",
+	"dataLoadError": "Could not load data."
 }

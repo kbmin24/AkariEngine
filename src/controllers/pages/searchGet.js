@@ -10,13 +10,15 @@ export default async (req, res) => {
         query: model.query,
         resultTitle: model.resultTitle.map(r => ({
             ...r,
-            snippet: sanitizeHTML(r.snippet || '', { allowedTags: ['em'], allowedAttributes: {}, disallowedTagsMode: 'escape' })
+            snippet: sanitizeHTML(r.content || '', { allowedTags: ['em'], allowedAttributes: {}, disallowedTagsMode: 'escape' })
         })),
         resultContent: model.resultContent.map(r => ({
             ...r,
-            snippet: sanitizeHTML(r.snippet || '', { allowedTags: ['em'], allowedAttributes: {}, disallowedTagsMode: 'escape' })
+            snippet: sanitizeHTML(r.content || '', { allowedTags: ['em'], allowedAttributes: {}, disallowedTagsMode: 'escape' })
         })),
+
         searchMode: model.mode,
+        hasMore: model.hasMore,
         from: model.from
     })
 }

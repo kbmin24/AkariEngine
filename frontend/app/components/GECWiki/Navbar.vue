@@ -7,55 +7,55 @@
                 <li class="nav-item">
                     <NuxtLink class="nav-link" to="/RecentChanges">
                         <i class="fas fa-sync-alt nav-icon"></i>
-                        <span class="d-none d-lg-inline">최근 변경</span>
+                        <span class="d-none d-lg-inline">{{ $t('recentChanges') }}</span>
                     </NuxtLink>
                 </li>
                 <li class="nav-item">
                     <NuxtLink class="nav-link" to="/RecentDiscuss">
                         <i class="fa fa-comments nav-icon"></i>
-                        <span class="d-none d-lg-inline">최근 토론</span>
+                        <span class="d-none d-lg-inline">{{ $t('recentDiscuss') }}</span>
                     </NuxtLink>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-cog"></i>
-                        <span class="d-none d-lg-inline">도구</span>
+                        <span class="d-none d-lg-inline">{{ $t('tools') }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-macos shadow" style="position: absolute;">
                         <li>
                             <NuxtLink class="dropdown-item" to="/RandomPage">
-                                <i class="fa fa-random nav-icon"></i> 랜덤 문서
+                                <i class="fa fa-random nav-icon"></i> {{ $t('randomPage') }}
                             </NuxtLink>
                         </li>
                         <li>
                             <NuxtLink class="dropdown-item" to="/PageList">
-                                <i class="fa fa-list-ul nav-icon"></i> 문서 목록
+                                <i class="fa fa-list-ul nav-icon"></i> {{ $t('pageList') }}
                             </NuxtLink>
                         </li>
                         <li>
                             <NuxtLink class="dropdown-item" to="/orphaned">
-                                <i class="fa fa-link nav-icon"></i> 고립된 문서
+                                <i class="fa fa-link nav-icon"></i> {{ $t('orphaned_pages') }}
                             </NuxtLink>
                         </li>
                         <li>
                             <NuxtLink class="dropdown-item" to="/Upload">
-                                <i class="fa fa-upload nav-icon"></i> 업로드
+                                <i class="fa fa-upload nav-icon"></i> {{ $t('upload') }}
                             </NuxtLink>
                         </li>
                         <li>
                             <NuxtLink class="dropdown-item" to="/adminlog">
-                                <i class="fa fa-history nav-icon"></i> 관리 로그
+                                <i class="fa fa-history nav-icon"></i> {{ $t('adminLog') }}
                             </NuxtLink>
                         </li>
                         <li>
                             <NuxtLink class="dropdown-item" to="/viewrank">
-                                <i class="fa fa-chart-line nav-icon"></i> 문서 조회수 랭킹
+                                <i class="fa fa-chart-line nav-icon"></i> {{ $t('viewRank') }}
                             </NuxtLink>
                         </li>
                         <li>
                             <NuxtLink class="dropdown-item" to="/Licence">
-                                <i class="fa fa-check nav-icon"></i> 라이센스
+                                <i class="fa fa-check nav-icon"></i> {{ $t('licence') }}
                             </NuxtLink>
                         </li>
                     </ul>
@@ -100,7 +100,7 @@
 
             <form class="input-group d-flex" id="searchBox" role="search" @submit.prevent="onSearch">
                 <input class="form-control" v-model="searchQuery" id="searchinput" type="search"
-                       placeholder="검색" aria-label="검색" required>
+                       :placeholder="$t('search')" :aria-label="$t('search')" required>
                 <button class="btn btn-outline-light bg-primary" id="searchSubmit" type="submit">
                     <i class="fa fa-arrow-right text-light"></i>
                 </button>

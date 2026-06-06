@@ -1,6 +1,5 @@
-import date from 'date-and-time'
 import escapeHtml from '../../utils/escapeHTML.js'
-import { getCategory, getOptions } from '../../utils/wikimark/keywordHelper.js'
+import { getOptions, showCategory } from '../../utils/wikimark/keywordHelper.js'
 import { PageNotFoundError } from '../../services/errors.js'
 
 export default async (req, res) => {
@@ -61,16 +60,16 @@ export default async (req, res) => {
             }
 
             const categories = await req.app.locals.services.category.getCategoriesForPage(name)
-
             return res.json({
                 title: page.title,
                 content,
                 categories,
+                showCategory: showCategory(page.title, opt['category']),
                 isPage: true,
                 pageMode: 'view',
                 pagename: page.title,
                 canonical: `/w/${page.title}`,
-                updatedAt: date.format(page.updatedAt, global.dtFormat),
+                updatedAt: page.updatedAt,
                 titleInfo: titleSuffix || null,
                 redirectFrom: req.query.from || null
             })
@@ -113,6 +112,7 @@ export default async (req, res) => {
             title: page.title,
             content: content,
             categories,
+            showCategory: showCategory(page.title, opt['category']),
             canonical: `/w/${page.title}?rev=${rev}`,
             isPage: true,
             pageMode: 'view',

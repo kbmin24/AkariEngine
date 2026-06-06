@@ -1,4 +1,4 @@
-import { getCategory, getOptions } from '../../utils/wikimark/keywordHelper.js'
+import { showCategory, getOptions } from '../../utils/wikimark/keywordHelper.js'
 
 export default async (req, res) => {
     const title = req.body.title
@@ -12,11 +12,13 @@ export default async (req, res) => {
         false
     )
 
-    const categoryHtml = await getCategory(title, req.app.locals.repositories.categories, opt['category'])
+    const categories = await req.app.locals.services.category.extractFromContent(rawContent)
 
     res.json({
         title,
-        content: categoryHtml + content,
+        content: content,
+        categories,
+        showCategory: showCategory(title, opt['category']),
         isPreview: true,
         pagename: title
     })

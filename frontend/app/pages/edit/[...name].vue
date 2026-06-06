@@ -7,7 +7,7 @@
             </template>
         </i18n-t>
     </div>
-    <div v-else class="p-3">
+    <div v-else>
         <div v-if="data?.prefix || data?.suffix" class="alert alert-info" role="alert">
             {{ $t('edit_part') }}
         </div>
@@ -19,51 +19,88 @@
         </div>
         <form @submit.prevent="submitEdit">
             <div class="form-group">
-                <div class="mb-2">
-                    <div class="editMacro bg-light border" @click="editMacro(`'''`, $t('bold'), `'''`)">
-                        <i class="fas fa-bold"></i>
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" :class="{ active: activeTab === 'edit' }" @click="setActiveTab('edit')"
+                            id="edit-tab" type="button" role="tab">{{ $t('edit') }}</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" :class="{ active: activeTab === 'preview' }"
+                            @click="setActiveTab('preview')" id="preview-tab" type="button" role="tab">{{ $t('preview')
+                            }}</button>
+                    </li>
+                </ul>
+                <div class="tab-content border border-top-0 px-2 py-3" id="tabContent">
+                    <!-- main edit tab-->
+                    <div class="tab-pane fade" :class="{ 'show active': activeTab === 'edit' }" id="edit-tab-pane"
+                        role="tabpanel" tabindex="0">
+                        <div class="mb-2">
+                            <div class="editMacro bg-light border" @click="editMacro(`'''`, $t('bold'), `'''`)">
+                                <i class="fas fa-bold"></i>
+                            </div>
+                            <div class="editMacro bg-light border" @click="editMacro(`''`, $t('italic'), `''`)">
+                                <i class="fas fa-italic"></i>
+                            </div>
+                            <div class="editMacro bg-light border" @click="editMacro('__', $t('underline'), '__')">
+                                <i class="fas fa-underline"></i>
+                            </div>
+                            <div class="editMacro bg-light border" @click="editMacro('--', $t('strikethrough'), '--')">
+                                <i class="fas fa-strikethrough"></i>
+                            </div>
+                            <div class="dropdown editMacro-drp">
+                                <button class="editMacro-drp bg-light border dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-image"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <NuxtLink class="dropdown-item" to="/Upload" target="_blank">{{ $t('upload') }}
+                                        </NuxtLink>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"
+                                            @click.prevent="editMacro('[file(', 'filename.jpg', ')]')">{{ $t('insert')
+                                            }}</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="dropdown editMacro-drp">
+                                <button class="editMacro-drp bg-light border dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-heading"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" @click.prevent="editMacro('', '', '[toc]')">{{
+                                        $t('toc')
+                                            }}</a></li>
+                                    <li v-for="n in 6" :key="n">
+                                        <a class="dropdown-item" href="#"
+                                            @click.prevent="editMacro(`\n${'='.repeat(n)} `, $t('content'), ` ${'='.repeat(n)}\n`)">
+                                            {{ $t('leveln', { level: n }) }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <textarea ref="editArea" v-model="content" class="form-control" id="editAreaBox"
+                            :placeholder="`Describe ${pagename} here...`" :disabled="data?.disabled"></textarea>
                     </div>
-                    <div class="editMacro bg-light border" @click="editMacro(`''`, $t('italic'), `''`)">
-                        <i class="fas fa-italic"></i>
-                    </div>
-                    <div class="editMacro bg-light border" @click="editMacro('__', $t('underline'), '__')">
-                        <i class="fas fa-underline"></i>
-                    </div>
-                    <div class="editMacro bg-light border" @click="editMacro('--', $t('strikethrough'), '--')">
-                        <i class="fas fa-strikethrough"></i>
-                    </div>
-                    <div class="dropdown editMacro-drp">
-                        <button class="editMacro-drp bg-light border dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-image"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><NuxtLink class="dropdown-item" to="/Upload" target="_blank">{{ $t('upload') }}</NuxtLink></li>
-                            <li><a class="dropdown-item" href="#"
-                                    @click.prevent="editMacro('[file(', 'filename.jpg', ')]')">{{ $t('insert') }}</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="dropdown editMacro-drp">
-                        <button class="editMacro-drp bg-light border dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-heading"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" @click.prevent="editMacro('', '', '[toc]')">{{
-                                    $t('toc')
-                                    }}</a></li>
-                            <li v-for="n in 6" :key="n">
-                                <a class="dropdown-item" href="#"
-                                    @click.prevent="editMacro(`\n${'='.repeat(n)} `, $t('content'), ` ${'='.repeat(n)}\n`)">
-                                    {{ $t('leveln', { level: n }) }}
-                                </a>
-                            </li>
-                        </ul>
+                    <!-- preview tab -->
+                    <div class="tab-pane fade" :class="{ 'show active': activeTab === 'preview' }" id="preview-tab-pane"
+                        role="tabpanel" tabindex="0">
+                        <div v-if="previewLoading" class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        <div v-else-if="previewError" class="alert alert-danger" role="alert">
+                            {{ t('previewDataLoadError') }}
+                        </div>
+                        <div v-else>
+                            <Categories v-if="showCategory" :categories />
+                            <div v-html="previewData?.content"></div>
+                        </div>
                     </div>
                 </div>
-                <textarea ref="editArea" v-model="content" class="form-control" id="editAreaBox"
-                    :placeholder="`Describe ${pagename} here...`" :disabled="data?.disabled"></textarea>
             </div>
             <template v-if="!data?.disabled">
                 <div class="form-group mt-2 mb-2 row">
@@ -84,8 +121,6 @@
                     {{ $t('copyrightNotice', { appname: config.public.appname, license: config.public.licence }) }}
                 </p>
                 <button type="submit" class="btn btn-primary mt-3">{{ $t('save') }}</button>
-                <button type="button" class="btn btn-secondary mt-3" @click="previewButtonClick">{{ $t('preview')
-                    }}</button>
             </template>
         </form>
     </div>
@@ -115,6 +150,10 @@
     height: 2rem;
     color: inherit;
 }
+
+.preview-tab-pane {
+    height: 30rem;
+}
 </style>
 
 <script setup>
@@ -123,6 +162,7 @@ definePageMeta({
     key: route => route.path,
 })
 
+// init'ise
 const route = useRoute()
 const { setPageHeader } = usePageHeader()
 const config = useRuntimeConfig()
@@ -156,7 +196,7 @@ watch(data, (val) => {
 }, { immediate: true })
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
-const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'error')
+const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'dataLoadError')
 const notification = computed(() => data.value?.notification)
 useHead(computed(() => ({
     title: `${t('edit_pg', { name: data.value?.title ?? pagename.value })} - ${config.public.appname}`,
@@ -167,6 +207,7 @@ watch([data, pagename], () => {
     setPageHeader({ title: t('edit_pg', { name: data.value?.title ?? pagename.value }) })
 })
 
+// edit helper buttons
 const editMacro = (before, placeholder, after) => {
     const textarea = editArea.value
     if (!textarea) return
@@ -182,12 +223,34 @@ const editMacro = (before, placeholder, after) => {
     })
 }
 
-const previewButtonClick = () => {
-    const title = data.value?.title || pagename.value
-    sessionStorage.setItem(`preview:${title}`, content.value)
-    window.open(`/preview/${title}`, '_blank')
-}
+// preview
+const activeTab = ref('edit')
+const previewLoading = ref(true)
+const previewData = ref(null)
+const showCategory = computed(() => previewData.value?.showCategory ?? true)
+const categories = computed(() => previewData.value?.categories ?? [])
+const previewError = ref(null)
 
+const setActiveTab = async (tab) => {
+    activeTab.value = tab
+
+    if (tab === 'preview') {
+        previewLoading.value = true
+        try {
+            previewData.value = await csrfFetch('/api/preview', {
+                method: 'POST',
+                body: { title: pagename.value, content: content.value },
+            })
+            previewError.value = null
+        } catch (e) {
+            previewError.value = e
+        } finally {
+            previewLoading.value = false
+        }
+        console.log(previewData.value.content)
+    }
+}
+// save changes
 const submitEdit = async () => {
     submitError.value = null
     const captchaResponse = document.querySelector('[name="g-recaptcha-response"]')?.value ?? ''

@@ -188,5 +188,17 @@
 	"copyrightNotice": "이 문서를 편집함으로써 당신은 {{appname}}가 당신의 기여를 {{license}} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.",
 	"pvtmodeSignupDisabled": "회원 가입이 비활성화되어 있습니다.",
 	"loading": "로딩 중...",
-	"previewDataNotFound": "미리보기 데이터를 찾을 수 없습니다."
+	"previewDataLoadError": "미리보기 데이터를 불러올 수 없습니다. 나중에 다시 시도해 주세요.",
+	"recentlyEditedAt": "최근 편집 시각",
+	"userDiscussionOpen": "{{link}}이 열려 있습니다.",
+	"userDiscussion": "사용자 토론",
+	"monthDay": "{{monthNum}}/{{day}}",
+	"tools": "도구",
+	"randomPage": "랜덤 문서",
+	"pageList": "문서 목록",
+	"adminLog": "관리 로그",
+	"viewRank": "문서 조회수 랭킹",
+	"licence": "라이센스",
+	"search": "검색",
+	"dataLoadError": "데이터를 불러오는 도중 오류가 발생했습니다."
 }

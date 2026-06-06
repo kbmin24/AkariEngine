@@ -1,5 +1,14 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
+
+let defaultLocale = 'ko'
+try {
+    const settings = JSON.parse(readFileSync(new URL('../LocalSettings.json', import.meta.url), 'utf-8'))
+    if (settings.defaultLocale) defaultLocale = settings.defaultLocale.split('_')[0]
+} catch {
+    // LocalSettings.json missing — fall back to 'ko'
+}
 
 const i18nMustacheToVue = {
     name: 'i18n-mustache-to-vue',
@@ -52,11 +61,12 @@ export default defineNuxtConfig({
             { code: 'ko', language: 'ko-KR', file: 'ko_KR.json', name: '한국어' },
             { code: 'en', language: 'en-GB', file: 'en_GB.json', name: 'English' },
         ],
-        defaultLocale: 'ko',
+        defaultLocale,
         langDir: fileURLToPath(new URL('../locales', import.meta.url)),
+        vueI18n: 'i18n.config.js',
         compilation: {
             strictMessage: false,
             escapeHtml: false,
-        },
+        }
     },
 })

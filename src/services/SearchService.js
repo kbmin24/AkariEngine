@@ -30,18 +30,22 @@ class SearchService {
             })
         }
 
+        const PAGE_SIZE = 10
+
         try {
             if (this.msRepo) {
-                const [resultTitle, resultContent] = await Promise.all([
-                    this.msRepo.searchByTitle(normalized, { limit: 10, offset }),
-                    this.msRepo.searchByContent(normalized, { limit: 10, offset })
+                const [rawTitle, rawContent] = await Promise.all([
+                    this.msRepo.searchByTitle(normalized, { limit: PAGE_SIZE + 1, offset }),
+                    this.msRepo.searchByContent(normalized, { limit: PAGE_SIZE + 1, offset })
                 ])
                 return {
                     query: normalized,
                     from: offset,
                     mode: "enhanced",
-                    resultTitle,
-                    resultContent }
+                    hasMore: rawTitle.length > PAGE_SIZE || rawContent.length > PAGE_SIZE,
+                    resultTitle: rawTitle.slice(0, PAGE_SIZE),
+                    resultContent: rawContent.slice(0, PAGE_SIZE),
+                }
             }
         }
         catch (e) {
@@ -49,17 +53,18 @@ class SearchService {
         }
 
         // Fallback to DB search
-        const [resultTitle, resultContent] = await Promise.all([
-            this.pageRepo.searchByTitle(normalized, 10, offset),
-            this.pageRepo.searchByContent(normalized, 10, offset)
+        const [rawTitle, rawContent] = await Promise.all([
+            this.pageRepo.searchByTitle(normalized, PAGE_SIZE + 1, offset),
+            this.pageRepo.searchByContent(normalized, PAGE_SIZE + 1, offset)
         ])
 
         return {
             query: normalized,
             from: offset,
             mode: "basic",
-            resultTitle,
-            resultContent
+            hasMore: rawTitle.length > PAGE_SIZE || rawContent.length > PAGE_SIZE,
+            resultTitle: rawTitle.slice(0, PAGE_SIZE),
+            resultContent: rawContent.slice(0, PAGE_SIZE),
         }
     }
 

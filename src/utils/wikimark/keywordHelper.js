@@ -1,4 +1,8 @@
 import i18n from 'i18n'
+
+export function showCategory(title, categoryOption) {
+    return /User:.*/.test(title) ? (categoryOption == 'on') : (categoryOption != 'off')
+}
 export async function getCategory(title, category, categorys) {
     let categorySwitch = /User:.*/.test(title) ? (categorys == 'on') : (categorys != 'off')
     const categories = await category.findAll({ where: { page: title } })
