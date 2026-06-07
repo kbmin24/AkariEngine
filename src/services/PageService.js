@@ -220,7 +220,7 @@ class PageService {
     async getPageListViewModel({ page = 1 } = {}) {
         const pageSize = 50
         const offset = (page - 1) * pageSize
-        const result = await this.pageRepo.findAllPaginated(offset, pageSize)
+        const result = await this.pageRepo.findAllPaginatedLight(offset, pageSize)
         return {
             pages: result.rows,
             count: result.count,

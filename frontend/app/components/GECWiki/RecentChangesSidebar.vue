@@ -1,9 +1,9 @@
 <template>
     <div id="rcsidebar">
-        <div class="border rounded">
-            <div class="p-2 border-bottom bg-white">
+        <div class="border rounded bg-white">
+            <div class="p-2 border-bottom">
                 <NuxtLink to="/RecentChanges">
-                    <span class="fw-bold rcTitle">{{ $t('recentChanges') }}</span>
+                    <span class="fw-bold rcTitle"><i class="fa-solid fa-arrows-rotate"></i> {{ $t('recentChanges') }}</span>
                 </NuxtLink>
             </div>
             <ul class="list-group list-group-flush" id="rcsidebarcontents">
@@ -16,6 +16,12 @@
         </div>
     </div>
 </template>
+
+<style scoped>
+#rcsidebarcontents li {
+    background-color: #fff;
+}
+</style>
 
 <script setup>
 const { t, locale } = useI18n()
@@ -36,7 +42,7 @@ function formatChangeDate(dateStr) {
     })
 }
 
-const { data, refresh } = useFetch('/api/ajax/recentchanges', {
+const { data, refresh } = useFetch('/api/recentchanges', {
     default: () => ([]),
     query: {
         show: 10,

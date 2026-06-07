@@ -202,9 +202,15 @@ useHead(computed(() => ({
     title: `${t('edit_pg', { name: data.value?.title ?? pagename.value })} - ${config.public.appname}`,
 })))
 
-setPageHeader({ title: t('edit_pg', { name: pagename.value }) })
+setPageHeader({ title: t('edit_pg', { name: pagename.value }),
+    isPage: true,
+    pageMode: 'edit',
+ })
 watch([data, pagename], () => {
-    setPageHeader({ title: t('edit_pg', { name: data.value?.title ?? pagename.value }) })
+    setPageHeader({ title: t('edit_pg', { name: data.value?.title ?? pagename.value }),
+    isPage: true,
+    pageMode: 'edit'
+})
 })
 
 // edit helper buttons

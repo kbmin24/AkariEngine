@@ -4,7 +4,7 @@ const DEFAULTS = {
     titleInfo: null,
     pagename: null,
     isPage: false,
-    isFile: false,
+    pageMode: 'page',
     updatedAt: null,
     description: null,
 }

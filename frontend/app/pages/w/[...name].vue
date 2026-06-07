@@ -112,6 +112,7 @@ const applyHeader = () => {
             pagename: data.value.pagename,
             titleInfo: data.value.titleInfo ?? null,
             isPage: true,
+            pageMode: 'page',
             updatedAt: data.value.updatedAt ?? null,
         })
     } else {

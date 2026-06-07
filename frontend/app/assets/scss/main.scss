@@ -1,0 +1,16 @@
+// Bootstrap variable overrides go here
+// $primary: #your-color;
+
+// skin
+$primary: #43739F;
+$secondary: #3C4856;
+$body-bg: #fff;
+$dropdown-bg: #fff;
+$border-radius: 0.5rem;
+$font-family-base: "Noto Sans KR", sans-serif;
+
+// wiki
+$link-color: #0d6efd;
+$link-decoration: none;
+$link-hover-decoration: none;
+@import "bootstrap/scss/bootstrap";

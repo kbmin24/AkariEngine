@@ -57,10 +57,21 @@ class PageRepository extends BaseRepository {
 
     async findAllPaginated(offset = 0, limit = 50) {
         return this.model.findAndCountAll({
-            where: { deleted: false },
+            where: { deleted: { [Op.or]: [false, null] } },
             order: [['title', 'ASC']],
             offset,
-            limit
+            limit,
+        })
+    }
+
+    /** findAllPaginated, but only returns title and updatedAt. */
+        async findAllPaginatedLight(offset = 0, limit = 50) {
+        return this.model.findAndCountAll({
+            where: { deleted: { [Op.or]: [false, null] } },
+            order: [['title', 'ASC']],
+            offset,
+            limit,
+            attributes: ['title', 'updatedAt'],
         })
     }
 

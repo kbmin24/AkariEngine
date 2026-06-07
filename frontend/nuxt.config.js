@@ -26,7 +26,26 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
 
-    modules: ['@nuxtjs/i18n', '@pinia/nuxt'],
+    css: ['~/assets/scss/main.scss', '@fortawesome/fontawesome-free/css/all.min.css'],
+
+    head: {
+        link: [
+            { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css', crossorigin: 'anonymous' },
+            { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' },
+        ],
+        script: [
+            { src: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
+            { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', tagPosition: 'bodyClose' },
+        ]
+    },
+
+    modules: ['@nuxtjs/i18n', '@pinia/nuxt', '@nuxt/fonts'],
+
+    fonts: {
+        families: [
+            { name: 'Noto Sans KR', provider: 'google' }
+        ]
+    },
 
     runtimeConfig: {
         public: {

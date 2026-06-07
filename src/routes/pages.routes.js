@@ -52,6 +52,27 @@ export default (options = {}) => {
         asyncRoute(previewController)
     )
 
+    router.get('/recentchanges', asyncRoute(async (req, res) => {
+        const changes = await req.app.locals.services.recentChanges.getRecentChanges({
+            show: req.query ? req.query.show : undefined,
+            isUnique: req.query && req.query.isunique === 'true',
+            excludeFile: req.query && req.query.excludefile === 'true',
+            editOnly: req.query && req.query.editonly === 'true'
+        })
+
+        res.json(changes)
+    }))
+    router.get('/autocomplete',
+        asyncRoute(async (req, res) => {
+            const query = req.query ? req.query.q : undefined
+            if (!query) {
+                res.json({})
+                return
+            }
+            const results = await req.app.locals.services.search.autocompletePages(query, 10)
+            res.json(results)
+        }))
+
     router.get('/search',
         query('q').trim().notEmpty(),
         query('from').optional().isInt().toInt(),

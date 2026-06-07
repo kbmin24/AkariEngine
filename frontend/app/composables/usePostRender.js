@@ -40,6 +40,22 @@ function processMath(el) {
     })
 }
 
+function processIframes(el) {
+    el.querySelectorAll('iframe[src]').forEach(iframe => {
+        const expectedSrc = iframe.getAttribute('src')
+        try {
+            // Accessible only for same-origin documents (i.e. Firefox restored a wiki page
+            // into the iframe instead of loading the correct cross-origin src).
+            const current = iframe.contentWindow?.location?.href
+            if (current && current !== 'about:blank' && current !== expectedSrc) {
+                iframe.src = expectedSrc
+            }
+        } catch {
+            // Cross-origin (YouTube etc. loading correctly) — leave it alone.
+        }
+    })
+}
+
 function processMaps(el) {
     if (!window.L) return
 
@@ -72,6 +88,7 @@ export function usePostRender(elRef, dataRef) {
         processFootnotes(el)
         processMath(el)
         processMaps(el)
+        processIframes(el)
     }
 
     onMounted(run)

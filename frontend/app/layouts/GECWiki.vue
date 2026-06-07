@@ -3,7 +3,7 @@
         <GECWikiNavbar />
         <div class="container container-fluid">
             <div class="articleRCWrapper d-flex">
-                <div class="article-wrapper h-75 border rounded-top row flex-grow-1">
+                <div class="article-wrapper h-75 border rounded row flex-grow-1">
 
                     <div v-if="satoboxVisible" class="alert alert-info" id="satobox" role="alert">
                         <i18n-t key="userDiscussionOpen" tag="span">
@@ -22,7 +22,7 @@
                             <h5 v-if="header.titleInfo" style="display: inline; margin-left: 10px;"
                                 v-html="header.titleInfo"></h5>
                         </h1>
-                        <GECWikiPageTools v-if="header.isPage" :pagename="header.pagename" />
+                        <GECWikiPageTools v-if="header.isPage" :pagename="header.pagename" :pageMode="header.pageMode" />
                         <template v-if="header.updatedAt">
                             <div style="clear: both;"></div>
                             <span style="float: right;">{{ $t('recentlyEditedAt') }}: {{ $d(new Date(header.updatedAt), 'full') }}</span>
@@ -52,19 +52,9 @@ const satoboxVisible = ref(false)
 
 useHead({
     link: [
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/css/bootstrap.min.css', crossorigin: 'anonymous' },
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css', crossorigin: 'anonymous' },
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css', crossorigin: 'anonymous' },
-        { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' },
-        { rel: 'stylesheet', href: '//fonts.googleapis.com/earlyaccess/nanumgothic.css' },
         { rel: 'stylesheet', href: '/skins/GECWiki/css/mainview.css' },
         { rel: 'stylesheet', href: '/skins/GECWiki/css/rcsidebar.css' },
         { rel: 'stylesheet', href: '/skins/GECWiki/css/floatingToolbox.css' },
-    ],
-    script: [
-        { src: 'https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.2/js/bootstrap.bundle.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
-        { src: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
-        { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', tagPosition: 'bodyClose' },
     ],
 })
 
