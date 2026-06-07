@@ -3,11 +3,13 @@ import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 
 let defaultLocale = 'ko'
+let adminEmail = ''
 try {
     const settings = JSON.parse(readFileSync(new URL('../LocalSettings.json', import.meta.url), 'utf-8'))
     if (settings.defaultLocale) defaultLocale = settings.defaultLocale.split('_')[0]
+    if (settings.adminEmail) adminEmail = settings.adminEmail
 } catch {
-    // LocalSettings.json missing — fall back to 'ko'
+    // LocalSettings.json missing — fall back to defaults
 }
 
 const i18nMustacheToVue = {
@@ -51,6 +53,7 @@ export default defineNuxtConfig({
         public: {
             appname: 'AkariEngine',
             licence: 'CC BY-SA 4.0',
+            adminEmail,
         },
     },
 
