@@ -4,10 +4,12 @@ import { fileURLToPath } from 'url'
 
 let defaultLocale = 'ko'
 let adminEmail = ''
+let turnstileEnabled = false
 try {
     const settings = JSON.parse(readFileSync(new URL('../LocalSettings.json', import.meta.url), 'utf-8'))
     if (settings.defaultLocale) defaultLocale = settings.defaultLocale.split('_')[0]
     if (settings.adminEmail) adminEmail = settings.adminEmail
+    turnstileEnabled = !!settings.turnstile_enabled
 } catch {
     // LocalSettings.json missing — fall back to defaults
 }
@@ -30,15 +32,18 @@ export default defineNuxtConfig({
 
     css: ['~/assets/scss/main.scss', '@fortawesome/fontawesome-free/css/all.min.css'],
 
-    head: {
-        link: [
-            { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css', crossorigin: 'anonymous' },
-            { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' },
-        ],
-        script: [
-            { src: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
-            { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', tagPosition: 'bodyClose' },
-        ]
+    app: {
+        head: {
+            link: [
+                { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css', crossorigin: 'anonymous' },
+                { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' },
+            ],
+            script: [
+                { src: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
+                { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', tagPosition: 'bodyClose' },
+                ...(turnstileEnabled ? [{ src: 'https://challenges.cloudflare.com/turnstile/v0/api.js', async: true, defer: true }] : []),
+            ],
+        },
     },
 
     modules: ['@nuxtjs/i18n', '@pinia/nuxt', '@nuxt/fonts'],
@@ -75,6 +80,18 @@ export default defineNuxtConfig({
 
     vite: {
         plugins: [i18nMustacheToVue],
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    quietDeps: true, 
+                    silenceDeprecations: ['color-functions', 'global-builtin', 'import', 'if-function']
+                },
+                sass: {
+                    quietDeps: true,
+                    silenceDeprecations: ['color-functions', 'global-builtin', 'import', 'if-function']
+                }
+            }
+        }
     },
 
     // todo: sync with LocalSettings.json
@@ -91,4 +108,5 @@ export default defineNuxtConfig({
             escapeHtml: false,
         }
     },
+
 })

@@ -85,8 +85,9 @@ app.use((req, res, next) => {
     if (!req.session.initialized) {
       req.session.initialized = true
       req.session.save(next)
+    } else {
+        next()
     }
-    next()
 })
 
 app.use(express.json({ limit: "1mb" }))

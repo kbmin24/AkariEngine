@@ -11,6 +11,7 @@
                     class="list-group-item text-truncate">
                     {{ formatChangeDate(change.createdAt) }}
                     <NuxtLink :to="`/w/${change.page}`">{{ change.page }}</NuxtLink>
+                    <Template v-if="change.type === 'delete'"> ({{ $t('delete') }})</Template>
                 </li>
             </ul>
         </div>

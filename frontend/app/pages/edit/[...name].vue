@@ -111,7 +111,7 @@
                     </div>
                 </div>
                 <div v-if="data?.captcha" class="mt-2 mb-2">
-                    <div class="captcha" v-html="data.captcha"></div>
+                    <Turnstile :siteKey="data.captcha" />
                 </div>
                 <p v-if="!userStore.isLoggedIn">
                     <span class="text-danger fw-bold">{{ $t('warning') }}!</span> {{ $t('ipshown') }}
@@ -120,7 +120,9 @@
                     <span class="text-danger fw-bold">{{ $t('warning') }}!</span>
                     {{ $t('copyrightNotice', { appname: config.public.appname, license: config.public.licence }) }}
                 </p>
-                <button type="submit" class="btn btn-primary mt-3">{{ $t('save') }}</button>
+                <button type="submit" class="btn btn-primary mt-3" :disabled="!saveButtonEnabled">
+                    {{ $t('save') }}
+                </button>
             </template>
         </form>
     </div>
@@ -253,13 +255,15 @@ const setActiveTab = async (tab) => {
         } finally {
             previewLoading.value = false
         }
-        console.log(previewData.value.content)
     }
 }
+
+const saveButtonEnabled = ref(true)
 // save changes
 const submitEdit = async () => {
     submitError.value = null
-    const captchaResponse = document.querySelector('[name="g-recaptcha-response"]')?.value ?? ''
+    const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value ?? ''
+    saveButtonEnabled.value = false
     try {
         const result = await csrfFetch(`/api/edit/${pagename.value}`, {
             method: 'POST',
@@ -268,12 +272,14 @@ const submitEdit = async () => {
                 editPrefix: data.value?.prefix || '',
                 editSuffix: data.value?.suffix || '',
                 comment: comment.value,
-                'g-recaptcha-response': captchaResponse,
+                'cf-turnstile-response': captchaResponse,
             },
         })
         if (result?.redirect) await navigateTo(result.redirect)
     } catch (e) {
         submitError.value = e?.data?.i18nKey || 'error'
+    } finally {
+        saveButtonEnabled.value = true
     }
 }
 </script>

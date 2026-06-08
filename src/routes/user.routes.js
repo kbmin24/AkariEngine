@@ -29,10 +29,11 @@ export default (options = {}) => {
     }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
-        res.json({ csrfToken: req.csrfToken() })
+        res.json({ captcha: await genCaptcha() })
     }))
 
     router.post('/login',
+        chkCaptcha,
         body('id').trim().notEmpty(),
         body('password').notEmpty(),
         validateRequest,
@@ -41,9 +42,10 @@ export default (options = {}) => {
         await loginPost(req, res)
     }))
 
-    router.get('/logout', (req, res) => {
-        req.session.destroy(() => {})
-        res.json({ success: true })
+    router.post('/logout', csrfProtection, (req, res) => {
+        req.session.destroy(() => {
+            res.json({ success: true })
+        })
     })
 
     router.get('/settings',

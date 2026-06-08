@@ -13,6 +13,9 @@
                 <input id="loginPw" v-model="password" type="password" class="form-control"
                     autocomplete="current-password" required :disabled="pending" />
             </div>
+            <div v-if="data?.captcha" class="mt-2 mb-2">
+                <Turnstile :siteKey="data.captcha" />
+            </div>
             <button type="submit" class="btn btn-primary w-100" :disabled="pending">
                 {{ $t('login') }}
             </button>
@@ -41,6 +44,14 @@ useHead({ title: `${t('login')} - ${config.public.appname}` })
 const { setPageHeader } = usePageHeader()
 setPageHeader({ title: t('login') })
 
+const { data } = await useFetch(
+    () => `/api/login`,
+    {
+        key: `/login`,
+    }
+)
+
+
 const id = ref('')
 const password = ref('')
 const errorKey = ref(null)
@@ -49,10 +60,11 @@ const pending = ref(false)
 const onSubmit = async () => {
     errorKey.value = null
     pending.value = true
+    const captchaResponse = document.querySelector('input[name="cf-turnstile-response"]')?.value
     try {
         await csrfFetch('/api/login', {
             method: 'POST',
-            body: { id: id.value, password: password.value },
+            body: { id: id.value, password: password.value, 'cf-turnstile-response': captchaResponse },
         })
         await fetchMe()
         await router.push('/')

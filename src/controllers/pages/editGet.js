@@ -17,7 +17,6 @@ export default async (req, res) => {
         disabled: editModel.disabled,
         notification: editModel.notification,
         pagename: req.params.name,
-        csrfToken: req.csrfToken(),
         captcha: editModel.needsCaptcha ? await genCaptcha() : null
     })
 }

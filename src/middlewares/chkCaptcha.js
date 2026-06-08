@@ -5,7 +5,7 @@ import { CaptchaError } from '../services/errors.js'
 
 async function chkCaptcha(req, res, next) {
     try {
-        if (!config.settings.reCAPTCHA_enabled) {
+        if (!config.settings.turnstile_enabled) {
             return next()
         }
 
@@ -16,9 +16,12 @@ async function chkCaptcha(req, res, next) {
             }
         }
 
-        const resKey = req.body['g-recaptcha-response']
-        const url = `https://www.google.com/recaptcha/api/siteverify?secret=${config.settings.reCAPTCHA_prv}&response=${resKey}`
-        const verRes = await axios.post(url)
+        const resToken = req.body['cf-turnstile-response']
+        const url = `https://challenges.cloudflare.com/turnstile/v0/siteverify`
+        const verRes = await axios.post(url, {
+            secret: config.settings.turnstile_secretkey,
+            response: resToken
+        })
         const data = verRes.data || {}
         if (data.success === true) {
             return next()
