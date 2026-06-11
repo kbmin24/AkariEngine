@@ -252,6 +252,7 @@ class PermissionService {
      * Throws either AuthenticationRequiredError or PermissionDeniedError.
      * @param {Object} user - The user object.
      * @param {Object} context - The context for the access check.
+     * @param {Object} context.ipAddress - The IP address of the user.
      * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
      */
     async requireLoginAccess(user, context = {}) {
@@ -270,6 +271,31 @@ class PermissionService {
             }
 
             throw new PermissionDeniedError('login', null, {
+                acl: result.requiredLevel,
+                reason: result.reason,
+                i18nKey: result.i18nKey || null,
+                i18nParams: result.i18nParams || null,
+                block: result.block,
+                message: result.message
+            })
+        }
+    }
+
+    /** 
+     * Requries 'Everyone' level access for a user. In other words,
+     * (not blocked) OR (ip blocked but allowLogin is true AND user not blocked)
+     * @param {Object} user - The user object.
+     * @param {Object} context - The context for the access check.
+     * @param {Object} context.ipAddress - The IP address of the user.
+     * @returns {Promise<void>} - A promise resolving when access is granted or rejecting with an error.
+     */
+    async requireEveryoneAccess(user, context = {}) {
+        const result = await this.checkAccessDetailed(user, null, 'read', {
+            ...context,
+            requiredLevel: 'everyone'
+        })
+        if (!result.allowed) {
+            throw new PermissionDeniedError('everyone', null, {
                 acl: result.requiredLevel,
                 reason: result.reason,
                 i18nKey: result.i18nKey || null,
