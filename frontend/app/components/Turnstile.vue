@@ -7,10 +7,19 @@ defineProps({
 })
 
 const el = ref(null)
+let widgetId = null
 
 onMounted(() => {
     if (window.turnstile) {
-        window.turnstile.render(el.value)
+        widgetId = window.turnstile.render(el.value)
+    }
+})
+
+defineExpose({
+    reset() {
+        if (window.turnstile && widgetId !== null) {
+            window.turnstile.reset(widgetId)
+        }
     }
 })
 </script>

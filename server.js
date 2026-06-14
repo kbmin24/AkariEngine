@@ -228,7 +228,7 @@ app.use((req, res, next) => {
         return next()
     }
 
-    if (url.startsWith('/login')) {
+    if (url.startsWith('/api/login')) {
         //Login Route
         return next()
     }
@@ -238,7 +238,7 @@ app.use((req, res, next) => {
         return next()
     }
 
-    if (url.startsWith('/signup')) {
+    if (url.startsWith('/api/signup')) {
         throw new PermissionDeniedError({
             message: 'Signup is disabled in private mode',
             i18nKey: 'pvtmodeSignupDisabled'

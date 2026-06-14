@@ -43,7 +43,6 @@
 
 <script setup>
 definePageMeta({
-    layout: 'gec-wiki',
     key: route => route.path,
 })
 

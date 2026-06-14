@@ -1,4 +1,3 @@
-import i18n from 'i18n'
 import logger from '../../utils/logger.js'
 
 export default async (req, res) => {
@@ -7,7 +6,7 @@ export default async (req, res) => {
     }
 
     try {
-        await req.app.locals.services.user.register(req.body.id, req.body.password)
+        await req.app.locals.services.user.register(req.ipAddress, req.body.id, req.body.password)
         res.json({ success: true, i18nKey: 'register_done' })
     } catch (e) {
         logger.error(`Registration error\nid: ${req.body.id}\nerror: ${e.stack}`)

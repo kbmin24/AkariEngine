@@ -14,7 +14,7 @@
                     autocomplete="current-password" required :disabled="pending" />
             </div>
             <div v-if="data?.captcha" class="mt-2 mb-2">
-                <Turnstile :siteKey="data.captcha" />
+                <Turnstile ref="turnstile" :siteKey="data.captcha" />
             </div>
             <button type="submit" class="btn btn-primary w-100" :disabled="pending">
                 {{ $t('login') }}
@@ -32,8 +32,6 @@
 </template>
 
 <script setup>
-definePageMeta({ layout: 'gec-wiki' })
-
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const { csrfFetch } = useCsrf()
@@ -52,6 +50,7 @@ const { data } = await useFetch(
 )
 
 
+const turnstile = ref(null)
 const id = ref('')
 const password = ref('')
 const errorKey = ref(null)
@@ -70,6 +69,7 @@ const onSubmit = async () => {
         await router.push('/')
     } catch (err) {
         errorKey.value = err.data?.i18nKey ?? 'error'
+        turnstile.value?.reset()
     } finally {
         pending.value = false
     }

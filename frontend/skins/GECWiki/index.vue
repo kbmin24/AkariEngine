@@ -1,6 +1,6 @@
 <template>
     <div class="d-flex flex-column min-vh-100">
-        <GECWikiNavbar />
+        <Navbar />
         <div class="container container-fluid">
             <div class="articleRCWrapper d-flex">
                 <div class="article-wrapper h-75 border rounded row flex-grow-1">
@@ -22,7 +22,7 @@
                             <h5 v-if="header.titleInfo" style="display: inline; margin-left: 10px;"
                                 v-html="header.titleInfo"></h5>
                         </h1>
-                        <GECWikiPageTools v-if="header.isPage" :pagename="header.pagename" :pageMode="header.pageMode" />
+                        <PageTools v-if="header.isPage" :pagename="header.pagename" :pageMode="header.pageMode" />
                         <template v-if="header.updatedAt">
                             <div style="clear: both;"></div>
                             <span style="float: right;">{{ $t('recentlyEditedAt') }}: {{ $d(new Date(header.updatedAt), 'full') }}</span>
@@ -35,18 +35,26 @@
                         <slot />
                     </article>
                 </div>
-                <GECWikiRecentChangesSidebar />
+                <RecentChangesSidebar v-if="rcSidebarEnabled" />
             </div>
         </div>
-        <GECWikiFooter />
-        <GECWikiFloatingToolbox />
+        <Footer />
+        <FloatingToolbox />
     </div>
 </template>
 
 <script setup>
+import Navbar from './components/Navbar.vue'
+import Footer from './components/Footer.vue'
+import PageTools from './components/PageTools.vue'
+import FloatingToolbox from './components/FloatingToolbox.vue'
+import RecentChangesSidebar from './components/RecentChangesSidebar.vue'
+import { useRcSidebarSetting } from './composables/useRcSidebarSetting.js'
+
 const { fetchMe } = useAuth()
 const store = useUserStore()
 const { header } = usePageHeader()
+const { value: rcSidebarEnabled, load: loadRcSidebarPreference } = useRcSidebarSetting()
 
 const satoboxVisible = ref(false)
 
@@ -59,6 +67,7 @@ useHead({
 })
 
 onMounted(async () => {
+    loadRcSidebarPreference()
     await fetchMe()
     if (store.isLoggedIn) {
         try {

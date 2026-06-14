@@ -17,7 +17,7 @@ export default (sequelize) => {
                 unique: true,
                 validate:
                 {
-                    is: /^\w{3,}$/
+                    is: /^\w{3,255}$/
                 }
             },
             password:
@@ -47,6 +47,11 @@ export default (sequelize) => {
                 {
                     unique: true,
                     fields: ['username']
+                },
+                {
+                    unique: true,
+                    name: 'username_lower',
+                    fields: [sequelize.fn('lower', sequelize.col('username'))]
                 }
             ]
         })

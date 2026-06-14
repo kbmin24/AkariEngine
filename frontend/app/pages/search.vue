@@ -40,10 +40,6 @@
 </template>
 
 <script setup>
-definePageMeta({
-    layout: 'gec-wiki',
-})
-
 const route = useRoute()
 const { setPageHeader } = usePageHeader()
 const config = useRuntimeConfig()

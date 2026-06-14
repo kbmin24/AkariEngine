@@ -1,15 +1,37 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { readFileSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 
 let defaultLocale = 'ko'
 let adminEmail = ''
+let privacyPolicy = null
 let turnstileEnabled = false
+let tos = null
+let availableSkins = []
 try {
     const settings = JSON.parse(readFileSync(new URL('../LocalSettings.json', import.meta.url), 'utf-8'))
     if (settings.defaultLocale) defaultLocale = settings.defaultLocale.split('_')[0]
     if (settings.adminEmail) adminEmail = settings.adminEmail
     turnstileEnabled = !!settings.turnstile_enabled
+    availableSkins = (settings.skins ?? [])
+        .filter((skin) => existsSync(new URL(`./skins/${skin}/index.vue`, import.meta.url)))
+        .map((skin) => {
+            try {
+                const manifest = JSON.parse(readFileSync(new URL(`../skins/${skin}/manifest.json`, import.meta.url), 'utf-8'))
+                return { name: skin, label: manifest.name || skin }
+            } catch {
+                return { name: skin, label: skin }
+            }
+        })
+
+    const privacyPolicyPath = settings.privacyPolicy
+    if (privacyPolicyPath) {
+        privacyPolicy = readFileSync(new URL(`../${privacyPolicyPath}`, import.meta.url), 'utf-8')
+    }
+    const tosPath = settings.termsOfService
+    if (tosPath) {
+        tos = readFileSync(new URL(`../${tosPath}`, import.meta.url), 'utf-8')
+    }
 } catch {
     // LocalSettings.json missing — fall back to defaults
 }
@@ -59,6 +81,9 @@ export default defineNuxtConfig({
             appname: 'AkariEngine',
             licence: 'CC BY-SA 4.0',
             adminEmail,
+            privacyPolicy,
+            tos,
+            availableSkins,
         },
     },
 
@@ -83,7 +108,7 @@ export default defineNuxtConfig({
         css: {
             preprocessorOptions: {
                 scss: {
-                    quietDeps: true, 
+                    quietDeps: true,
                     silenceDeprecations: ['color-functions', 'global-builtin', 'import', 'if-function']
                 },
                 sass: {

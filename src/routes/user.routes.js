@@ -9,6 +9,7 @@ import contributionGet from '../controllers/user/contributionGet.js'
 import { param, query, body } from 'express-validator'
 
 import { validateRequest } from '../middlewares/validation.js'
+import { requireEveryone } from '../middlewares/permission.js'
 
 export default (options = {}) => {
     const router = express.Router()
@@ -24,9 +25,10 @@ export default (options = {}) => {
         body('password').notEmpty(),
         body('passwordConfirm').notEmpty(),
         validateRequest,
+        requireEveryone,
         asyncRoute(async (req, res) => {
-        await signupPost(req, res)
-    }))
+            await signupPost(req, res)
+        }))
 
     router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
         res.json({ captcha: await genCaptcha() })
@@ -39,8 +41,8 @@ export default (options = {}) => {
         validateRequest,
         csrfProtection,
         asyncRoute(async (req, res) => {
-        await loginPost(req, res)
-    }))
+            await loginPost(req, res)
+        }))
 
     router.post('/logout', csrfProtection, (req, res) => {
         req.session.destroy(() => {
@@ -51,13 +53,13 @@ export default (options = {}) => {
     router.get('/settings',
         csrfProtection,
         asyncRoute(async (req, res) => {
-        res.json({
-            username: req.session.username || null,
-            csrfToken: req.csrfToken()
-        })
-    }))
+            res.json({
+                username: req.session.username || null,
+                csrfToken: req.csrfToken()
+            })
+        }))
 
-    router.post('/settings/:name(*)', 
+    router.post('/settings/:name(*)',
         csrfProtection,
         asyncRoute(settingsPost)
     )
@@ -67,8 +69,16 @@ export default (options = {}) => {
         query('from').optional().isInt(),
         validateRequest,
         asyncRoute(async (req, res) => {
-        await contributionGet(req, res)
-    }))
+            await contributionGet(req, res)
+        }))
+
+    router.get('/user/exists',
+        query('id').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            const taken = await req.app.locals.services.user.existsCaseInsensitive(req.query.id)
+            res.json({ available: !taken })
+        }))
 
     router.get('/whoami', (req, res) => {
         res.json({ username: req.session.username || null, ipAddress: req.ipAddress })

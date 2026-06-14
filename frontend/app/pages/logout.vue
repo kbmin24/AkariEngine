@@ -1,6 +1,4 @@
 <script setup>
-definePageMeta({ layout: 'gec-wiki' })
-
 const { csrfFetch, invalidate } = useCsrf()
 const { store } = useAuth()
 

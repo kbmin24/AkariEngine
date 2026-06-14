@@ -8,7 +8,8 @@ const HASH_LENGTH = 64
 const HASH_DIGEST = 'sha512'
 
 class UserService {
-    constructor(userRepository, settingsRepository) {
+    constructor(permissionService, userRepository, settingsRepository) {
+        this.permissionService = permissionService
         this.userRepository = userRepository
         this.settingsRepository = settingsRepository
     }
@@ -21,12 +22,17 @@ class UserService {
         return this.userRepository.exists(username)
     }
 
+    async existsCaseInsensitive(username) {
+        return this.userRepository.existsCaseInsensitive(username)
+    }
+
     async hashPassword(password, salt) {
         const hash = await pbkdf2(password, salt, HASH_ITERATIONS, HASH_LENGTH, HASH_DIGEST)
         return hash.toString('base64')
     }
 
-    async register(username, password) {
+    async register(ipAddress, username, password) {
+        this.permissionService.requireEveryoneAccess(null, { ipAddress })
         const salt = crypto.randomBytes(64).toString('base64')
         const hashedPassword = await this.hashPassword(password, salt)
         return this.userRepository.createUser(username, hashedPassword, salt)
