@@ -1,8 +1,8 @@
 <template>
     <div v-if="success">
-        <i18n-t keypath="register_done" tag="span">
+        <i18n-t keypath="auth.register.done" tag="span">
             <template #loginlink>
-                <NuxtLink to="/login">{{ $t('log_in_l') }}</NuxtLink>
+                <NuxtLink to="/login">{{ $t('auth.register.do_login') }}</NuxtLink>
             </template>
         </i18n-t>
     </div>
@@ -12,43 +12,43 @@
 
         <form @submit.prevent="onSubmit">
             <div class="form-group mb-2">
-                <label for="idInputbox">{{ $t('id') }}</label>
+                <label for="idInputbox">{{ $t('auth.register.id') }}</label>
                 <input id="idInputbox" v-model="id" type="text" minlength="3" maxlength="255" class="form-control"
-                    :placeholder="$t('register_enterid')" required :disabled="pending" />
+                    :placeholder="$t('auth.register.id')" required :disabled="pending" />
                 <p>
                     <small v-if="idStatus === 'ok' && idAvailable === true" class="text-success fw-bold">{{
-                        $t('register_idok') }}</small>
-                    <small v-else-if="idStatus === 'bad'" class="text-danger fw-bold">{{ $t('register_idillegal')
+                        $t('auth.register.idok') }}</small>
+                    <small v-else-if="idStatus === 'bad'" class="text-danger fw-bold">{{ $t('auth.register.idillegal')
                     }}</small>
-                    <small v-if="idAvailable === false" class="text-danger fw-bold">{{ $t('register_idexists')
+                    <small v-if="idAvailable === false" class="text-danger fw-bold">{{ $t('auth.register.idexists')
                     }}</small>
                 </p>
             </div>
 
             <div class="form-group mb-2">
-                <label for="passwordInputbox">{{ $t('password') }}</label>
+                <label for="passwordInputbox">{{ $t('auth.register.pw') }}</label>
                 <input id="passwordInputbox" v-model="password" type="password" class="form-control"
-                    :placeholder="$t('register_enterpw')" required minlength="8" maxlength="255" :disabled="pending"
+                    :placeholder="$t('auth.register.enterpw')" required minlength="8" maxlength="255" :disabled="pending"
                     pattern="^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$" />
-                <small class="form-text text-muted">{{ $t('register_p8up') }}</small>
-                <small v-if="pwBadLength" class="text-danger fw-bold d-block">{{ $t('register_illegalpwlength')
+                <small class="form-text text-muted">{{ $t('auth.register.p8up') }}</small>
+                <small v-if="pwBadLength" class="text-danger fw-bold d-block">{{ $t('auth.register.illegalpwlength')
                 }}</small>
                 <small v-if="pwBadChars.size > 0" class="text-danger fw-bold d-block">
-                    {{ $t('register_illegalpwchar') }}'{{ Array.from(pwBadChars).join("', '") }}'
+                    {{ $t('auth.register.illegalpwchar') }}'{{ Array.from(pwBadChars).join("', '") }}'
                 </small>
             </div>
 
             <div class="form-group mb-2">
-                <label for="passwordConfirmInputbox">{{ $t('register_confirmpw') }}</label>
+                <label for="passwordConfirmInputbox">{{ $t('auth.register.confirmpw') }}</label>
                 <input id="passwordConfirmInputbox" v-model="passwordConfirm" type="password" class="form-control"
-                    :placeholder="$t('register_reenterpw')" required minlength="8" maxlength="255"
+                    :placeholder="$t('auth.register.reenterpw')" required minlength="8" maxlength="255"
                     :disabled="pending" />
                 <p>
-                    <small v-if="pwMatch === true" class="text-success fw-bold">{{ $t('register_pwMatch') }}</small>
-                    <small v-else-if="pwMatch === false" class="text-danger fw-bold">{{ $t('register_pwNotMatch')
+                    <small v-if="pwMatch === true" class="text-success fw-bold">{{ $t('auth.register.pwMatch') }}</small>
+                    <small v-else-if="pwMatch === false" class="text-danger fw-bold">{{ $t('auth.register.pwNotMatch')
                     }}</small>
                 </p>
-                <small class="form-text text-muted">{{ $t('register_confirmPwDesc') }}</small>
+                <small class="form-text text-muted">{{ $t('auth.register.confirmPwDesc') }}</small>
             </div>
 
             <template v-if="config.public.privacyPolicy && config.public.tos">
@@ -56,17 +56,17 @@
                     <input class="form-check-input" type="checkbox" id="ppTosAgree" v-model="ppTosAgree"
                         :disabled="pending" />
                     <label class="form-check-label" for="ppTosAgree">
-                        <i18n-t keypath="register_agreeToTwo">
+                        <i18n-t keypath="auth.register.agreeToTwo">
                             <template #link1>
                                 <button type="button" class="btn btn-link p-0 align-baseline"
                                     data-bs-toggle="modal" data-bs-target="#ppModal">
-                                    {{ $t('register_privacyPolicy') }}
+                                    {{ $t('auth.register.privacyPolicy') }}
                                 </button>
                             </template>
                             <template #link2>
                                 <button type="button" class="btn btn-link p-0 align-baseline"
                                     data-bs-toggle="modal" data-bs-target="#tosModal">
-                                    {{ $t('register_termsOfService') }}
+                                    {{ $t('auth.register.termsOfService') }}
                                 </button>
                             </template>
                         </i18n-t>
@@ -78,8 +78,7 @@
                 <Turnstile :siteKey="data.captcha" />
             </div>
 
-            <button type="submit" class="btn btn-primary" :disabled="!registerGood || pending">{{ $t('register')
-            }}</button>
+            <button type="submit" class="btn btn-primary" :disabled="!registerGood || pending">{{ $t('auth.register.submit') }}</button>
         </form>
     </div>
 
@@ -87,7 +86,7 @@
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ $t('register_privacyPolicy') }}</h5>
+                    <h5 class="modal-title">{{ $t('auth.register.privacyPolicy') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('close')" />
                 </div>
                 <div class="modal-body" v-html="config.public.privacyPolicy" />
@@ -102,7 +101,7 @@
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ $t('register_termsOfService') }}</h5>
+                    <h5 class="modal-title">{{ $t('auth.register.termsOfService') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('close')" />
                 </div>
                 <div class="modal-body" v-html="config.public.tos" />
@@ -118,7 +117,7 @@
 const { t } = useI18n()
 const config = useRuntimeConfig()
 
-useHead({ title: `${t('register')} - ${config.public.appname}` })
+useHead({ title: `${t('auth.register.title')} - ${config.public.appname}` })
 const { setPageHeader } = usePageHeader()
 setPageHeader({ title: t('register') })
 

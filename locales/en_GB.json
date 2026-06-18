@@ -1,35 +1,83 @@
 {
+	"common": {
+		"actions": {
+			"returningTo": "Returning to {link}."
+		},
+		"pages": {
+			"mainpage": "Main page"
+		}
+	},
+	"auth": {
+		"login": {
+			"title": "Login",
+			"alreadyLoggedIn": "You are already logged in.",
+			"inputID": "Enter ID",
+			"inputPW": "Enter Password",
+			"submit": "Login",
+			"noAccount": "Do not have an account?",
+			"accountNow": "Sign up now!",
+			"pwForgot": "Should you forgot your password, {link}",
+			"adminEmail": "please email the administrator."
+		},
+		"register": {
+			"title": "Register",
+			"do_login": "login",
+			"id": "ID",
+			"pw": "Password",
+			"idok": "Your ID is good to go.",
+			"idillegal": "ID can only contain alphanumeric characters and an underbar(_).",
+			"p8up": "Passwords should contain 8 or more characters.",
+			"illegalpwlength": "passwords should be 8 to 255 characters long.",
+			"illegalpwchar": "Your password contains an illegal character: ",
+			"confirmpw": "Confirm Password",
+			"pwMatch": "Passwords match.",
+			"pwNotMatch": "Passwords do not match",
+			"confirmPwDesc": "Please repeat our password to ensure that you have typed it correctly.",
+			"enterid": "Enter ID",
+			"enterpw": "Enter password",
+			"reenterpw": "Re-enter password",
+			"fail": "Could not create user. Please check whether the user already exists or not.",
+			"done": "Register finished. Please {{loginlink}} to continue.",
+			"idexists": "ID already in use.",
+			"agreeTo": "I agree to {{link}}.",
+			"agreeToTwo": "I agree to {{link1}} and {{link2}}.",
+			"privacyPolicy": "Privacy Policy",
+			"termsOfService": "Terms of Service",
+			"submit": "Register"
+		}
+	},
+	"pages": {
+		"history": {
+			"edit": "Edit",
+			"create": "Create",
+			"move": "Move",
+			"delete": "Delete",
+			"protect": "Protect",
+			"diff": "Diff"
+		},
+		"delete": {
+			"title": "Delete {{{name}}}",
+			"submit": "Delete",
+			"summary": "Summary",
+			"max255": "Up to 255 characters"
+		},
+		"view": {
+			"error": {
+				"viewHistory": "You can view the history of this page {link}.",
+				"viewHistoryLinkDesc": "here"
+			}
+		}
+	},
 	"noEmail": "Refusal of unauthorised email collection",
 	"noEmail_description": "We refuse any unauthorised collection of email addresses published on this website. Any offence could result in an criminal punishment according to the Personal Information Protection Act (South Korea).",
 	"noEmail_law": "Article 15 (Collection and Use of Personal Information), Personal Information Protection Act",
 	"noEmail_content": "<p>(1)&nbsp;A personal information controller may collect personal information in any of the following cases, and use it within the scope of the purpose of collection:</p><p>    1.&nbsp;Where consent is obtained from a data subject;</p><p>    2.&nbsp;Where special provisions exist in other statutes or it is unavoidable due to obligations under statutes or regulations;</p><p>    3.&nbsp;Where it is unavoidable for a public institution’s performance of work under its jurisdiction as prescribed by statutes or regulations, etc.;</p><p>    4.&nbsp;Where it is necessary to take measures at the request of a data subject in the course of performing a contract concluded with the data subject or concluding a contract;</p><p>    5.&nbsp;Where it is deemed manifestly necessary for the protection, from imminent danger, of life, bodily and property interests of a data subject or a third party;</p><p>    6.&nbsp;Where it is necessary to attain the legitimate interests of a personal information controller, which such interest is manifestly superior to the rights of the data subject. In such cases, processing shall be allowed only to the extent the processing is substantially related to the legitimate interests of the personal information controller and does not go beyond a reasonable scope.</p><p>    7.&nbsp;Where it is urgently necessary for the public safety and security, public health, etc.</p><p>(2)&nbsp;A personal information controller shall inform a data subject of the following matters when it obtains consent under paragraph (1) 1. The same shall apply when any of the following is modified:</p><p>    1.&nbsp;The purpose of the collection and use of personal information;</p><p>    2.&nbsp;Particulars of personal information to be collected;</p><p>    3.&nbsp;The period for retaining and using personal information;</p><p>    4.&nbsp;The fact that the data subject is entitled to deny consent, and disadvantages, if any, resulting from the denial of consent.</p><p>(3)&nbsp;A personal information controller may use personal information without the consent of a data subject within the scope reasonably related to the initial purpose of the collection as prescribed by Presidential Decree, in consideration whether disadvantages have been caused to the data subject and whether necessary measures to ensure safety such as encryption have been taken.</p>",
 	"register": "Register",
 	"id": "ID",
-	"register_idok": "Your ID is good to go.",
-	"register_idillegal": "ID can only contain alphanumeric characters and an underbar(_).",
-	"password": "Password",
-	"register_p8up": "Passwords should contain 8 or more characters.",
-	"register_illegalpwlength": "passwords should be 8 to 255 characters long.",
-	"register_illegalpwchar": "Your password contains an illegal character: ",
-	"register_confirmpw": "Confirm Password",
-	"register_pwMatch": "Passwords match.",
-	"register_pwNotMatch": "Passwords do not match",
-	"register_confirmPwDesc": "Please repeat our password to ensure that you have typed it correctly.",
-	"register_enterid": "Enter ID",
-	"register_enterpw": "Enter password",
-	"register_reenterpw": "Re-enter password",
-	"register_fail": "Could not create user. Please check whether the user already exists or not.",
-	"register_done": "Register finished. Please {{loginlink}} to continue.",
 	"log_in_l": "login",
-	"login_inputID": "Enter ID",
-	"login_inputPW": "Enter password",
-	"login_noAccount": "Do not have an account?",
-	"login_accountNow": "Sign up now!",
 	"login": "Login",
 	"logout": "Logout",
 	"loginpage": "Login page",
-	"login_pwforgot": "Should you forgot your password, ",
-	"login_adminEmail": "please email the administrator.",
 	"captcha_notdone": "Please complete the CAPTCHA.",
 	"captcha_verifyfail": "An error occurred while checking reCAPTCHA.",
 	"previousPage": "the previous page",
@@ -94,10 +142,8 @@
 	"illegalaccess": "Illegal access.",
 	"loginneeded": "Login needed.",
 	"delete": "Delete",
-	"deletepg": "Delete {{{name}}}",
-	"deletepgconfirm": "Delete {{{name}}}?",
-	"deletepermneeded": "Page delete permission required.",
-	"permissionRequried": "Permission required.",
+	"permissionRequired": "Permission required.",
+	"xpermissionRequired": "{{permission}} permission is required.",
 	"revert": "Revert",
 	"revert_title": "Revert {{{page}}} to r{{rev}}",
 	"revision404": "No such revision found.",
@@ -208,10 +254,9 @@
 	"userPage": "User page",
 	"page": "Page",
 	"more": "More",
-	"register_idexists": "ID already in use.",
-	"register_agreeTo": "I agree to {{link}}.",
-	"register_agreeToTwo": "I agree to {{link1}} and {{link2}}.",
-	"register_privacyPolicy": "Privacy Policy",
-	"register_termsOfService": "Terms of Service",
-	"close": "Close"
+	"close": "Close",
+	"pageNOfM": "Page {{page}} of {{total}}",
+	"loginUser": "Logged-in user",
+	"ipUser": "IP user",
+	"XpermissionRequired": "XpermissionRequired"
 }

@@ -1,4 +1,3 @@
-import logger from '../../utils/logger.js'
 import { ValidationError } from '../../services/errors.js'
 
 export default async (req, res) => {

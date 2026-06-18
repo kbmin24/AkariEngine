@@ -49,7 +49,7 @@ const q = computed(() => route.query.q ?? '')
 const from = computed(() => Number(route.query.from ?? 0))
 const encodedQuery = computed(() => encodeURIComponent(q.value))
 
-useHead(computed(() => ({
+useHeadSafe(computed(() => ({
     title: `${t('searchResults', { q: q.value })} - ${config.public.appname}`,
 })))
 

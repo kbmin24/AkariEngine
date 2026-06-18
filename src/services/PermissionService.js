@@ -319,7 +319,8 @@ class PermissionService {
         if (!hasPermission) {
             throw new PermissionDeniedError(permission, null, {
                 acl: permission,
-                i18nKey: 'permissionRequired',
+                i18nKey: 'XpermissionRequired',
+                i18nParams: { permission }
             })
         }
     }

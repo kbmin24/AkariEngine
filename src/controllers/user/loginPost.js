@@ -1,5 +1,4 @@
 import logger from '../../utils/logger.js'
-import { AuthenticationRequiredError } from '../../services/errors.js'
 
 export default async (req, res) => {
     const username = req.body.id

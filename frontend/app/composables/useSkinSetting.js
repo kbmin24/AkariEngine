@@ -18,9 +18,7 @@ export const useSkinSetting = (settingName, defaultValue, options = {}) => {
     const load = () => {
         if (!import.meta.client) return value.value
 
-        const stored = localStorage.getItem(storageKey.value)
-        const legacyStored = options.legacyKey ? localStorage.getItem(options.legacyKey) : null
-        const raw = stored ?? legacyStored
+        const raw = localStorage.getItem(storageKey.value)
 
         if (raw === null) {
             value.value = defaultValue

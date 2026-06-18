@@ -37,8 +37,8 @@ function isApiRequest(req) {
     return req.path.startsWith('/api') || req.path.startsWith('/api/')
 }
 
-function sendJsonError(res, statusCode, message, i18nKey) {
-    return res.status(statusCode).json({ error: true, message, i18nKey: i18nKey || null })
+function sendJsonError(res, statusCode, message, i18nKey, i18nParams={}) {
+    return res.status(statusCode).json({ error: true, message, i18nKey: i18nKey || null, i18nParams })
 }
 
 function errorHandler(err, req, res, next) {
@@ -59,7 +59,7 @@ function errorHandler(err, req, res, next) {
         : err.message
 
     if (err instanceof PermissionDeniedError) {
-        return sendJsonError(res, err.statusCode || 403, localizedMessage, err.i18nKey)
+        return sendJsonError(res, err.statusCode || 403, localizedMessage, err.i18nKey, err.i18nParams)
     }
 
     if (err instanceof PageNotFoundError) {

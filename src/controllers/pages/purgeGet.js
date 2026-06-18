@@ -1,7 +1,7 @@
 import { genCaptcha } from '../../utils/captcha.js'
 
 export default async (req, res) => {
-    const model = await req.app.locals.services.page.getDeleteViewModel({
+    const model = await req.app.locals.services.page.getPurgeViewModel({
         title: req.params.name,
         username: req.session.username
     })

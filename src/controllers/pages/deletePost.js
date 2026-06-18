@@ -3,13 +3,12 @@ export default async (req, res) => {
     const user = req.session.username
     const comment = req.body.comment
 
-    if (title.toLowerCase().startsWith('file:')) {
-        const m = /^File:(.*)$/i.exec(title)
-        const filename = m && m[1] ? m[1] : ''
-        await req.app.locals.services.file.deleteFile({ filename, user, comment })
-    } else {
-        await req.app.locals.services.page.deletePage({ title, user, comment })
-    }
+    await req.app.locals.services.page.deletePage({
+        title,
+        user,
+        ipAddress: req.ipAddress,
+        comment
+    })
 
     res.json({ success: true })
 }

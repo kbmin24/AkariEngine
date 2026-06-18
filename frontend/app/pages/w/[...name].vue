@@ -7,9 +7,14 @@
             </p>
         </template>
         <template v-else-if="errorI18nKey === 'page404'">
-            <p v-if="hasHistory">
-                <NuxtLink :to="`/history/${pagename}`">{{ $t('revision') }}</NuxtLink>
-            </p>
+            <template v-if="hasHistory">
+                <p>{{ $t('page404') }}</p>
+                <i18n-t keypath="pages.view.error.viewHistory" tag="p">
+                    <template #link>
+                        <NuxtLink :to="`/history/${pagename}`">{{ $t('pages.view.error.viewHistoryLinkDesc') }}</NuxtLink>
+                    </template>
+                </i18n-t>
+            </template>
             <p v-else>
                 {{ $t('page404') }}
                 <i18n-t keypath="page_asknew" tag="span">
@@ -98,7 +103,7 @@ if (data.value?.redirect) {
     await processRedirection(data.value)
 }
 
-useHead(computed(() => ({
+useHeadSafe(computed(() => ({
     title: (data.value?.title ?? pagename.value) + ' - ' + config.public.appname,
 })))
 

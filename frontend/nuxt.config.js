@@ -72,7 +72,10 @@ export default defineNuxtConfig({
 
     fonts: {
         families: [
-            { name: 'Noto Sans KR', provider: 'google' }
+            { name: 'Noto Sans KR',
+                provider: 'google',
+                weights: ['400', '500', '600', '700'],
+            }
         ]
     },
 
@@ -93,13 +96,21 @@ export default defineNuxtConfig({
         '/': { redirect: '/w/FrontPage' },
         '/api/**': { proxy: `http://localhost:${backendPort}/api/**` },
         '/css/**': { proxy: `http://localhost:${backendPort}/css/**` },
+        '/lib/**': { proxy: `http://localhost:${backendPort}/lib/**` },
         '/skins/**': { proxy: `http://localhost:${backendPort}/skins/**` },
         '/uploads/**': { proxy: `http://localhost:${backendPort}/uploads/**` },
     },
-    devProxy: {
-        '/socket.io': {
-            target: `http://localhost:${backendPort}/`,
-            ws: true
+    nitro: {
+        devProxy: {
+            '/lib': {
+                target: `http://localhost:${backendPort}`,
+                changeOrigin: true,
+            },
+            '/socket.io': {
+                target: `http://localhost:${backendPort}`,
+                ws: true,
+                changeOrigin: true,
+            }
         }
     },
 
@@ -126,7 +137,7 @@ export default defineNuxtConfig({
             { code: 'en', language: 'en-GB', file: 'en_GB.json', name: 'English' },
         ],
         defaultLocale,
-        langDir: fileURLToPath(new URL('../locales', import.meta.url)),
+        langDir: '../../locales/',
         vueI18n: 'i18n.config.js',
         compilation: {
             strictMessage: false,

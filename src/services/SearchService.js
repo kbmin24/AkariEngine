@@ -79,7 +79,7 @@ class SearchService {
         }
 
         const page = await this.pageRepo.findByTitle(normalized)
-        if (page) {
+        if (page && !page.deleted) {
             return `/w/${normalized}`
         }
 

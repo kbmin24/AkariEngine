@@ -39,7 +39,7 @@ export default async (req, res) => {
             if (!(e instanceof PageNotFoundError)) throw e
         }
 
-        if (page && !page.deleted) {
+        if (page) {
             await services.viewcount.incrementViewCount(name)
 
             const redirect = !(req.query.redirect == 'true' || req.query.from)
@@ -83,12 +83,16 @@ export default async (req, res) => {
                 })
             }
 
-            const existingPage = await repositories.pages.findByTitle(name)
+            const hasHistory = await services.history.pageHistoryExists({
+                title: name,
+                user: req.session.username,
+                ipAddress: req.ipAddress
+            })
             return res.status(404).json({
                 error: true,
                 i18nKey: 'page404',
                 pagename: name,
-                hasHistory: !!existingPage
+                hasHistory: hasHistory
             })
         }
     } else {

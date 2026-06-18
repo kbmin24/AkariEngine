@@ -92,6 +92,8 @@ const showButtonRepo = {
     move: ['page', 'edit'],
     protect: ['page', 'history'],
     delete: ['page', 'history'],
+    history: ['page', 'edit'],
+    diff: ['page', 'history']
 }
 
 function showButton(actionName) {

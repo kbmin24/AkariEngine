@@ -1,7 +1,7 @@
 import express from 'express'
 import { asyncRoute } from '../utils/httpHelper.js'
 import { param, query, body } from 'express-validator'
-import { requirePermission, requirePageAccess } from '../middlewares/permission.js'
+import { requirePermission, requirePageAccess, requireLogin } from '../middlewares/permission.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { validateRequest } from '../middlewares/validation.js'
 import viewController from '../controllers/pages/viewGet.js'
@@ -23,6 +23,8 @@ import revertGetController from '../controllers/pages/revertGet.js'
 import revertPostController from '../controllers/pages/revertPost.js'
 import movePostController from '../controllers/pages/movePost.js'
 import deletePageController from '../controllers/pages/deletePost.js'
+import purgeGetController from '../controllers/pages/purgeGet.js'
+import purgePostController from '../controllers/pages/purgePost.js'
 
 
 export default (options = {}) => {
@@ -166,8 +168,14 @@ export default (options = {}) => {
 
     router.get('/delete/:name(*)',
         csrfProtection,
-        requirePermission('deletepage', { mode: 'enforce' }),
+        requireLogin(),
         asyncRoute(deleteGetController)
+    )
+
+    router.get('/purge/:name(*)',
+        csrfProtection,
+        requirePermission('purgepage', { mode: 'enforce' }),
+        asyncRoute(purgeGetController)
     )
 
     router.get('/revert/:name(*)',
@@ -201,8 +209,17 @@ export default (options = {}) => {
         validateRequest,
         csrfProtection,
         chkCaptcha,
-        requirePermission('deletepage', { mode: 'enforce' }),
+        requireLogin(),
         asyncRoute(deletePageController)
+    )
+
+    router.post('/purge/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        csrfProtection,
+        chkCaptcha,
+        requirePermission('purgepage', { mode: 'enforce' }),
+        asyncRoute(purgePostController)
     )
 
     return router

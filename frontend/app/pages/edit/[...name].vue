@@ -199,17 +199,19 @@ watch(data, (val) => {
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'dataLoadError')
 const notification = computed(() => data.value?.notification)
-useHead(computed(() => ({
+useHeadSafe(computed(() => ({
     title: `${t('edit_pg', { name: data.value?.title ?? pagename.value })} - ${config.public.appname}`,
 })))
 
 setPageHeader({ title: t('edit_pg', { name: pagename.value }),
     isPage: true,
+    pagename: pagename.value,
     pageMode: 'edit',
  })
 watch([data, pagename], () => {
     setPageHeader({ title: t('edit_pg', { name: data.value?.title ?? pagename.value }),
     isPage: true,
+    pagename: pagename.value,
     pageMode: 'edit'
 })
 })

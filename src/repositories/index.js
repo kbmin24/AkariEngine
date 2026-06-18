@@ -25,7 +25,9 @@ class RepositoryFactory {
             fileModel: db.mfile,
             protectModel: db.protect,
             threadModel: db.thread,
-            recentDiscussModel: db.recentdiscuss
+            threadCommentModel: db.threadcomment,
+            recentDiscussModel: db.recentdiscuss,
+            viewcountModel: db.viewcount
         })
         this.users = new UserRepository(db.users)
         this.permissions = new PermissionRepository(db.perm)

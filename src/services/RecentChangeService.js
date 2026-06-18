@@ -43,7 +43,7 @@ class RecentChangeService {
             const lowerPage = pageTitle.toLowerCase()
             if (excludeFile && lowerPage.startsWith('file:')) continue
             if (lowerPage.startsWith('user:')) continue
-            if (editOnly && change.type !== 'edit' && change.type !== 'create') continue
+            if (editOnly && change.type !== 'edit' && change.type !== 'create' && change.type !== 'delete') continue
             if (isUnique && uniqueNames.has(pageTitle)) continue
 
             const entry = change.toJSON ? change.toJSON() : { ...change }

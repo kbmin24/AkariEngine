@@ -103,6 +103,7 @@ class PageService {
         title = title.trim()
 
         const page = await this.pageRepo.findByTitle(title)
+        if (page.deleted) throw new PageNotFoundError(title)
         if (!page && title.toLowerCase().startsWith('file:')) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
@@ -151,7 +152,8 @@ class PageService {
             ? await this.pageRepo.findByTitle(title)
             : await this.historyRepo.findByPageAndRev(title, rev)
 
-        if (!page || page.deleted) throw new PageNotFoundError(title)
+        if (!page) throw new PageNotFoundError(title)
+            if (rev === undefined && page.deleted) throw new PageNotFoundError(title)
         return page.content
     }
 
@@ -163,6 +165,9 @@ class PageService {
                 code: 'XREF_TITLE_NEEDED'
             })
         }
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (page && page.deleted) throw new PageNotFoundError(title)
 
         const backlinks = await this.pageRepo.findBacklinksByTitle(title)
         return {
@@ -190,7 +195,7 @@ class PageService {
         }
 
         const page = await this.pageRepo.findByTitle(title)
-        if (!page) throw new PageNotFoundError(title)
+        if (!page || page.deleted) throw new PageNotFoundError(title)
 
         return {
             originalName: title,
@@ -204,6 +209,30 @@ class PageService {
                 i18nKey: 'illegalaccess',
                 statusCode: 200,
                 code: 'DELETE_TITLE_NEEDED'
+            })
+        }
+
+        if (title.toLowerCase().startsWith('file:')) {
+            throw new ValidationError("File pages can only be purged.")
+        }
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+        if (page.deleted) throw new PageNotFoundError(title)
+
+        return {
+            title,
+            username,
+            pagename: page.title
+        }
+    }
+
+    async getPurgeViewModel({ title, username }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 200,
+                code: 'PURGE_TITLE_NEEDED'
             })
         }
 
@@ -253,6 +282,7 @@ class PageService {
         const normalizedContent = await this.buildNormalizedEditContent({ content, editPrefix, editSuffix })
 
         const existingPage = await this.pageRepo.findByTitle(title)
+
         if (!existingPage && title.toLowerCase().startsWith('file:') && !iscreatingFile) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
@@ -261,13 +291,18 @@ class PageService {
             })
         }
 
+        if (existingPage && existingPage.deleted) throw new PageNotFoundError(title)
+
         await this.permissionService.requireWriteAccess(user, title, { ipAddress })
 
         const doneBy = user || ipAddress
-        const isNewPage = !existingPage
-        const oldContent = existingPage ? existingPage.content : ''
+        const isNewPage = !existingPage || existingPage.deleted
+        const oldContent = !existingPage || existingPage.deleted ? '' : existingPage.content
         const byteChange = normalizedContent.length - oldContent.length
-        const nextRev = (existingPage ? existingPage.currentRev : 0) + 1
+        const latestRev = existingPage
+            ? existingPage.currentRev
+            : await this.historyRepo.findLatestRevByPage(title)
+        const nextRev = (latestRev || 0) + 1
 
         const { page } = await this.pageRepo.upsertPage(title, normalizedContent, nextRev, false, {
             doneBy,
@@ -302,18 +337,17 @@ class PageService {
         return page
     }
 
-    async deletePage({ title, user, comment }) {
+    async deletePage({ title, user, ipAddress, comment }) {
         if (!title) throw new ValidationError('Page title is required')
         if (title.toLowerCase().startsWith('file:')) {
-            throw new ValidationError("Delete file pages through the file service.")
+            throw new ValidationError("File pages can only be purged.")
         }
 
-        if (!user) throw new AuthenticationRequiredError()
+        await this.permissionService.requireLoginAccess(user, { ipAddress })
         const page = await this.pageRepo.findByTitle(title)
-        if (!page) throw new PageNotFoundError(title)
-        await this.permissionService.requirePermission(user, 'deletepage')
+        if (!page || page.deleted) throw new PageNotFoundError(title)
 
-        await this.pageRepo.deletePageWithHistory({
+        await this.pageRepo.softDeletePageWithHistory({
             title,
             doneBy: user,
             comment
@@ -329,6 +363,36 @@ class PageService {
 
         logger.admin('Page deleted', user, { title })
         return true
+    }
+
+    async purgePage({ title, user, comment }) {
+        if (!title) throw new ValidationError('Page title is required')
+        if (!user) throw new AuthenticationRequiredError()
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+        await this.permissionService.requirePermission(user, 'purgepage')
+
+        const result = await this.pageRepo.purgePage({
+            title,
+            doneBy: user,
+            comment
+        })
+
+        if (!result.purged && result.reason === 'not_found') {
+            throw new PageNotFoundError(title)
+        }
+
+        if (this.msRepo) {
+            try {
+                await this.msRepo.deleteDocument(page.id)
+            } catch (e) {
+                logger.warn('Meilisearch index update failed after purge', { title, error: e.message })
+            }
+        }
+
+        logger.admin('Page purged', user, { title })
+        return result
     }
 
     async movePage(oldTitle, newTitle, user) {
@@ -348,7 +412,7 @@ class PageService {
         }
 
         const sourcePage = await this.pageRepo.findByTitle(sourceTitle)
-        if (!sourcePage) throw new PageNotFoundError(sourceTitle)
+        if (!sourcePage || sourcePage.deleted) throw new PageNotFoundError(sourceTitle)
 
         const categories = this.categoryService.extractFromContent(sourcePage.content || '')
         const doneBy = actor || ipAddress

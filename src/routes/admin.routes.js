@@ -29,7 +29,7 @@ export default (options = {}) => {
 
     router.get('/admin/grant',
         csrfProtection,
-        requirePermission('deletepage', { mode: 'grant' }),
+        requirePermission('purgepage', { mode: 'grant' }),
         param('grantTo').optional().isString(),
         validateRequest,
         asyncRoute(grantGet)
