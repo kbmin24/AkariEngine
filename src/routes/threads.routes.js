@@ -9,9 +9,8 @@ import recentDiscussHandler from '../controllers/threads/recentDiscussGet.js'
 import threadInfoController from '../controllers/ajax/threadinfo.js'
 import threadCommentsController from '../controllers/ajax/threadcomments.js'
 
-export default (options = {}) => {
+export default () => {
     const router = express.Router()
-    const csrfProtection = options.csrfProtection
 
     router.get('/threads/:name(*)',
         requirePageAccess('read'),
@@ -23,7 +22,6 @@ export default (options = {}) => {
         asyncRoute(threadsPost))
 
     router.get('/thread/:name(*)',
-        csrfProtection,
         requirePageAccess('read'),
         asyncRoute(threadGet))
 

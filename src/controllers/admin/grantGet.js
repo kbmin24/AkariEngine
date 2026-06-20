@@ -7,7 +7,6 @@ export default async (req, res) => {
 
     res.json({
         grantTo: req.query.grantTo,
-        permissions,
-        csrfToken: req.csrfToken()
+        permissions
     })
 }

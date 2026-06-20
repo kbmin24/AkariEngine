@@ -28,7 +28,6 @@ export default (options = {}) => {
     )
 
     router.get('/admin/grant',
-        csrfProtection,
         requirePermission('purgepage', { mode: 'grant' }),
         param('grantTo').optional().isString(),
         validateRequest,
@@ -36,29 +35,25 @@ export default (options = {}) => {
     )
 
     router.get('/admin/blockuser',
-        csrfProtection,
         requirePermission('block'),
         asyncRoute(async (req, res) => {
-            res.json({ csrfToken: req.csrfToken() })
+            res.json({})
         })
     )
 
     router.get('/admin/blockip',
-        csrfProtection,
         requirePermission('block'),
         asyncRoute(async (req, res) => {
-            res.json({ csrfToken: req.csrfToken() })
+            res.json({})
         })
     )
 
     router.get('/admin/loginhistory',
-        csrfProtection,
         requirePermission('loginhistory'),
         asyncRoute(loginhistoryGetHandler)
     )
 
     router.get('/admin/hiderev',
-        csrfProtection,
         requirePermission('acl'),
         asyncRoute(hiderevGet)
     )
@@ -106,10 +101,9 @@ export default (options = {}) => {
     )
 
     router.get('/admin/developer',
-        csrfProtection,
         requirePermission('developer'),
         asyncRoute(async (req, res) => {
-            res.json({ csrfToken: req.csrfToken() })
+            res.json({})
         })
     )
 

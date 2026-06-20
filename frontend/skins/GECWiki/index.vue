@@ -15,7 +15,7 @@
 
                     <div class="pb-2 mt-2 mb-3 titleArea">
                         <h1 class="pgTitle">
-                            <NuxtLink v-if="header.titleLink" class="pgTitleLink" :to="header.titleLink">
+                            <NuxtLink v-if="header.isPage" class="pgTitleLink" :to="`/w/${header.pagename}`">
                                 {{ header.title }}
                             </NuxtLink>
                             <template v-else>{{ header.title }}</template>

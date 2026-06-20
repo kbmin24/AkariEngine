@@ -9,7 +9,6 @@ export default async (req, res) => {
         pagename: req.params.name,
         username: req.session.username,
         rev: req.query.rev,
-        captcha: await genCaptcha(),
-        csrfToken: req.csrfToken()
+        captcha: await genCaptcha()
     })
 }

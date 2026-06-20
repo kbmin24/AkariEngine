@@ -48,7 +48,7 @@ export default (options = {}) => {
     }))
 
     router.post('/preview',
-        body('content').trim().notEmpty(),
+        body('content').trim().exists(),
         body('title').trim().notEmpty(),
         validateRequest,
         asyncRoute(previewController)
@@ -139,7 +139,6 @@ export default (options = {}) => {
     }))
 
     router.get('/edit/:name(*)',
-        csrfProtection,
         requirePageAccess('read', { noAclMessageKey: 'view_noacl' }), // We do this because not having edit access gives out the page's source code
         requirePageAccess('edit', {
             noAclMessageKey: 'edit_noacl',
@@ -161,19 +160,16 @@ export default (options = {}) => {
     )
 
     router.get('/move/:name(*)',
-        csrfProtection,
         requirePageAccess('move', { noAclMessageKey: 'move_noacl' }),
         asyncRoute(moveGetController)
     )
 
     router.get('/delete/:name(*)',
-        csrfProtection,
         requireLogin(),
         asyncRoute(deleteGetController)
     )
 
     router.get('/purge/:name(*)',
-        csrfProtection,
         requirePermission('purgepage', { mode: 'enforce' }),
         asyncRoute(purgeGetController)
     )
@@ -182,8 +178,7 @@ export default (options = {}) => {
         param('name').trim().notEmpty(),
         query('rev').isInt().toInt(),
         validateRequest,
-        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
-        csrfProtection,
+        requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
         asyncRoute(revertGetController)
     )
 
@@ -193,7 +188,7 @@ export default (options = {}) => {
         validateRequest,
         csrfProtection,
         chkCaptcha,
-        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
+        requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
         asyncRoute(revertPostController)
     )
 

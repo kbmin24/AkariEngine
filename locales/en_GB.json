@@ -1,7 +1,8 @@
 {
 	"common": {
 		"actions": {
-			"returningTo": "Returning to {link}."
+			"returningTo": "Returning to {link}.",
+			"purge": "Purge"
 		},
 		"pages": {
 			"mainpage": "Main page"
@@ -53,13 +54,33 @@
 			"move": "Move",
 			"delete": "Delete",
 			"protect": "Protect",
-			"diff": "Diff"
+			"diff": "Diff",
+			"revert": "Revert"
 		},
 		"delete": {
-			"title": "Delete {{{name}}}",
+			"title": "Delete {name}",
 			"submit": "Delete",
 			"summary": "Summary",
 			"max255": "Up to 255 characters"
+		},
+		"purge": {
+			"title": "Purge {name}",
+			"submit": "Purge",
+			"summary": "Summary",
+			"modal": {
+				"title": "Confirmation",
+				"warning1": "This action cannot be undone.",
+				"warning2": "Are you sure you want to purge this page?",
+				"yes": "Yes",
+				"no": "No"
+			},
+			"done": "Done. Return to {link}",
+			"done_desc": "the main page",
+			"max255": "Up to 255 characters"
+		},
+		"revert": {
+			"title": "Revert {name} to r{rev}",
+			"max230": "Up to 230 characters"
 		},
 		"view": {
 			"error": {
@@ -143,7 +164,7 @@
 	"loginneeded": "Login needed.",
 	"delete": "Delete",
 	"permissionRequired": "Permission required.",
-	"xpermissionRequired": "{{permission}} permission is required.",
+	"XpermissionRequired": "{{permission}} permission is required.",
 	"revert": "Revert",
 	"revert_title": "Revert {{{page}}} to r{{rev}}",
 	"revision404": "No such revision found.",
@@ -258,5 +279,5 @@
 	"pageNOfM": "Page {{page}} of {{total}}",
 	"loginUser": "Logged-in user",
 	"ipUser": "IP user",
-	"XpermissionRequired": "XpermissionRequired"
+	"delete_nofile": "Files can only be deleted by administrators."
 }

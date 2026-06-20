@@ -14,7 +14,6 @@ export default async (req, res) => {
         thread,
         pagename: thread.pagename,
         username: req.session.username || req.ipAddress,
-        isAdmin,
-        csrfToken: req.csrfToken()
+        isAdmin
     })
 }

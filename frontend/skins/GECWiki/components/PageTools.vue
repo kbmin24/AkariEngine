@@ -1,45 +1,56 @@
 <template>
     <div id="pageTools" class="w-auto mt-2" role="group">
-        <NuxtLink v-if="showButton('page')" :to="`/w/${pagename}`" class="btn" id="docButton"><i class="fas fa-book"
-                aria-hidden="true"></i> {{
-                    $t('page') }}</NuxtLink>
         <NuxtLink v-if="showButton('edit')" :to="`/edit/${pagename}`" class="btn" id="editButton" rel="nofollow"><i
                 class="fas fa-pen-to-square" aria-hidden="true"></i> {{ $t('edit') }}</NuxtLink>
-        <NuxtLink v-if="showButton('discuss')" :to="`/threads/${pagename}`" class="btn" id="discussButton" rel="nofollow"><i
-                class="fas fa-comments" aria-hidden="true"></i> {{ $t('discussion') }}</NuxtLink>
+        <NuxtLink v-if="showButton('purge')" :to="`/purge/${pagename}`" class="btn" id="purgeButton" rel="nofollow">
+            <i class="fa-solid fa-broom"></i> {{ $t('common.actions.purge') }}
+        </NuxtLink>
+        <NuxtLink v-if="showButton('delete')" :to="`/delete/${pagename}`" class="btn" id="deleteButton" rel="nofollow">
+            <i class="fa-solid fa-trash-can"></i> {{ $t('delete') }}
+        </NuxtLink>
+        <NuxtLink v-if="showButton('discuss')" :to="`/threads/${pagename}`" class="btn" id="discussButton"
+            rel="nofollow"><i class="fas fa-comments" aria-hidden="true"></i> {{ $t('discussion') }}</NuxtLink>
         <NuxtLink v-if="showButton('xref')" :to="`/xref/${pagename}`" class="btn" id="xrefButton" rel="nofollow"><i
                 class="fas fa-link" aria-hidden="true"></i> {{ $t('xref') }}</NuxtLink>
         <NuxtLink v-if="showButton('history')" :to="`/history/${pagename}`" class="btn" id="historyButton"
             rel="nofollow"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> {{ $t('history') }}</NuxtLink>
-        <a class="btn dropdown-toggle" role="button" id="pageToolsDropdown"
-            data-bs-toggle="dropdown" aria-expanded="false">{{ $t('more') }}</a>
+        <a class="btn dropdown-toggle" role="button" id="pageToolsDropdown" data-bs-toggle="dropdown"
+            aria-expanded="false">{{ $t('more') }}</a>
         <ul class="dropdown-menu dropdown-menu-macos shadow dropdown-menu-end" aria-labelledby="pageToolsDropdown">
             <li>
                 <NuxtLink v-if="!showButton('edit')" :to="`/edit/${pagename}`" class="dropdown-item" rel="nofollow"><i
-                class="fas fa-pen-to-square" aria-hidden="true"></i> {{ $t('edit') }}</NuxtLink>
+                        class="fas fa-pen-to-square" aria-hidden="true"></i> {{ $t('edit') }}</NuxtLink>
             </li>
             <li>
                 <NuxtLink v-if="!showButton('xref')" :to="`/xref/${pagename}`" class="dropdown-item" rel="nofollow"><i
-                class="fas fa-link" aria-hidden="true"></i> {{ $t('xref') }}</NuxtLink>
+                        class="fas fa-link" aria-hidden="true"></i> {{ $t('xref') }}</NuxtLink>
             </li>
             <li>
-                <NuxtLink v-if="!showButton('discuss')" :to="`/threads/${pagename}`" class="dropdown-item" rel="nofollow"><i
-                class="fas fa-comments" aria-hidden="true"></i> {{ $t('discussion') }}
+                <NuxtLink v-if="!showButton('discuss')" :to="`/threads/${pagename}`" class="dropdown-item"
+                    rel="nofollow"><i class="fas fa-comments" aria-hidden="true"></i> {{ $t('discussion') }}
                 </NuxtLink>
             </li>
             <li>
-                <NuxtLink v-if="!showButton('history')" :to="`/history/${pagename}`" class="dropdown-item" rel="nofollow"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> {{ $t('history') }}
+                <NuxtLink v-if="!showButton('history')" :to="`/history/${pagename}`" class="dropdown-item"
+                    rel="nofollow"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> {{ $t('history') }}
                 </NuxtLink>
             </li>
             <li>
-                <NuxtLink :to="`/move/${pagename}`" class="dropdown-item" rel="nofollow"><i class="fa-solid fa-circle-right"></i> {{ $t('move') }}</NuxtLink>
+                <NuxtLink :to="`/move/${pagename}`" class="dropdown-item" rel="nofollow"><i
+                        class="fa-solid fa-circle-right"></i> {{ $t('move') }}</NuxtLink>
             </li>
             <li>
-                <NuxtLink :to="`/protect/${pagename}`" class="dropdown-item" rel="nofollow"><i class="fa-solid fa-lock"></i> {{ $t('protect') }}
+                <NuxtLink :to="`/protect/${pagename}`" class="dropdown-item" rel="nofollow"><i
+                        class="fa-solid fa-lock"></i> {{ $t('protect') }}
                 </NuxtLink>
             </li>
             <li>
-                <NuxtLink :to="`/delete/${pagename}`" class="dropdown-item" rel="nofollow"><i class="fa-solid fa-trash-can"></i> {{ $t('delete') }}</NuxtLink>
+                <NuxtLink :to="`/delete/${pagename}`" class="dropdown-item" rel="nofollow"><i
+                        class="fa-solid fa-trash-can"></i> {{ $t('delete') }}</NuxtLink>
+            </li>
+            <li v-if="userStore.isAdmin">
+                <NuxtLink :to="`/purge/${pagename}`" class="dropdown-item" rel="nofollow"><i
+                        class="fa-solid fa-broom"></i> {{ $t('common.actions.purge') }}</NuxtLink>
             </li>
         </ul>
     </div>
@@ -84,19 +95,29 @@ const props = defineProps({
     pageMode: { type: String, default: 'page' },
 })
 
+const { store: userStore } = useAuth()
+
 const showButtonRepo = {
     page: ['edit', 'discuss'],
-    edit: ['page', 'xref'],
-    xref: ['page', 'history'],
-    discuss: ['page', 'edit'],
-    move: ['page', 'edit'],
-    protect: ['page', 'history'],
-    delete: ['page', 'history'],
-    history: ['page', 'edit'],
-    diff: ['page', 'history']
+    edit: ['history', 'xref'],
+    xref: ['edit', 'history'],
+    discuss: ['edit', 'history'],
+    move: ['edit', 'history'],
+    protect: ['history'],
+    delete: ['history'],
+    purge: ['delete', 'history'],
+    history: ['edit'],
+    diff: ['history']
 }
 
 function showButton(actionName) {
+    // fetchMe is async
+    if (
+        props.pageMode === 'delete' &&
+        actionName === 'purge'
+    ) {
+        return userStore.isAdmin
+    }
     return showButtonRepo[props.pageMode]?.includes(actionName)
 }
 </script>

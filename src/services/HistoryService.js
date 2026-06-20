@@ -161,7 +161,7 @@ class HistoryService {
 
         await this.permissionService.requireReadAccess(user, title, { ipAddress })
 
-        let r1 = this.historyRepo.findByPageAndRev(title, 1)
+        let r1 = await this.historyRepo.findByPageAndRev(title, 1)
         return !!r1
     }
 }

@@ -1,7 +1,8 @@
 {
 	"common": {
 		"actions": {
-			"returningTo": "{link}(으)로 돌아갑니다."
+			"returningTo": "{link}(으)로 돌아갑니다.",
+			"purge": "영구 삭제"
 		},
 		"pages": {
 			"mainpage": "메인 페이지"
@@ -54,13 +55,33 @@
 			"move": "이동",
 			"delete": "삭제",
 			"protect": "보호",
-			"diff": "비교"
+			"diff": "비교",
+			"revert": "되돌리기"
 		},
 		"delete": {
 			"title": "{{name}} 삭제",
 			"submit": "삭제",
 			"summary": "삭제 요약",
 			"max255": "최대 255자"
+		},
+		"purge": {
+			"title": "{{name}} 영구 삭제",
+			"submit": "영구 삭제",
+			"summary": "요약",
+			"modal": {
+				"title": "정말로 삭제하시겠습니까?",
+				"warning1": "이 작업은 되돌릴 수 없습니다.",
+				"warning2": "정말로 이 문서를 영구 삭제하시겠습니까?",
+				"yes": "예",
+				"no": "아니오"
+			},
+			"done": "완료되었습니다. {link}로 돌아갑니다.",
+			"done_desc": "메인 페이지",
+			"max255": "최대 255자"
+		},
+		"revert": {
+			"title": "{name}을(를) r{rev}(으)로 되돌리기",
+			"max230": "최대 230자"
 		},
 		"view": {
 			"error": {
@@ -260,5 +281,6 @@
 	"pageNOfM": "{{page}}/{{total}} 페이지",
 	"loginUser": "로그인 사용자",
 	"ipUser": "비로그인 사용자",
-	"alreadyLoggedIn": "이미 로그인되어 있습니다."
+	"alreadyLoggedIn": "이미 로그인되어 있습니다.",
+	"delete_nofile": "파일 문서는 관리자만 삭제할 수 있습니다."
 }

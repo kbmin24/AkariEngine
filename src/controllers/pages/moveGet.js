@@ -9,7 +9,6 @@ export default async (req, res) => {
     res.json({
         originalName: model.originalName,
         username: model.username,
-        captcha: await genCaptcha(),
-        csrfToken: req.csrfToken()
+        captcha: await genCaptcha()
     })
 }

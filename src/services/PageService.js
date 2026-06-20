@@ -103,7 +103,7 @@ class PageService {
         title = title.trim()
 
         const page = await this.pageRepo.findByTitle(title)
-        if (page.deleted) throw new PageNotFoundError(title)
+        if (page && page.deleted) throw new PageNotFoundError(title)
         if (!page && title.toLowerCase().startsWith('file:')) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
@@ -213,7 +213,10 @@ class PageService {
         }
 
         if (title.toLowerCase().startsWith('file:')) {
-            throw new ValidationError("File pages can only be purged.")
+            throw new ValidationError({
+                i18nKey: 'delete_nofile',
+                message: "File pages can only be purged."
+            })
         }
 
         const page = await this.pageRepo.findByTitle(title)
@@ -340,7 +343,10 @@ class PageService {
     async deletePage({ title, user, ipAddress, comment }) {
         if (!title) throw new ValidationError('Page title is required')
         if (title.toLowerCase().startsWith('file:')) {
-            throw new ValidationError("File pages can only be purged.")
+            throw new ValidationError({
+                i18nKey: 'delete_nofile',
+                message: "File pages can only be purged."
+            })
         }
 
         await this.permissionService.requireLoginAccess(user, { ipAddress })

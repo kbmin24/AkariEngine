@@ -30,7 +30,7 @@ export default (options = {}) => {
             await signupPost(req, res)
         }))
 
-    router.get('/login', csrfProtection, asyncRoute(async (req, res) => {
+    router.get('/login', asyncRoute(async (req, res) => {
         res.json({ captcha: await genCaptcha() })
     }))
 
@@ -51,11 +51,9 @@ export default (options = {}) => {
     })
 
     router.get('/settings',
-        csrfProtection,
         asyncRoute(async (req, res) => {
             res.json({
-                username: req.session.username || null,
-                csrfToken: req.csrfToken()
+                username: req.session.username || null
             })
         }))
 

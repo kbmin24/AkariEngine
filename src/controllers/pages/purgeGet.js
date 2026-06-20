@@ -10,7 +10,6 @@ export default async (req, res) => {
         title: model.title,
         pagename: model.pagename,
         username: model.username,
-        captcha: await genCaptcha(),
-        csrfToken: req.csrfToken()
+        captcha: await genCaptcha()
     })
 }

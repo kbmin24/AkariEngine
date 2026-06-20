@@ -1,6 +1,5 @@
 const DEFAULTS = {
     title: '',
-    titleLink: null,
     titleInfo: null,
     pagename: null,
     isPage: false,

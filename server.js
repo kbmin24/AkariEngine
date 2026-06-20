@@ -32,7 +32,7 @@ global.appname = config.appName
 global.licence = config.license
 global.dtFormat = config.dateTimeFormat
 
-global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'purgepage', 'deletefile', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
+global.perms = ['admin', 'board', 'block', 'grant', 'acl', 'purgepage', 'developer', 'loginhistory', 'bypasscaptcha', 'thread']
 
 //initialise db
 let sequelize = null
