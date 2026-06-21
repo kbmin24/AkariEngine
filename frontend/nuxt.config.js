@@ -103,11 +103,11 @@ export default defineNuxtConfig({
     nitro: {
         devProxy: {
             '/lib': {
-                target: `http://localhost:${backendPort}`,
+                target: `http://localhost:${backendPort}/lib`,
                 changeOrigin: true,
             },
             '/socket.io': {
-                target: `http://localhost:${backendPort}`,
+                target: `http://localhost:${backendPort}/socket.io`,
                 ws: true,
                 changeOrigin: true,
             }

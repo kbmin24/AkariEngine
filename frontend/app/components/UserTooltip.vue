@@ -1,7 +1,8 @@
 <template>
     <span class="user-tooltip d-inline-block">
         <a ref="triggerElement" :href="primaryHref" role="button" :aria-expanded="isShown"
-            @click.prevent="togglePopover">{{ user }}</a>
+            @click.prevent="togglePopover"> <span v-if="isAdmin" class="fw-bold">{{ user }}</span>
+            <span v-else>{{ user }}</span></a>
 
         <Teleport to="body">
             <div v-if="isShown" ref="popoverElement" class="popover bs-popover-bottom show user-tooltip-popover shadow"
@@ -9,8 +10,10 @@
                 <div class="popover-body">
                     <div>
                         <span class="userTitle">{{ user }}</span>
-                        <span v-if="isIP" class="badge text-bg-secondary ms-1">{{ $t('ipUser') }}</span>
-                        <span v-else class="badge text-bg-success ms-1">{{ $t('loginUser') }}</span>
+                        <span v-if="isAdmin" class="badge text-bg-danger ms-1">{{ $t('common.userlevels.admin') }}</span>
+                        <span v-else-if="isIP" class="badge text-bg-secondary ms-1">{{ $t('common.userlevels.ip')
+                            }}</span>
+                        <span v-else class="badge text-bg-success ms-1">{{ $t('common.userlevels.user') }}</span>
                     </div>
                     <hr class="popover-sep">
                     <template v-if="!isIP">
@@ -46,6 +49,21 @@ const popoverStyle = ref({})
 const isIP = computed(() => isIPAddress(props.user))
 const encodedUser = computed(() => encodeURIComponent(props.user))
 const primaryHref = computed(() => isIP.value ? `/contribution/${encodedUser.value}` : `/w/User:${encodedUser.value}`)
+
+const isAdmin = ref(false)
+onMounted(async () => {
+    if (isIP.value) return
+
+    try {
+        const response = await fetch(`/api/user/info/${encodedUser.value}`)
+        if (!response.ok) throw new Error('Failed to fetch user info')
+
+        const data = await response.json()
+        isAdmin.value = data.isAdmin
+    } catch (error) {
+        console.error('Error fetching user info:', error)
+    }
+})
 
 const hidePopover = () => {
     isShown.value = false

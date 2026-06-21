@@ -77,6 +77,13 @@ export default (options = {}) => {
             const taken = await req.app.locals.services.user.existsCaseInsensitive(req.query.id)
             res.json({ available: !taken })
         }))
+    router.get('/user/info/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(async (req, res) => {
+            const userInfo = await req.app.locals.services.user.getUserInfo(req.params.name)
+            res.json(userInfo)
+        }))
 
     router.get('/whoami', (req, res) => {
         res.json({ username: req.session.username || null, ipAddress: req.ipAddress })

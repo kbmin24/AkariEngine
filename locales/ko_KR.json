@@ -6,6 +6,11 @@
 		},
 		"pages": {
 			"mainpage": "메인 페이지"
+		},
+		"userlevels": {
+			"admin": "관리자",
+			"user": "사용자",
+			"ip": "비로그인 사용자"
 		}
 	},
 	"auth": {
@@ -49,6 +54,47 @@
 		}
 	},
 	"pages": {
+		"thread": {
+			"titleInfo": "(토론)",
+			"hiddenComment": "이 댓글은 숨겨져 있습니다.",
+			"noComments": "댓글이 없습니다.",
+			"replyPlaceholder": "댓글을 입력해 주세요.",
+			"closed": "토론이 닫혀 있습니다.",
+			"send": "보내기",
+			"sending": "전송 중...",
+			"connectionError": "토론 서버에 연결할 수 없습니다.",
+			"requestTimeout": "요청 시간이 초과되었습니다.",
+			"postFailed": "댓글을 등록할 수 없습니다.",
+			"commentPermissionDenied": "이 토론에 댓글을 작성할 권한이 없습니다.",
+			"anonymousWarning": "비로그인 상태로 토론에 참여하면 IP가 영구히 기록되어 공개됩니다.",
+			"admin": {
+				"title": "관리자 메뉴",
+				"saved": "변경 사항을 저장했습니다.",
+				"commentNumber": "댓글 번호",
+				"unhideComment": "댓글 숨김 해제 (미선택 시 댓글 숨김)",
+				"changeVisibility": "숨김 상태 변경",
+				"closeThread": "토론 닫기",
+				"changeStatus": "토론 상태 변경",
+				"newTitle": "새 제목",
+				"titlePlaceholder": "최대 255자",
+				"changeTitle": "제목 변경"
+			},
+			"events": {
+				"close": "토론이 닫혔습니다.",
+				"open": "토론이 다시 열렸습니다.",
+				"changetitle": "토론 제목이 변경되었습니다."
+			}
+		},
+		"threads": {
+			"open": "열린 토론",
+			"closed": "닫힌 토론",
+			"none": "토론이 없습니다.",
+			"create": "새로운 토론 개설",
+			"title": "제목",
+			"titlePlaceholder": "토론 주제 (최대 255자)",
+			"commentPlaceholder": "첫 발언의 내용을 적어 주세요.",
+			"submit": "토론 열기"
+		},
 		"history": {
 			"edit": "편집",
 			"create": "생성",

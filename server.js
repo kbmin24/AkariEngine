@@ -83,8 +83,8 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
 app.use((req, res, next) => {
     req.csrfToken = () => generateCsrfToken(req, res)
     if (!req.session.initialized) {
-      req.session.initialized = true
-      req.session.save(next)
+        req.session.initialized = true
+        req.session.save(next)
     } else {
         next()
     }
@@ -335,10 +335,20 @@ const server = app.listen(port, '0.0.0.0', () => {
 import { Server } from 'socket.io'
 
 const io = new Server(server)
+app.locals.io = io
 io.use(expressSocketIoSession(sess, { autoSave: true }))
 
 io.on('connection', async socket => {
-    socket.on('joinRoom', async data => {
+    const getIdentity = () => ({
+        username: socket.handshake.session.username,
+        ipAddress: socket.handshake.headers['x-real-ip'] || socket.handshake.address
+    })
+
+    const acknowledge = (callback, result) => {
+        if (typeof callback === 'function') callback(result)
+    }
+
+    socket.on('joinRoom', async (data = {}, callback) => {
         try {
             if (data.notAThread === true && data.roomId === 'developerconsole') {
                 const username = socket.handshake.session.username
@@ -346,35 +356,78 @@ io.on('connection', async socket => {
                     socket.join('developerconsole')
                     socket.emit('joinok')
                     socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
+                    acknowledge(callback, { success: true })
+                    return
                 }
-            } else {
-                socket.join(data.roomId)
+                throw new PermissionDeniedError('Developer permission required.')
             }
+
+            const { username, ipAddress } = getIdentity()
+            const threadInfo = await services.thread.getThreadInfo(data.roomId, { user: username, ipAddress })
+            if (!threadInfo?.r) throw new PermissionDeniedError('READ permission required.')
+            const commentPermission = await services.thread.checkCommentPermission(username, ipAddress, data.roomId)
+
+            socket.join(data.roomId)
+            acknowledge(callback, { success: true, thread: threadInfo, commentPermission })
         } catch (err) {
             logger.warn('Socket joinRoom error', { error: err.message })
+            acknowledge(callback, { success: false, message: err.message })
         }
     })
 
-    socket.on('message', async data => {
-        try {
-            if (!data.message) return
-            const username = socket.handshake.session.username
-            const ipAddress = socket.handshake.headers['x-real-ip'] || socket.handshake.address
+    socket.on('leaveRoom', (data = {}, callback) => {
+        if (typeof data.roomId !== 'string' || !data.roomId) {
+            acknowledge(callback, { success: false, message: 'Room ID is required.' })
+            return
+        }
 
-            const { doneBy } = await services.thread.postComment({
+        socket.leave(data.roomId)
+        acknowledge(callback, { success: true })
+    })
+
+    const postThreadComment = async (data = {}, callback) => {
+        try {
+            const { username, ipAddress } = getIdentity()
+
+            const { hasPermission, i18nKey, i18nParams, reason } = await services.thread.checkCommentPermission(username, ipAddress, data.roomId)
+            if (!hasPermission) {
+                acknowledge(callback, {
+                    success: false,
+                    permissionDenied: true,
+                    message: reason || 'Permission denied.',
+                    i18nKey,
+                    i18nParams
+                })
+                return
+            }
+
+            const { comment } = await services.thread.postComment({
                 threadID: data.roomId,
                 username,
                 ipAddress,
                 message: data.message
             })
 
-            data.username = doneBy
-            data.message = (await services.render.render(data.message, {}, false)).html
-            io.sockets.in(data.roomId).emit('message', data)
+            const content = (await services.render.render(comment.content, {}, false)).html
+            const payload = {
+                id: comment.id,
+                threadID: comment.threadID,
+                type: comment.type,
+                username: escapeHTML(String(comment.doneBy ?? '')),
+                content,
+                date: comment.createdAt,
+                isHidden: comment.isHidden
+            }
+
+            io.sockets.in(data.roomId).emit('threadComment', payload)
+            acknowledge(callback, { success: true, comment: payload })
         } catch (err) {
             logger.warn('Socket message rejected', { error: err.message })
+            acknowledge(callback, { success: false, message: err.message })
         }
-    })
+    }
+
+    socket.on('postThreadComment', postThreadComment)
 
     socket.on('input', async data => {
         await adminCommand(socket, data.command)

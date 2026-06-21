@@ -68,6 +68,23 @@ class UserService {
         const newHash = await this.hashPassword(newPassword, user.salt)
         await this.userRepository.updatePassword(username, newHash, user.salt)
     }
+
+    /**
+     * Returns publicly available information about the user.
+     * That is: username, registration date, and whether the user is an admin.
+     */
+    async getUserInfo(username) {
+        const user = await this.userRepository.findByUsername(username)
+        if (!user) throw new ValidationError("User not found")
+
+        const isAdmin = await this.permissionService.hasPermission(username, 'admin')
+
+        return {
+            username: user.username,
+            registrationDate: user.createdAt,
+            isAdmin
+        }
+    }
 }
 
 export default UserService

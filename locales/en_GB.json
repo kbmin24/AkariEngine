@@ -6,6 +6,11 @@
 		},
 		"pages": {
 			"mainpage": "Main page"
+		},
+		"userlevels": {
+			"admin": "Admin",
+			"user": "User",
+			"ip": "IP user"
 		}
 	},
 	"auth": {
@@ -48,6 +53,47 @@
 		}
 	},
 	"pages": {
+		"thread": {
+			"titleInfo": "(discussion)",
+			"hiddenComment": "This comment has been hidden.",
+			"noComments": "There are no comments.",
+			"replyPlaceholder": "Write a comment.",
+			"closed": "This discussion is closed.",
+			"send": "Send",
+			"sending": "Sending...",
+			"connectionError": "Could not connect to the discussion server.",
+			"requestTimeout": "The request timed out.",
+			"postFailed": "Could not post the comment.",
+			"commentPermissionDenied": "You do not have permission to comment on this discussion.",
+			"anonymousWarning": "Participating while logged out permanently records and publicly displays your IP address.",
+			"admin": {
+				"title": "Admin area",
+				"saved": "Changes saved.",
+				"commentNumber": "Comment number",
+				"unhideComment": "Select to unhide; leave clear to hide the comment.",
+				"changeVisibility": "Change visibility",
+				"closeThread": "Select to close; leave clear to reopen the discussion.",
+				"changeStatus": "Change status",
+				"newTitle": "New title",
+				"titlePlaceholder": "Up to 255 characters",
+				"changeTitle": "Change title"
+			},
+			"events": {
+				"close": "The discussion was closed.",
+				"open": "The discussion was reopened.",
+				"changetitle": "The discussion title was changed."
+			}
+		},
+		"threads": {
+			"open": "Open discussions",
+			"closed": "Closed discussions",
+			"none": "There are no discussions.",
+			"create": "Start a new discussion",
+			"title": "Title",
+			"titlePlaceholder": "Discussion topic (up to 255 characters)",
+			"commentPlaceholder": "Write the first comment.",
+			"submit": "Start discussion"
+		},
 		"history": {
 			"edit": "Edit",
 			"create": "Create",
