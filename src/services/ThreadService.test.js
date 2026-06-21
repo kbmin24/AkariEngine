@@ -34,7 +34,7 @@ const createService = () => {
         permissionService
     )
 
-    return { service, persistedComment, permissionService, recentDiscussRepo }
+    return { service, thread, persistedComment, permissionService, recentDiscussRepo }
 }
 
 describe('ThreadService.postComment', () => {
@@ -59,5 +59,23 @@ describe('ThreadService.postComment', () => {
             { ipAddress: '127.0.0.1' }
         )
         expect(recentDiscussRepo.createNewEntry).toHaveBeenCalledWith('Topic', 'thread-id', 'FrontPage')
+    })
+})
+
+describe('ThreadService.checkCommentPermission', () => {
+    test('denies commenting when the thread is closed', async () => {
+        const { service, thread, permissionService } = createService()
+        thread.isOpen = false
+
+        const result = await service.checkCommentPermission('Alice', '127.0.0.1', 'thread-id')
+
+        expect(result).toEqual({
+            hasPermission: false,
+            i18nKey: 'pages.thread.closed',
+            i18nParams: {},
+            reason: 'Thread is closed.'
+        })
+        expect(permissionService.requireReadAccess).not.toHaveBeenCalled()
+        expect(permissionService.requireEveryoneAccess).not.toHaveBeenCalled()
     })
 })

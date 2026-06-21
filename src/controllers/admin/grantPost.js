@@ -1,7 +1,8 @@
 const RESERVED_FIELDS = new Set(['grantTo', '_csrf'])
 
 export default async (req, res) => {
-    const permissions = Object.keys(req.body).filter(k => !RESERVED_FIELDS.has(k))
+    const permissions = Object.keys(req.body)
+        .filter(key => !RESERVED_FIELDS.has(key) && global.perms.includes(key))
 
     await req.app.locals.services.admin.grantPermissions({
         actor: req.session.username,

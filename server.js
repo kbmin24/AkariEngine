@@ -77,7 +77,7 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
         secure: config.ssl,
         httpOnly: true,
     },
-    getCsrfTokenFromRequest: (req) => req.body?._csrf ?? req.headers['x-csrf-token'],
+    getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'] ?? req.body?._csrf,
 })
 
 app.use((req, res, next) => {
@@ -294,7 +294,9 @@ app.get('/api/me', async (req, res) => {
 
 // CSRF token endpoint
 app.get('/api/csrf-token', doubleCsrfProtection, (req, res) => {
-    res.json({ csrfToken: req.csrfToken() })
+    res.setHeader('Cache-Control', 'no-store')
+    const csrfToken = req.csrfToken({ overwrite: true })
+    res.json({ csrfToken })
 })
 
 //Register routes

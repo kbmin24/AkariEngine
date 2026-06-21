@@ -248,6 +248,15 @@ class ThreadService {
     async checkCommentPermission(username, ipAddress, threadID) {
         const thread = await this.threadRepo.findByThreadId(threadID)
         if (!thread) throw new ValidationError('Thread not found.')
+        if (!thread.isOpen) {
+            return {
+                hasPermission: false,
+                i18nKey: 'pages.thread.closed',
+                i18nParams: {},
+                reason: 'Thread is closed.'
+            }
+        }
+
         try {
             await this.permissionService.requireReadAccess(username, thread.pagename, { ipAddress })
             await this.permissionService.requireEveryoneAccess(username, { ipAddress })

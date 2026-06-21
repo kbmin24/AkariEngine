@@ -28,7 +28,7 @@ export default (options = {}) => {
     )
 
     router.get('/admin/grant',
-        requirePermission('purgepage', { mode: 'grant' }),
+        requirePermission('grant'),
         param('grantTo').optional().isString(),
         validateRequest,
         asyncRoute(grantGet)
