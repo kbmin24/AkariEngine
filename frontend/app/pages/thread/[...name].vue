@@ -1,6 +1,6 @@
 <template>
     <div v-if="isError" class="p-3">
-        <p v-html="$t(errorI18nKey, errorI18nParams)"></p>
+        <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" tag="p" />
         <i18n-t keypath="returnInfo" tag="p">
             <template #link>
                 <a href="#" @click.prevent="$router.back()">{{ $t('previousPage') }}</a>
@@ -144,10 +144,12 @@ const isError = computed(() => !pending.value && (!!error.value || !!data.value?
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'thread404')
 const errorI18nParams = computed(() => error.value?.data?.i18nParams ?? data.value?.i18nParams ?? {})
 
+const normalizeTextMessage = message => String(message ?? '').replace(/&#x2F;/gi, '/')
+
 const localizedResponseMessage = response => {
     const details = response?.data ?? response
-    if (details?.i18nKey) return t(details.i18nKey, details.i18nParams ?? {})
-    return details?.message ?? t('error')
+    if (details?.i18nKey) return normalizeTextMessage(t(details.i18nKey, details.i18nParams ?? {}))
+    return normalizeTextMessage(details?.message ?? t('error'))
 }
 
 const pagename = computed(() => data.value?.pagename ?? '')

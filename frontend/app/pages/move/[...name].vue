@@ -1,6 +1,6 @@
 <template>
     <div v-if="isError" class="p-3">
-        <p v-html="$t(errorI18nKey, errorI18nParams)"></p>
+        <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" tag="p" />
         <i18n-t keypath="returnInfo" tag="p">
             <template #link>
                 <a href="#" @click.prevent="$router.back()">{{ $t('previousPage') }}</a>
@@ -9,7 +9,7 @@
     </div>
     <div v-else>
         <div v-if="submitError" class="alert alert-danger" role="alert">
-            {{ submitError }}
+            <LocalizedMessage :keypath="submitErrorKey" :params="submitErrorParams" :message="submitErrorMessage" />
         </div>
         <form class="editForm" @submit.prevent="submitMove">
             <div class="form-group mt-2 mb-2 row">
@@ -53,8 +53,11 @@ const { setPageHeader } = usePageHeader()
 const { csrfFetch } = useCsrf()
 
 const newName = ref('')
-const submitError = ref(null)
+const submitErrorKey = ref(null)
+const submitErrorParams = ref({})
+const submitErrorMessage = ref('')
 const moveButtonEnabled = ref(true)
+const submitError = computed(() => !!submitErrorKey.value || !!submitErrorMessage.value)
 
 const pagename = computed(() => {
     const parts = route.params.name
@@ -97,7 +100,9 @@ applyHeader()
 watch([data, error, pagename, headerTitle], applyHeader)
 
 const submitMove = async () => {
-    submitError.value = null
+    submitErrorKey.value = null
+    submitErrorParams.value = {}
+    submitErrorMessage.value = ''
     moveButtonEnabled.value = false
     const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value ?? ''
 
@@ -111,9 +116,9 @@ const submitMove = async () => {
         })
         await navigateTo(result.redirect ?? `/w/${newName.value}`)
     } catch (e) {
-        submitError.value = e?.data?.i18nKey
-            ? t(e.data.i18nKey, e.data.i18nParams ?? {})
-            : (e?.data?.message ?? t('error'))
+        submitErrorKey.value = e?.data?.i18nKey || null
+        submitErrorParams.value = e?.data?.i18nParams ?? {}
+        submitErrorMessage.value = e?.data?.i18nKey ? '' : (e?.data?.message ?? t('error'))
     } finally {
         moveButtonEnabled.value = true
     }

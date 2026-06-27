@@ -1,6 +1,6 @@
 <template>
     <div v-if="isError" class="p-3">
-        <p v-html="$t(errorI18nKey, errorI18nParams)"></p>
+        <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" tag="p" />
         <i18n-t keypath="returnInfo" tag="p">
             <template #link>
                 <a href="#" @click.prevent="$router.back()">{{ $t('previousPage') }}</a>
@@ -16,7 +16,7 @@
     </div>
     <div v-else>
         <div v-if="submitError" class="alert alert-danger" role="alert">
-            {{ $t(submitError) }}
+            <LocalizedMessage :keypath="submitError" :params="submitErrorParams" />
         </div>
         <div class="editForm">
             <div class="form-group mt-2 mb-2 row">
@@ -93,6 +93,7 @@ const { csrfFetch } = useCsrf()
 
 const comment = ref('')
 const submitError = ref(null)
+const submitErrorParams = ref({})
 const purgeButtonEnabled = ref(true)
 const showPurgeModal = ref(false)
 const isDone = ref(false)
@@ -139,6 +140,7 @@ watch([data, error, pagename, headerTitle], applyHeader)
 
 const submitPurge = async () => {
     submitError.value = null
+    submitErrorParams.value = {}
     purgeButtonEnabled.value = false
     const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value ?? ''
     try {
@@ -155,6 +157,7 @@ const submitPurge = async () => {
     } catch (e) {
         showPurgeModal.value = false
         submitError.value = e?.data?.i18nKey || 'error'
+        submitErrorParams.value = e?.data?.i18nParams || {}
     } finally {
         purgeButtonEnabled.value = true
     }

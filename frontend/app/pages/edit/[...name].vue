@@ -1,6 +1,6 @@
 <template>
     <div v-if="isError" class="p-3">
-        <p v-html="$t(errorI18nKey)"></p>
+        <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" tag="p" />
         <i18n-t keypath="returnInfo" tag="p">
             <template #link>
                 <a href="#" @click.prevent="$router.back()">{{ $t('previousPage') }}</a>
@@ -12,10 +12,11 @@
             {{ $t('edit_part') }}
         </div>
         <div v-if="notification" class="alert alert-danger" role="alert">
-            {{ $t(notification) }}
+            <LocalizedMessage :keypath="notificationI18nKey" :params="notificationI18nParams"
+                :message="notificationMessage" />
         </div>
         <div v-if="submitError" class="alert alert-danger" role="alert">
-            {{ $t(submitError) }}
+            <LocalizedMessage :keypath="submitError" :params="submitErrorParams" />
         </div>
         <form @submit.prevent="submitEdit">
             <div class="form-group">
@@ -175,6 +176,7 @@ const editArea = ref(null)
 const content = ref('')
 const comment = ref('')
 const submitError = ref(null)
+const submitErrorParams = ref({})
 
 const pagename = computed(() => {
     const parts = route.params.name
@@ -198,7 +200,22 @@ watch(data, (val) => {
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'dataLoadError')
+const errorI18nParams = computed(() => error.value?.data?.i18nParams ?? data.value?.i18nParams ?? {})
 const notification = computed(() => data.value?.notification)
+const notificationI18nKey = computed(() => {
+    const details = notification.value
+    return details && typeof details === 'object' ? details.i18nKey || null : null
+})
+const notificationI18nParams = computed(() => {
+    const details = notification.value
+    return details && typeof details === 'object' ? details.i18nParams ?? {} : {}
+})
+const notificationMessage = computed(() => {
+    const details = notification.value
+    if (!details) return ''
+    if (typeof details === 'string') return details
+    return details.i18nKey ? '' : details.message ?? ''
+})
 useHeadSafe(computed(() => ({
     title: `${t('edit_pg', { name: data.value?.title ?? pagename.value })} - ${config.public.appname}`,
 })))
@@ -279,6 +296,7 @@ const submitEdit = async () => {
         if (result?.redirect) await navigateTo(result.redirect)
     } catch (e) {
         submitError.value = e?.data?.i18nKey || 'error'
+        submitErrorParams.value = e?.data?.i18nParams || {}
     } finally {
         saveButtonEnabled.value = true
     }

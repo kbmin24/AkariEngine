@@ -1,6 +1,7 @@
 <template>
     <div v-if="isError" class="p-3">
-        <p>{{ errorMessage }}</p>
+        <LocalizedMessage :keypath="errorMessageKey" :params="errorMessageParams"
+            :message="errorMessageFallback" tag="p" />
     </div>
     <form v-else-if="selectUser" @submit.prevent="selectUsername">
         <div class="mb-3 row">
@@ -17,7 +18,10 @@
         </div>
     </form>
     <div v-else>
-        <div v-if="submitError" class="alert alert-danger" role="alert">{{ submitError }}</div>
+        <div v-if="submitError" class="alert alert-danger" role="alert">
+            <LocalizedMessage :keypath="submitErrorKey" :params="submitErrorParams"
+                :message="submitErrorFallback" />
+        </div>
         <div v-if="saved" class="alert alert-success" role="status">{{ $t('done') }}</div>
 
         <form @submit.prevent="savePermissions">
@@ -63,8 +67,11 @@ const grantTo = computed(() => typeof route.query.grantTo === 'string' ? route.q
 const usernameInput = ref(grantTo.value)
 const selectedPermissions = ref([])
 const submitting = ref(false)
-const submitError = ref(null)
+const submitErrorKey = ref(null)
+const submitErrorParams = ref({})
+const submitErrorFallback = ref('')
 const saved = ref(false)
+const submitError = computed(() => !!submitErrorKey.value || !!submitErrorFallback.value)
 
 const { data, error, pending } = await useFetch('/api/admin/grant', {
     key: computed(() => `/admin/grant:${grantTo.value}`),
@@ -78,12 +85,12 @@ selectedPermissions.value = (data.value?.permissions ?? [])
 
 const selectUser = computed(() => data.value?.selectUser ?? !grantTo.value)
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
-const errorMessage = computed(() => {
-    const details = error.value?.data ?? data.value
-    return details?.i18nKey
-        ? t(details.i18nKey, details.i18nParams ?? {})
-        : (details?.message ?? t('dataLoadError'))
-})
+const errorDetails = computed(() => error.value?.data ?? data.value ?? {})
+const errorMessageKey = computed(() => errorDetails.value?.i18nKey || null)
+const errorMessageParams = computed(() => errorDetails.value?.i18nParams ?? {})
+const errorMessageFallback = computed(() => errorDetails.value?.i18nKey
+    ? ''
+    : (errorDetails.value?.message ?? t('dataLoadError')))
 const headerTitle = computed(() => selectUser.value
     ? t('selectUsernameToGrantTo')
     : t('grantTo', { username: grantTo.value }))
@@ -111,7 +118,9 @@ const selectUsername = async () => {
 
 const savePermissions = async () => {
     submitting.value = true
-    submitError.value = null
+    submitErrorKey.value = null
+    submitErrorParams.value = {}
+    submitErrorFallback.value = ''
     saved.value = false
 
     try {
@@ -126,8 +135,10 @@ const savePermissions = async () => {
         })
         saved.value = true
     } catch (requestError) {
-        submitError.value = requestError?.data?.i18nKey
-            ? t(requestError.data.i18nKey, requestError.data.i18nParams ?? {})
+        submitErrorKey.value = requestError?.data?.i18nKey || null
+        submitErrorParams.value = requestError?.data?.i18nParams ?? {}
+        submitErrorFallback.value = requestError?.data?.i18nKey
+            ? ''
             : (requestError?.data?.message ?? t('error'))
     } finally {
         submitting.value = false

@@ -1,6 +1,6 @@
 <template>
     <div v-if="isError" class="p-3">
-        <p v-html="$t(errorI18nKey, errorI18nParams)"></p>
+        <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" tag="p" />
         <i18n-t keypath="returnInfo" tag="p">
             <template #link>
                 <a href="#" @click.prevent="$router.back()">{{ $t('previousPage') }}</a>
@@ -9,7 +9,7 @@
     </div>
     <div v-else>
         <div v-if="submitError" class="alert alert-danger" role="alert">
-            {{ $t(submitError) }}
+            <LocalizedMessage :keypath="submitError" :params="submitErrorParams" />
         </div>
         <form class="editForm" @submit.prevent="submitDelete">
             <div class="form-group mt-2 mb-2 row">
@@ -44,6 +44,7 @@ const { csrfFetch } = useCsrf()
 
 const comment = ref('')
 const submitError = ref(null)
+const submitErrorParams = ref({})
 const deleteButtonEnabled = ref(true)
 
 const pagename = computed(() => {
@@ -88,6 +89,7 @@ watch([data, error, pagename, headerTitle], applyHeader)
 
 const submitDelete = async () => {
     submitError.value = null
+    submitErrorParams.value = {}
     deleteButtonEnabled.value = false
     const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value ?? ''
     try {
@@ -101,6 +103,7 @@ const submitDelete = async () => {
         await navigateTo(`/w/${pagename.value}`)
     } catch (e) {
         submitError.value = e?.data?.i18nKey || 'error'
+        submitErrorParams.value = e?.data?.i18nParams || {}
     } finally {
         deleteButtonEnabled.value = true
     }

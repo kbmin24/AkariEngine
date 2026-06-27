@@ -50,6 +50,44 @@
 			"privacyPolicy": "Privacy Policy",
 			"termsOfService": "Terms of Service",
 			"submit": "Register"
+		},
+		"block": {
+			"user": {
+				"title": "Block logged in user",
+				"done": "Done.",
+				"username": "User",
+				"blockFor": "Block for",
+				"comment": "Comment",
+				"submit": "Block",
+				"error": "Error",
+				"dataLoadError": "Could not load data.",
+				"duration": {
+					"unblock": "Unblock",
+					"oneSecond": "1 second",
+					"oneMinute": "1 minute",
+					"fiveMinutes": "5 minutes",
+					"tenMinutes": "10 minutes",
+					"oneHour": "1 hour",
+					"twoHours": "2 hours",
+					"sixHours": "6 hours",
+					"twelveHours": "12 hours",
+					"oneDay": "1 day",
+					"threeDays": "3 days",
+					"fiveDays": "5 days",
+					"oneWeek": "1 week",
+					"tenDays": "10 days",
+					"twoWeeks": "2 weeks",
+					"threeWeeks": "3 weeks",
+					"oneMonth": "1 month",
+					"sixWeeks": "6 weeks",
+					"twoMonths": "2 months",
+					"threeMonths": "3 months",
+					"sixMonths": "6 months",
+					"oneYear": "1 year",
+					"twoYears": "2 years",
+					"forever": "Forever"
+				}
+			}
 		}
 	},
 	"pages": {

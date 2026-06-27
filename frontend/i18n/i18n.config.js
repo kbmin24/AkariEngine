@@ -1,4 +1,5 @@
 export default defineI18nConfig(() => ({
+    escapeParameter: false,
     datetimeFormats: {
         ko: {
             full: {

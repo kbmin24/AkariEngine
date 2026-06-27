@@ -1,6 +1,8 @@
 <template>
     <div class="p-3">
-        <p class="fw-bold" v-html="$t('lookingForPageEdit', { searchtitle: encodedQuery })"></p>
+        <p class="fw-bold">
+            <LocalizedMessage keypath="lookingForPageEdit" :params="{ searchtitle: encodedQuery }" />
+        </p>
 
         <h5>{{ $t('titleMatch') }}</h5>
         <ul class="list-group list-group-flush">

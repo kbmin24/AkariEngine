@@ -114,7 +114,11 @@ class PageService {
 
         const actionAllowed = aclState ? aclState.allowed : true
         const notification = (!actionAllowed && aclState && aclState.error)
-            ? aclState.error.message
+            ? {
+                i18nKey: aclState.error.i18nKey || null,
+                i18nParams: aclState.error.i18nParams || {},
+                message: aclState.error.message
+            }
             : undefined
 
         const rawContent = page ? page.content : ''

@@ -51,6 +51,44 @@
 			"privacyPolicy": "개인정보처리방침",
 			"termsOfService": "이용약관",
 			"submit": "회원 가입"
+		},
+		"block": {
+			"user": {
+				"title": "로그인 사용자 차단",
+				"done": "완료되었습니다.",
+				"username": "사용자명",
+				"blockFor": "차단 기간",
+				"comment": "사유",
+				"submit": "차단",
+				"error": "오류",
+				"dataLoadError": "데이터를 불러오는 도중 오류가 발생했습니다.",
+				"duration": {
+					"unblock": "차단 해제",
+					"oneSecond": "1초",
+					"oneMinute": "1분",
+					"fiveMinutes": "5분",
+					"tenMinutes": "10분",
+					"oneHour": "1시간",
+					"twoHours": "2시간",
+					"sixHours": "6시간",
+					"twelveHours": "12시간",
+					"oneDay": "1일",
+					"threeDays": "3일",
+					"fiveDays": "5일",
+					"oneWeek": "1주",
+					"tenDays": "10일",
+					"twoWeeks": "2주",
+					"threeWeeks": "3주",
+					"oneMonth": "1개월",
+					"sixWeeks": "6주",
+					"twoMonths": "2개월",
+					"threeMonths": "3개월",
+					"sixMonths": "6개월",
+					"oneYear": "1년",
+					"twoYears": "2년",
+					"forever": "영구 차단"
+				}
+			}
 		}
 	},
 	"pages": {

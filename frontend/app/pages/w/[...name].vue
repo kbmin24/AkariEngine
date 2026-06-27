@@ -2,7 +2,7 @@
     <div v-if="isError" class="p-3">
         <template v-if="errorI18nKey === 'noUserPage_user'">
             <p>
-                <template v-html="$t(errorI18nKey)"></template>
+                <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" />
                 <NuxtLink :to="`/edit/${userPageEditLink}`">{{ $t('createUserPage') }}</NuxtLink>
             </p>
         </template>
@@ -25,7 +25,7 @@
             </p>
         </template>
         <template v-else>
-            <p v-html="$t(errorI18nKey)"></p>
+            <LocalizedMessage :keypath="errorI18nKey" :params="errorI18nParams" tag="p" />
         </template>
 
         <p>
@@ -79,6 +79,7 @@ usePostRender(articleRef, data)
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'page404')
+const errorI18nParams = computed(() => error.value?.data?.i18nParams ?? data.value?.i18nParams ?? {})
 const hasHistory = computed(() => !!(error.value?.data?.hasHistory ?? data.value?.hasHistory))
 const userPageEditLink = computed(() => `User:${pagename.value.split(':')[1] ?? pagename.value}`)
 const isRedirect = computed(() => route.query.redirect === 'true')

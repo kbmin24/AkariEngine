@@ -37,6 +37,7 @@ export default (options = {}) => {
     router.get('/admin/blockuser',
         requirePermission('block'),
         asyncRoute(async (req, res) => {
+            // the only thing it does rn is permisison check
             res.json({})
         })
     )
