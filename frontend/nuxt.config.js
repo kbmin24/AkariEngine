@@ -67,6 +67,9 @@ export default defineNuxtConfig({
             ],
         },
     },
+    devServer: {
+        host: '::'
+    },
 
     modules: ['@nuxtjs/i18n', '@pinia/nuxt', '@nuxt/fonts'],
 
@@ -111,7 +114,7 @@ export default defineNuxtConfig({
                 ws: true,
                 changeOrigin: true,
             }
-        }
+        }, 
     },
 
     vite: {

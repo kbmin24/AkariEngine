@@ -10,14 +10,14 @@ export default (sequelize) => {
             },
             startIP:
             {
-                // only if targetType is 'ip'. Sort of bitmasked version of ip for quick searching.
+                // Only for IP blocks. Stores a zero-padded 128-bit comparable address key.
                 allowNull: true,
-                type: DataTypes.BIGINT
+                type: DataTypes.STRING(39)
             },
             endIP:
             {
                 allowNull: true,
-                type: DataTypes.BIGINT
+                type: DataTypes.STRING(39)
             },
             targetType:
             {

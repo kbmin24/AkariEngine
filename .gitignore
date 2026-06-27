@@ -128,3 +128,4 @@ robots.txt
 src/utils/wikimark/.tests/
 
 MIGRATION.md
+.scratchpad/

@@ -15,6 +15,7 @@ import { doubleCsrf } from 'csrf-csrf'
 import i18n from 'i18n'
 import taskScheduler from './src/taskScheduler.js'
 import escapeHTML from './src/utils/escapeHTML.js'
+import { normalizeIpAddress } from './src/utils/ipTools.js'
 import { PageNotFoundError, PermissionDeniedError } from './src/services/errors.js'
 import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
@@ -210,7 +211,7 @@ app.use((req, res, next) => {
     // init'ise i18n
     i18n.init(req, res)
 
-    req.ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress
+    req.ipAddress = normalizeIpAddress(req.ip)
 
     next()
 })
@@ -343,7 +344,7 @@ io.use(expressSocketIoSession(sess, { autoSave: true }))
 io.on('connection', async socket => {
     const getIdentity = () => ({
         username: socket.handshake.session.username,
-        ipAddress: socket.handshake.headers['x-real-ip'] || socket.handshake.address
+        ipAddress: normalizeIpAddress(socket.handshake.address)
     })
 
     const acknowledge = (callback, result) => {

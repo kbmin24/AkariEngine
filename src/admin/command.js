@@ -5,6 +5,7 @@ import genpassword from './commands/genpassword.js'
 import help from './commands/help.js'
 import permissions from './commands/permissions.js'
 import whoami from './commands/whoami.js'
+import { normalizeIpAddress } from '../utils/ipTools.js'
 
 const commands = new Map(
     [cleancategories, reindex, genbacklinks, genpassword, help, permissions, whoami]
@@ -15,7 +16,7 @@ export default async (socket, command) => {
     const stdout = (data) => socket.emit('output', data)
     try {
         const username = socket.handshake.session.username
-        const ipAddress = socket.handshake.headers['x-real-ip'] || socket.handshake.address
+        const ipAddress = normalizeIpAddress(socket.handshake.address)
         if (!(await global.db.perm.findOne({ where: { username, perm: 'developer' } }))) return
 
         stdout(`>>> ${command}\n`)

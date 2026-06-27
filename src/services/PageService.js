@@ -298,8 +298,6 @@ class PageService {
             })
         }
 
-        if (existingPage && existingPage.deleted) throw new PageNotFoundError(title)
-
         await this.permissionService.requireWriteAccess(user, title, { ipAddress })
 
         const doneBy = user || ipAddress

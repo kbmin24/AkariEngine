@@ -81,7 +81,7 @@
                             </NuxtLink>
                         </li>
                         <li>
-                            <NuxtLink class="dropdown-item" :to="`/contribution/${store.username ?? store.ipAddress}`">
+                            <NuxtLink class="dropdown-item" :to="`/contribution/${encodedContributionTarget}`">
                                 {{ $t('contribList') }}</NuxtLink>
                         </li>
                         <hr style="margin: 0.3rem 0;">
@@ -170,6 +170,7 @@
 const config = useRuntimeConfig()
 
 const store = useUserStore()
+const encodedContributionTarget = computed(() => encodeURIComponent(store.username ?? store.ipAddress ?? ''))
 
 const searchQuery = ref('')
 const suggestions = ref([])
