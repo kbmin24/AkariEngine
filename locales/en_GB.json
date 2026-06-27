@@ -378,5 +378,8 @@
 	"pageNOfM": "Page {{page}} of {{total}}",
 	"loginUser": "Logged-in user",
 	"ipUser": "IP user",
-	"delete_nofile": "Files can only be deleted by administrators."
+	"delete_nofile": "Files can only be deleted by administrators.",
+	"ipAddress": "IP address",
+	"loginHistoryRetentionNotice": "Following are login records for recent 12 weeks.",
+	"loginHistoryAuditWarning": "This lookup will be recorded in the admin log."
 }

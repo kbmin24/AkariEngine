@@ -381,5 +381,8 @@
 	"loginUser": "로그인 사용자",
 	"ipUser": "비로그인 사용자",
 	"alreadyLoggedIn": "이미 로그인되어 있습니다.",
-	"delete_nofile": "파일 문서는 관리자만 삭제할 수 있습니다."
+	"delete_nofile": "파일 문서는 관리자만 삭제할 수 있습니다.",
+	"ipAddress": "IP 주소",
+	"loginHistoryRetentionNotice": "최근 12주 동안의 로그인 기록입니다.",
+	"loginHistoryAuditWarning": "관리 로그에 조회 사실이 기록됩니다."
 }
