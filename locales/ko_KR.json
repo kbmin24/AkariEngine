@@ -142,6 +142,25 @@
 				"unknown": "기타"
 			}
 		},
+		"recentDiscuss": {
+			"title": "최근 토론",
+			"error": "오류",
+			"dataLoadError": "최근 토론을 불러오는 도중 오류가 발생했습니다.",
+			"open": "열린 토론",
+			"closed": "닫힌 토론",
+			"thread": "토론명",
+			"page": "문서",
+			"datetime": "일시",
+			"noOpenResults": "열린 토론이 없습니다.",
+			"noClosedResults": "닫힌 토론이 없습니다."
+		},
+		"category": {
+			"title": "분류: {category}",
+			"error": "오류",
+			"dataLoadError": "분류 정보를 불러오는 도중 오류가 발생했습니다.",
+			"resultCount": "페이지 {count}개를 찾았습니다.",
+			"noResults": "이 분류에 속한 문서가 없습니다."
+		},
 		"thread": {
 			"titleInfo": "(토론)",
 			"hiddenComment": "이 댓글은 숨겨져 있습니다.",

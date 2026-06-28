@@ -6,10 +6,12 @@ class CategoryRepository extends BaseRepository {
         return this.model.findAll({ where: { category } })
     }
 
-    async findAndCountByCategory(category) {
+    async findAndCountByCategory(category, { limit, offset } = {}) {
         return this.model.findAndCountAll({
             where: { category },
-            order: [['page', 'ASC']]
+            order: [['page', 'ASC']],
+            limit,
+            offset
         })
     }
 

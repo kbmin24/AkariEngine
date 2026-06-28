@@ -141,6 +141,25 @@
 				"unknown": "Other"
 			}
 		},
+		"recentDiscuss": {
+			"title": "Recent Discussions",
+			"error": "Error",
+			"dataLoadError": "Could not load recent discussions.",
+			"open": "Open discussions",
+			"closed": "Closed discussions",
+			"thread": "Discussion",
+			"page": "Page",
+			"datetime": "Time",
+			"noOpenResults": "There are no open discussions.",
+			"noClosedResults": "There are no closed discussions."
+		},
+		"category": {
+			"title": "Category: {category}",
+			"error": "Error",
+			"dataLoadError": "Could not load category data.",
+			"resultCount": "Found {count} pages.",
+			"noResults": "There are no pages in this category."
+		},
 		"thread": {
 			"titleInfo": "(discussion)",
 			"hiddenComment": "This comment has been hidden.",

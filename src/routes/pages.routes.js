@@ -118,7 +118,12 @@ export default (options = {}) => {
 
     router.get('/PageList', asyncRoute(pagelistGetController))
 
-    router.get('/category/:name(*)', asyncRoute(categoryGetController))
+    router.get('/category/:name(*)',
+        query('from').optional().isInt().toInt(),
+        query('to').optional().isInt().toInt(),
+        validateRequest,
+        asyncRoute(categoryGetController)
+    )
 
     router.get('/viewrank', asyncRoute(viewrankGetController))
 
