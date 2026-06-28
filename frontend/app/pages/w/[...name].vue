@@ -37,7 +37,7 @@
         </p>
     </div>
     <div v-else>
-        <Categories v-if="showCategory" :categories="categories" />
+        <Categories v-if="showCategory" :categories />
         <div v-html="data.content" ref="articleRef"></div>
     </div>
 </template>
@@ -84,7 +84,10 @@ const hasHistory = computed(() => !!(error.value?.data?.hasHistory ?? data.value
 const userPageEditLink = computed(() => `User:${pagename.value.split(':')[1] ?? pagename.value}`)
 const isRedirect = computed(() => route.query.redirect === 'true')
 const showCategory = computed(() => data.value?.showCategory ?? true)
-const categories = computed(() => data.value?.categories ?? [])
+const categories = computed(() =>  {
+    if (!data.value?.categories) return []
+    return data.value.categories.map(cat => cat.category)
+})
 const processRedirection = async (val) => {
     if (isRedirect.value) return
     if (val?.redirect) {
