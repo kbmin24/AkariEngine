@@ -161,6 +161,25 @@
 			"resultCount": "페이지 {count}개를 찾았습니다.",
 			"noResults": "이 분류에 속한 문서가 없습니다."
 		},
+		"pageList": {
+			"dataLoadError": "문서 목록을 불러오는 도중 오류가 발생했습니다.",
+			"resultCount": "문서 {count}개가 있습니다.",
+			"noResults": "문서가 없습니다."
+		},
+		"viewRank": {
+			"dataLoadError": "문서 조회수 랭킹을 불러오는 도중 오류가 발생했습니다.",
+			"rank": "순위",
+			"page": "문서",
+			"views": "조회수",
+			"noResults": "문서 조회수 랭킹이 없습니다."
+		},
+		"orphaned": {
+			"title": "고립된 문서",
+			"desc_pt1": "{link}에서 링크로 도달할 수 없는 문서를 모두 표시합니다.",
+			"desc_pt2": "이 페이지는 매일 자정 업데이트됩니다.",
+			"dataLoadError": "고립된 문서 목록을 불러오는 도중 오류가 발생했습니다.",
+			"noResults": "고립된 문서가 없습니다."
+		},
 		"thread": {
 			"titleInfo": "(토론)",
 			"hiddenComment": "이 댓글은 숨겨져 있습니다.",
@@ -372,8 +391,6 @@
 	"user_blocked": "사용자 {{user}}이(가) {{doneBy}}에 의해 {{until}}까지 차단되었습니다. 사유: {{comment}}",
 	"user_blocked_forever": "사용자 {{user}}가 {{doneBy}}에 의해 영구히 차단되었습니다. 사유: {{comment}}",
 	"admin_required": "관리자 권한이 필요합니다.",
-	"orphaned_pages": "고립된 문서",
-	"orphaned_pages_desc": "<p><a href='/w/FrontPage'>FrontPage</a>에서 링크로 도달할 수 없는 문서를 모두 표시합니다.</p><p>이 페이지는 매일 자정 업데이트됩니다.</p>",
 	"signupdisabled": "계정 생성이 비활성화되어 있습니다.",
 	"diffTitle": "{{pagename}} r{{rev1}}, r{{rev2}} 비교",
 	"xrefTo": "{{page}}의 역링크",
@@ -445,5 +462,6 @@
 	"delete_nofile": "파일 문서는 관리자만 삭제할 수 있습니다.",
 	"ipAddress": "IP 주소",
 	"loginHistoryRetentionNotice": "최근 12주 동안의 로그인 기록입니다.",
-	"loginHistoryAuditWarning": "관리 로그에 조회 사실이 기록됩니다."
+	"loginHistoryAuditWarning": "관리 로그에 조회 사실이 기록됩니다.",
+	"orphaned_pages": "고립된 문서"
 }

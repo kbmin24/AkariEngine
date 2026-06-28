@@ -264,6 +264,17 @@ class PageService {
         }
     }
 
+    /**
+     * Retrieves a list of orphaned pages. Returns 30 pages at a time, starting from the specified index.
+     * @param {number} from - The starting index for the list of orphaned pages.
+     * @returns {Promise<Array>} A promise resolving to an array of orphaned pages.
+     */
+    async getOrphanedPagesAndCount(from = 0) {
+        const pages = (global.orphaned || []).slice(from, from + 30)
+        const count = global.orphaned ? global.orphaned.length : 0
+        return { pages, count }
+    }
+
     async buildNormalizedEditContent({ content, editPrefix = '', editSuffix = '' }) {
         const rawBody = content.endsWith('\n') ? content : `${content}\n`
         const merged = `${editPrefix}${rawBody}${editSuffix}`.replace(/\r/g, '')

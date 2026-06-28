@@ -56,8 +56,7 @@ async function updateOrphaned()
     }
 
     //https://stackoverflow.com/questions/1723168/what-is-the-fastest-or-most-elegant-way-to-compute-a-set-difference-using-javasc
-    let orphaned = new Set([...U].filter(x => !visited.has(x)))
-    global.orphaned = orphaned
+    global.orphaned = [...U].filter(x => !visited.has(x))
 }
 
 export default async () =>

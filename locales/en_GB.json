@@ -160,6 +160,25 @@
 			"resultCount": "Found {count} pages.",
 			"noResults": "There are no pages in this category."
 		},
+		"pageList": {
+			"dataLoadError": "Could not load the page list.",
+			"resultCount": "There are {count} pages.",
+			"noResults": "There are no pages."
+		},
+		"viewRank": {
+			"dataLoadError": "Could not load pageview rankings.",
+			"rank": "Rank",
+			"page": "Page",
+			"views": "Views",
+			"noResults": "There are no pageview rankings."
+		},
+		"orphaned": {
+			"title": "Orphaned pages",
+			"desc_pt1": "Shows all pages that cannot be reached by links from {link}.",
+			"desc_pt2": "This page is updated every midnight.",
+			"dataLoadError": "Could not load orphaned pages.",
+			"noResults": "There are no orphaned pages."
+		},
 		"thread": {
 			"titleInfo": "(discussion)",
 			"hiddenComment": "This comment has been hidden.",
@@ -369,8 +388,6 @@
 	"user_blocked": "User {{user}} has been blocked by {{doneBy}} until {{until}}. Reason: {{comment}}",
 	"user_blocked_forever": "User {{user}} has been blocked by {{doneBy}} forever. Reason: {{comment}}",
 	"admin_required": "Admin permission required.",
-	"orphaned_pages": "Orphaned pages",
-	"orphaned_pages_desc": "<p>Shows all pages that cannot be reached by links from <a href='/w/FrontPage'>FrontPage</a>.</p><p>This page is updated every midnight.</p>",
 	"signupedisabled": "Account creation is disabled.",
 	"diffTitle": "{{{pagename}}}: Difference between r{{rev1}} and r{{rev2}}",
 	"xrefTo": "Pages linking to {{{page}}}",
@@ -442,5 +459,6 @@
 	"delete_nofile": "Files can only be deleted by administrators.",
 	"ipAddress": "IP address",
 	"loginHistoryRetentionNotice": "Following are login records for recent 12 weeks.",
-	"loginHistoryAuditWarning": "This lookup will be recorded in the admin log."
+	"loginHistoryAuditWarning": "This lookup will be recorded in the admin log.",
+	"orphaned_pages": "Orphaned pages"
 }

@@ -243,10 +243,8 @@ export class WikiParser extends CstParser {
                 { GATE: isOpener(T.SubDelim), ALT: () => $.SUBRULE($.subscript) },
                 { GATE: isOpener(T.BigDelim), ALT: () => $.SUBRULE($.big) },
                 {
-                    GATE: () => {
-                        return isOpener(T.FootnoteOpener) &&
-                            $.LA(2).tokenType === T.SpaceTab
-                    }, ALT: () => $.SUBRULE($.anonymousFootnote)
+                    GATE: () => isOpener(T.FootnoteOpener)() && $.LA(2).tokenType === T.SpaceTab,
+                    ALT: () => $.SUBRULE($.anonymousFootnote)
                 },
                 { GATE: isOpener(T.FootnoteOpener), ALT: () => $.SUBRULE($.anonymousFootnoteFallback) },
                 { GATE: () => isOpener(T.LinkOpen)() && hasLinkPipe($)(), ALT: () => $.SUBRULE($.namedLink) },

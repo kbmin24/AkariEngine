@@ -430,7 +430,7 @@ export const assymetricTokens = [
     [TemplateArgOpen, TemplateArgClose],
     [LeftAlignOpen, MultilineClose],
     [CenterAlignOpen, MultilineClose],
-    [RightAlignOpen, MultilineClose]
+    [RightAlignOpen, MultilineClose],
 ]
 
 // quick lookup
