@@ -107,6 +107,41 @@
 		}
 	},
 	"pages": {
+		"recentChanges": {
+			"title": "최근 변경",
+			"error": "오류",
+			"dataLoadError": "최근 변경을 불러오는 도중 오류가 발생했습니다.",
+			"options": "옵션",
+			"page": "문서",
+			"user": "사용자",
+			"change": "수정 사항",
+			"datetime": "일시",
+			"deleted": "삭제됨",
+			"noResults": "최근 변경이 없습니다.",
+			"nPagesShow": "문서 수",
+			"filter": "조건",
+			"show": {
+				"5": "5개 보기",
+				"10": "10개 보기",
+				"30": "30개 보기",
+				"100": "100개 보기"
+			},
+			"filters": {
+				"unique": "문서별 최신 변경만",
+				"excludeFile": "파일 제외",
+				"editOnly": "편집만"
+			},
+			"actions": {
+				"edit": "편집",
+				"delete": "삭제",
+				"create": "생성",
+				"upload": "업로드",
+				"move": "이동",
+				"revert": "되돌림",
+				"protect": "보호",
+				"unknown": "기타"
+			}
+		},
 		"thread": {
 			"titleInfo": "(토론)",
 			"hiddenComment": "이 댓글은 숨겨져 있습니다.",
@@ -187,6 +222,13 @@
 				"viewHistory": "이 페이지의 역사를 {link}에서 볼 수 있습니다.",
 				"viewHistoryLinkDesc": "여기"
 			}
+		}
+	},
+	"adminTools": {
+		"devTools": {
+			"title": "개발자 콘솔",
+			"connectionError": "서버에 연결할 수 없습니다.",
+			"send": "전송"
 		}
 	},
 	"noEmail": "이메일 주소 무단 수집 거부",

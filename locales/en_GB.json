@@ -106,6 +106,41 @@
 		}
 	},
 	"pages": {
+		"recentChanges": {
+			"title": "Recent Changes",
+			"error": "Error",
+			"dataLoadError": "Could not load recent changes.",
+			"options": "Options",
+			"page": "Page",
+			"user": "User",
+			"change": "Change",
+			"datetime": "Time",
+			"deleted": "deleted",
+			"noResults": "No recent changes",
+			"nPagesShow": "Number of pages to show",
+			"filter": "Filter",
+			"show": {
+				"5": "Show 5",
+				"10": "Show 10",
+				"30": "Show 30",
+				"100": "Show 100"
+			},
+			"filters": {
+				"unique": "Unique pages",
+				"excludeFile": "Exclude files",
+				"editOnly": "Edits only"
+			},
+			"actions": {
+				"edit": "Edit",
+				"delete": "Delete",
+				"create": "Create",
+				"upload": "Upload",
+				"move": "Move",
+				"revert": "Revert",
+				"protect": "Protect",
+				"unknown": "Other"
+			}
+		},
 		"thread": {
 			"titleInfo": "(discussion)",
 			"hiddenComment": "This comment has been hidden.",
@@ -186,6 +221,13 @@
 				"viewHistory": "You can view the history of this page {link}.",
 				"viewHistoryLinkDesc": "here"
 			}
+		}
+	},
+	"adminTools": {
+		"devTools": {
+			"title": "Developer Console",
+			"connectionError": "Could not connect to the discussion server.",
+			"send": "Send"
 		}
 	},
 	"noEmail": "Refusal of unauthorised email collection",

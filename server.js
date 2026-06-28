@@ -358,7 +358,7 @@ io.on('connection', async socket => {
                 if (await services.permission.hasPermission(username, 'developer')) {
                     socket.join('developerconsole')
                     socket.emit('joinok')
-                    socket.emit('output', 'AkariEngine 3.0\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL.\n\nType \'help\' for the list of commands.\n')
+                    socket.emit('output', 'AkariEngine 4.1\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL 3.\n\nType \'help\' for the list of commands.\n')
                     acknowledge(callback, { success: true })
                     return
                 }

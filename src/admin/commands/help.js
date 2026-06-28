@@ -14,6 +14,7 @@ export default {
                 stdout(`Unknown command: ${cmdSplit[1].toUpperCase()}\n`)
             }
         } else {
+            stdout('Type HELP [command] for detailed help on a specific command.\n')
             for (const cmd of commands.values()) {
                 stdout(`${cmd.name.padEnd(20)}${cmd.shortDesc}\n`)
             }

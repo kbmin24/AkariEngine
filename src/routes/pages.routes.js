@@ -116,11 +116,6 @@ export default (options = {}) => {
         asyncRoute(diffGetController)
     )
 
-    router.get('/RecentChanges', asyncRoute(async (req, res) => {
-        const changes = await req.app.locals.services.recentChanges.getRecentChanges({})
-        res.json({ changes })
-    }))
-
     router.get('/PageList', asyncRoute(pagelistGetController))
 
     router.get('/category/:name(*)', asyncRoute(categoryGetController))
