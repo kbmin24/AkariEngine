@@ -1,7 +1,7 @@
 export default async (req, res) => {
     const username = req.session.username
     const { repositories, services } = req.app.locals
-    const permsPresent = await repositories.protections.findAllByTitle(req.params.name)
+    const permsPresent = await repositories.protections.findAllByTitleAndRevision(req.params.name, null)
 
     const hasAcl = username
         ? await services.permission.hasPermission(username, 'acl')

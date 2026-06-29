@@ -106,6 +106,27 @@
 		}
 	},
 	"pages": {
+		"upload": {
+			"file": "File",
+			"fileHelp": "Allowed types: {types}. Maximum size: {limit} MB.",
+			"filename": "File name",
+			"explanation": "Explanation",
+			"fileRequired": "Please choose a file to upload."
+		},
+		"protect": {
+			"selectLabel": "Protections for {task}",
+			"tasks": {
+				"read": "Read",
+				"edit": "Edit",
+				"move": "Move"
+			},
+			"levels": {
+				"everyone": "Everyone except blocked users (everyone)",
+				"blocked": "Everyone including blocked users (blocked)",
+				"login": "Logged-in users only (login)",
+				"admin": "Administrators only (admin)"
+			}
+		},
 		"recentChanges": {
 			"title": "Recent Changes",
 			"error": "Error",
@@ -178,6 +199,13 @@
 			"desc_pt2": "This page is updated every midnight.",
 			"dataLoadError": "Could not load orphaned pages.",
 			"noResults": "There are no orphaned pages."
+		},
+		"contribution": {
+			"dataLoadError": "Could not load contributions.",
+			"page": "Page",
+			"comment": "Edit summary",
+			"file": "file",
+			"noResults": "There are no contributions."
 		},
 		"thread": {
 			"titleInfo": "(discussion)",
@@ -266,6 +294,17 @@
 			"title": "Developer Console",
 			"connectionError": "Could not connect to the discussion server.",
 			"send": "Send"
+		},
+		"revAcl": {
+			"title": "Revision specific READ ACL",
+			"loadError": "Failed to load revision ACL rules.",
+			"submitError": "Failed to update revision ACL.",
+			"duplicateRule": "A rule for this revision already exists.",
+			"revision": "Revision",
+			"permission": "Permission",
+			"noRules": "No rules found",
+			"removeRule": "Remove rule for revision {revision}",
+			"apply": "Apply"
 		}
 	},
 	"noEmail": "Refusal of unauthorised email collection",

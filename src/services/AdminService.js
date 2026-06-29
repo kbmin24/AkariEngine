@@ -41,8 +41,36 @@ class AdminService {
             throw new ValidationError({ message: 'No such revision.' })
         }
 
+        const existingRules = await this.protectRepository.findAllByTitleAndRevision(title, revision)
+        if (existingRules.length > 0) {
+            throw new ValidationError({ message: 'A rule for this revision already exists.' })
+        }
+
         await this.protectRepository.setRevisionProtection(title, revision, level)
         await this.adminlogRepository.insertLog(actor, `protected ${title} r${revision} to ${level}`)
+    }
+
+    async unhideRevision({ title, revision, actor }) {
+        if (!actor) {
+            throw new AuthenticationRequiredError()
+        }
+
+        if (!Number.isFinite(revision) || revision < 1) {
+            throw new ValidationError({ message: 'rev must be a valid positive number.' })
+        }
+
+        const hasPermission = await this.permissionRepository.hasPermission(actor, 'acl')
+        if (!hasPermission) {
+            throw new PermissionDeniedError('acl', null, { message: 'You need ACL permission.' })
+        }
+
+        const page = await this.pageRepository.findByTitle(title)
+        if (!page) {
+            throw new PageNotFoundError(title)
+        }
+
+        await this.protectRepository.deleteRevisionProtection(title, revision)
+        await this.adminlogRepository.insertLog(actor, `removed revision protection from ${title} r${revision}`)
     }
 
     async grantPermissions({ actor, grantTo, permissions }) {

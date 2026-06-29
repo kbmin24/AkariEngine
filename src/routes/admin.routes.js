@@ -1,18 +1,21 @@
 import express from 'express'
 import { asyncRoute } from '../utils/httpHelper.js'
 import { requirePermission } from '../middlewares/auth.js'
-import { param, query } from 'express-validator'
+import { body, param, query } from 'express-validator'
 import { validateRequest } from '../middlewares/validation.js'
+import { ACL_LEVELS, PROTECTION_TASKS } from '../utils/acl.js'
 import grantPost from '../controllers/admin/grantPost.js'
 import blockUserPost from '../controllers/admin/blockUserPost.js'
 import blockipPost from '../controllers/admin/blockipPost.js'
 import hiderevGet from '../controllers/admin/hiderevGet.js'
 import hiderevPost from '../controllers/admin/hiderevPost.js'
+import hiderevDelete from '../controllers/admin/hiderevDelete.js'
 import hideThreadCommentPost from '../controllers/admin/hideThreadCommentPost.js'
 import changeThreadStatusPost from '../controllers/admin/changeThreadStatusPost.js'
 import changeThreadTitlePost from '../controllers/admin/changeThreadTitlePost.js'
 import adminlogGetHandler from '../controllers/admin/adminlogGet.js'
 import loginhistoryGetHandler from '../controllers/admin/loginhistoryGet.js'
+import revisionAclGet from '../controllers/admin/revisionAclGet.js'
 import protectGet from '../controllers/admin/protectGet.js'
 import protectPost from '../controllers/admin/protectPost.js'
 import grantGet from '../controllers/admin/grantGet.js'
@@ -21,6 +24,24 @@ import adminmenuGet from '../controllers/admin/adminmenuGet.js'
 export default (options = {}) => {
     const router = express.Router()
     const csrfProtection = options.csrfProtection
+    const protectionTaskSet = new Set(PROTECTION_TASKS)
+    const aclLevelSet = new Set(ACL_LEVELS)
+    const validateProtectionRules = body().custom(rules => {
+        if (!rules || typeof rules !== 'object' || Array.isArray(rules)) {
+            throw new Error('Protection rules must be an object.')
+        }
+
+        for (const [task, level] of Object.entries(rules)) {
+            if (!protectionTaskSet.has(task)) {
+                throw new Error('Invalid protection task.')
+            }
+            if (!aclLevelSet.has(level)) {
+                throw new Error('Invalid ACL level.')
+            }
+        }
+
+        return true
+    })
 
     router.get('/admin',
         requirePermission('admin'),
@@ -78,9 +99,22 @@ export default (options = {}) => {
     )
 
     router.post('/admin/hiderev',
+        body('pagename').trim().notEmpty(),
+        body('rev').trim().notEmpty().isInt(),
+        body('level').trim().notEmpty().isIn(ACL_LEVELS).withMessage('Invalid ACL level.'),
+        validateRequest,
         requirePermission('acl'),
         csrfProtection,
         asyncRoute(hiderevPost)
+    )
+
+    router.delete('/admin/hiderev',
+        body('pagename').trim().notEmpty(),
+        body('rev').trim().notEmpty().isInt(),
+        validateRequest,
+        requirePermission('acl'),
+        csrfProtection,
+        asyncRoute(hiderevDelete)
     )
 
     router.post('/admin/hidethread',
@@ -116,6 +150,12 @@ export default (options = {}) => {
         asyncRoute(adminlogGetHandler)
     )
 
+    router.get('/revision-acl/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        asyncRoute(revisionAclGet)
+    )
+
     router.get('/protect/:name(*)',
         param('name').trim().notEmpty(),
         validateRequest,
@@ -124,6 +164,7 @@ export default (options = {}) => {
 
     router.post('/protect/:name(*)',
         param('name').trim().notEmpty(),
+        validateProtectionRules,
         validateRequest,
         asyncRoute(protectPost)
     )

@@ -5,5 +5,5 @@ export default async (req, res) => {
         user: req.session.username
     })
 
-    res.json({ success: true, redirect: `/w/${req.params.name}` })
+    res.json({ success: true })
 }

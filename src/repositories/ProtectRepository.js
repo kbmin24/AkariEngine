@@ -4,6 +4,10 @@ class ProtectRepository extends BaseRepository {
     async findAllByTitle(title) {
         return this.model.findAll({ where: { title } })
     }
+    
+    async findAllByTitleAndRevision(title, revision) {
+        return this.model.findAll({ where: { title, revision } })
+    }
 
     async replacePageProtections(title, rules = {}) {
         await this.model.destroy({ where: { title } })
@@ -22,6 +26,10 @@ class ProtectRepository extends BaseRepository {
     async setRevisionProtection(title, revision, protectionLevel) {
         await this.model.destroy({ where: { title, revision } })
         await this.model.create({ title, task: 'read', revision, protectionLevel })
+    }
+
+    async deleteRevisionProtection(title, revision) {
+        return this.model.destroy({ where: { title, task: 'read', revision } })
     }
 
     async findProtection(title, task, revision = null) {

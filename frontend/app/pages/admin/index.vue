@@ -15,7 +15,6 @@ const adminMenuItems = [
     { href: '/admin/blockuser', titleKey: 'blockUser' },
     { href: '/admin/blockip', titleKey: 'blockIpAddr' },
     { href: '/admin/loginhistory', titleKey: 'loginhistory' },
-    { href: '/admin/hiderev', titleKey: 'hiderev' },
     { href: '/admin/developer', titleKey: 'devmenu' },
 ]
 

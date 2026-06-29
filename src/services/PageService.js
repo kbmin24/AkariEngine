@@ -1,4 +1,5 @@
 import logger from '../utils/logger.js'
+import { PROTECTION_TASKS } from '../utils/acl.js'
 
 import {
     PageNotFoundError,
@@ -480,7 +481,7 @@ class PageService {
         const page = await this.pageRepo.findByTitle(title)
         if (!page) throw new PageNotFoundError(title)
 
-        const allowedTasks = new Set(['read', 'edit', 'move'])
+        const allowedTasks = new Set(PROTECTION_TASKS)
         const normalizedRules = Object.fromEntries(
             Object.entries(rules || {}).filter(([task]) => allowedTasks.has(task))
         )
