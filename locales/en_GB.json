@@ -127,6 +127,13 @@
 				"admin": "Administrators only (admin)"
 			}
 		},
+		"adminLog": {
+			"dataLoadError": "Could not load the admin log.",
+			"doneBy": "Done by",
+			"job": "Job done",
+			"view": "View",
+			"noResults": "There are no admin log entries."
+		},
 		"recentChanges": {
 			"title": "Recent Changes",
 			"error": "Error",

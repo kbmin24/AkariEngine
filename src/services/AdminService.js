@@ -88,7 +88,7 @@ class AdminService {
         await this.permissionRepository.revokeAllPermissions(grantTo)
         await Promise.all(permissions.map(perm => this.permissionRepository.grantPermission(grantTo, perm, actor)))
 
-        const permsStr = permissions.join(' ')
+        const permsStr = permissions.length ? permissions.join(' ') : '(none)'
         await this.adminlogRepository.insertLog(actor, `granted to ${grantTo}: ${permsStr}`)
         logger.admin('Permissions granted', actor, { grantTo, permissions: permsStr })
     }

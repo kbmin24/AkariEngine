@@ -1,12 +1,12 @@
 import date from 'date-and-time'
 
 export default async (req, res) => {
-    const showfrom = !isNaN(req.query.from) ? req.query.from : 0
+    const showfrom = !isNaN(req.query.from) ? Number(req.query.from) : 0
 
     const { logs, count } = await req.app.locals.services.admin.getAdminLogAndCount({
         doneBy: req.query.doneBy,
         job: req.query.job,
-        offset: showfrom
+        from: showfrom
     })
 
     res.json({

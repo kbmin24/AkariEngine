@@ -128,6 +128,13 @@
 				"admin": "관리자만 (admin)"
 			}
 		},
+		"adminLog": {
+			"dataLoadError": "관리 로그를 불러오는 도중 오류가 발생했습니다.",
+			"doneBy": "사용자",
+			"job": "작업",
+			"view": "보기",
+			"noResults": "관리 로그가 없습니다."
+		},
 		"recentChanges": {
 			"title": "최근 변경",
 			"error": "오류",

@@ -14,6 +14,7 @@ const adminMenuItems = [
     { href: '/admin/grant', titleKey: 'grant' },
     { href: '/admin/blockuser', titleKey: 'blockUser' },
     { href: '/admin/blockip', titleKey: 'blockIpAddr' },
+    { href: '/adminlog', titleKey: 'adminLog' },
     { href: '/admin/loginhistory', titleKey: 'loginhistory' },
     { href: '/admin/developer', titleKey: 'devmenu' },
 ]

@@ -158,7 +158,7 @@ class PageService {
             : await this.historyRepo.findByPageAndRev(title, rev)
 
         if (!page) throw new PageNotFoundError(title)
-            if (rev === undefined && page.deleted) throw new PageNotFoundError(title)
+        if (rev === undefined && page.deleted) throw new PageNotFoundError(title)
         return page.content
     }
 
@@ -493,6 +493,10 @@ class PageService {
         await this.protectRepo.replacePageProtections(title, normalizedRules)
 
         const nextRev = (page.currentRev || 0) + 1
+
+        const comment = Object.entries(normalizedRules)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ')
         await this.historyRepo.create({
             page: title,
             rev: nextRev,
@@ -500,7 +504,7 @@ class PageService {
             bytechange: 0,
             editedby: user,
             type: 'protect',
-            comment: JSON.stringify(normalizedRules)
+            comment
         })
 
         await page.update({ currentRev: nextRev })
@@ -511,7 +515,7 @@ class PageService {
             bytechange: 0,
             doneBy: user,
             type: 'protect',
-            comment: JSON.stringify(normalizedRules)
+            comment
         })
 
         return { title }
