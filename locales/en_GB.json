@@ -314,6 +314,11 @@
 			"apply": "Apply"
 		}
 	},
+	"errorPage": {
+		"404Desc": "The page you requested could not be found. It may have been deleted or does not exist.",
+		"500Desc": "An error occurred on the server. Please try again later.",
+		"otherDesc": "An unknown error has occurred. Please try again later."
+	},
 	"noEmail": "Refusal of unauthorised email collection",
 	"noEmail_description": "We refuse any unauthorised collection of email addresses published on this website. Any offence could result in an criminal punishment according to the Personal Information Protection Act (South Korea).",
 	"noEmail_law": "Article 15 (Collection and Use of Personal Information), Personal Information Protection Act",

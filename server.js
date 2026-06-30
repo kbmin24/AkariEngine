@@ -303,11 +303,6 @@ app.get('/api/csrf-token', doubleCsrfProtection, (req, res) => {
 //Register routes
 registerRoutes(app, services, { csrfProtection: doubleCsrfProtection })
 
-app.get('/lovelive', (req, res) => {
-    res.send('<h1><b style="color:#FB217F">LoveLive!!</b></h1>')
-    return
-})
-
 import { errorHandler } from './src/middlewares/errorHandler.js'
 
 app.use((req, res, next) => {
