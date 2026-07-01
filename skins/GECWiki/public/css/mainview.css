@@ -25,6 +25,13 @@ body
         margin-left: 0;
     }
 }
+@media (max-width: 992px)
+{
+    .articleRCWrapper
+    {
+        flex-direction: column;
+    }
+}
 #pageTools
 {
     /*display: grid;*/

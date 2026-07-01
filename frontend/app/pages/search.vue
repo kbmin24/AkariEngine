@@ -1,7 +1,11 @@
 <template>
     <div class="p-3">
         <p class="fw-bold">
-            <LocalizedMessage keypath="lookingForPageEdit" :params="{ searchtitle: encodedQuery }" />
+            <i18n-t keypath="lookingForPageEdit" tag="span">
+                <template #link>
+                    <NuxtLink :to="editLink">{{ $t('lookingForPageEditLink') }}</NuxtLink>
+                </template>
+            </i18n-t>
         </p>
 
         <h5>{{ $t('titleMatch') }}</h5>
@@ -50,6 +54,7 @@ const { t } = useI18n()
 const q = computed(() => route.query.q ?? '')
 const from = computed(() => Number(route.query.from ?? 0))
 const encodedQuery = computed(() => encodeURIComponent(q.value))
+const editLink = computed(() => `/edit/${encodedQuery.value}`)
 
 useHeadSafe(computed(() => ({
     title: `${t('searchResults', { q: q.value })} - ${config.public.appname}`,

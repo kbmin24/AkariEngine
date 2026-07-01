@@ -109,6 +109,7 @@
                             'border-bottom-left-radius': showDropdown ? '0' : 'var(--bs-border-radius)',
                         }"
                         @input="onSearchInput"
+                        @compositionend="onSearchCompositionEnd"
                         @keydown.down.prevent="activateNext"
                         @keydown.up.prevent="activatePrev"
                         @keydown.escape="closeDropdown"
@@ -178,10 +179,10 @@ const showDropdown = ref(false)
 const activeIndex = ref(-1)
 let debounceTimer = null
 
-const onSearchInput = () => {
+const queueAutocomplete = (query) => {
     activeIndex.value = -1
     clearTimeout(debounceTimer)
-    const q = searchQuery.value.trim()
+    const q = query.trim()
     if (!q) {
         suggestions.value = []
         showDropdown.value = false
@@ -192,6 +193,17 @@ const onSearchInput = () => {
         suggestions.value = Array.isArray(data) ? data.map(r => r.title) : []
         showDropdown.value = suggestions.value.length > 0
     }, 200)
+}
+
+const onSearchInput = (event) => {
+    const query = event?.target?.value ?? searchQuery.value
+    queueAutocomplete(query)
+}
+
+const onSearchCompositionEnd = async (event) => {
+    searchQuery.value = event.target.value
+    await nextTick()
+    queueAutocomplete(searchQuery.value)
 }
 
 const activateNext = () => {

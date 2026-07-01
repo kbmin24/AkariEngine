@@ -10,6 +10,7 @@ import { param, query, body } from 'express-validator'
 
 import { validateRequest } from '../middlewares/validation.js'
 import { requireEveryone } from '../middlewares/permission.js'
+import { createRateLimiter } from '../utils/rateLimit.js'
 
 export default (options = {}) => {
     const router = express.Router()
@@ -20,6 +21,10 @@ export default (options = {}) => {
     }))
 
     router.post('/signup',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 30
+        }),
         chkCaptcha,
         body('id').trim().notEmpty(),
         body('password').notEmpty(),
@@ -35,6 +40,10 @@ export default (options = {}) => {
     }))
 
     router.post('/login',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 30
+        }),
         chkCaptcha,
         body('id').trim().notEmpty(),
         body('password').notEmpty(),
@@ -71,6 +80,10 @@ export default (options = {}) => {
         }))
 
     router.get('/user/exists',
+        createRateLimiter({
+            windowMs: 60 * 1000,
+            limit: 30
+        }),
         query('id').trim().notEmpty(),
         validateRequest,
         asyncRoute(async (req, res) => {
@@ -78,16 +91,16 @@ export default (options = {}) => {
             res.json({ available: !taken })
         }))
     router.get('/user/info/:name(*)',
+        createRateLimiter({
+            windowMs: 60 * 1000,
+            limit: 300
+        }),
         param('name').trim().notEmpty(),
         validateRequest,
         asyncRoute(async (req, res) => {
             const userInfo = await req.app.locals.services.user.getUserInfo(req.params.name)
             res.json(userInfo)
         }))
-
-    router.get('/whoami', (req, res) => {
-        res.json({ username: req.session.username || null, ipAddress: req.ipAddress })
-    })
 
     return router
 }

@@ -25,6 +25,7 @@ import movePostController from '../controllers/pages/movePost.js'
 import deletePageController from '../controllers/pages/deletePost.js'
 import purgeGetController from '../controllers/pages/purgeGet.js'
 import purgePostController from '../controllers/pages/purgePost.js'
+import { createRateLimiter } from '../utils/rateLimit.js'
 
 
 export default (options = {}) => {
@@ -33,6 +34,10 @@ export default (options = {}) => {
     const csrfProtection = options.csrfProtection
 
     router.get('/w/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 100
+        }),
         param('name').trim().notEmpty(),
         query('rev').optional().isInt().toInt(),
         validateRequest,
@@ -48,6 +53,10 @@ export default (options = {}) => {
     }))
 
     router.post('/preview',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 60
+        }),
         body('content').trim().exists(),
         body('title').trim().notEmpty(),
         validateRequest,
@@ -76,19 +85,32 @@ export default (options = {}) => {
         }))
 
     router.get('/search',
+        createRateLimiter({
+            windowMs: 60 * 1000,
+            limit: 60
+        }),
         query('q').trim().notEmpty(),
         query('from').optional().isInt().toInt(),
         validateRequest,
         asyncRoute(searchGetController)
     )
 
+   
     router.post('/search',
+        createRateLimiter({
+            windowMs: 60 * 1000,
+            limit: 60
+        }),
         body('pagename').trim().notEmpty(),
         validateRequest,
         asyncRoute(searchPostController)
     )
 
     router.get('/raw/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         param('name').trim().notEmpty(),
         query('rev').optional().isInt().toInt(),
         validateRequest,
@@ -153,6 +175,10 @@ export default (options = {}) => {
     )
 
     router.post('/edit/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         csrfProtection,
         chkCaptcha,
         requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
@@ -183,6 +209,10 @@ export default (options = {}) => {
     )
 
     router.post('/revert/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         param('name').trim().notEmpty(),
         body('rev').isInt().toInt(),
         validateRequest,
@@ -193,6 +223,10 @@ export default (options = {}) => {
     )
 
     router.post('/move/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 10
+        }),
         csrfProtection,
         chkCaptcha,
         requirePageAccess('move', { noAclMessageKey: 'move_noacl' }),
@@ -200,6 +234,10 @@ export default (options = {}) => {
     )
 
     router.post('/delete/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         param('name').trim().notEmpty(),
         validateRequest,
         csrfProtection,

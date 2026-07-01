@@ -21,6 +21,7 @@ import registerRoutes from './src/routes/index.js'
 import expressSocketIoSession from 'express-socket.io-session'
 import adminCommand from './src/admin/command.js'
 import { initMeilisearch } from './src/utils/meilisearchClient.js'
+import { createRateLimiter } from './src/utils/rateLimit.js'
 
 
 global.path = config.basePath
@@ -206,7 +207,28 @@ global.escapeHTML = escapeHTML
 app.set('view engine', 'ejs')
 app.set('views', paths.views)
 
-//Middlewares
+app.use(createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    limit: 2 * 15 * 60, // 2 requests per second
+    // only include rate heavy paths here
+    // not necessary ones like /login
+    skipPaths: [
+        '/css/',
+        '/js/',
+        '/lib/',
+        '/skins/',
+        '/uploads/',
+        '/api/user/exists',
+        '/api/user/info/',
+        '/api/me'
+    ],
+    skipExactPaths: [
+        '/favicon.ico',
+        '/robots.txt'
+    ]
+}))
+
+// Other Middlewares
 app.use((req, res, next) => {
     // init'ise i18n
     i18n.init(req, res)
@@ -275,23 +297,28 @@ ext(app)
 app.get('/', (req, res) => res.redirect('/w/FrontPage'))
 
 // Auth info endpoint
-app.get('/api/me', async (req, res) => {
-    const username = req.session.username || null
-    const ipAddress = req.ipAddress
-    if (!username) return res.json({ username: null, ipAddress, isAdmin: false, permissions: [], skin: null })
-    try {
-        const { permission, user } = req.app.locals.services
-        const [permChecks, skin] = await Promise.all([
-            Promise.all((global.perms || []).map(async p => ({ p, ok: await permission.hasPermission(username, p) }))),
-            user.getSkin(username),
-        ])
-        const permissions = permChecks.filter(x => x.ok).map(x => x.p)
-        const isAdmin = permissions.includes('admin')
-        res.json({ username, ipAddress, isAdmin, permissions, skin })
-    } catch {
-        res.json({ username, ipAddress, isAdmin: false, permissions: [], skin: null })
-    }
-})
+app.get('/api/me',
+    createRateLimiter({
+        windowMs: 15 * 60 * 1000,
+        limit: 15 * 60
+    }),
+    async (req, res) => {
+        const username = req.session.username || null
+        const ipAddress = req.ipAddress
+        if (!username) return res.json({ username: null, ipAddress, isAdmin: false, permissions: [], skin: null })
+        try {
+            const { permission, user } = req.app.locals.services
+            const [permChecks, skin] = await Promise.all([
+                Promise.all((global.perms || []).map(async p => ({ p, ok: await permission.hasPermission(username, p) }))),
+                user.getSkin(username),
+            ])
+            const permissions = permChecks.filter(x => x.ok).map(x => x.p)
+            const isAdmin = permissions.includes('admin')
+            res.json({ username, ipAddress, isAdmin, permissions, skin })
+        } catch {
+            res.json({ username, ipAddress, isAdmin: false, permissions: [], skin: null })
+        }
+    })
 
 // CSRF token endpoint
 app.get('/api/csrf-token', doubleCsrfProtection, (req, res) => {
