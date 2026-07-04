@@ -96,7 +96,7 @@ class PageRepository extends BaseRepository {
         })
     }
 
-    async findBacklinksByTitle(title) {
+    async findBacklinksByTitle(title, { limit, offset } = {}) {
         if (!this.linkModel) {
             return { rows: [], count: 0 }
         }
@@ -105,7 +105,9 @@ class PageRepository extends BaseRepository {
             where: { dest: title },
             order: [
                 ['source', 'ASC']
-            ]
+            ],
+            limit,
+            offset
         })
     }
 

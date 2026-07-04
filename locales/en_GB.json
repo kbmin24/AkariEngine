@@ -204,6 +204,11 @@
 			"resultCount": "Found {count} pages.",
 			"noResults": "There are no pages in this category."
 		},
+		"xref": {
+			"dataLoadError": "Could not load backlinks.",
+			"resultCount": "There are {count} backlinks.",
+			"noResults": "There are no backlinks."
+		},
 		"pageList": {
 			"dataLoadError": "Could not load the page list.",
 			"resultCount": "There are {count} pages.",
@@ -334,6 +339,10 @@
 		"404Desc": "The page you requested could not be found. It may have been deleted or does not exist.",
 		"500Desc": "An error occurred on the server. Please try again later.",
 		"otherDesc": "An unknown error has occurred. Please try again later."
+	},
+	"userThread": {
+		"isOpen": "{link} is open.",
+		"userThread": "An user discussion"
 	},
 	"noEmail": "Refusal of unauthorised email collection",
 	"noEmail_description": "We refuse any unauthorised collection of email addresses published on this website. Any offence could result in an criminal punishment according to the Personal Information Protection Act (South Korea).",
@@ -507,6 +516,7 @@
 	"copyrightNotice": "By saving this edit, you agree that {{appname}} may distribute your contribution under {{license}}. This consent cannot be withdrawn.",
 	"pvtmodeSignupDisabled": "Signup is disabled in private mode.",
 	"loading": "Loading...",
+	"unsavedChangesWarning": "Changes you made may not be saved.",
 	"previewDataLoadError": "Could not load preview data. Please try again later.",
 	"recentlyEditedAt": "Recently edited at",
 	"userDiscussionOpen": "A {{link}} is open.",

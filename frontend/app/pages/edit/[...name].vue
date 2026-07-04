@@ -20,7 +20,7 @@
         </div>
         <form @submit.prevent="submitEdit">
             <div class="form-group">
-                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <ul class="nav nav-tabs" id="editTab" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" :class="{ active: activeTab === 'edit' }" @click="setActiveTab('edit')"
                             id="edit-tab" type="button" role="tab">{{ $t('edit') }}</button>
@@ -35,53 +35,6 @@
                     <!-- main edit tab-->
                     <div class="tab-pane fade" :class="{ 'show active': activeTab === 'edit' }" id="edit-tab-pane"
                         role="tabpanel" tabindex="0">
-                        <div class="mb-2">
-                            <div class="editMacro bg-light border" @click="editMacro(`'''`, $t('bold'), `'''`)">
-                                <i class="fas fa-bold"></i>
-                            </div>
-                            <div class="editMacro bg-light border" @click="editMacro(`''`, $t('italic'), `''`)">
-                                <i class="fas fa-italic"></i>
-                            </div>
-                            <div class="editMacro bg-light border" @click="editMacro('__', $t('underline'), '__')">
-                                <i class="fas fa-underline"></i>
-                            </div>
-                            <div class="editMacro bg-light border" @click="editMacro('--', $t('strikethrough'), '--')">
-                                <i class="fas fa-strikethrough"></i>
-                            </div>
-                            <div class="dropdown editMacro-drp">
-                                <button class="editMacro-drp bg-light border dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-image"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li>
-                                        <NuxtLink class="dropdown-item" to="/Upload" target="_blank">{{ $t('upload') }}
-                                        </NuxtLink>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#"
-                                            @click.prevent="editMacro('[file(', 'filename.jpg', ')]')">{{ $t('insert')
-                                            }}</a>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="dropdown editMacro-drp">
-                                <button class="editMacro-drp bg-light border dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-heading"></i>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="#" @click.prevent="editMacro('', '', '[toc]')">{{
-                                        $t('toc')
-                                            }}</a></li>
-                                    <li v-for="n in 6" :key="n">
-                                        <a class="dropdown-item" href="#"
-                                            @click.prevent="editMacro(`\n${'='.repeat(n)} `, $t('content'), ` ${'='.repeat(n)}\n`)">
-                                            {{ $t('leveln', { level: n }) }}
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
                         <textarea ref="editArea" v-model="content" class="form-control" id="editAreaBox"
                             :placeholder="`Describe ${pagename} here...`" :disabled="data?.disabled"></textarea>
                     </div>
@@ -139,24 +92,19 @@
     height: 25rem;
 }
 
-.editMacro {
-    display: inline-block;
-    text-align: center;
-    font-size: 1.5rem;
-    width: 2rem;
-    height: 2rem;
+#editTab {
+    margin: 0;
 }
 
-.editMacro-drp {
-    display: inline-block;
-    font-size: 1.5rem;
-    height: 2rem;
-    color: inherit;
+#editTab li {
+    margin: 0;
 }
 
-.preview-tab-pane {
+#preview-tab-pane {
     height: 30rem;
+    overflow-y: scroll;
 }
+
 </style>
 
 <script setup>
@@ -175,6 +123,8 @@ const { t } = useI18n()
 const editArea = ref(null)
 const content = ref('')
 const comment = ref('')
+const savedFormState = ref({ content: '', comment: '' })
+const allowNavigationWithoutWarning = ref(false)
 const submitError = ref(null)
 const submitErrorParams = ref({})
 
@@ -195,8 +145,39 @@ const { data, error, pending } = await useFetch(
 )
 
 watch(data, (val) => {
-    if (val?.content !== undefined) content.value = val.content
+    if (val?.content !== undefined) {
+        content.value = val.content
+        comment.value = ''
+        savedFormState.value = { content: val.content, comment: '' }
+        allowNavigationWithoutWarning.value = false
+    }
 }, { immediate: true })
+
+const hasUnsavedChanges = computed(() => !data.value?.disabled && (
+    content.value !== savedFormState.value.content ||
+    comment.value !== savedFormState.value.comment
+))
+
+const warnBeforeUnload = (event) => {
+    if (!hasUnsavedChanges.value || allowNavigationWithoutWarning.value) return
+
+    event.preventDefault()
+    event.returnValue = ''
+}
+
+onMounted(() => {
+    window.addEventListener('beforeunload', warnBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener('beforeunload', warnBeforeUnload)
+})
+
+onBeforeRouteLeave(() => {
+    if (!hasUnsavedChanges.value || allowNavigationWithoutWarning.value) return true
+
+    return window.confirm(t('unsavedChangesWarning'))
+})
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'dataLoadError')
@@ -232,22 +213,6 @@ watch([data, pagename], () => {
     pageMode: 'edit'
 })
 })
-
-// edit helper buttons
-const editMacro = (before, placeholder, after) => {
-    const textarea = editArea.value
-    if (!textarea) return
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selected = content.value.substring(start, end)
-    const text = selected || placeholder
-    content.value = content.value.substring(0, start) + before + text + after + content.value.substring(end)
-    nextTick(() => {
-        textarea.selectionStart = start + before.length
-        textarea.selectionEnd = start + before.length + text.length
-        textarea.focus()
-    })
-}
 
 // preview
 const activeTab = ref('edit')
@@ -293,7 +258,11 @@ const submitEdit = async () => {
                 'cf-turnstile-response': captchaResponse,
             },
         })
-        if (result?.redirect) await navigateTo(result.redirect)
+        savedFormState.value = { content: content.value, comment: comment.value }
+        if (result?.redirect) {
+            allowNavigationWithoutWarning.value = true
+            await navigateTo(result.redirect)
+        }
     } catch (e) {
         submitError.value = e?.data?.i18nKey || 'error'
         submitErrorParams.value = e?.data?.i18nParams || {}

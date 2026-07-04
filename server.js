@@ -6,8 +6,6 @@ import logger from './src/utils/logger.js'
 import { createSequelizeInstance } from './src/config/database.js'
 import RepositoryFactory from './src/repositories/index.js'
 import ServiceFactory from './src/services/index.js'
-import path from 'node:path'
-import fs from 'node:fs'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
 import sessionStoreFactory from 'express-session-sequelize'
@@ -37,8 +35,7 @@ const privateModeAllowedExactRoutes = new Set([
 const privateModeAllowedRoutePrefixes = [
     '/css/',
     '/js/',
-    '/lib/',
-    '/skins/'
+    '/lib/'
 ]
 
 //Legacy ways to access settings. Deprecated.
@@ -228,7 +225,6 @@ app.use(createRateLimiter({
         '/css/',
         '/js/',
         '/lib/',
-        '/skins/',
         '/uploads/',
         '/api/user/exists',
         '/api/user/info/',
@@ -283,17 +279,6 @@ app.use((req, res, next) => {
 
 app.use(express.static(paths.public))
 app.use('/uploads', express.static(paths.uploads))
-
-//skins
-global.skins = []
-config.skins.forEach(e => {
-    app.use(`/skins/${e}`, express.static(paths.resolve('skins', e, 'public')))
-    const skinSettingsPath = paths.resolve(path.join(`skins/${e}/` + 'skinSettings.json'))
-    const skinManifestPath = paths.resolve(path.join(`./skins/${e}/` + 'manifest.json'))
-    let skinSettings = JSON.parse(fs.readFileSync(skinSettingsPath, 'utf8'))
-    let skinManifest = JSON.parse(fs.readFileSync(skinManifestPath, 'utf8'))
-    global.skins.push({ 'name': e, 'settings': skinSettings, 'manifest': skinManifest })
-})
 
 //Extension
 import ext from './extensions/extensionManager.js'

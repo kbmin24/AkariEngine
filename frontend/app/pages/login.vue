@@ -81,6 +81,8 @@ const onSubmit = async () => {
             body: { id: id.value, password: password.value, 'cf-turnstile-response': captchaResponse },
         })
         await fetchMe()
+
+        // Should be empty in private mode so we're trying hard refresh
         await refreshNuxtData('recent-changes-sidebar')
         await router.push('/')
     } catch (err) {

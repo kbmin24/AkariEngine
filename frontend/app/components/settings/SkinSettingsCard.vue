@@ -37,13 +37,21 @@ const { t } = useI18n()
 const { csrfFetch } = useCsrf()
 const { store, fetchMe } = useAuth()
 
-const selectedSkin = ref(store.skin || props.skins[0]?.name || '')
+const fallbackSkin = computed(() => props.skins[0]?.name || '')
+const skinNames = computed(() => props.skins.map((skin) => skin.name))
+const resolveSkin = (skin) => skinNames.value.includes(skin) ? skin : fallbackSkin.value
+
+const selectedSkin = ref(resolveSkin(store.skin))
 const pending = ref(false)
 const success = ref(false)
 const errorMessage = ref('')
 
 watch(() => store.skin, (skin) => {
-    selectedSkin.value = skin || props.skins[0]?.name || ''
+    selectedSkin.value = resolveSkin(skin)
+})
+
+watch(() => props.skins, () => {
+    selectedSkin.value = resolveSkin(selectedSkin.value)
 })
 
 const onSubmit = async () => {

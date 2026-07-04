@@ -4,9 +4,11 @@ import PageService from './PageService.js'
 const createService = ({
     existingPage = null,
     latestRev = 0,
+    backlinks = { count: 0, rows: [] },
 } = {}) => {
     const pageRepo = {
         findByTitle: jest.fn().mockResolvedValue(existingPage),
+        findBacklinksByTitle: jest.fn().mockResolvedValue(backlinks),
         upsertPage: jest.fn().mockImplementation(async (title, content, currentRev) => ({
             page: { title, content, currentRev },
             created: !existingPage,
@@ -98,6 +100,60 @@ describe('PageService.editPage', () => {
                 type: 'edit',
             })
         )
+    })
+})
+
+describe('PageService.getXrefViewModel', () => {
+    test('uses history-style pagination defaults', async () => {
+        const backlinks = {
+            count: 42,
+            rows: Array.from({ length: 30 }, (_, index) => ({ source: `Page${index}` })),
+        }
+        const { service, pageRepo } = createService({ backlinks })
+
+        const result = await service.getXrefViewModel({ title: 'Example' })
+
+        expect(pageRepo.findBacklinksByTitle).toHaveBeenCalledWith('Example', {
+            limit: 30,
+            offset: 0,
+        })
+        expect(result).toMatchObject({
+            count: 42,
+            from: 1,
+            to: 30,
+            pgSize: 30,
+        })
+    })
+
+    test('clamps requested page size to 30 backlinks', async () => {
+        const backlinks = {
+            count: 100,
+            rows: Array.from({ length: 30 }, (_, index) => ({ source: `Page${index + 10}` })),
+        }
+        const { service, pageRepo } = createService({ backlinks })
+
+        const result = await service.getXrefViewModel({ title: 'Example', from: 10, to: 100 })
+
+        expect(pageRepo.findBacklinksByTitle).toHaveBeenCalledWith('Example', {
+            limit: 30,
+            offset: 9,
+        })
+        expect(result.from).toBe(10)
+        expect(result.to).toBe(39)
+    })
+
+    test('returns empty pagination metadata when there are no backlinks', async () => {
+        const { service } = createService()
+
+        const result = await service.getXrefViewModel({ title: 'Example' })
+
+        expect(result).toMatchObject({
+            entries: [],
+            count: 0,
+            from: 1,
+            to: 0,
+            pgSize: 30,
+        })
     })
 })
 

@@ -34,7 +34,10 @@ import GlobalSettings from '~/components/settings/GlobalSettings.vue'
 const { t } = useI18n()
 const config = useRuntimeConfig()
 const { store, fetchMe } = useAuth()
-const SKIN_SETTINGS = import.meta.glob('../../skins/*/settings.vue')
+const SKIN_SETTINGS = import.meta.glob('../../../skins/*/settings.vue')
+const availableSkins = computed(() => config.public.availableSkins || [])
+const availableSkinNames = computed(() => availableSkins.value.map((skin) => skin.name))
+const fallbackSkin = computed(() => availableSkinNames.value.includes('GECWiki') ? 'GECWiki' : (availableSkinNames.value[0] || 'GECWiki'))
 
 useHead({ title: `${t('settings')} - ${config.public.appname}` })
 const { setPageHeader } = usePageHeader()
@@ -44,8 +47,8 @@ await fetchMe()
 
 const activeTab = ref('global')
 const SkinSettingsComponent = computed(() => {
-    const skin = store.skin || 'GECWiki'
-    const loader = SKIN_SETTINGS[`../../skins/${skin}/settings.vue`]
+    const skin = availableSkinNames.value.includes(store.skin) ? store.skin : fallbackSkin.value
+    const loader = SKIN_SETTINGS[`../../../skins/${skin}/settings.vue`]
     return loader ? defineAsyncComponent(loader) : null
 })
 

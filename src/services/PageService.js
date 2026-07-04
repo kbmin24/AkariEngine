@@ -162,7 +162,7 @@ class PageService {
         return page.content
     }
 
-    async getXrefViewModel({ title }) {
+    async getXrefViewModel({ title, from, to }) {
         if (!title) {
             throw new ValidationError({
                 i18nKey: 'illegalaccess',
@@ -174,11 +174,29 @@ class PageService {
         const page = await this.pageRepo.findByTitle(title)
         if (page && page.deleted) throw new PageNotFoundError(title)
 
-        const backlinks = await this.pageRepo.findBacklinksByTitle(title)
+        const pgSize = 30
+        let normalizedFrom = Number(from)
+        let normalizedTo = Number(to)
+
+        if (!Number.isInteger(normalizedFrom) || normalizedFrom < 1) normalizedFrom = 1
+        if (!Number.isInteger(normalizedTo) || normalizedTo < normalizedFrom) normalizedTo = normalizedFrom + pgSize - 1
+
+        const requestedSize = normalizedTo - normalizedFrom + 1
+        const limit = Math.min(requestedSize, pgSize)
+        const offset = normalizedFrom - 1
+
+        const backlinks = await this.pageRepo.findBacklinksByTitle(title, { limit, offset })
+        normalizedTo = normalizedFrom + backlinks.rows.length - 1
+        if (normalizedTo > backlinks.count) normalizedTo = backlinks.count
+        if (backlinks.count === 0) normalizedTo = 0
+
         return {
             title,
             entries: backlinks.rows,
-            count: backlinks.count
+            count: backlinks.count,
+            from: normalizedFrom,
+            to: normalizedTo,
+            pgSize
         }
     }
 

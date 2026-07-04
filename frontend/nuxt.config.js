@@ -1,7 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { existsSync, readFileSync, readdirSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
+import { fileURLToPath } from 'node:url'
 
 let defaultLocale = 'ko'
+let appname = 'AkariEngine'
 let adminEmail = ''
 let privacyPolicy = null
 let turnstileEnabled = false
@@ -27,24 +29,60 @@ const locales = localeFiles.map((file) => {
         code: language,
         language: region ? `${language}-${region}` : language,
         file,
+        jsonName: file, // Nuxt strips out 'file(s)' property
         name: localeNames[locale] || locale,
     }
 })
+
+const discoverSkins = () => {
+    try {
+        return readdirSync(new URL('../skins/', import.meta.url))
+            .filter((skin) => {
+                const skinUrl = new URL(`../skins/${skin}/`, import.meta.url)
+                return statSync(skinUrl).isDirectory()
+                    && existsSync(new URL('manifest.json', skinUrl))
+                    && existsSync(new URL('index.vue', skinUrl))
+            })
+            .sort((a, b) => {
+                if (a === 'GECWiki') return -1
+                if (b === 'GECWiki') return 1
+                return a.localeCompare(b)
+            })
+            .map((skin) => {
+                let manifest = {}
+                try {
+                    manifest = JSON.parse(readFileSync(new URL(`../skins/${skin}/manifest.json`, import.meta.url), 'utf-8'))
+                } catch {
+                    manifest = {}
+                }
+
+                return {
+                    name: skin,
+                    label: manifest.name || skin,
+                    manifest: {
+                        name: manifest.name || skin,
+                        version: manifest.version || '',
+                        description: manifest.description || '',
+                        author: manifest.author || '',
+                        licence: manifest.licence || manifest.license || '',
+                        license: manifest.license || manifest.licence || '',
+                        homepage: manifest.homepage || '',
+                    },
+                }
+            })
+    } catch {
+        return []
+    }
+}
+
+availableSkins = discoverSkins()
+
 try {
     const settings = JSON.parse(readFileSync(new URL('../LocalSettings.json', import.meta.url), 'utf-8'))
+    if (settings.appname) appname = settings.appname
     if (settings.defaultLocale && localeFiles.includes(`${settings.defaultLocale}.json`)) defaultLocale = settings.defaultLocale.split('_')[0]
     if (settings.adminEmail) adminEmail = settings.adminEmail
     turnstileEnabled = !!settings.turnstile_enabled
-    availableSkins = (settings.skins ?? [])
-        .filter((skin) => existsSync(new URL(`./skins/${skin}/index.vue`, import.meta.url)))
-        .map((skin) => {
-            try {
-                const manifest = JSON.parse(readFileSync(new URL(`../skins/${skin}/manifest.json`, import.meta.url), 'utf-8'))
-                return { name: skin, label: manifest.name || skin }
-            } catch {
-                return { name: skin, label: skin }
-            }
-        })
 
     const privacyPolicyPath = settings.privacyPolicy
     if (privacyPolicyPath) {
@@ -70,6 +108,7 @@ const i18nMustacheToVue = {
     },
 }
 const backendPort = process.env.backendPort || 2000
+
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
@@ -81,6 +120,7 @@ export default defineNuxtConfig({
             link: [
                 { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.css', crossorigin: 'anonymous' },
                 { rel: 'stylesheet', href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' },
+                [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
             ],
             script: [
                 { src: 'https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.15.1/katex.min.js', crossorigin: 'anonymous', tagPosition: 'bodyClose' },
@@ -97,7 +137,8 @@ export default defineNuxtConfig({
 
     fonts: {
         families: [
-            { name: 'Noto Sans KR',
+            {
+                name: 'Noto Sans KR',
                 provider: 'google',
                 weights: ['400', '500', '600', '700'],
             }
@@ -105,8 +146,9 @@ export default defineNuxtConfig({
     },
 
     runtimeConfig: {
+        skinAssetsRoot: fileURLToPath(new URL('../skins/', import.meta.url)),
         public: {
-            appname: 'AkariEngine',
+            appname,
             licence: 'CC BY-SA 4.0',
             adminEmail,
             privacyPolicy,
@@ -120,7 +162,6 @@ export default defineNuxtConfig({
         '/api/**': { proxy: `http://localhost:${backendPort}/api/**` },
         '/css/**': { proxy: `http://localhost:${backendPort}/css/**` },
         '/lib/**': { proxy: `http://localhost:${backendPort}/lib/**` },
-        '/skins/**': { proxy: `http://localhost:${backendPort}/skins/**` },
         '/uploads/**': { proxy: `http://localhost:${backendPort}/uploads/**` },
     },
     nitro: {
@@ -134,7 +175,7 @@ export default defineNuxtConfig({
                 ws: true,
                 changeOrigin: true,
             }
-        }, 
+        },
     },
 
     vite: {
@@ -156,6 +197,7 @@ export default defineNuxtConfig({
     i18n: {
         locales,
         defaultLocale,
+        fallbackLocale: defaultLocale,
         strategy: 'no_prefix',
         langDir: '../../locales/',
         vueI18n: 'i18n.config.js',
@@ -163,11 +205,7 @@ export default defineNuxtConfig({
             strictMessage: false,
             escapeHtml: false,
         },
-        detectBrowserLanguage: {
-            useCookie: true,
-            cookieKey: 'i18n_redirected',
-            redirectOn: 'all',
-        },
+        detectBrowserLanguage: false,
     },
 
 })

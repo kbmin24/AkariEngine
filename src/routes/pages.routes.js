@@ -151,6 +151,8 @@ export default (options = {}) => {
 
     router.get('/xref/:name(*)',
         param('name').trim().notEmpty(),
+        query('from').optional().isInt().toInt(),
+        query('to').optional().isInt().toInt(),
         validateRequest,
         asyncRoute(xrefGetController)
     )

@@ -1,7 +1,7 @@
 {
     "name": "AkariEngine-skin-GECWiki",
-    "version": "1.0.0",
-    "description": "GECWiki based skin for AkariEngine",
+    "version": "1.1.0",
+    "description": "GECWiki based skin for AkariEngine. Now for v4.1 frontend.",
     "author": "Kyubin Min",
     "licence": "GNU AGPL 3.0",
     "homepage": "https://github.com/kbmin24/AkariEngine"

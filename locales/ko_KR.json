@@ -205,6 +205,11 @@
 			"resultCount": "페이지 {count}개를 찾았습니다.",
 			"noResults": "이 분류에 속한 문서가 없습니다."
 		},
+		"xref": {
+			"dataLoadError": "역링크를 불러오는 도중 오류가 발생했습니다.",
+			"resultCount": "총 {count}개의 역링크가 있습니다.",
+			"noResults": "역링크가 없습니다."
+		},
 		"pageList": {
 			"dataLoadError": "문서 목록을 불러오는 도중 오류가 발생했습니다.",
 			"resultCount": "문서 {count}개가 있습니다.",
@@ -335,6 +340,10 @@
 		"404Desc": "요청하신 문서를 찾을 수 없습니다. 문서가 삭제되었거나 존재하지 않을 수 있습니다.",
 		"500Desc": "서버에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
 		"otherDesc": "알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해 주세요."
+	},
+	"userThread": {
+		"isOpen": "{link}이 열려 있습니다.",
+		"userThread": "사용자 토론"
 	},
 	"noEmail": "이메일 주소 무단 수집 거부",
 	"noEmail_description": "본 웹사이트에 게시된 이메일주소가 자동으로 수집되는 것을 거부하며, 이를 위반 시 개인정보보호법에 의해 형사처벌됨을 유념하시기 바랍니다.",
@@ -508,6 +517,7 @@
 	"copyrightNotice": "이 문서를 편집함으로써 당신은 {{appname}}가 당신의 기여를 {{license}} 하에 배포하는 데에 동의하는 것입니다. 이 동의는 철회할 수 없습니다.",
 	"pvtmodeSignupDisabled": "회원 가입이 비활성화되어 있습니다.",
 	"loading": "로딩 중...",
+	"unsavedChangesWarning": "변경사항이 저장되지 않을 수 있습니다.",
 	"previewDataLoadError": "미리보기 데이터를 불러올 수 없습니다. 나중에 다시 시도해 주세요.",
 	"recentlyEditedAt": "최근 편집 시각",
 	"userDiscussionOpen": "{{link}}이 열려 있습니다.",
