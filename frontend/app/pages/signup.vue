@@ -1,5 +1,10 @@
 <template>
-    <div v-if="success">
+    <div v-if="isLoadError" class="p-3">
+        <LocalizedMessage :keypath="loadErrorMessageKey" :params="loadErrorMessageParams"
+            :message="loadErrorMessageFallback" tag="p" />
+    </div>
+
+    <div v-else-if="success">
         <i18n-t keypath="auth.register.done" tag="span">
             <template #loginlink>
                 <NuxtLink to="/login">{{ $t('auth.register.do_login') }}</NuxtLink>
@@ -121,7 +126,15 @@ useHead({ title: `${t('auth.register.title')} - ${config.public.appname}` })
 const { setPageHeader } = usePageHeader()
 setPageHeader({ title: t('register') })
 
-const { data } = await useFetch('/api/signup', { key: '/signup' })
+const { data, error: loadError, pending: loadPending } = await useFetch('/api/signup', { key: '/signup' })
+
+const isLoadError = computed(() => !loadPending.value && (!!loadError.value || !!data.value?.error))
+const loadErrorDetails = computed(() => loadError.value?.data ?? data.value ?? {})
+const loadErrorMessageKey = computed(() => loadErrorDetails.value?.i18nKey || null)
+const loadErrorMessageParams = computed(() => loadErrorDetails.value?.i18nParams ?? {})
+const loadErrorMessageFallback = computed(() => loadErrorDetails.value?.i18nKey
+    ? ''
+    : (loadErrorDetails.value?.message ?? t('dataLoadError')))
 
 const id = ref('')
 const password = ref('')

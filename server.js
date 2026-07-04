@@ -18,16 +18,28 @@ import escapeHTML from './src/utils/escapeHTML.js'
 import { normalizeIpAddress } from './src/utils/ipTools.js'
 import { PageNotFoundError, PermissionDeniedError } from './src/services/errors.js'
 import registerRoutes from './src/routes/index.js'
-import expressSocketIoSession from 'express-socket.io-session'
-import adminCommand from './src/admin/command.js'
 import { initMeilisearch } from './src/utils/meilisearchClient.js'
 import { createRateLimiter } from './src/utils/rateLimit.js'
+import registerSocketServer from './src/socket/index.js'
 
 
 global.path = config.basePath
 global.conf = config.settings
 
 const port = config.port
+const privateModeAllowedExactRoutes = new Set([
+    '/api/login',
+    '/robots.txt',
+    '/favicon.ico',
+    '/api/me',
+    '/api/csrf-token'
+])
+const privateModeAllowedRoutePrefixes = [
+    '/css/',
+    '/js/',
+    '/lib/',
+    '/skins/'
+]
 
 //Legacy ways to access settings. Deprecated.
 global.appname = config.appName
@@ -241,7 +253,7 @@ app.use((req, res, next) => {
 
 // Private Mode?
 app.use((req, res, next) => {
-    const url = req.url.trim()
+    const url = new URL(req.originalUrl || req.url, 'http://localhost').pathname
 
     // Check whether private mode is enabled
     if (!config.isPrivate) return next()
@@ -251,24 +263,19 @@ app.use((req, res, next) => {
         return next()
     }
 
-    if (url.startsWith('/api/login')) {
-        //Login Route
-        return next()
-    }
-
-    if (url.startsWith('/css') || url.startsWith('/js') || url.startsWith('/lib') || url.startsWith('/robots.txt') || url.startsWith('/skins/') || url.startsWith('favicon.ico')) {
-        // Required lib
-        return next()
-    }
+    const isPrivateModeAllowedRoute = privateModeAllowedExactRoutes.has(url)
+        || privateModeAllowedRoutePrefixes.some(route => url.startsWith(route))
 
     if (url.startsWith('/api/signup')) {
-        throw new PermissionDeniedError({
+        throw new PermissionDeniedError('other', null, {
             message: 'Signup is disabled in private mode',
             i18nKey: 'pvtmodeSignupDisabled'
         })
     }
 
-    throw new PermissionDeniedError({
+    if (isPrivateModeAllowedRoute) return next()
+
+    throw new PermissionDeniedError('other', null, {
         i18nKey: "loginneeded",
         message: 'Login is required to access this page'
     })
@@ -356,105 +363,10 @@ const server = app.listen(port, '0.0.0.0', () => {
     logger.info(`App listening at http://${host}:${port}`)
 })
 
-//Console
-import { Server } from 'socket.io'
-
-const io = new Server(server)
-app.locals.io = io
-io.use(expressSocketIoSession(sess, { autoSave: true }))
-
-io.on('connection', async socket => {
-    const getIdentity = () => ({
-        username: socket.handshake.session.username,
-        ipAddress: normalizeIpAddress(socket.handshake.address)
-    })
-
-    const acknowledge = (callback, result) => {
-        if (typeof callback === 'function') callback(result)
-    }
-
-    socket.on('joinRoom', async (data = {}, callback) => {
-        try {
-            if (data.notAThread === true && data.roomId === 'developerconsole') {
-                const username = socket.handshake.session.username
-                if (await services.permission.hasPermission(username, 'developer')) {
-                    socket.join('developerconsole')
-                    socket.emit('joinok')
-                    socket.emit('output', 'AkariEngine 4.1\nCopyright Kyubin Min 2021-2026. Distributed under GNU AGPL 3.\n\nType \'help\' for the list of commands.\n')
-                    acknowledge(callback, { success: true })
-                    return
-                }
-                throw new PermissionDeniedError('Developer permission required.')
-            }
-
-            const { username, ipAddress } = getIdentity()
-            const threadInfo = await services.thread.getThreadInfo(data.roomId, { user: username, ipAddress })
-            if (!threadInfo?.r) throw new PermissionDeniedError('READ permission required.')
-            const commentPermission = await services.thread.checkCommentPermission(username, ipAddress, data.roomId)
-
-            socket.join(data.roomId)
-            acknowledge(callback, { success: true, thread: threadInfo, commentPermission })
-        } catch (err) {
-            logger.warn('Socket joinRoom error', { error: err.message })
-            acknowledge(callback, { success: false, message: err.message })
-        }
-    })
-
-    socket.on('leaveRoom', (data = {}, callback) => {
-        if (typeof data.roomId !== 'string' || !data.roomId) {
-            acknowledge(callback, { success: false, message: 'Room ID is required.' })
-            return
-        }
-
-        socket.leave(data.roomId)
-        acknowledge(callback, { success: true })
-    })
-
-    const postThreadComment = async (data = {}, callback) => {
-        try {
-            const { username, ipAddress } = getIdentity()
-
-            const { hasPermission, i18nKey, i18nParams, reason } = await services.thread.checkCommentPermission(username, ipAddress, data.roomId)
-            if (!hasPermission) {
-                acknowledge(callback, {
-                    success: false,
-                    permissionDenied: true,
-                    message: reason || 'Permission denied.',
-                    i18nKey,
-                    i18nParams
-                })
-                return
-            }
-
-            const { comment } = await services.thread.postComment({
-                threadID: data.roomId,
-                username,
-                ipAddress,
-                message: data.message
-            })
-
-            const content = (await services.render.render(comment.content, {}, false)).html
-            const payload = {
-                id: comment.id,
-                threadID: comment.threadID,
-                type: comment.type,
-                username: escapeHTML(String(comment.doneBy ?? '')),
-                content,
-                date: comment.createdAt,
-                isHidden: comment.isHidden
-            }
-
-            io.sockets.in(data.roomId).emit('threadComment', payload)
-            acknowledge(callback, { success: true, comment: payload })
-        } catch (err) {
-            logger.warn('Socket message rejected', { error: err.message })
-            acknowledge(callback, { success: false, message: err.message })
-        }
-    }
-
-    socket.on('postThreadComment', postThreadComment)
-
-    socket.on('input', async data => {
-        await adminCommand(socket, data.command)
-    })
+registerSocketServer({
+    server,
+    app,
+    sessionMiddleware: sess,
+    services,
+    logger
 })

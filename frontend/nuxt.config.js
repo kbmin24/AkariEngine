@@ -1,6 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { existsSync, readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
+import { existsSync, readFileSync, readdirSync } from 'fs'
 
 let defaultLocale = 'ko'
 let adminEmail = ''
@@ -8,9 +7,32 @@ let privacyPolicy = null
 let turnstileEnabled = false
 let tos = null
 let availableSkins = []
+const localeNames = {
+    ko_KR: '\uD55C\uAD6D\uC5B4',
+    en_GB: 'English',
+}
+const localeFiles = (() => {
+    try {
+        return readdirSync(new URL('../locales/', import.meta.url))
+            .filter((file) => /^[a-z]{2}_[A-Z]{2}\.json$/.test(file))
+            .sort()
+    } catch {
+        return ['ko_KR.json', 'en_GB.json']
+    }
+})()
+const locales = localeFiles.map((file) => {
+    const locale = file.replace(/\.json$/, '')
+    const [language, region] = locale.split('_')
+    return {
+        code: language,
+        language: region ? `${language}-${region}` : language,
+        file,
+        name: localeNames[locale] || locale,
+    }
+})
 try {
     const settings = JSON.parse(readFileSync(new URL('../LocalSettings.json', import.meta.url), 'utf-8'))
-    if (settings.defaultLocale) defaultLocale = settings.defaultLocale.split('_')[0]
+    if (settings.defaultLocale && localeFiles.includes(`${settings.defaultLocale}.json`)) defaultLocale = settings.defaultLocale.split('_')[0]
     if (settings.adminEmail) adminEmail = settings.adminEmail
     turnstileEnabled = !!settings.turnstile_enabled
     availableSkins = (settings.skins ?? [])
@@ -40,7 +62,7 @@ const i18nMustacheToVue = {
     name: 'i18n-mustache-to-vue',
     enforce: 'pre',
     transform(code, id) {
-        if (!/locales[\\/](ko_KR|en_GB)\.json$/.test(id)) return null
+        if (!localeFiles.some((file) => id.endsWith(`locales/${file}`) || id.endsWith(`locales\\${file}`))) return null
         const fixed = code
             .replace(/\{\{\{(\w+)\}\}\}/g, '{$1}')
             .replace(/\{\{(\w+)\}\}/g, '{$1}')
@@ -93,8 +115,6 @@ export default defineNuxtConfig({
         },
     },
 
-    // TODO: get LocalSetting's port instead of hardcoding
-    // socket.io omitted — routeRules proxy does not support WebSocket upgrades
     routeRules: {
         '/': { redirect: '/w/FrontPage' },
         '/api/**': { proxy: `http://localhost:${backendPort}/api/**` },
@@ -133,19 +153,21 @@ export default defineNuxtConfig({
         }
     },
 
-    // todo: sync with LocalSettings.json
     i18n: {
-        locales: [
-            { code: 'ko', language: 'ko-KR', file: 'ko_KR.json', name: '한국어' },
-            { code: 'en', language: 'en-GB', file: 'en_GB.json', name: 'English' },
-        ],
+        locales,
         defaultLocale,
+        strategy: 'no_prefix',
         langDir: '../../locales/',
         vueI18n: 'i18n.config.js',
         compilation: {
             strictMessage: false,
             escapeHtml: false,
-        }
+        },
+        detectBrowserLanguage: {
+            useCookie: true,
+            cookieKey: 'i18n_redirected',
+            redirectOn: 'all',
+        },
     },
 
 })

@@ -78,7 +78,7 @@ const { data, error, pending } = await useFetch(
 usePostRender(articleRef, data)
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
-const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'page404')
+const errorI18nKey = computed(() => error.value?.data?.i18nKey ?? data.value?.i18nKey ?? 'dataLoadError')
 const errorI18nParams = computed(() => error.value?.data?.i18nParams ?? data.value?.i18nParams ?? {})
 const hasHistory = computed(() => !!(error.value?.data?.hasHistory ?? data.value?.hasHistory))
 const userPageEditLink = computed(() => `User:${pagename.value.split(':')[1] ?? pagename.value}`)

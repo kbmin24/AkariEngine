@@ -1,53 +1,53 @@
 <template>
     <div class="card mb-3">
         <div class="card-body">
-            <h5 class="card-title">{{ $t('changepw') }}</h5>
-            <p class="card-text">{{ $t('changepw_Desc') }}</p>
+            <h5 class="card-title">{{ $t('auth.passwordChange.title') }}</h5>
+            <p class="card-text">{{ $t('auth.passwordChange.description') }}</p>
 
-            <div v-if="success" class="alert alert-success" role="alert">{{ $t('done') }}</div>
+            <div v-if="success" class="alert alert-success" role="alert">{{ $t('auth.passwordChange.done') }}</div>
             <div v-if="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
 
             <form @submit.prevent="onSubmit">
                 <div class="form-group mb-2">
-                    <label for="oldpassword">{{ $t('currentpw') }}</label>
+                    <label for="oldpassword">{{ $t('auth.passwordChange.currentPassword') }}</label>
                     <input id="oldpassword" v-model="oldpassword" type="password" name="oldpassword"
-                        class="form-control" :placeholder="$t('currentpw_inp')" required :disabled="pending"
+                        class="form-control" :placeholder="$t('auth.passwordChange.currentPasswordInput')" required :disabled="pending"
                         autocomplete="current-password">
                 </div>
 
                 <div class="form-group mb-2">
-                    <label for="passwordInputbox">{{ $t('newpw') }}</label>
+                    <label for="passwordInputbox">{{ $t('auth.passwordChange.newPassword') }}</label>
                     <input id="passwordInputbox" v-model="password" type="password" name="password"
-                        class="form-control" :placeholder="$t('newpw_inp')" required minlength="8" maxlength="255"
+                        class="form-control" :placeholder="$t('auth.passwordChange.newPasswordInput')" required minlength="8" maxlength="255"
                         pattern="^[A-Za-z\d$@$!%*?&^#_\-+=<>,./|]{8,255}$" :disabled="pending"
                         autocomplete="new-password">
-                    <small class="form-text text-muted">{{ $t('register_p8up') }}</small>
+                    <small class="form-text text-muted">{{ $t('auth.passwordChange.p8up') }}</small>
                     <small v-if="pwBadLength" class="text-danger fw-bold d-block">
-                        {{ $t('register_illegalpwlength') }}
+                        {{ $t('auth.passwordChange.illegalpwlength') }}
                     </small>
                     <small v-if="pwBadChars.size > 0" class="text-danger fw-bold d-block">
-                        {{ $t('register_illegalpwchar') }}'{{ Array.from(pwBadChars).join("', '") }}'
+                        {{ $t('auth.passwordChange.illegalpwchar') }}'{{ Array.from(pwBadChars).join("', '") }}'
                     </small>
                 </div>
 
                 <div class="form-group mb-2">
-                    <label for="passwordConfirmInputbox">{{ $t('register_confirmpw') }}</label>
+                    <label for="passwordConfirmInputbox">{{ $t('auth.passwordChange.confirmPassword') }}</label>
                     <input id="passwordConfirmInputbox" v-model="passwordConfirm" type="password"
-                        name="passwordConfirm" class="form-control" :placeholder="$t('newpw_inp')" required
+                        name="passwordConfirm" class="form-control" :placeholder="$t('auth.passwordChange.newPasswordInput')" required
                         minlength="8" maxlength="255" :disabled="pending" autocomplete="new-password">
                     <p>
                         <small v-if="pwMatch === true" class="text-success fw-bold">
-                            {{ $t('register_pwMatch') }}
+                            {{ $t('auth.passwordChange.pwMatch') }}
                         </small>
                         <small v-else-if="pwMatch === false" class="text-danger fw-bold">
-                            {{ $t('register_pwNotMatch') }}
+                            {{ $t('auth.passwordChange.pwNotMatch') }}
                         </small>
                     </p>
-                    <small class="form-text text-muted">{{ $t('register_confirmPwDesc') }}</small>
+                    <small class="form-text text-muted">{{ $t('auth.passwordChange.confirmPwDesc') }}</small>
                 </div>
 
                 <button type="submit" class="btn btn-primary" :disabled="!formValid || pending">
-                    {{ $t('changepw') }}
+                    {{ $t('auth.passwordChange.title') }}
                 </button>
             </form>
         </div>

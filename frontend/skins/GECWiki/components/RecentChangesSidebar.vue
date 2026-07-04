@@ -44,6 +44,7 @@ function formatChangeDate(dateStr) {
 }
 
 const { data, refresh } = useFetch('/api/recentchanges', {
+    key: 'recent-changes-sidebar',
     default: () => ([]),
     query: {
         show: 10,

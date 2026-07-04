@@ -81,6 +81,7 @@ const onSubmit = async () => {
             body: { id: id.value, password: password.value, 'cf-turnstile-response': captchaResponse },
         })
         await fetchMe()
+        await refreshNuxtData('recent-changes-sidebar')
         await router.push('/')
     } catch (err) {
         errorKey.value = err.data?.i18nKey ?? 'error'
