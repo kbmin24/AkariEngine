@@ -1,33 +1,27 @@
-import i18n from 'i18n'
-import renderError from '../../utils/error.js'
-import { renderTemplateInLayout, BACK_LINK } from '../../utils/httpHelper.js'
+import { PageNotFoundError } from '../../services/errors.js'
+import { serializeThreadComments } from './serializeThreadComments.js'
 
-// not to be confused with thread_s_Get.js which is for list
 export default async (req, res) => {
     const roomId = req.params.name
-    const services = req.app.locals.services
+    const { services } = req.app.locals
 
     const thread = await services.thread.getThread(roomId)
-    if (!thread) {
-        return renderError(req, res, {
-            description: i18n.__('thread404'),
-            returnLink: BACK_LINK,
-            returnName: i18n.__('previousPage'),
-            statusCode: 404
-        })
-    }
+    if (!thread) throw new PageNotFoundError(roomId)
 
-    const isAdmin = await services.permission.hasPermission(req.session.username, 'thread')
+    const [isAdmin, comments, commentPermission] = await Promise.all([
+        services.permission.hasPermission(req.session.username, 'thread'),
+        services.thread.getThreadComments(req.session.username, req.ipAddress, roomId),
+        services.thread.checkCommentPermission(req.session.username, req.ipAddress, roomId)
+    ])
 
-    await renderTemplateInLayout(req, res, 'threads/thread.ejs', {
+    res.json({
         roomId,
+        thread,
+        pagename: thread.pagename,
         username: req.session.username || req.ipAddress,
         isAdmin,
-        csrfToken: req.csrfToken()
-    }, {
-        title: `${thread.pagename} ${i18n.__('discussion')} - ${thread.threadTitle}`,
-        isPage: true,
-        pageMode: 'threads',
-        pagename: thread.pagename
+        canRead: true,
+        commentPermission,
+        comments: await serializeThreadComments(comments, services.render, res.__)
     })
 }

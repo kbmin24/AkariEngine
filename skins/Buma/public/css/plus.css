@@ -214,3 +214,10 @@ select {
 {
     z-index: 0;
 }
+
+.nav-tabs {
+    margin: 0 !important;
+}
+.nav-tabs li {
+    margin: 0 !important;
+}

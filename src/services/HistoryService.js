@@ -26,17 +26,23 @@ class HistoryService {
 
         await this.permissionService.requireReadAccess(user, title, { ipAddress })
 
-        const changes = await this.historyRepo.findAndCountByPageDesc(title)
-        if (!changes || changes.count === 0) {
-            throw new PageNotFoundError(title)
-        }
-
         const pgSize = 30
         let normalizedFrom = Number(from)
         let normalizedTo = Number(to)
 
         if (!Number.isInteger(normalizedFrom) || normalizedFrom < 1) normalizedFrom = 1
-        if (!Number.isInteger(normalizedTo) || normalizedTo < 1) normalizedTo = pgSize
+        if (!Number.isInteger(normalizedTo) || normalizedTo < normalizedFrom) normalizedTo = normalizedFrom + pgSize - 1
+
+        const requestedSize = normalizedTo - normalizedFrom + 1
+        const limit = Math.min(requestedSize, pgSize)
+        const offset = normalizedFrom - 1
+
+        const changes = await this.historyRepo.findAndCountByPageDesc(title, { limit, offset })
+        if (!changes || changes.count === 0) {
+            throw new PageNotFoundError(title)
+        }
+
+        normalizedTo = normalizedFrom + changes.rows.length - 1
         if (normalizedTo > changes.count) normalizedTo = changes.count
 
         return {
@@ -142,6 +148,21 @@ class HistoryService {
     // gets user/ip's contributions. Entity can be either id or username.
     async getContributions(entity, showfrom = 0) {
         return this.historyRepo.findByUsernameDesc(entity, 100, showfrom)
+    }
+
+    async pageHistoryExists({ title, user, ipAddress }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 400,
+                code: 'HISTORY_TITLE_NEEDED'
+            })
+        }
+
+        await this.permissionService.requireReadAccess(user, title, { ipAddress })
+
+        let r1 = await this.historyRepo.findByPageAndRev(title, 1)
+        return !!r1
     }
 }
 

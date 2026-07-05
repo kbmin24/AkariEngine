@@ -1,42 +1,377 @@
 {
+	"common": {
+		"actions": {
+			"returningTo": "Returning to {link}.",
+			"purge": "Purge"
+		},
+		"pages": {
+			"mainpage": "Main page"
+		},
+		"userlevels": {
+			"admin": "Admin",
+			"user": "User",
+			"ip": "IP user"
+		}
+	},
+	"auth": {
+		"login": {
+			"title": "Login",
+			"alreadyLoggedIn": "You are already logged in.",
+			"inputID": "Enter ID",
+			"inputPW": "Enter Password",
+			"submit": "Login",
+			"noAccount": "Do not have an account?",
+			"accountNow": "Sign up now!",
+			"pwForgot": "Should you forgot your password, {link}",
+			"adminEmail": "please email the administrator."
+		},
+		"register": {
+			"title": "Register",
+			"do_login": "login",
+			"id": "ID",
+			"pw": "Password",
+			"idok": "Your ID is good to go.",
+			"idillegal": "ID can only contain alphanumeric characters and an underbar(_).",
+			"p8up": "Passwords should contain 8 or more characters.",
+			"illegalpwlength": "passwords should be 8 to 255 characters long.",
+			"illegalpwchar": "Your password contains an illegal character: ",
+			"confirmpw": "Confirm Password",
+			"pwMatch": "Passwords match.",
+			"pwNotMatch": "Passwords do not match",
+			"confirmPwDesc": "Please repeat our password to ensure that you have typed it correctly.",
+			"enterid": "Enter ID",
+			"enterpw": "Enter password",
+			"reenterpw": "Re-enter password",
+			"fail": "Could not create user. Please check whether the user already exists or not.",
+			"done": "Register finished. Please {{loginlink}} to continue.",
+			"idexists": "ID already in use.",
+			"agreeTo": "I agree to {{link}}.",
+			"agreeToTwo": "I agree to {{link1}} and {{link2}}.",
+			"privacyPolicy": "Privacy Policy",
+			"termsOfService": "Terms of Service",
+			"submit": "Register"
+		},
+		"passwordChange": {
+			"title": "Change password",
+			"description": "Change your password. This setting pertains to your account.",
+			"done": "Done.",
+			"currentPassword": "Current password",
+			"currentPasswordInput": "Input current password",
+			"newPassword": "New password",
+			"newPasswordInput": "Input new password",
+			"p8up": "Passwords should contain 8 or more characters.",
+			"illegalpwlength": "passwords should be 8 to 255 characters long.",
+			"illegalpwchar": "Your password contains an illegal character: ",
+			"confirmPassword": "Confirm Password",
+			"pwMatch": "Passwords match.",
+			"pwNotMatch": "Passwords do not match",
+			"confirmPwDesc": "Please repeat our password to ensure that you have typed it correctly."
+		},
+		"block": {
+			"user": {
+				"title": "Block logged in user",
+				"done": "Done.",
+				"username": "User",
+				"blockFor": "Block for",
+				"comment": "Comment",
+				"submit": "Block",
+				"error": "Error",
+				"dataLoadError": "Could not load data."
+			},
+			"ip": {
+				"title": "Block IP Address",
+				"done": "Done.",
+				"target": "IP Address (CIDR)",
+				"targetHelp": "Enter a CIDR range, such as 203.0.113.0/24 or 2001:db8::/32.",
+				"validCIDR": "This looks like a CIDR range.",
+				"invalidCIDR": "This does not look like a CIDR range.",
+				"blockFor": "Block for",
+				"durationHelp": "For simplicity, 1 month is computed as 4 weeks = 28 days. Likewise, 1 year is computed as 336 days.",
+				"allowLogin": "Allow actions from logged-in accounts with the same IP",
+				"comment": "Comment",
+				"submit": "Block",
+				"error": "Error",
+				"dataLoadError": "Could not load data."
+			},
+			"duration": {
+				"unblock": "Unblock",
+				"oneSecond": "1 second",
+				"oneMinute": "1 minute",
+				"fiveMinutes": "5 minutes",
+				"tenMinutes": "10 minutes",
+				"oneHour": "1 hour",
+				"twoHours": "2 hours",
+				"sixHours": "6 hours",
+				"twelveHours": "12 hours",
+				"oneDay": "1 day",
+				"threeDays": "3 days",
+				"fiveDays": "5 days",
+				"oneWeek": "1 week",
+				"tenDays": "10 days",
+				"twoWeeks": "2 weeks",
+				"threeWeeks": "3 weeks",
+				"oneMonth": "1 month",
+				"sixWeeks": "6 weeks",
+				"twoMonths": "2 months",
+				"threeMonths": "3 months",
+				"sixMonths": "6 months",
+				"oneYear": "1 year",
+				"twoYears": "2 years",
+				"forever": "Forever"
+			}
+		}
+	},
+	"pages": {
+		"upload": {
+			"file": "File",
+			"fileHelp": "Allowed types: {types}. Maximum size: {limit} MB.",
+			"filename": "File name",
+			"explanation": "Explanation",
+			"fileRequired": "Please choose a file to upload."
+		},
+		"protect": {
+			"selectLabel": "Protections for {task}",
+			"tasks": {
+				"read": "Read",
+				"edit": "Edit",
+				"move": "Move"
+			},
+			"levels": {
+				"everyone": "Everyone except blocked users (everyone)",
+				"blocked": "Everyone including blocked users (blocked)",
+				"login": "Logged-in users only (login)",
+				"admin": "Administrators only (admin)"
+			}
+		},
+		"adminLog": {
+			"dataLoadError": "Could not load the admin log.",
+			"doneBy": "Done by",
+			"job": "Job done",
+			"view": "View",
+			"noResults": "There are no admin log entries."
+		},
+		"recentChanges": {
+			"title": "Recent Changes",
+			"error": "Error",
+			"dataLoadError": "Could not load recent changes.",
+			"options": "Options",
+			"page": "Page",
+			"user": "User",
+			"change": "Change",
+			"datetime": "Time",
+			"deleted": "deleted",
+			"noResults": "No recent changes",
+			"nPagesShow": "Number of pages to show",
+			"filter": "Filter",
+			"show": {
+				"5": "Show 5",
+				"10": "Show 10",
+				"30": "Show 30",
+				"100": "Show 100"
+			},
+			"filters": {
+				"unique": "Unique pages",
+				"excludeFile": "Exclude files",
+				"editOnly": "Edits only"
+			},
+			"actions": {
+				"edit": "Edit",
+				"delete": "Delete",
+				"create": "Create",
+				"upload": "Upload",
+				"move": "Move",
+				"revert": "Revert",
+				"protect": "Protect",
+				"unknown": "Other"
+			}
+		},
+		"recentDiscuss": {
+			"title": "Recent Discussions",
+			"error": "Error",
+			"dataLoadError": "Could not load recent discussions.",
+			"open": "Open discussions",
+			"closed": "Closed discussions",
+			"thread": "Discussion",
+			"page": "Page",
+			"datetime": "Time",
+			"noOpenResults": "There are no open discussions.",
+			"noClosedResults": "There are no closed discussions."
+		},
+		"category": {
+			"title": "Category: {category}",
+			"error": "Error",
+			"dataLoadError": "Could not load category data.",
+			"resultCount": "Found {count} pages.",
+			"noResults": "There are no pages in this category."
+		},
+		"xref": {
+			"dataLoadError": "Could not load backlinks.",
+			"resultCount": "There are {count} backlinks.",
+			"noResults": "There are no backlinks."
+		},
+		"pageList": {
+			"dataLoadError": "Could not load the page list.",
+			"resultCount": "There are {count} pages.",
+			"noResults": "There are no pages."
+		},
+		"viewRank": {
+			"dataLoadError": "Could not load pageview rankings.",
+			"rank": "Rank",
+			"page": "Page",
+			"views": "Views",
+			"noResults": "There are no pageview rankings."
+		},
+		"orphaned": {
+			"title": "Orphaned pages",
+			"desc_pt1": "Shows all pages that cannot be reached by links from {link}.",
+			"desc_pt2": "This page is updated every midnight.",
+			"dataLoadError": "Could not load orphaned pages.",
+			"noResults": "There are no orphaned pages."
+		},
+		"contribution": {
+			"dataLoadError": "Could not load contributions.",
+			"page": "Page",
+			"comment": "Edit summary",
+			"file": "file",
+			"noResults": "There are no contributions."
+		},
+		"thread": {
+			"titleInfo": "(discussion)",
+			"hiddenComment": "This comment has been hidden.",
+			"noComments": "There are no comments.",
+			"replyPlaceholder": "Write a comment.",
+			"closed": "This discussion is closed.",
+			"send": "Send",
+			"sending": "Sending...",
+			"connectionError": "Could not connect to the discussion server.",
+			"requestTimeout": "The request timed out.",
+			"postFailed": "Could not post the comment.",
+			"commentPermissionDenied": "You do not have permission to comment on this discussion.",
+			"anonymousWarning": "Participating while logged out permanently records and publicly displays your IP address.",
+			"admin": {
+				"title": "Admin area",
+				"saved": "Changes saved.",
+				"commentNumber": "Comment number",
+				"unhideComment": "Select to unhide; leave clear to hide the comment.",
+				"changeVisibility": "Change visibility",
+				"closeThread": "Select to close; leave clear to reopen the discussion.",
+				"changeStatus": "Change status",
+				"newTitle": "New title",
+				"titlePlaceholder": "Up to 255 characters",
+				"changeTitle": "Change title"
+			},
+			"events": {
+				"close": "The discussion was closed.",
+				"open": "The discussion was reopened.",
+				"changetitle": "The discussion title was changed."
+			}
+		},
+		"threads": {
+			"open": "Open discussions",
+			"closed": "Closed discussions",
+			"none": "There are no discussions.",
+			"create": "Start a new discussion",
+			"title": "Title",
+			"titlePlaceholder": "Discussion topic (up to 255 characters)",
+			"commentPlaceholder": "Write the first comment.",
+			"submit": "Start discussion"
+		},
+		"history": {
+			"edit": "Edit",
+			"create": "Create",
+			"move": "Move",
+			"delete": "Delete",
+			"protect": "Protect",
+			"diff": "Diff",
+			"revert": "Revert"
+		},
+		"delete": {
+			"title": "Delete {name}",
+			"submit": "Delete",
+			"summary": "Summary",
+			"max255": "Up to 255 characters"
+		},
+		"purge": {
+			"title": "Purge {name}",
+			"submit": "Purge",
+			"summary": "Summary",
+			"modal": {
+				"title": "Confirmation",
+				"warning1": "This action cannot be undone.",
+				"warning2": "Are you sure you want to purge this page?",
+				"yes": "Yes",
+				"no": "No"
+			},
+			"done": "Done. Return to {link}",
+			"done_desc": "the main page",
+			"max255": "Up to 255 characters"
+		},
+		"revert": {
+			"title": "Revert {name} to r{rev}",
+			"max230": "Up to 230 characters"
+		},
+		"view": {
+			"error": {
+				"viewHistory": "You can view the history of this page {link}.",
+				"viewHistoryLinkDesc": "here"
+			}
+		},
+		"edit": {
+			"conflictDesc": "The page was modified by another user while you were editing. Please check the content below and merge your changes manually.",
+			"conflictView": {
+				"conflictN": "Conflict {n}",
+				"base": "Base",
+				"userInput": "Your edit"
+			}
+		}
+	},
+	"adminTools": {
+		"devTools": {
+			"title": "Developer Console",
+			"connectionError": "Could not connect to the discussion server.",
+			"send": "Send"
+		},
+		"revAcl": {
+			"title": "Revision specific READ ACL",
+			"loadError": "Failed to load revision ACL rules.",
+			"submitError": "Failed to update revision ACL.",
+			"duplicateRule": "A rule for this revision already exists.",
+			"revision": "Revision",
+			"permission": "Permission",
+			"noRules": "No rules found",
+			"removeRule": "Remove rule for revision {revision}",
+			"apply": "Apply"
+		}
+	},
+	"errorPage": {
+		"404Desc": "The page you requested could not be found. It may have been deleted or does not exist.",
+		"500Desc": "An error occurred on the server. Please try again later.",
+		"otherDesc": "An unknown error has occurred. Please try again later."
+	},
+	"userThread": {
+		"isOpen": "{link} is open.",
+		"userThread": "An user discussion"
+	},
 	"noEmail": "Refusal of unauthorised email collection",
 	"noEmail_description": "We refuse any unauthorised collection of email addresses published on this website. Any offence could result in an criminal punishment according to the Personal Information Protection Act (South Korea).",
 	"noEmail_law": "Article 15 (Collection and Use of Personal Information), Personal Information Protection Act",
 	"noEmail_content": "<p>(1)&nbsp;A personal information controller may collect personal information in any of the following cases, and use it within the scope of the purpose of collection:</p><p>    1.&nbsp;Where consent is obtained from a data subject;</p><p>    2.&nbsp;Where special provisions exist in other statutes or it is unavoidable due to obligations under statutes or regulations;</p><p>    3.&nbsp;Where it is unavoidable for a public institution’s performance of work under its jurisdiction as prescribed by statutes or regulations, etc.;</p><p>    4.&nbsp;Where it is necessary to take measures at the request of a data subject in the course of performing a contract concluded with the data subject or concluding a contract;</p><p>    5.&nbsp;Where it is deemed manifestly necessary for the protection, from imminent danger, of life, bodily and property interests of a data subject or a third party;</p><p>    6.&nbsp;Where it is necessary to attain the legitimate interests of a personal information controller, which such interest is manifestly superior to the rights of the data subject. In such cases, processing shall be allowed only to the extent the processing is substantially related to the legitimate interests of the personal information controller and does not go beyond a reasonable scope.</p><p>    7.&nbsp;Where it is urgently necessary for the public safety and security, public health, etc.</p><p>(2)&nbsp;A personal information controller shall inform a data subject of the following matters when it obtains consent under paragraph (1) 1. The same shall apply when any of the following is modified:</p><p>    1.&nbsp;The purpose of the collection and use of personal information;</p><p>    2.&nbsp;Particulars of personal information to be collected;</p><p>    3.&nbsp;The period for retaining and using personal information;</p><p>    4.&nbsp;The fact that the data subject is entitled to deny consent, and disadvantages, if any, resulting from the denial of consent.</p><p>(3)&nbsp;A personal information controller may use personal information without the consent of a data subject within the scope reasonably related to the initial purpose of the collection as prescribed by Presidential Decree, in consideration whether disadvantages have been caused to the data subject and whether necessary measures to ensure safety such as encryption have been taken.</p>",
 	"register": "Register",
 	"id": "ID",
-	"register_idok": "Your ID is good to go.",
-	"register_idillegal": "ID can only contain alphanumeric characters and an underbar(_).",
-	"password": "Password",
-	"register_p8up": "Passwords should contain 8 or more characters.",
-	"register_illegalpwlength": "passwords should be 8 to 255 characters long.",
-	"register_illegalpwchar": "Your password contains an illegal character: ",
-	"register_confirmpw": "Confirm Password",
-	"register_pwMatch": "Passwords match.",
-	"register_pwNotMatch": "Passwords do not match",
-	"register_confirmPwDesc": "Please repeat our password to ensure that you have typed it correctly.",
-	"register_privacyBefore": "By creating the account you are agreeing to the ",
-	"register_privacyLn": "Privacy policy",
-	"register_privacyAfter": ".",
-	"register_enterid": "Enter ID",
-	"register_enterpw": "Enter password",
-	"register_reenterpw": "Re-enter password",
-	"register_fail": "Could not create user. Please check whether the user already exists or not.",
-	"register_done": "Register finished",
-	"login_inputID": "Enter ID",
-	"login_inputPW": "Enter password",
-	"login_noAccount": "Do not have an account?",
-	"login_accountNow": "Sign up now!",
+	"log_in_l": "login",
 	"login": "Login",
+	"logout": "Logout",
 	"loginpage": "Login page",
-	"login_pwforgot": "Should you forgot your password, ",
-	"login_adminEmail": "please email the administrator.",
 	"captcha_notdone": "Please complete the CAPTCHA.",
 	"captcha_verifyfail": "An error occurred while checking reCAPTCHA.",
 	"previousPage": "the previous page",
-	"error_returnInfo": "{{{description}}}<br>Returning to <a href='{{link}}'>{{linkname}}</a>.",
-	"info_returnInfo": "{{{description}}}<br>Return to <a href='{{link}}'>{{linkname}}</a>.",
+	"returnInfo": "Returning to {{link}}.",
 	"settings": "Settings",
+	"globalSettings": "Global settings",
+	"skinSettings": "Skin settings",
+	"language": "Language",
+	"language_desc": "Choose the language for this browser. This setting pertains to your device.",
+	"language_choose": "Choose language",
 	"theme": "Theme",
 	"theme_themeDesc": "Choose the theme to use. This setting pertains to your account.",
 	"theme_choose": "Choose theme",
@@ -67,7 +402,8 @@
 	"edit_noacl": "Cannot edit the page because the page's ACL is {{acl}}.",
 	"view_noacl": "Cannot read the page because the page's ACL is {{acl}}.",
 	"move_noacl": "Cannot move the page because the page's ACL is {{acl}}.",
-	"page_asknew": "Would you like to create a new one?",
+	"page_asknew": "Would you like to {{link}}",
+	"page_asknew_createNewOne": "create a new one?",
 	"page404": "Cannot find the page requested.",
 	"edit_part": "Editing a part of a page.",
 	"bold": "Bold",
@@ -85,6 +421,7 @@
 	"ipshown": "Editing without logging in results in your IP being permanently recorded and shown.",
 	"preview": "Preview",
 	"edit_max255": "Up to 255 characters",
+	"edit_max200": "Up to 200 characters",
 	"movepg": "Move {{name}}",
 	"move": "Move",
 	"move_orgpage": "Current page name",
@@ -93,10 +430,8 @@
 	"illegalaccess": "Illegal access.",
 	"loginneeded": "Login needed.",
 	"delete": "Delete",
-	"deletepg": "Delete {{{name}}}",
-	"deletepgconfirm": "Delete {{{name}}}?",
-	"deletepermneeded": "Page delete permission required.",
-	"permissionRequried": "Permission required.",
+	"permissionRequired": "Permission required.",
+	"XpermissionRequired": "{{permission}} permission is required.",
 	"revert": "Revert",
 	"revert_title": "Revert {{{page}}} to r{{rev}}",
 	"revision404": "No such revision found.",
@@ -107,16 +442,18 @@
 	"file_nobrowser": "This file cannot be displayed on browser.",
 	"file_innewtab": "Open in new tab",
 	"page_redirectedfrom": "Redirected from {{{page}}}",
-	"noUserPage_user": "<h3>Cannot find the user page.</h3><p>However, you can create a new one!</p><p><a href='/edit/{{link}}'>Create user page</a></p>",
-	"noUserPage": "<h3>Cannot find the user page.</h3><p>The user did not make the user page.</p><p><a href='javascript:window.history.back()'>Go Back</a></p>",
+	"noUserPage_user": "Cannot find the user page.<br>However, you can create a new one!",
+	"createUserPage": "Create user page",
+	"noUserPage": "Cannot find the user page.<br>The user did not make the user page.",
 	"seeHistory": "<br>You can see the <a href='/history/{{name}}'>history</a> of {{{name}}}.",
-	"noPageMsg": "Could not find the page requested. Would you like to <a href='/edit/{{name}}'>create a new one?</a>{{hisText}}",
 	"previewWarning": "The page has not been saved yet. To save the edit, return to the edit screen.",
 	"searchResults": "Search results for {{{q}}}",
+	"protect": "Protect",
 	"protectPage": "Protect {{{p}}}",
 	"recentChanges": "Recent Changes",
 	"recentDiscuss": "Recent Discussions",
 	"historyOf": "History of {{{p}}}",
+	"history": "History",
 	"historyv1": "1st version to compare (omit r)",
 	"historyv2": "2nd version to compare (omit r)",
 	"compare": "Compare",
@@ -139,11 +476,10 @@
 	"user_blocked": "User {{user}} has been blocked by {{doneBy}} until {{until}}. Reason: {{comment}}",
 	"user_blocked_forever": "User {{user}} has been blocked by {{doneBy}} forever. Reason: {{comment}}",
 	"admin_required": "Admin permission required.",
-	"orphaned_pages": "Orphaned pages",
-	"orphaned_pages_desc": "<p>Shows all pages that cannot be reached by links from <a href='/w/FrontPage'>FrontPage</a>.</p><p>This page is updated every midnight.</p>",
 	"signupedisabled": "Account creation is disabled.",
 	"diffTitle": "{{{pagename}}}: Difference between r{{rev1}} and r{{rev2}}",
 	"xrefTo": "Pages linking to {{{page}}}",
+	"xref": "What links here",
 	"ACLpermRequried": "ACL permission is required.",
 	"threadOf": "Discussions of {{{page}}}",
 	"edit": "Edit",
@@ -171,18 +507,51 @@
 	"ipAlreadyBlocked": "The IP address is already blocked.",
 	"invalidpassword": "Invalid password.",
 	"contribListOf": "Contribution list of {{{user}}}",
+	"contribList": "Contribution list",
 	"loginRequired": "Login required.",
 	"titleRequired": "Title is required.",
 	"read_noacl": "read_noacl",
 	"thread_noacl": "Cannot open a new thread because READ permsision is {{acl}}.",
 	"thread404": "Cannot find the thread requested.",
-	"discussion": "discussion",
+	"discussion": "Discussion",
 	"invalidFileType": "Unsupported file type.",
 	"illegalFileName": "Illegal file name.",
-	"csrfMessage": "<p>The CSRF token does not match. Most common reasons for this are:</p><ol><li>Opening other edit page while editing the document</li><li>Cookies disabled on your browser</li></ol><p>Please retry after saving any changes made.</p>",
+	"csrfMessage": "The CSRF token does not match. Please retry after saving any changes made.</p>",
 	"titleMatch": "Title match",
 	"contentMatch": "Content match",
 	"noResults": "No results",
-	"lookingForPageEdit": "Looking for <a href='/edit/{{{searchtitle}}}'>page edit</a>?",
-	"copyrightNotice": "By saving this edit, you agree that {{appname}} may distribute your contribution under {{license}}. This consent cannot be withdrawn."
+	"lookingForPageEdit": "Looking for {{link}}?",
+	"lookingForPageEditLink": "page edit",
+	"copyrightNotice": "By saving this edit, you agree that {{appname}} may distribute your contribution under {{license}}. This consent cannot be withdrawn.",
+	"pvtmodeSignupDisabled": "Signup is disabled in private mode.",
+	"loading": "Loading...",
+	"unsavedChangesWarning": "Changes you made may not be saved.",
+	"previewDataLoadError": "Could not load preview data. Please try again later.",
+	"recentlyEditedAt": "Recently edited at",
+	"userDiscussionOpen": "A {{link}} is open.",
+	"userDiscussion": "user page discussion",
+	"monthDay": "{{monthShort}} {{day}}",
+	"tools": "Tools",
+	"randomPage": "Random page",
+	"pageList": "Page list",
+	"adminLog": "Admin log",
+	"adminMenu": "Admin menu",
+	"viewRank": "Pageview ranking",
+	"licence": "Licence",
+	"dataLoadError": "Could not load data.",
+	"userPage": "User page",
+	"page": "Page",
+	"more": "More",
+	"close": "Close",
+	"pageNOfM": "Page {{page}} of {{total}}",
+	"loginUser": "Logged-in user",
+	"ipUser": "IP user",
+	"delete_nofile": "Files can only be deleted by administrators.",
+	"ipAddress": "IP address",
+	"loginHistoryRetentionNotice": "Following are login records for recent 12 weeks.",
+	"loginHistoryAuditWarning": "This lookup will be recorded in the admin log.",
+	"orphaned_pages": "Orphaned pages",
+	"admin_hiderev_exists": "A rule for this revision already exists.",
+	"admin_hiderev_currentrev": "Cannot hide the current revision.",
+	"admin_hiderev_norev": "No such revision."
 }

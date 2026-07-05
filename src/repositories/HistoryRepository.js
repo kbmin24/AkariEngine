@@ -5,10 +5,21 @@ class HistoryRepository extends BaseRepository {
         return this.model.findOne({ where: { page, rev } })
     }
 
-    async findAndCountByPageDesc(page) {
+    async findLatestRevByPage(page) {
+        const rev = await this.model.max('rev', { where: { page } })
+        return rev === null ? 0 : Number(rev)
+    }
+
+    async findAndCountByPageDesc(page, { limit, offset } = {}) {
         return this.model.findAndCountAll({
             where: { page },
-            order: [['id', 'DESC']]
+            order: [['id', 'DESC']],
+            limit,
+            offset,
+            raw: true,
+            attributes: {
+                exclude: ['content']
+            }
         })
     }
 
@@ -17,7 +28,10 @@ class HistoryRepository extends BaseRepository {
             where: { editedBy: username },
             order: [['createdAt', 'DESC']],
             limit,
-            offset
+            offset,
+            attributes: {
+                exclude: ['content']
+            }
         })
     }
 

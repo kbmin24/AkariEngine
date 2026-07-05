@@ -7,7 +7,8 @@ class ThreadCommentRepository extends BaseRepository {
                 threadID
             },
             order: [
-                ['createdAt', 'ASC']
+                ['createdAt', 'ASC'],
+                ['id', 'ASC']
             ]
         })
     }
@@ -15,7 +16,7 @@ class ThreadCommentRepository extends BaseRepository {
     async findByThreadIdAtOffset(threadID, offset) {
         return this.model.findOne({
             where: { threadID },
-            order: [['createdAt', 'ASC']],
+            order: [['createdAt', 'ASC'], ['id', 'ASC']],
             offset
         })
     }

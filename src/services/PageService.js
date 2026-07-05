@@ -1,10 +1,14 @@
 import logger from '../utils/logger.js'
+import { PROTECTION_TASKS } from '../utils/acl.js'
+import mergeDiff from '../utils/mergeDiff.js'
 
 import {
     PageNotFoundError,
+    RevisionNotFoundError,
     PageExistsError,
     ValidationError,
-    AuthenticationRequiredError
+    AuthenticationRequiredError,
+    EditConflictError
 } from './errors.js'
 
 class PageService {
@@ -27,7 +31,7 @@ class PageService {
      * @param {String} options.ipAddress - IP address of the user making the request. Required.
      * @returns {Promise<Object>} Sequelize model for page, with { title, content, currentRev, deleted }.
      * @throws {ValidationError} if title is not provided or is invalid, if revision is invalid (and is provided), or if options.ipAddress is not provided.
-     * @throws {PageNotFoundError} If the page (or the revision, if provided) is not found or is deleted
+     * @throws {PageNotFoundError} If the page (or the revision, if provided) is not found or is deleted. This error is not thrown when a revision for a deleted page is requested.
      * @throws {PermissionDeniedError} If the user/ip does not have sufficient READ permission.
      */
     async getPage(title, options = {}) {
@@ -44,9 +48,12 @@ class PageService {
         })
 
         let page
+
+        page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
         if (rev) {
             page = await this.historyRepo.findByPageAndRev(title, rev)
-            if (!page) throw new PageNotFoundError(title)
+            if (!page) throw new RevisionNotFoundError(title, rev)
             return {
                 title: page.page,
                 content: page.content,
@@ -54,9 +61,7 @@ class PageService {
                 fromHistory: true
             }
         }
-
-        page = await this.pageRepo.findByTitle(title)
-        if (!page || page.deleted) throw new PageNotFoundError(title)
+        if (page.deleted) throw new PageNotFoundError(title)
         return page
     }
 
@@ -96,10 +101,14 @@ class PageService {
         return { prefix, suffix, content: body }
     }
 
+    /**
+     * must be called after requirePageAccess with `store` mode which populates req.(key)
+     */
     async getEditViewModel({ title, section, aclState, username }) {
         title = title.trim()
 
         const page = await this.pageRepo.findByTitle(title)
+        if (page && page.deleted) throw new PageNotFoundError(title)
         if (!page && title.toLowerCase().startsWith('file:')) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
@@ -110,7 +119,11 @@ class PageService {
 
         const actionAllowed = aclState ? aclState.allowed : true
         const notification = (!actionAllowed && aclState && aclState.error)
-            ? aclState.error.message
+            ? {
+                i18nKey: aclState.error.i18nKey || null,
+                i18nParams: aclState.error.i18nParams || {},
+                message: aclState.error.message
+            }
             : undefined
 
         const rawContent = page ? page.content : ''
@@ -120,6 +133,7 @@ class PageService {
 
         return {
             title,
+            baseRev: page ? page.currentRev : 0,
             username,
             content: sectionResult.content,
             prefix: sectionResult.prefix,
@@ -148,11 +162,12 @@ class PageService {
             ? await this.pageRepo.findByTitle(title)
             : await this.historyRepo.findByPageAndRev(title, rev)
 
-        if (!page || page.deleted) throw new PageNotFoundError(title)
+        if (!page) throw new PageNotFoundError(title)
+        if (rev === undefined && page.deleted) throw new PageNotFoundError(title)
         return page.content
     }
 
-    async getXrefViewModel({ title }) {
+    async getXrefViewModel({ title, from, to }) {
         if (!title) {
             throw new ValidationError({
                 i18nKey: 'illegalaccess',
@@ -161,11 +176,32 @@ class PageService {
             })
         }
 
-        const backlinks = await this.pageRepo.findBacklinksByTitle(title)
+        const page = await this.pageRepo.findByTitle(title)
+        if (page && page.deleted) throw new PageNotFoundError(title)
+
+        const pgSize = 30
+        let normalizedFrom = Number(from)
+        let normalizedTo = Number(to)
+
+        if (!Number.isInteger(normalizedFrom) || normalizedFrom < 1) normalizedFrom = 1
+        if (!Number.isInteger(normalizedTo) || normalizedTo < normalizedFrom) normalizedTo = normalizedFrom + pgSize - 1
+
+        const requestedSize = normalizedTo - normalizedFrom + 1
+        const limit = Math.min(requestedSize, pgSize)
+        const offset = normalizedFrom - 1
+
+        const backlinks = await this.pageRepo.findBacklinksByTitle(title, { limit, offset })
+        normalizedTo = normalizedFrom + backlinks.rows.length - 1
+        if (normalizedTo > backlinks.count) normalizedTo = backlinks.count
+        if (backlinks.count === 0) normalizedTo = 0
+
         return {
             title,
             entries: backlinks.rows,
-            count: backlinks.count
+            count: backlinks.count,
+            from: normalizedFrom,
+            to: normalizedTo,
+            pgSize
         }
     }
 
@@ -187,7 +223,7 @@ class PageService {
         }
 
         const page = await this.pageRepo.findByTitle(title)
-        if (!page) throw new PageNotFoundError(title)
+        if (!page || page.deleted) throw new PageNotFoundError(title)
 
         return {
             originalName: title,
@@ -204,6 +240,33 @@ class PageService {
             })
         }
 
+        if (title.toLowerCase().startsWith('file:')) {
+            throw new ValidationError({
+                i18nKey: 'delete_nofile',
+                message: "File pages can only be purged."
+            })
+        }
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+        if (page.deleted) throw new PageNotFoundError(title)
+
+        return {
+            title,
+            username,
+            pagename: page.title
+        }
+    }
+
+    async getPurgeViewModel({ title, username }) {
+        if (!title) {
+            throw new ValidationError({
+                i18nKey: 'illegalaccess',
+                statusCode: 200,
+                code: 'PURGE_TITLE_NEEDED'
+            })
+        }
+
         const page = await this.pageRepo.findByTitle(title)
         if (!page) throw new PageNotFoundError(title)
 
@@ -217,12 +280,23 @@ class PageService {
     async getPageListViewModel({ page = 1 } = {}) {
         const pageSize = 50
         const offset = (page - 1) * pageSize
-        const result = await this.pageRepo.findAllPaginated(offset, pageSize)
+        const result = await this.pageRepo.findAllPaginatedLight(offset, pageSize)
         return {
             pages: result.rows,
             count: result.count,
             currentPage: page
         }
+    }
+
+    /**
+     * Retrieves a list of orphaned pages. Returns 30 pages at a time, starting from the specified index.
+     * @param {number} from - The starting index for the list of orphaned pages.
+     * @returns {Promise<Array>} A promise resolving to an array of orphaned pages.
+     */
+    async getOrphanedPagesAndCount(from = 0) {
+        const pages = (global.orphaned || []).slice(from, from + 30)
+        const count = global.orphaned ? global.orphaned.length : 0
+        return { pages, count }
     }
 
     async buildNormalizedEditContent({ content, editPrefix = '', editSuffix = '' }) {
@@ -231,7 +305,7 @@ class PageService {
         return merged
     }
 
-    async editPage({ title, content, user, comment, editPrefix = '', editSuffix = '', ipAddress, iscreatingFile = false }) {
+    async editPage({ title, content, baseRev, user, comment, editPrefix = '', editSuffix = '', ipAddress, iscreatingFile = false }) {
         if (!title) {
             throw new ValidationError({
                 i18nKey: 'edit_titleneeded',
@@ -247,9 +321,20 @@ class PageService {
             })
         }
 
-        const normalizedContent = await this.buildNormalizedEditContent({ content, editPrefix, editSuffix })
+        let normalizedContent = await this.buildNormalizedEditContent({ content, editPrefix, editSuffix })
+        const normalizedBaseRev = baseRev === undefined || baseRev === null || baseRev === ''
+            ? undefined
+            : Number(baseRev)
+
+        if (normalizedBaseRev !== undefined && (!Number.isInteger(normalizedBaseRev) || normalizedBaseRev < 0)) {
+            throw new ValidationError({
+                message: 'Invalid base revision',
+                code: 'EDIT_INVALID_BASE_REV'
+            })
+        }
 
         const existingPage = await this.pageRepo.findByTitle(title)
+
         if (!existingPage && title.toLowerCase().startsWith('file:') && !iscreatingFile) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
@@ -260,11 +345,34 @@ class PageService {
 
         await this.permissionService.requireWriteAccess(user, title, { ipAddress })
 
+        // edit conflict
+        if (existingPage && !existingPage.deleted && normalizedBaseRev !== undefined && existingPage.currentRev !== normalizedBaseRev) {
+            // attempt automerge
+            const baseContent = await this.getRawContent({ title, rev: normalizedBaseRev, user, ipAddress })
+            const existingContent = existingPage.content
+            const mergeResult = mergeDiff(baseContent, existingContent, normalizedContent)
+            if (mergeResult.success) {
+                normalizedContent = mergeResult.merged
+                comment = comment ? `(auto-merged with r${existingPage.currentRev}) ${comment}` : `(auto-merged with r${existingPage.currentRev})`
+            }
+            else {
+                throw new EditConflictError(mergeResult.conflicts, {
+                    baseRev: normalizedBaseRev,
+                    conflictRev: existingPage.currentRev,
+                    merged: mergeResult.merged,
+                    chunks: mergeResult.chunks
+                })
+            }
+        }
+
         const doneBy = user || ipAddress
-        const isNewPage = !existingPage
-        const oldContent = existingPage ? existingPage.content : ''
+        const isNewPage = !existingPage || existingPage.deleted
+        const oldContent = !existingPage || existingPage.deleted ? '' : existingPage.content
         const byteChange = normalizedContent.length - oldContent.length
-        const nextRev = (existingPage ? existingPage.currentRev : 0) + 1
+        const latestRev = existingPage
+            ? existingPage.currentRev
+            : await this.historyRepo.findLatestRevByPage(title)
+        const nextRev = (latestRev || 0) + 1
 
         const { page } = await this.pageRepo.upsertPage(title, normalizedContent, nextRev, false, {
             doneBy,
@@ -299,18 +407,20 @@ class PageService {
         return page
     }
 
-    async deletePage({ title, user, comment }) {
+    async deletePage({ title, user, ipAddress, comment }) {
         if (!title) throw new ValidationError('Page title is required')
         if (title.toLowerCase().startsWith('file:')) {
-            throw new ValidationError("Delete file pages through the file service.")
+            throw new ValidationError({
+                i18nKey: 'delete_nofile',
+                message: "File pages can only be purged."
+            })
         }
 
-        if (!user) throw new AuthenticationRequiredError()
+        await this.permissionService.requireLoginAccess(user, { ipAddress })
         const page = await this.pageRepo.findByTitle(title)
-        if (!page) throw new PageNotFoundError(title)
-        await this.permissionService.requirePermission(user, 'deletepage')
+        if (!page || page.deleted) throw new PageNotFoundError(title)
 
-        await this.pageRepo.deletePageWithHistory({
+        await this.pageRepo.softDeletePageWithHistory({
             title,
             doneBy: user,
             comment
@@ -326,6 +436,36 @@ class PageService {
 
         logger.admin('Page deleted', user, { title })
         return true
+    }
+
+    async purgePage({ title, user, comment }) {
+        if (!title) throw new ValidationError('Page title is required')
+        if (!user) throw new AuthenticationRequiredError()
+
+        const page = await this.pageRepo.findByTitle(title)
+        if (!page) throw new PageNotFoundError(title)
+        await this.permissionService.requirePermission(user, 'purgepage')
+
+        const result = await this.pageRepo.purgePage({
+            title,
+            doneBy: user,
+            comment
+        })
+
+        if (!result.purged && result.reason === 'not_found') {
+            throw new PageNotFoundError(title)
+        }
+
+        if (this.msRepo) {
+            try {
+                await this.msRepo.deleteDocument(page.id)
+            } catch (e) {
+                logger.warn('Meilisearch index update failed after purge', { title, error: e.message })
+            }
+        }
+
+        logger.admin('Page purged', user, { title })
+        return result
     }
 
     async movePage(oldTitle, newTitle, user) {
@@ -345,7 +485,7 @@ class PageService {
         }
 
         const sourcePage = await this.pageRepo.findByTitle(sourceTitle)
-        if (!sourcePage) throw new PageNotFoundError(sourceTitle)
+        if (!sourcePage || sourcePage.deleted) throw new PageNotFoundError(sourceTitle)
 
         const categories = this.categoryService.extractFromContent(sourcePage.content || '')
         const doneBy = actor || ipAddress
@@ -394,7 +534,7 @@ class PageService {
         const page = await this.pageRepo.findByTitle(title)
         if (!page) throw new PageNotFoundError(title)
 
-        const allowedTasks = new Set(['read', 'edit', 'move'])
+        const allowedTasks = new Set(PROTECTION_TASKS)
         const normalizedRules = Object.fromEntries(
             Object.entries(rules || {}).filter(([task]) => allowedTasks.has(task))
         )
@@ -406,6 +546,10 @@ class PageService {
         await this.protectRepo.replacePageProtections(title, normalizedRules)
 
         const nextRev = (page.currentRev || 0) + 1
+
+        const comment = Object.entries(normalizedRules)
+            .map(([key, value]) => `${key}: ${value}`)
+            .join(', ')
         await this.historyRepo.create({
             page: title,
             rev: nextRev,
@@ -413,7 +557,7 @@ class PageService {
             bytechange: 0,
             editedby: user,
             type: 'protect',
-            comment: JSON.stringify(normalizedRules)
+            comment
         })
 
         await page.update({ currentRev: nextRev })
@@ -424,7 +568,7 @@ class PageService {
             bytechange: 0,
             doneBy: user,
             type: 'protect',
-            comment: JSON.stringify(normalizedRules)
+            comment
         })
 
         return { title }

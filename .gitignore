@@ -126,3 +126,6 @@ robots.txt
 .claude/
 
 src/utils/wikimark/.tests/
+
+MIGRATION.md
+.scratchpad/

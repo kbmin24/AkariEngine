@@ -2,15 +2,12 @@
     "_comment": "This is sample AkariEngine configuration file.",
     "appname": "AkariEngine",
     "port": 8080,
-    "ssl": false,
-    "behindProxy": false,
-    "dateTimeFormat": "YYYY/MM/DD HH:mm:ss",
     "licence": "CC BY-SA 4.0",
     "session_secret": "secret for encrypting sessions. This must NOT be exposed.",
     "adminEmail": "admin@localhost",
-    "reCAPTCHA_enabled": true,
-    "reCAPTCHA": "your captcha v2 secret",
-    "reCAPTCHA_prv": "captcha v2 secret",
+    "turnstile_enabled": true,
+    "turnstile_sitekey": "",
+    "turnstike_secretkey": "",
     "database": {
         "_comment": "This section is concerned with database connections. Database type can either be mariadb OR sqlite.",
         "type": "mariadb",
@@ -30,7 +27,6 @@
         "host": "http://127.0.0.1:7700",
         "apiKey": "(insert api key here)"
     },
-    "disableDarkMode": false,
     "upload_types": [
         "jpeg",
         "jpg",
@@ -60,6 +56,8 @@
             "link": "/Licence"
         }
     ],
+    "privacyPolicy": "frontend/privacypolicy.html",
+    "termsOfService": "frontend/termsofservice.html",
     "security": {
         "allowedIframeHostnames": [
             "www.youtube.com",

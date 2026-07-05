@@ -74,12 +74,6 @@ Before wikitext is parsed. Update necessary fields and return them.
 
 After HTML is generated, before sanitisation. Update necessary fields and return them.
 
-#### adminMenu
-* Signature: `(req, res, adminMenu)` where adminMenu is an array of `{id, title, entries}` where entries is an array of `{id, href, title}`
-* Return value: None, work directly on req, res and adminmenu all of which are references.
-
-On `/admin` route call.
-
 ### Registering a hook
 
 ```javascript

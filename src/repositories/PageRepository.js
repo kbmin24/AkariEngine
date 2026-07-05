@@ -11,6 +11,9 @@ class PageRepository extends BaseRepository {
         this.fileModel = deps.fileModel || null
         this.protectModel = deps.protectModel || null
         this.threadModel = deps.threadModel || null
+        this.threadCommentModel = deps.threadCommentModel || null
+        this.recentDiscussModel = deps.recentDiscussModel || null
+        this.viewcountModel = deps.viewcountModel || null
     }
 
     async findByTitle(title) {
@@ -30,7 +33,8 @@ class PageRepository extends BaseRepository {
             where: {
                 title: {
                     [Op.like]: `%${query}%`
-                }
+                },
+                deleted: { [Op.or]: [false, null] }
             },
             order: [
                 ['updatedAt', 'DESC']
@@ -45,7 +49,8 @@ class PageRepository extends BaseRepository {
             where: {
                 content: {
                     [Op.like]: `%${query}%`
-                }
+                },
+                deleted: { [Op.or]: [false, null] }
             },
             order: [
                 ['updatedAt', 'DESC']
@@ -57,10 +62,21 @@ class PageRepository extends BaseRepository {
 
     async findAllPaginated(offset = 0, limit = 50) {
         return this.model.findAndCountAll({
-            where: { deleted: false },
+            where: { deleted: { [Op.or]: [false, null] } },
             order: [['title', 'ASC']],
             offset,
-            limit
+            limit,
+        })
+    }
+
+    /** findAllPaginated, but only returns title and updatedAt. */
+        async findAllPaginatedLight(offset = 0, limit = 50) {
+        return this.model.findAndCountAll({
+            where: { deleted: { [Op.or]: [false, null] } },
+            order: [['title', 'ASC']],
+            offset,
+            limit,
+            attributes: ['title', 'updatedAt'],
         })
     }
 
@@ -70,7 +86,8 @@ class PageRepository extends BaseRepository {
             where: {
                 title: {
                     [Op.like]: `${query}%`
-                }
+                },
+                deleted: { [Op.or]: [false, null] }
             },
             order: [
                 ['title', 'ASC']
@@ -79,7 +96,7 @@ class PageRepository extends BaseRepository {
         })
     }
 
-    async findBacklinksByTitle(title) {
+    async findBacklinksByTitle(title, { limit, offset } = {}) {
         if (!this.linkModel) {
             return { rows: [], count: 0 }
         }
@@ -88,7 +105,9 @@ class PageRepository extends BaseRepository {
             where: { dest: title },
             order: [
                 ['source', 'ASC']
-            ]
+            ],
+            limit,
+            offset
         })
     }
 
@@ -126,6 +145,52 @@ class PageRepository extends BaseRepository {
 
     async markDeleted(title) {
         return this.model.update({ deleted: true }, { where: { title } })
+    }
+
+    async softDeletePageWithHistory({ title, doneBy, comment = '' }) {
+        const page = await this.findByTitle(title)
+        if (!page) {
+            return { deleted: false, reason: 'not_found' }
+        }
+        if (page.deleted) {
+            return { deleted: false, reason: 'already_deleted' }
+        }
+
+        const oldLength = page.content ? page.content.length : 0
+        const nextRev = (page.currentRev || 0) + 1
+
+        await this.model.sequelize.transaction(async (transaction) => {
+            await page.update({ deleted: true, currentRev: nextRev }, { transaction })
+
+            if (this.linkModel) {
+                await this.linkModel.destroy({ where: { source: title }, transaction })
+            }
+
+            if (this.recentChangesModel) {
+                await this.recentChangesModel.create({
+                    page: title,
+                    rev: nextRev,
+                    doneBy,
+                    bytechange: -oldLength,
+                    comment,
+                    type: 'delete'
+                }, { transaction })
+            }
+
+            if (this.historyModel) {
+                await this.historyModel.create({
+                    page: title,
+                    rev: nextRev,
+                    content: page.content,
+                    bytechange: -oldLength,
+                    editedby: doneBy,
+                    comment,
+                    type: 'delete'
+                }, { transaction })
+            }
+        })
+
+        return { deleted: true, rev: nextRev, bytechange: -oldLength }
     }
 
     async getRandomPage() {
@@ -241,6 +306,97 @@ class PageRepository extends BaseRepository {
         }
 
         return { deleted: true, rev: nextRev, bytechange: -oldLength }
+    }
+
+    async purgePage({ title, doneBy, comment = '' }) {
+        const page = await this.findByTitle(title)
+        if (!page) {
+            return { purged: false, reason: 'not_found' }
+        }
+
+        const oldLength = page.content ? page.content.length : 0
+        const purgeRev = (page.currentRev || 0) + 1
+        const fileMatch = /^File:(.*)$/i.exec(title)
+        const filename = fileMatch && fileMatch[1] ? fileMatch[1] : null
+        let file = null
+
+        await this.model.sequelize.transaction(async (transaction) => {
+            if (this.fileModel && filename) {
+                file = await this.fileModel.findOne({ where: { filename }, transaction })
+            }
+
+            let threadIds = []
+            if (this.threadModel) {
+                const threads = await this.threadModel.findAll({
+                    where: { pagename: title },
+                    attributes: ['threadID'],
+                    transaction
+                })
+                threadIds = threads.map(thread => thread.threadID)
+            }
+
+            if (this.threadCommentModel && threadIds.length > 0) {
+                await this.threadCommentModel.destroy({
+                    where: { threadID: { [Op.in]: threadIds } },
+                    transaction
+                })
+            }
+
+            if (this.recentDiscussModel) {
+                const where = threadIds.length > 0
+                    ? { [Op.or]: [{ threadID: { [Op.in]: threadIds } }, { pagename: title }] }
+                    : { pagename: title }
+                await this.recentDiscussModel.destroy({ where, transaction })
+            }
+
+            if (this.threadModel) {
+                await this.threadModel.destroy({ where: { pagename: title }, transaction })
+            }
+
+            if (this.categoryModel) {
+                await this.categoryModel.destroy({ where: { page: title }, transaction })
+            }
+
+            if (this.linkModel) {
+                await this.linkModel.destroy({ where: { source: title }, transaction })
+            }
+
+            if (this.historyModel) {
+                await this.historyModel.destroy({ where: { page: title }, transaction })
+            }
+
+            if (this.protectModel) {
+                await this.protectModel.destroy({ where: { title }, transaction })
+            }
+
+            if (this.viewcountModel) {
+                await this.viewcountModel.destroy({ where: { title }, transaction })
+            }
+
+            if (this.fileModel && filename) {
+                await this.fileModel.destroy({ where: { filename }, transaction })
+            }
+
+            await this.model.destroy({ where: { title }, transaction })
+
+            if (this.recentChangesModel) {
+                await this.recentChangesModel.create({
+                    page: title,
+                    rev: purgeRev,
+                    doneBy,
+                    bytechange: -oldLength,
+                    comment,
+                    type: 'purge'
+                }, { transaction })
+            }
+        })
+
+        return {
+            purged: true,
+            rev: purgeRev,
+            bytechange: -oldLength,
+            file
+        }
     }
 
     async movePageWithRedirect({ oldTitle, newTitle, doneBy, categories = [] }) {

@@ -1,7 +1,0 @@
-$(() =>
-{
-    if (document.getElementsByClassName('identicon').length === 0) return //if not supported by skin
-    let hash = md5(document.getElementsByClassName('identicon')[0].getAttribute('data-id')).toString()
-    let img = new Identicon(hash, {format:'svg'}).toString()
-    document.getElementsByClassName('identicon')[0].setAttribute('src', 'data:image/svg+xml;base64,'+img)
-})

@@ -128,6 +128,22 @@ class CaptchaError extends AppError {
     }
 }
 
+class EditConflictError extends AppError {
+    constructor(conflicts = [], details = {}) {
+        super({
+            message: details.message || 'Edit conflict',
+            i18nKey: details.i18nKey,
+            i18nParams: details.i18nParams,
+            statusCode: details.statusCode || 409
+        })
+        this.code = details.code || 'EDIT_CONFLICT'
+        this.conflicts = conflicts
+        this.merged = details.merged
+        this.chunks = details.chunks || []
+        this.details = details
+    }
+}
+
 export {
     AppError,
     PageNotFoundError,
@@ -136,5 +152,6 @@ export {
     ValidationError,
     PermissionDeniedError,
     AuthenticationRequiredError,
-    CaptchaError
+    CaptchaError,
+    EditConflictError
 }

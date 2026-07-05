@@ -39,8 +39,12 @@ async function updateOrphaned()
     let q = new Dequeue()
     let visited = new Set()
     
-    q.push('FrontPage')
-    visited.add('FrontPage')
+    // the wiki might be empty
+    if (graph.hasOwnProperty('FrontPage'))
+    {
+        q.push('FrontPage')
+        visited.add('FrontPage')
+    }
     while (q.length)
     {
         let pg = q.shift()
@@ -56,8 +60,7 @@ async function updateOrphaned()
     }
 
     //https://stackoverflow.com/questions/1723168/what-is-the-fastest-or-most-elegant-way-to-compute-a-set-difference-using-javasc
-    let orphaned = new Set([...U].filter(x => !visited.has(x)))
-    global.orphaned = orphaned
+    global.orphaned = [...U].filter(x => !visited.has(x))
 }
 
 export default async () =>

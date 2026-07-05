@@ -1,4 +1,4 @@
-import { ValidationError } from './errors.js'
+import { ValidationError, PermissionDeniedError } from './errors.js'
 import genArbitraryString from '../utils/genArbitraryString.js'
 import sanitizeHtml from 'sanitize-html'
 
@@ -161,11 +161,7 @@ class ThreadService {
         let pagename = thread ? thread.pagename : null
         if (!pagename) return null
 
-        try {
-            await this.permissionService.requireReadAccess(username, pagename, { ipAddress })
-        } catch {
-            return null
-        }
+        await this.permissionService.requireReadAccess(username, pagename, { ipAddress })
 
         const normalized = query.trim()
         if (!normalized) return null
@@ -195,14 +191,15 @@ class ThreadService {
         if (!thread.isOpen) throw new ValidationError('Thread is closed.')
 
         await this.permissionService.requireReadAccess(username, thread.pagename, { ipAddress })
+        await this.permissionService.requireEveryoneAccess(username, { ipAddress })
 
         const doneBy = username || ipAddress
-        await this.threadCommentRepo.createNewComment(threadID, doneBy, message)
+        const comment = await this.threadCommentRepo.createNewComment(threadID, doneBy, message)
 
         await this.recentDiscussrepo.destroyByThreadId(threadID)
         await this.recentDiscussrepo.createNewEntry(thread.threadTitle, threadID, thread.pagename)
 
-        return { thread, doneBy }
+        return { thread, comment }
     }
 
     async createThread(username, ipAddress, title, pageName, comment) {
@@ -238,6 +235,45 @@ class ThreadService {
         await this.recentDiscussrepo.createNewEntry(title, threadID, pageName)
 
         return threadID
+    }
+
+    /**
+     * Checks whether a user has permission to comment on a thread.
+     * Requires Everyone ACL level + READ permission on the page the thread is associated with.
+     * @param {String} username
+     * @param {String} ipAddress
+     * @param {String} threadID
+     * @returns {Promise<{hasPermission: boolean, i18nKey?: string, i18nParams?: Object, reason?: string}|void>} If the user does not have permission, returns { hasPermission: false }. Otherwise, returns nothing.
+     */
+    async checkCommentPermission(username, ipAddress, threadID) {
+        const thread = await this.threadRepo.findByThreadId(threadID)
+        if (!thread) throw new ValidationError('Thread not found.')
+        if (!thread.isOpen) {
+            return {
+                hasPermission: false,
+                i18nKey: 'pages.thread.closed',
+                i18nParams: {},
+                reason: 'Thread is closed.'
+            }
+        }
+
+        try {
+            await this.permissionService.requireReadAccess(username, thread.pagename, { ipAddress })
+            await this.permissionService.requireEveryoneAccess(username, { ipAddress })
+        } catch (e) {
+            if (e instanceof PermissionDeniedError) {
+                return {
+                    hasPermission: false,
+                    i18nKey: e.i18nKey,
+                    i18nParams: e.i18nParams,
+                    reason: e.message
+                }
+            } else {
+                throw e
+            }
+        }
+
+        return { hasPermission: true }
     }
 }
 

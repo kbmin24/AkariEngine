@@ -56,29 +56,32 @@ class FileService {
         })
     }
 
-    async deleteFile({ filename, user, comment }) {
+    async purgeFile({ filename, user, comment }) {
         if (!filename) throw new ValidationError('Filename is required')
         if (!user) throw new AuthenticationRequiredError()
-        const file = await this.fileRepository.findByFilename(filename)
-        if (!file) throw new ValidationError('File not found')
-        await this.permissionService.requirePermission(user, 'deletefile')
+        await this.permissionService.requirePermission(user, 'purgepage')
 
-        // Because we are deleting file: page too
-        await this.permissionService.requirePermission(user, 'deletepage')
-
-        const uploadPath = paths.upload(file.filenameOnDisk)
-        if (fs.existsSync(uploadPath)) {
-            fs.unlinkSync(uploadPath)
-        }
-
-        await this.pageRepository.deletePageWithHistory({
+        const result = await this.pageRepository.purgePage({
             title: `File:${filename}`,
             doneBy: user,
-            comment,
-            filename
+            comment
         })
 
-        logger.admin('File deleted', user, { filename })
+        if (!result.purged) throw new ValidationError('File not found')
+
+        const filenameOnDisk = result.file ? result.file.filenameOnDisk : null
+        if (filenameOnDisk) {
+            const uploadPath = paths.upload(filenameOnDisk)
+            if (fs.existsSync(uploadPath)) {
+                fs.unlinkSync(uploadPath)
+            }
+        }
+
+        logger.admin('File purged', user, { filename })
+    }
+
+    async deleteFile({ filename, user, comment }) {
+        return this.purgeFile({ filename, user, comment })
     }
 }
 

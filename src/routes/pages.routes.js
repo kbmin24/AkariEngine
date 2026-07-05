@@ -1,7 +1,7 @@
 import express from 'express'
-import { asyncRoute, renderTemplateInLayout } from '../utils/httpHelper.js'
+import { asyncRoute } from '../utils/httpHelper.js'
 import { param, query, body } from 'express-validator'
-import { requirePermission, requirePageAccess } from '../middlewares/permission.js'
+import { requirePermission, requirePageAccess, requireLogin } from '../middlewares/permission.js'
 import { chkCaptcha } from '../middlewares/chkCaptcha.js'
 import { validateRequest } from '../middlewares/validation.js'
 import viewController from '../controllers/pages/viewGet.js'
@@ -23,6 +23,9 @@ import revertGetController from '../controllers/pages/revertGet.js'
 import revertPostController from '../controllers/pages/revertPost.js'
 import movePostController from '../controllers/pages/movePost.js'
 import deletePageController from '../controllers/pages/deletePost.js'
+import purgeGetController from '../controllers/pages/purgeGet.js'
+import purgePostController from '../controllers/pages/purgePost.js'
+import { createRateLimiter } from '../utils/rateLimit.js'
 
 
 export default (options = {}) => {
@@ -31,6 +34,10 @@ export default (options = {}) => {
     const csrfProtection = options.csrfProtection
 
     router.get('/w/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 100
+        }),
         param('name').trim().notEmpty(),
         query('rev').optional().isInt().toInt(),
         validateRequest,
@@ -42,30 +49,68 @@ export default (options = {}) => {
     )
 
     router.post('/w', asyncRoute(async (req, res) => {
-        await res.redirect('/w/' + req.body.pagename)
+        res.json({ redirect: '/w/' + req.body.pagename })
     }))
 
     router.post('/preview',
-        body('content').trim().notEmpty(),
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 60
+        }),
+        body('content').trim().exists(),
         body('title').trim().notEmpty(),
         validateRequest,
         asyncRoute(previewController)
     )
 
+    router.get('/recentchanges', asyncRoute(async (req, res) => {
+        const changes = await req.app.locals.services.recentChanges.getRecentChanges({
+            show: req.query ? req.query.show : undefined,
+            isUnique: req.query && req.query.isunique === 'true',
+            excludeFile: req.query && req.query.excludefile === 'true',
+            editOnly: req.query && req.query.editonly === 'true'
+        })
+
+        res.json(changes)
+    }))
+    router.get('/autocomplete',
+        asyncRoute(async (req, res) => {
+            const query = req.query ? req.query.q : undefined
+            if (!query) {
+                res.json({})
+                return
+            }
+            const results = await req.app.locals.services.search.autocompletePages(query, 10)
+            res.json(results)
+        }))
+
     router.get('/search',
+        createRateLimiter({
+            windowMs: 60 * 1000,
+            limit: 60
+        }),
         query('q').trim().notEmpty(),
         query('from').optional().isInt().toInt(),
         validateRequest,
         asyncRoute(searchGetController)
     )
 
+   
     router.post('/search',
+        createRateLimiter({
+            windowMs: 60 * 1000,
+            limit: 60
+        }),
         body('pagename').trim().notEmpty(),
         validateRequest,
         asyncRoute(searchPostController)
     )
 
     router.get('/raw/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         param('name').trim().notEmpty(),
         query('rev').optional().isInt().toInt(),
         validateRequest,
@@ -93,35 +138,31 @@ export default (options = {}) => {
         asyncRoute(diffGetController)
     )
 
-    router.get('/RecentChanges', asyncRoute(async (req, res) => {
-        await renderTemplateInLayout(req, res, 'pages/recentchanges.ejs', { l: res.__ }, {
-            title: res.__('recentChanges'),
-            isPage: false,
-            username: req.session.username,
-            ipaddr: req.ipAddress
-        })
-    }))
-
     router.get('/PageList', asyncRoute(pagelistGetController))
 
-    router.get('/category/:name(*)', asyncRoute(categoryGetController))
+    router.get('/category/:name(*)',
+        query('from').optional().isInt().toInt(),
+        query('to').optional().isInt().toInt(),
+        validateRequest,
+        asyncRoute(categoryGetController)
+    )
 
     router.get('/viewrank', asyncRoute(viewrankGetController))
 
     router.get('/xref/:name(*)',
         param('name').trim().notEmpty(),
+        query('from').optional().isInt().toInt(),
+        query('to').optional().isInt().toInt(),
         validateRequest,
         asyncRoute(xrefGetController)
     )
 
     router.get('/RandomPage', asyncRoute(async (req, res) => {
-        // meh it's too thin, let's just leave it as is...
         const randomPage = await req.app.locals.repositories.pages.getRandomPage()
-        res.redirect(`/w/${randomPage.title}`)
+        res.json({ redirect: `/w/${randomPage.title}` })
     }))
 
     router.get('/edit/:name(*)',
-        csrfProtection,
         requirePageAccess('read', { noAclMessageKey: 'view_noacl' }), // We do this because not having edit access gives out the page's source code
         requirePageAccess('edit', {
             noAclMessageKey: 'edit_noacl',
@@ -136,6 +177,10 @@ export default (options = {}) => {
     )
 
     router.post('/edit/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         csrfProtection,
         chkCaptcha,
         requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
@@ -143,37 +188,47 @@ export default (options = {}) => {
     )
 
     router.get('/move/:name(*)',
-        csrfProtection,
         requirePageAccess('move', { noAclMessageKey: 'move_noacl' }),
         asyncRoute(moveGetController)
     )
 
     router.get('/delete/:name(*)',
-        csrfProtection,
-        requirePermission('deletepage', { mode: 'enforce' }),
+        requireLogin(),
         asyncRoute(deleteGetController)
+    )
+
+    router.get('/purge/:name(*)',
+        requirePermission('purgepage', { mode: 'enforce' }),
+        asyncRoute(purgeGetController)
     )
 
     router.get('/revert/:name(*)',
         param('name').trim().notEmpty(),
         query('rev').isInt().toInt(),
         validateRequest,
-        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
-        csrfProtection,
+        requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
         asyncRoute(revertGetController)
     )
 
     router.post('/revert/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         param('name').trim().notEmpty(),
         body('rev').isInt().toInt(),
         validateRequest,
         csrfProtection,
         chkCaptcha,
-        requirePageAccess('read', { noAclMessageKey: 'view_noacl' }),
+        requirePageAccess('edit', { noAclMessageKey: 'edit_noacl' }),
         asyncRoute(revertPostController)
     )
 
     router.post('/move/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 10
+        }),
         csrfProtection,
         chkCaptcha,
         requirePageAccess('move', { noAclMessageKey: 'move_noacl' }),
@@ -181,12 +236,25 @@ export default (options = {}) => {
     )
 
     router.post('/delete/:name(*)',
+        createRateLimiter({
+            windowMs: 15 * 60 * 1000,
+            limit: 15 * 20
+        }),
         param('name').trim().notEmpty(),
         validateRequest,
         csrfProtection,
         chkCaptcha,
-        requirePermission('deletepage', { mode: 'enforce' }),
+        requireLogin(),
         asyncRoute(deletePageController)
+    )
+
+    router.post('/purge/:name(*)',
+        param('name').trim().notEmpty(),
+        validateRequest,
+        csrfProtection,
+        chkCaptcha,
+        requirePermission('purgepage', { mode: 'enforce' }),
+        asyncRoute(purgePostController)
     )
 
     return router

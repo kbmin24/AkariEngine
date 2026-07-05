@@ -1,5 +1,4 @@
 import sanitizeHtml from 'sanitize-html'
-import i18n from 'i18n'
 import { WikiParser } from '../utils/wikimark/wikiparser.js'
 import { HTMLVisitor } from '../utils/wikimark/HTMLVisitor.js'
 import { PreprocessVisitor } from '../utils/wikimark/PreprocessVisitor.js'
@@ -88,7 +87,7 @@ class RenderService {
     }
 
     // resolves include. saves to macroQueryResult.includes.
-    async resolveIncludesRepo(requests, renderOptions, macroQueryResult) {
+    async resolveIncludesRepo(requests, renderFunction, renderOptions, macroQueryResult) {
         macroQueryResult.includes = {}
         if (renderOptions?.isTemplate) return
         const parsedRequests = requests.map(r => ({ r, args: findMacroArgs(r.query.args) }))
@@ -104,13 +103,14 @@ class RenderService {
             const renderedArgs = Object.fromEntries(
                 await Promise.all(
                     Object.entries(rawArgs).map(async ([k, v]) => {
-                        const rendered = await this.render(v, { isTemplate: true })
+                        const rendered = await this.render(v, renderFunction, { isTemplate: true })
                         return [k, rendered.html ?? '']
                     })
                 )
             )
             macroQueryResult.includes[r.query.args] = await this.render(
                 page.content,
+                renderFunction,
                 { isTemplate: true, args: renderedArgs }
             )
         }))
@@ -118,7 +118,7 @@ class RenderService {
 
     // resolves all async requests.
     // returns { missingPages: Set<string>, macroQueryResult: object }
-    async resolvePageRefsAndMacros(pageRefs, macroRequests, renderOptions) {
+    async resolvePageRefsAndMacros(pageRefs, macroRequests, renderFunction, renderOptions) {
         const requestsByRepo = {}
         for (const req of macroRequests) {
             if (!requestsByRepo[req.repo]) requestsByRepo[req.repo] = []
@@ -129,7 +129,7 @@ class RenderService {
             switch (repo) {
                 case 'files':    return this.resolveFilesRepo(requests, macroQueryResult)
                 case 'pages':    return this.resolvePagesRepo(macroQueryResult)
-                case 'includes': return this.resolveIncludesRepo(requests, renderOptions, macroQueryResult)
+                case 'includes': return this.resolveIncludesRepo(requests, renderFunction, renderOptions, macroQueryResult)
             }
         })
         
@@ -156,11 +156,12 @@ class RenderService {
      *   `html` contains a styled error placeholder.
      *
      * @param {string} input - Raw wikimark source text.
+     * @param {Function} renderFunction i18n render function that accepts i18n key.
      * @param {object} [renderOptions] Options forwarded to visitors and macro resolvers. For more information, see `HTMLVisitor`.
      * @param {boolean} [canRedirect=true] Whether `#redirect` directives should be followed.
      * @returns {Promise<{ result: 'ok'|'redirect'|'error', html: string }>}
      */
-    async render(input, renderOptions, canRedirect = true) {
+    async render(input, renderFunction, renderOptions, canRedirect = true) {
         const begin = this.applyHooks(global.hooks.beginRender, input, renderOptions, canRedirect)
         input = begin.input
         renderOptions = begin.renderOptions
@@ -174,13 +175,13 @@ class RenderService {
         const { cst, manifest } = parsed
 
         const { missingPages, macroQueryResult } = await this.resolvePageRefsAndMacros(
-            manifest.pageRefs, manifest.macroRequests, renderOptions)
+            manifest.pageRefs, manifest.macroRequests, renderFunction, renderOptions)
 
         const visitor = new HTMLVisitor(manifest, {
-            edit: i18n.__('edit'),
-            toc: i18n.__('toc'),
-            footnotes: i18n.__('footnotes'),
-            nsPage: i18n.__('nsPage')
+            edit: renderFunction('edit'),
+            toc: renderFunction('toc'),
+            footnotes: renderFunction('footnotes'),
+            nsPage: renderFunction('nsPage')
         }, missingPages, macroQueryResult, renderOptions)
 
         let html

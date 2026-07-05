@@ -1,8 +1,4 @@
-import sanitiseHtml from 'sanitize-html'
-import RenderService from '../../services/RenderService.js'
-import repositories from '../../repositories/index.js'
-
-const threadRenderer = new RenderService(repositories.pages, repositories.files)
+import { serializeThreadComments } from '../threads/serializeThreadComments.js'
 
 export default async (req, res) => {
     const query = req.query ? req.query.q : undefined
@@ -17,24 +13,5 @@ export default async (req, res) => {
         return
     }
 
-    const results = []
-    for (const comment of comments) {
-        let content = comment.content
-        if (comment.isHidden) {
-            content = ''
-        }
-
-        //render to wikitext
-        const contentHTML = (await threadRenderer.render(content, {}, false)).html
-
-        results.push({
-            type: comment.type,
-            username: sanitiseHtml(comment.doneBy, { allowedTags: [], allowedAttributes: {}, disallowedTagsMode: escape }),
-            content: contentHTML,
-            date: comment.createdAt,
-            isHidden: comment.isHidden
-        })
-    }
-
-    res.json(results)
+    res.json(await serializeThreadComments(comments, req.app.locals.services.render, res.__))
 }

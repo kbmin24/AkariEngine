@@ -27,9 +27,32 @@ class CategoryService {
         return this.categoryRepo.findByPage(pageTitle)
     }
 
-    async getCategoryViewModel(category) {
-        const result = await this.categoryRepo.findAndCountByCategory(category)
-        return { category, pages: result }
+    async getCategoryViewModel(category, { from, to } = {}) {
+        const pgSize = 30
+        let normalizedFrom = Number(from)
+        let normalizedTo = Number(to)
+
+        if (!Number.isInteger(normalizedFrom) || normalizedFrom < 1) normalizedFrom = 1
+        if (!Number.isInteger(normalizedTo) || normalizedTo < normalizedFrom) normalizedTo = normalizedFrom + pgSize - 1
+
+        const requestedSize = normalizedTo - normalizedFrom + 1
+        const limit = Math.min(requestedSize, pgSize)
+        const offset = normalizedFrom - 1
+
+        const result = await this.categoryRepo.findAndCountByCategory(category, { limit, offset })
+
+        normalizedTo = normalizedFrom + result.rows.length - 1
+        if (normalizedTo > result.count) normalizedTo = result.count
+        if (result.count === 0) normalizedTo = 0
+
+        return {
+            category,
+            pages: result,
+            from: normalizedFrom,
+            to: normalizedTo,
+            pageCount: result.count,
+            pgSize
+        }
     }
 }
 

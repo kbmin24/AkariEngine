@@ -1,6 +1,6 @@
 import dateandtime from 'date-and-time'
 import { ValidationError, PermissionDeniedError, AuthenticationRequiredError } from './errors.js'
-import { CIDRtoRange, isValidIP, iptoBigInt } from '../utils/ipTools.js'
+import { CIDRtoRange, isValidCIDR, ipToSortKey, normalizeCIDR } from '../utils/ipTools.js'
 
 class BlockService {
     constructor(blockRepo, userRepo, permissionRepo) {
@@ -49,7 +49,7 @@ class BlockService {
 
         let ipAsNumber
         try {
-            ipAsNumber = iptoBigInt(ipAddress)
+            ipAsNumber = ipToSortKey(ipAddress)
         } catch (_error) {
             return null
         }
@@ -127,7 +127,7 @@ class BlockService {
         await this.blockRepo.clearExpiredBlocks()
         await this.requireBlockPermission(actor)
 
-        if (!isValidIP(target)) {
+        if (!isValidCIDR(target)) {
             throw new ValidationError({
                 message: 'CIDR given is invalid.',
                 code: 'INVALID_CIDR',
@@ -135,8 +135,9 @@ class BlockService {
             })
         }
 
+        const normalizedTarget = normalizeCIDR(target)
         const duration = this.normalizeDuration(blockFor)
-        const existing = await this.blockRepo.findBlock(target, 'ip')
+        const existing = await this.blockRepo.findBlock(normalizedTarget, 'ip')
 
         if (duration.mode === 'unblock') {
             if (!existing) {
@@ -147,8 +148,8 @@ class BlockService {
                 })
             }
 
-            await this.blockRepo.deleteBlock(target, 'ip')
-            return { description: `unblocked ${target} - ${comment}` }
+            await this.blockRepo.deleteBlock(normalizedTarget, 'ip')
+            return { description: `unblocked ${normalizedTarget} - ${comment}` }
         }
 
         if (existing) {
@@ -159,11 +160,11 @@ class BlockService {
             })
         }
 
-        const { startIP, endIP } = CIDRtoRange(target)
+        const { startIP, endIP } = CIDRtoRange(normalizedTarget)
 
         if (duration.mode === 'forever') {
             await this.blockRepo.createIpBlock({
-                target,
+                target: normalizedTarget,
                 startIP,
                 endIP,
                 isForever: true,
@@ -173,12 +174,12 @@ class BlockService {
             })
 
             return {
-                description: `blocked ${target} forever (Login: ${allowLogin ? 'Allow' : 'Disallow'}) - ${comment}`
+                description: `blocked ${normalizedTarget} forever (Login: ${allowLogin ? 'Allow' : 'Disallow'}) - ${comment}`
             }
         }
 
         await this.blockRepo.createIpBlock({
-            target,
+            target: normalizedTarget,
             startIP,
             endIP,
             isForever: false,
@@ -189,7 +190,7 @@ class BlockService {
         })
 
         return {
-            description: `blocked ${target} until ${dateandtime.format(duration.until, global.dtFormat)} (Login: ${allowLogin ? 'Allow' : 'Disallow'}) - ${comment}`
+            description: `blocked ${normalizedTarget} until ${dateandtime.format(duration.until, global.dtFormat)} (Login: ${allowLogin ? 'Allow' : 'Disallow'}) - ${comment}`
         }
     }
 }

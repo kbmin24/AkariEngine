@@ -1,7 +1,4 @@
-import logger from '../../utils/logger.js'
-import { ValidationError, PermissionDeniedError } from '../../services/errors.js'
-import renderInfo from '../../info.js'
-import renderError from '../../utils/error.js'
+import { ValidationError } from '../../services/errors.js'
 
 export default async (req, res) => {
     const username = req.session.username
@@ -15,56 +12,18 @@ export default async (req, res) => {
             comment: req.body.comment || ''
         })
 
-        await req.app.locals.services.admin.insertAdminLog(
-            username,
-            result.description
-        )
+        await req.app.locals.services.admin.insertAdminLog(username, result.description)
 
-        renderInfo(req, res, { description: res.__('done'), returnLink: '/admin', returnName: res.__('adminpage') })
+        res.json({ success: true })
     } catch (error) {
-        if (error instanceof PermissionDeniedError) {
-            logger.admin('Unauthorised block attempt', username, { ip: req.ipAddress })
-            renderError(req, res, {
-                description: 'You do not have a block permission',
-                returnLink: '/admin',
-                returnName: 'the admin page'
-            })
-            return
-        }
-
         if (error instanceof ValidationError) {
-            switch (error.code) {
-                // localise messages
-                case 'INVALID_CIDR':
-                    {
-                        renderError(req, res, {
-                            description: res.__('invalidCIDR'),
-                            returnLink: '/admin/blockip',
-                            returnName: res.__('blockIpAddr')
-                        })
-                        break
-                    }
-                case 'IP_NOT_BLOCKED':
-                    {
-                        renderError(req, res, {
-                            description: res.__('ipNotBlocked'),
-                            returnLink: '/admin/blockip',
-                            returnName: res.__('blockIpAddr')
-                        })
-                        break
-                    }
-                case 'IP_ALREADY_BLOCKED':
-                    {
-                        renderError(req, res, {
-                            description: res.__('ipAlreadyBlocked'),
-                            returnLink: '/admin/blockip',
-                            returnName: res.__('blockIpAddr')
-                        })
-                        break
-                    }
+            const i18nKeyMap = {
+                INVALID_CIDR: 'invalidCIDR',
+                IP_NOT_BLOCKED: 'ipNotBlocked',
+                IP_ALREADY_BLOCKED: 'ipAlreadyBlocked'
             }
+            return res.status(400).json({ error: true, i18nKey: i18nKeyMap[error.code] || null, code: error.code })
         }
-
         throw error
     }
 }

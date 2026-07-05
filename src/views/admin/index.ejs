@@ -1,8 +1,0 @@
-<% for (const heading of adminMenuItems) { %>
-    <h4><%= heading.title %></h4>
-    <ul>
-        <% for (const item of heading.entries) { %>
-            <li><a href='<%= item.href %>'><%= item.title %></a></li>
-        <% } %>
-    </ul>
-<% } %>

@@ -1,38 +1,35 @@
-import { ValidationError } from '../../services/errors.js'
-import renderError from '../../utils/error.js'
+import { EditConflictError } from '../../services/errors.js'
+import { genCaptcha } from '../../utils/captcha.js'
 
 export default async (req, res) => {
     try {
         await req.app.locals.services.page.editPage({
             title: req.params.name,
+            baseRev: req.body.baseRev,
             content: req.body.content,
-            req,
             editPrefix: req.body.editPrefix || '',
             editSuffix: req.body.editSuffix || '',
             user: req.session.username,
             ipAddress: req.ipAddress,
             comment: req.body.comment
         })
-        res.redirect(`/w/${req.params.name}`)
-    } catch (error) {
-        if (error instanceof ValidationError && error.i18nKey === 'edit_titleneeded') {
-            renderError(req, res, {
-                description: res.__('edit_titleneeded'),
-                returnLink: '/',
-                returnName: res.__('mainpage'),
-                statusCode: 200
+
+        res.json({ success: true, redirect: '/w/' + req.params.name })
+    } catch (err) {
+        if (err instanceof EditConflictError) {
+            res.status(409).json({
+                success: false,
+                error: 'EditConflictError',
+                baseRev: err.details.baseRev,
+                conflictRev: err.details.conflictRev,
+                merged: err.merged,
+                chunks: err.chunks,
+                conflicts: err.conflicts,
+                csrfToken: req.csrfToken(),
+                captcha: await genCaptcha()
             })
-            return
+        } else {
+            throw err
         }
-        if (error instanceof ValidationError && error.i18nKey === 'pagename_illegalfile') {
-            renderError(req, res, {
-                description: res.__('pagename_illegalfile'),
-                returnLink: '/',
-                returnName: res.__('mainpage'),
-                statusCode: 200
-            })
-            return
-        }
-        throw error
     }
 }

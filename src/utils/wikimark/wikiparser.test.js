@@ -75,6 +75,10 @@ describe('WikiParser', () => {
         test('jagged delimiters produce no errors', () => {
             expect(parse("'''bold__underline'''__").errors).toHaveLength(0)
         })
+
+        test('Unmatched footnote produes no errors', () => {
+            expect(parse("Footnote[* Unmatched footnote").errors).toHaveLength(0)
+        })
     })
 
     describe('CST structure', () => {
