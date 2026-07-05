@@ -46,7 +46,6 @@
         "svg"
     ],
     "upload_maxsize_mb": 10,
-    ],
     "privacyPolicy": "frontend/privacypolicy.html",
     "termsOfService": "frontend/termsofservice.html",
     "security": {
