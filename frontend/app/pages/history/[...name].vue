@@ -136,7 +136,7 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/history/${pagename.value}`,
     {
         key: computed(() => `/history/${pagename.value}:${route.query.from ?? ''}:${route.query.to ?? ''}`),

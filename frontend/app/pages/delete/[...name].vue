@@ -53,7 +53,7 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/delete/${pagename.value}`,
     {
         key: computed(() => `/delete/${pagename.value}`),

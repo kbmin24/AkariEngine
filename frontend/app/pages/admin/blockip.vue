@@ -121,7 +121,7 @@ const targetValidationClass = computed(() => {
     return isValidTarget.value ? 'is-valid' : 'is-invalid'
 })
 
-const { data, error, pending } = await useFetch('/api/admin/blockip')
+const { data, error, pending } = await useAkariFetch('/api/admin/blockip')
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorDetails = computed(() => error.value?.data ?? data.value ?? {})

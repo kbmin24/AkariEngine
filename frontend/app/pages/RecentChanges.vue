@@ -150,7 +150,7 @@ const isUnique = computed(() => route.query.isunique === 'true')
 const excludeFile = computed(() => route.query.excludefile === 'true')
 const editOnly = computed(() => route.query.editonly === 'true')
 
-const { data, error, pending } = await useFetch('/api/recentchanges', {
+const { data, error, pending } = await useAkariFetch('/api/recentchanges', {
     key: computed(() => `/RecentChanges:${show.value}:${isUnique.value}:${excludeFile.value}:${editOnly.value}`),
     query: computed(() => ({
         show: show.value,

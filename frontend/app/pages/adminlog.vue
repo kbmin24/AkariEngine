@@ -100,7 +100,7 @@ watch(job, value => {
     jobInput.value = value
 })
 
-const { data, error, pending } = await useFetch('/api/adminlog', {
+const { data, error, pending } = await useAkariFetch('/api/adminlog', {
     key: computed(() => `/adminlog:${from.value}:${doneBy.value}:${job.value}`),
     query: computed(() => ({
         from: from.value || undefined,

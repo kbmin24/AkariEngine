@@ -50,7 +50,7 @@ const requestedPage = computed(() => {
     return page
 })
 
-const { data, error, pending } = await useFetch('/api/PageList', {
+const { data, error, pending } = await useAkariFetch('/api/PageList', {
     key: computed(() => `/PageList:${requestedPage.value}`),
     query: computed(() => ({
         page: requestedPage.value,

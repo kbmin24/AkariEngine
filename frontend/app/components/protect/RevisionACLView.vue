@@ -41,7 +41,7 @@ const { t, te } = useI18n()
 
 const submitError = ref('')
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/revision-acl/${pagename}`, {
         key: computed(() => `/revision-acl/${pagename}`),
         default: () => ({ permissions: [] }),

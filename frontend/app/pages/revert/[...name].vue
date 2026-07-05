@@ -65,7 +65,7 @@ const pagename = computed(() => {
 
 const revision = computed(() => Number(route.query.rev))
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/revert/${pagename.value}`,
     {
         key: computed(() => `/revert/${pagename.value}:${route.query.rev ?? ''}`),

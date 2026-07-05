@@ -37,7 +37,7 @@ const consoleWindow = ref(null)
 const socketReady = ref(false)
 const socketError = ref(null)
 
-const { data, error, pending } = await useFetch('/api/admin/developer')
+const { data, error, pending } = await useAkariFetch('/api/admin/developer')
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorDetails = computed(() => error.value?.data ?? data.value ?? {})

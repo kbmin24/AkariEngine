@@ -13,5 +13,5 @@ export default async (req, res) => {
         return
     }
 
-    res.json(await serializeThreadComments(comments, req.app.locals.services.render))
+    res.json(await serializeThreadComments(comments, req.app.locals.services.render, res.__))
 }

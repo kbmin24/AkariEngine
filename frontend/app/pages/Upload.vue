@@ -92,7 +92,7 @@ const submitErrorMessage = ref('')
 const uploadButtonEnabled = ref(true)
 const submitError = computed(() => !!submitErrorKey.value || !!submitErrorMessage.value)
 
-const { data, error, pending } = await useFetch('/api/Upload', {
+const { data, error, pending } = await useAkariFetch('/api/Upload', {
     key: '/Upload',
 })
 

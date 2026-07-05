@@ -7,8 +7,8 @@ export default async (req, res) => {
 
     let { html: content } = await req.app.locals.services.render.render(
         rawContent,
+        res.__,
         { pagename: title, renderSectionEditButton: false },
-        req.app.locals.repositories,
         false
     )
 

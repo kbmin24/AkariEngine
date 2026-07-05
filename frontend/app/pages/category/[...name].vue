@@ -48,7 +48,7 @@ const categoryName = computed(() => {
     return String(parts ?? '')
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/category/${categoryName.value}`,
     {
         key: computed(() => `/category/${categoryName.value}:${route.query.from ?? ''}:${route.query.to ?? ''}`),

@@ -99,7 +99,7 @@ const newRule = reactive({
 const submitting = ref(false)
 const submitError = ref('')
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/admin/hiderev`, {
         key: computed(() => `/admin/hiderev/${pagename}`),
         query: computed(() => ({ p: pagename })),

@@ -39,7 +39,7 @@ const { t, locale } = useI18n()
 const config = useRuntimeConfig()
 const { setPageHeader } = usePageHeader()
 
-const { data, error, pending } = await useFetch('/api/viewrank', {
+const { data, error, pending } = await useAkariFetch('/api/viewrank', {
     key: computed(() => `${route.path}:viewrank`),
 })
 

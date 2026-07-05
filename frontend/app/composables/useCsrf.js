@@ -1,9 +1,11 @@
 let cachedToken = null
 
 export const useCsrf = () => {
+    const akariRequest = useAkariRequest()
+
     const getToken = async () => {
         if (cachedToken) return cachedToken
-        const data = await $fetch('/api/csrf-token', {
+        const data = await akariRequest('/api/csrf-token', {
             cache: 'no-store',
             credentials: 'include',
         })
@@ -12,12 +14,12 @@ export const useCsrf = () => {
     }
 
     const csrfFetch = async (url, options = {}) => {
-        const sendRequest = async token => $fetch(url, {
+        const sendRequest = async token => akariRequest(url, {
             ...options,
             credentials: 'include',
             headers: {
                 ...options.headers,
-                'x-csrf-token': token,
+                'akari-csrf-token': token,
             },
         })
 

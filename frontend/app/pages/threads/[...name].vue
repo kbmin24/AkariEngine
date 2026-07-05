@@ -83,7 +83,7 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/threads/${pagename.value}`,
     {
         key: computed(() => `/threads/${pagename.value}`),

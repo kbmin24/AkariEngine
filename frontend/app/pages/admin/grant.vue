@@ -73,7 +73,7 @@ const submitErrorFallback = ref('')
 const saved = ref(false)
 const submitError = computed(() => !!submitErrorKey.value || !!submitErrorFallback.value)
 
-const { data, error, pending } = await useFetch('/api/admin/grant', {
+const { data, error, pending } = await useAkariFetch('/api/admin/grant', {
     key: computed(() => `/admin/grant:${grantTo.value}`),
     query: computed(() => ({
         grantTo: grantTo.value || undefined,

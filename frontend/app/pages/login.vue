@@ -57,7 +57,7 @@ useHead({ title: `${t('auth.login.title')} - ${config.public.appname}` })
 const { setPageHeader } = usePageHeader()
 setPageHeader({ title: t('auth.login.title') })
 
-const { data } = await useFetch(
+const { data } = await useAkariFetch(
     () => `/api/login`,
     {
         key: `/login`,

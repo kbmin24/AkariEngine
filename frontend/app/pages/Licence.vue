@@ -95,7 +95,7 @@ const { t } = useI18n()
 const config = useRuntimeConfig()
 const { setPageHeader } = usePageHeader()
 
-const { data, error, pending } = await useFetch('/api/Licence', {
+const { data, error, pending } = await useAkariFetch('/api/Licence', {
     key: '/Licence',
 })
 

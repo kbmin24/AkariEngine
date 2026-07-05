@@ -121,12 +121,13 @@
 <script setup>
 const { t } = useI18n()
 const config = useRuntimeConfig()
+const akariRequest = useAkariRequest()
 
 useHead({ title: `${t('auth.register.title')} - ${config.public.appname}` })
 const { setPageHeader } = usePageHeader()
 setPageHeader({ title: t('register') })
 
-const { data, error: loadError, pending: loadPending } = await useFetch('/api/signup', { key: '/signup' })
+const { data, error: loadError, pending: loadPending } = await useAkariFetch('/api/signup', { key: '/signup' })
 
 const isLoadError = computed(() => !loadPending.value && (!!loadError.value || !!data.value?.error))
 const loadErrorDetails = computed(() => loadError.value?.data ?? data.value ?? {})
@@ -188,9 +189,8 @@ watch(id, (val) => {
     }
     idCheckTimer = setTimeout(async () => {
         try {
-            const { available } = await $fetch(`/api/user/exists?id=${encodeURIComponent(val)}`)
+            const { available } = await akariRequest(`/api/user/exists?id=${encodeURIComponent(val)}`)
             idAvailable.value = available
-            console.log(idAvailable.value)
         } catch {
             idAvailable.value = null
         }
@@ -202,7 +202,7 @@ const onSubmit = async () => {
     pending.value = true
     const captchaResponse = document.querySelector('input[name="cf-turnstile-response"]')?.value
     try {
-        await $fetch('/api/signup', {
+        await akariRequest('/api/signup', {
             method: 'POST',
             body: {
                 id: id.value,

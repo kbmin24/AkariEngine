@@ -93,7 +93,7 @@ const submitErrorFallback = ref('')
 const saved = ref(false)
 const submitError = computed(() => !!submitErrorKey.value || !!submitErrorFallback.value)
 
-const { data, error, pending } = await useFetch('/api/admin/blockuser')
+const { data, error, pending } = await useAkariFetch('/api/admin/blockuser')
 
 const isError = computed(() => !pending.value && (!!error.value || !!data.value?.error))
 const errorDetails = computed(() => error.value?.data ?? data.value ?? {})

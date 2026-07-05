@@ -22,6 +22,6 @@ export default async (req, res) => {
         isAdmin,
         canRead: true,
         commentPermission,
-        comments: await serializeThreadComments(comments, services.render)
+        comments: await serializeThreadComments(comments, services.render, res.__)
     })
 }

@@ -1,3 +1,4 @@
+import i18n from 'i18n'
 import escapeHTML from '../utils/escapeHTML.js'
 import { PermissionDeniedError } from '../services/errors.js'
 
@@ -57,7 +58,8 @@ export default function registerThreadSocketHandlers(socket, context) {
                 message: data.message
             })
 
-            const content = (await services.render.render(comment.content, {}, false)).html
+            // TODO per-user language support for socket.io messages
+            const content = (await services.render.render(comment.content, i18n.__, {}, false)).html
             const payload = {
                 id: comment.id,
                 threadID: comment.threadID,

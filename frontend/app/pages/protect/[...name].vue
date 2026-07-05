@@ -76,7 +76,7 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/protect/${pagename.value}`,
     {
         key: computed(() => `/protect/${pagename.value}`),

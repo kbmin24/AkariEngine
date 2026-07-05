@@ -82,13 +82,13 @@ app.use(sess)
 const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     getSecret: () => secret,
     getSessionIdentifier: (req) => req.session?.id ?? req.ip,
-    cookieName: 'x-csrf-token',
+    cookieName: 'akari-csrf-token',
     cookieOptions: {
         sameSite: 'lax',
         secure: config.ssl,
         httpOnly: true,
     },
-    getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'] ?? req.body?._csrf,
+    getCsrfTokenFromRequest: (req) => req.headers['akari-csrf-token'] ?? req.body?._csrf,
 })
 
 app.use((req, res, next) => {
@@ -114,7 +114,7 @@ if (config.isDevelopment) {
         res.setHeader('Access-Control-Allow-Origin', nuxtOrigin)
         res.setHeader('Access-Control-Allow-Credentials', 'true')
         res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-csrf-token')
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, akari-csrf-token, akari-locale')
         if (req.method === 'OPTIONS') return res.sendStatus(204)
         next()
     })
@@ -204,6 +204,7 @@ i18n.configure({
     directory: paths.locales,
     objectNotation: true
 })
+const supportedLocales = new Set(i18n.getLocales())
 
 //regex for testing whether page title is legal or not
 global.legalTitleRegex = /^[^[\]{}|#\n]{1,255}$/m
@@ -240,6 +241,12 @@ app.use(createRateLimiter({
 app.use((req, res, next) => {
     // init'ise i18n
     i18n.init(req, res)
+    const requestedLocale = req.get('akari-locale')
+
+    if (supportedLocales.has(requestedLocale)) {
+        req.setLocale(requestedLocale)
+        res.setLocale(requestedLocale)
+    }
 
     req.ipAddress = normalizeIpAddress(req.ip)
 

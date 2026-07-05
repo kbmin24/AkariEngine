@@ -67,7 +67,7 @@ const { setPageHeader } = usePageHeader()
 
 const isOpen = computed(() => route.query.isopen !== 'false')
 
-const { data, error, pending } = await useFetch('/api/RecentDiscuss', {
+const { data, error, pending } = await useAkariFetch('/api/RecentDiscuss', {
     key: computed(() => `/RecentDiscuss:${isOpen.value}`),
     query: computed(() => ({
         isopen: isOpen.value ? 'true' : 'false',

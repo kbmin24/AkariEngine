@@ -3,7 +3,7 @@ import { getOptions, showCategory } from '../../utils/wikimark/keywordHelper.js'
 import { PageNotFoundError } from '../../services/errors.js'
 
 export default async (req, res) => {
-    const { services, repositories } = req.app.locals
+    const { services } = req.app.locals
     const name = req.params.name
     const rev = req.query.rev
 
@@ -50,8 +50,8 @@ export default async (req, res) => {
             const opt = await getOptions(page.content)
             let { result, html: content } = await services.render.render(
                 contentPrefix + page.content,
+                res.__,
                 { pagename: name, renderSectionEditButton: true },
-                repositories,
                 redirect
             )
 
@@ -105,8 +105,8 @@ export default async (req, res) => {
         const opt = await getOptions(page.content)
         let { html: content } = await services.render.render(
             contentPrefix + page.content,
+            res.__,
             { pagename: name, renderSectionEditButton: false },
-            repositories,
             false
         )
 

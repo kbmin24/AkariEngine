@@ -52,7 +52,7 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/diff/${pagename.value}`,
     {
         key: computed(() => `/diff/${pagename.value}:${route.query.rev1 ?? ''}:${route.query.rev2 ?? ''}`),

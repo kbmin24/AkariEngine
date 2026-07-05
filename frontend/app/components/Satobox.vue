@@ -14,7 +14,7 @@ const store = useUserStore()
 const userThreadPage = computed(() => store.username ? `User:${store.username}` : null)
 
 const satoboxUrl = computed(() => userThreadPage.value ? `/api/threads/${encodeURI(userThreadPage.value)}` : null)
-const { data, error, pending } = await useFetch(satoboxUrl, {
+const { data, error, pending } = await useAkariFetch(satoboxUrl, {
     default: () => null,
     immediate: Boolean(userThreadPage.value),
     server: false,

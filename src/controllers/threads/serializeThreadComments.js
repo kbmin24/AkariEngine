@@ -6,9 +6,9 @@ const sanitiseUsername = username => sanitiseHtml(String(username ?? ''), {
     disallowedTagsMode: 'escape'
 })
 
-const serializeThreadComment = async (comment, renderService) => {
+const serializeThreadComment = async (comment, renderService, renderFunction) => {
     const content = comment.isHidden ? '' : comment.content
-    const contentHTML = (await renderService.render(content, {}, false)).html
+    const contentHTML = (await renderService.render(content, renderFunction, {}, false)).html
 
     return {
         id: comment.id,
@@ -21,7 +21,7 @@ const serializeThreadComment = async (comment, renderService) => {
     }
 }
 
-const serializeThreadComments = (comments, renderService) =>
-    Promise.all(comments.map(comment => serializeThreadComment(comment, renderService)))
+const serializeThreadComments = (comments, renderService, renderFunction) =>
+    Promise.all(comments.map(comment => serializeThreadComment(comment, renderService, renderFunction)))
 
 export { serializeThreadComment, serializeThreadComments }

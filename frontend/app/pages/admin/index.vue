@@ -26,5 +26,5 @@ const { setPageHeader } = usePageHeader()
 useHead({ title: `${t('adminMenu')} - ${config.public.appname}` })
 setPageHeader({ title: t('adminMenu') })
 
-await useFetch('/api/admin')
+await useAkariFetch('/api/admin')
 </script>

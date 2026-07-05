@@ -134,7 +134,7 @@ const pagename = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/edit/${pagename.value}`,
     {
         key: `/edit/${pagename.value}`,

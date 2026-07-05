@@ -47,7 +47,7 @@ const from = computed(() => {
     return value
 })
 
-const { data, error, pending } = await useFetch('/api/orphaned', {
+const { data, error, pending } = await useAkariFetch('/api/orphaned', {
     key: computed(() => `/orphaned:${from.value}`),
     query: computed(() => ({
         from: from.value || undefined,

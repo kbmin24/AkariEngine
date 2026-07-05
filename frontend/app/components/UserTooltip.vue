@@ -45,6 +45,7 @@ const triggerElement = ref(null)
 const popoverElement = ref(null)
 const isShown = ref(false)
 const popoverStyle = ref({})
+const akariRequest = useAkariRequest()
 
 const isIP = computed(() => isIPAddress(props.user))
 const encodedUser = computed(() => encodeURIComponent(props.user))
@@ -55,10 +56,7 @@ onMounted(async () => {
     if (isIP.value) return
 
     try {
-        const response = await fetch(`/api/user/info/${encodedUser.value}`)
-        if (!response.ok) throw new Error('Failed to fetch user info')
-
-        const data = await response.json()
+        const data = await akariRequest(`/api/user/info/${encodedUser.value}`)
         isAdmin.value = data.isAdmin
     } catch (error) {
         console.error('Error fetching user info:', error)

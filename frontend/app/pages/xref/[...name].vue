@@ -48,7 +48,7 @@ const pagename = computed(() => {
     return String(parts ?? '')
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/xref/${pagename.value}`,
     {
         key: computed(() => `/xref/${pagename.value}:${route.query.from ?? ''}:${route.query.to ?? ''}`),

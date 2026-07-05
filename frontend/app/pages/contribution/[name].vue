@@ -81,7 +81,7 @@ const from = computed(() => {
     return value
 })
 
-const { data, error, pending } = await useFetch(
+const { data, error, pending } = await useAkariFetch(
     () => `/api/contribution/${encodeURIComponent(username.value)}`,
     {
         key: computed(() => `/contribution/${username.value}:${from.value}`),

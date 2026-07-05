@@ -64,7 +64,7 @@ const headerTitle = computed(() => t('searchResults', { q: q.value }))
 setPageHeader({ title: headerTitle.value })
 watch(headerTitle, (val) => setPageHeader({ title: val }))
 
-const { data } = await useFetch('/api/search', {
+const { data } = await useAkariFetch('/api/search', {
     key: 'search',
     query: computed(() => ({ q: q.value, from: from.value })),
     watch: [q, from],

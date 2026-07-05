@@ -10,7 +10,7 @@ const { t } = useI18n()
 const config = useRuntimeConfig()
 const { setPageHeader } = usePageHeader()
 
-const { data, error, pending } = await useFetch('/api/RandomPage', {
+const { data, error, pending } = await useAkariFetch('/api/RandomPage', {
     key: '/RandomPage',
 })
 

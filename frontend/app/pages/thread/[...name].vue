@@ -133,7 +133,7 @@ const roomId = computed(() => {
     return String(parts)
 })
 
-const { data, error, pending, refresh } = await useFetch(
+const { data, error, pending, refresh } = await useAkariFetch(
     () => `/api/thread/${roomId.value}`,
     {
         key: computed(() => `/thread/${roomId.value}`)

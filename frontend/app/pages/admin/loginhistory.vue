@@ -53,7 +53,7 @@ const { setPageHeader } = usePageHeader()
 const selectedUser = computed(() => typeof route.query.user === 'string' ? route.query.user : '')
 const usernameInput = ref(selectedUser.value)
 
-const { data, error, pending } = await useFetch('/api/admin/loginhistory', {
+const { data, error, pending } = await useAkariFetch('/api/admin/loginhistory', {
     key: computed(() => `/admin/loginhistory:${selectedUser.value}`),
     query: computed(() => ({
         user: selectedUser.value || undefined,
