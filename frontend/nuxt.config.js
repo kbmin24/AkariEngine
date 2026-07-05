@@ -96,22 +96,11 @@ try {
     // LocalSettings.json missing — fall back to defaults
 }
 
-const i18nMustacheToVue = {
-    name: 'i18n-mustache-to-vue',
-    enforce: 'pre',
-    transform(code, id) {
-        if (!localeFiles.some((file) => id.endsWith(`locales/${file}`) || id.endsWith(`locales\\${file}`))) return null
-        const fixed = code
-            .replace(/\{\{\{(\w+)\}\}\}/g, '{$1}')
-            .replace(/\{\{(\w+)\}\}/g, '{$1}')
-        return { code: fixed, map: null }
-    },
-}
 const backendPort = process.env.backendPort || 2000
 
 export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
-    devtools: { enabled: true },
+    debug: true,
 
     css: ['~/assets/scss/main.scss', '@fortawesome/fontawesome-free/css/all.min.css'],
 
@@ -179,7 +168,6 @@ export default defineNuxtConfig({
     },
 
     vite: {
-        plugins: [i18nMustacheToVue],
         css: {
             preprocessorOptions: {
                 scss: {
