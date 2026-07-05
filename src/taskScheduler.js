@@ -39,8 +39,12 @@ async function updateOrphaned()
     let q = new Dequeue()
     let visited = new Set()
     
-    q.push('FrontPage')
-    visited.add('FrontPage')
+    // the wiki might be empty
+    if (graph.hasOwnProperty('FrontPage'))
+    {
+        q.push('FrontPage')
+        visited.add('FrontPage')
+    }
     while (q.length)
     {
         let pg = q.shift()

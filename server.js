@@ -156,7 +156,7 @@ import recentdiscussFactory from './src/models/recentdiscuss.model.js'
 const recentdiscuss = recentdiscussFactory(sequelize);
 import linksFactory from './src/models/links.model.js'
 const links = linksFactory(sequelize);
-sequelize.sync()
+await sequelize.sync()
 
 global.db =
 {
