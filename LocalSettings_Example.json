@@ -46,15 +46,6 @@
         "svg"
     ],
     "upload_maxsize_mb": 10,
-    "specialPages": [
-        {
-            "title": "Contact",
-            "link": "mailto:(your email)"
-        },
-        {
-            "title": "Licence",
-            "link": "/Licence"
-        }
     ],
     "privacyPolicy": "frontend/privacypolicy.html",
     "termsOfService": "frontend/termsofservice.html",
@@ -64,9 +55,6 @@
             "www.youtube-nocookie.com"
         ]
     },
-    "skins": [
-        "GECWiki"
-    ],
     "extensions": [
         "Interwiki"
     ],
