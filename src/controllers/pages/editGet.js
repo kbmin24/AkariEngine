@@ -10,6 +10,7 @@ export default async (req, res) => {
 
     res.json({
         title: editModel.title,
+        baseRev: editModel.baseRev,
         content: editModel.content,
         prefix: editModel.prefix,
         suffix: editModel.suffix,

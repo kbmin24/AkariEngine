@@ -13,6 +13,10 @@ export const useCsrf = () => {
         return cachedToken
     }
 
+    const setToken = token => {
+        cachedToken = token || null
+    }
+
     const csrfFetch = async (url, options = {}) => {
         const sendRequest = async token => akariRequest(url, {
             ...options,
@@ -35,5 +39,5 @@ export const useCsrf = () => {
 
     const invalidate = () => { cachedToken = null }
 
-    return { getToken, csrfFetch, invalidate }
+    return { getToken, csrfFetch, invalidate, setToken }
 }

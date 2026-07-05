@@ -16,7 +16,6 @@ class Config {
     get dateTimeFormat() { return this.settings.dateTimeFormat }
     get database() { return this.settings.database }
     get sessionSecret() { return this.settings.session_secret }
-    get ssl() { return this.settings.ssl }
     get isPrivate() { return this.settings.isPrivate || false }
     get defaultLocale() { return this.settings.defaultLocale || 'en_GB' }
     get extensions() { return this.settings.extensions || [] }

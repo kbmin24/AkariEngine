@@ -1,12 +1,14 @@
 import logger from '../utils/logger.js'
 import { PROTECTION_TASKS } from '../utils/acl.js'
+import mergeDiff from '../utils/mergeDiff.js'
 
 import {
     PageNotFoundError,
     RevisionNotFoundError,
     PageExistsError,
     ValidationError,
-    AuthenticationRequiredError
+    AuthenticationRequiredError,
+    EditConflictError
 } from './errors.js'
 
 class PageService {
@@ -99,8 +101,10 @@ class PageService {
         return { prefix, suffix, content: body }
     }
 
+    /**
+     * must be called after requirePageAccess with `store` mode which populates req.(key)
+     */
     async getEditViewModel({ title, section, aclState, username }) {
-        // must be called after requirePageAccess with `store` mode which populates req.(key)
         title = title.trim()
 
         const page = await this.pageRepo.findByTitle(title)
@@ -129,6 +133,7 @@ class PageService {
 
         return {
             title,
+            baseRev: page ? page.currentRev : 0,
             username,
             content: sectionResult.content,
             prefix: sectionResult.prefix,
@@ -300,7 +305,7 @@ class PageService {
         return merged
     }
 
-    async editPage({ title, content, user, comment, editPrefix = '', editSuffix = '', ipAddress, iscreatingFile = false }) {
+    async editPage({ title, content, baseRev, user, comment, editPrefix = '', editSuffix = '', ipAddress, iscreatingFile = false }) {
         if (!title) {
             throw new ValidationError({
                 i18nKey: 'edit_titleneeded',
@@ -316,7 +321,17 @@ class PageService {
             })
         }
 
-        const normalizedContent = await this.buildNormalizedEditContent({ content, editPrefix, editSuffix })
+        let normalizedContent = await this.buildNormalizedEditContent({ content, editPrefix, editSuffix })
+        const normalizedBaseRev = baseRev === undefined || baseRev === null || baseRev === ''
+            ? undefined
+            : Number(baseRev)
+
+        if (normalizedBaseRev !== undefined && (!Number.isInteger(normalizedBaseRev) || normalizedBaseRev < 0)) {
+            throw new ValidationError({
+                message: 'Invalid base revision',
+                code: 'EDIT_INVALID_BASE_REV'
+            })
+        }
 
         const existingPage = await this.pageRepo.findByTitle(title)
 
@@ -329,6 +344,26 @@ class PageService {
         }
 
         await this.permissionService.requireWriteAccess(user, title, { ipAddress })
+
+        // edit conflict
+        if (existingPage && !existingPage.deleted && normalizedBaseRev !== undefined && existingPage.currentRev !== normalizedBaseRev) {
+            // attempt automerge
+            const baseContent = await this.getRawContent({ title, rev: normalizedBaseRev, user, ipAddress })
+            const existingContent = existingPage.content
+            const mergeResult = mergeDiff(baseContent, existingContent, normalizedContent)
+            if (mergeResult.success) {
+                normalizedContent = mergeResult.merged
+                comment = comment ? `(auto-merged with r${existingPage.currentRev}) ${comment}` : `(auto-merged with r${existingPage.currentRev})`
+            }
+            else {
+                throw new EditConflictError(mergeResult.conflicts, {
+                    baseRev: normalizedBaseRev,
+                    conflictRev: existingPage.currentRev,
+                    merged: mergeResult.merged,
+                    chunks: mergeResult.chunks
+                })
+            }
+        }
 
         const doneBy = user || ipAddress
         const isNewPage = !existingPage || existingPage.deleted

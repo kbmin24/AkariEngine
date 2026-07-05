@@ -35,7 +35,17 @@ class UserService {
         this.permissionService.requireEveryoneAccess(null, { ipAddress })
         const salt = crypto.randomBytes(64).toString('base64')
         const hashedPassword = await this.hashPassword(password, salt)
-        return this.userRepository.createUser(username, hashedPassword, salt)
+        const user = await this.userRepository.createUser(username, hashedPassword, salt)
+
+        const userCount = await this.userRepository.count()
+        if (userCount === 1) {
+            await Promise.all([
+                this.permissionService.permissionRepo.grantPermission(username, 'grant', username),
+                this.permissionService.permissionRepo.grantPermission(username, 'admin', username),
+            ])
+        }
+
+        return user
     }
 
     async verifyPassword(username, password) {

@@ -1,10 +1,12 @@
 import { describe, expect, jest, test } from '@jest/globals'
 import PageService from './PageService.js'
+import { EditConflictError } from './errors.js'
 
 const createService = ({
     existingPage = null,
     latestRev = 0,
     backlinks = { count: 0, rows: [] },
+    historyRevision = null,
 } = {}) => {
     const pageRepo = {
         findByTitle: jest.fn().mockResolvedValue(existingPage),
@@ -19,6 +21,7 @@ const createService = ({
     }
     const historyRepo = {
         findLatestRevByPage: jest.fn().mockResolvedValue(latestRev),
+        findByPageAndRev: jest.fn().mockResolvedValue(historyRevision),
         create: jest.fn().mockResolvedValue(undefined),
     }
     const categoryService = {
@@ -26,6 +29,7 @@ const createService = ({
         registerForPage: jest.fn().mockResolvedValue(undefined),
     }
     const permissionService = {
+        requireReadAccess: jest.fn().mockResolvedValue(undefined),
         requireWriteAccess: jest.fn().mockResolvedValue(undefined),
         requireLoginAccess: jest.fn().mockResolvedValue(undefined),
         requirePermission: jest.fn().mockResolvedValue(undefined),
@@ -100,6 +104,101 @@ describe('PageService.editPage', () => {
                 type: 'edit',
             })
         )
+    })
+
+    test('treats string baseRev matching the current revision as current', async () => {
+        const existingPage = {
+            title: 'ExistingPage',
+            content: 'old\n',
+            currentRev: 2,
+        }
+        const { service, pageRepo, historyRepo } = createService({ existingPage })
+
+        await service.editPage({
+            title: 'ExistingPage',
+            baseRev: '2',
+            content: 'new',
+            user: 'Alice',
+            ipAddress: '127.0.0.1',
+        })
+
+        expect(historyRepo.findByPageAndRev).not.toHaveBeenCalled()
+        expect(pageRepo.upsertPage).toHaveBeenCalledWith(
+            'ExistingPage',
+            'new\n',
+            3,
+            false,
+            expect.objectContaining({
+                type: 'edit',
+            })
+        )
+    })
+
+    test('throws EditConflictError with merge conflicts when automerge fails', async () => {
+        const existingPage = {
+            title: 'ExistingPage',
+            content: 'title\nbody from latest\nfooter\n',
+            currentRev: 3,
+        }
+        const historyRevision = {
+            page: 'ExistingPage',
+            content: 'title\nold body\nfooter\n',
+            rev: 2,
+        }
+        const { service, pageRepo, historyRepo } = createService({ existingPage, historyRevision })
+
+        const editPromise = service.editPage({
+            title: 'ExistingPage',
+            baseRev: 2,
+            content: 'title\nbody from user\nfooter',
+            user: 'Alice',
+            ipAddress: '127.0.0.1',
+        })
+
+        await expect(editPromise).rejects.toMatchObject({
+            name: 'EditConflictError',
+            statusCode: 409,
+            code: 'EDIT_CONFLICT',
+            merged: [
+                'title',
+                '<<<<<<< editA',
+                'body from latest',
+                '||||||| base',
+                'old body',
+                '=======',
+                'body from user',
+                '>>>>>>> editB',
+                'footer',
+                '',
+            ].join('\n'),
+            conflicts: [
+                {
+                    editA: 'body from latest',
+                    base: 'old body',
+                    editB: 'body from user',
+                },
+            ],
+            chunks: [
+                {
+                    type: 'ok',
+                    content: 'title',
+                },
+                {
+                    type: 'conflict',
+                    editA: 'body from latest',
+                    base: 'old body',
+                    editB: 'body from user',
+                },
+                {
+                    type: 'ok',
+                    content: 'footer\n',
+                },
+            ],
+        })
+
+        await expect(editPromise).rejects.toBeInstanceOf(EditConflictError)
+        expect(historyRepo.findByPageAndRev).toHaveBeenCalledWith('ExistingPage', 2)
+        expect(pageRepo.upsertPage).not.toHaveBeenCalled()
     })
 })
 

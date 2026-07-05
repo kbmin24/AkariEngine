@@ -18,6 +18,8 @@
         <div v-if="submitError" class="alert alert-danger" role="alert">
             <LocalizedMessage :keypath="submitError" :params="submitErrorParams" />
         </div>
+        <Edit3WayDiff v-if="hasEditConflict" :conflicts="editConflict.conflicts" :chunks="editConflict.chunks"
+            :base-rev="editConflict.baseRev" :conflict-rev="editConflict.conflictRev" />
         <form @submit.prevent="submitEdit">
             <div class="form-group">
                 <ul class="nav nav-tabs" id="editTab" role="tablist">
@@ -60,12 +62,12 @@
                 <div class="form-group mt-2 mb-2 row">
                     <label for="comment" class="col-sm-2 col-form-label">{{ $t('summary') }}</label>
                     <div class="col-sm-10">
-                        <input v-model="comment" class="form-control" id="comment" maxlength="255" type="text"
-                            :placeholder="$t('edit_max255')">
+                        <input v-model="comment" class="form-control" id="comment" maxlength="200" type="text"
+                            :placeholder="$t('edit_max200')">
                     </div>
                 </div>
-                <div v-if="data?.captcha" class="mt-2 mb-2">
-                    <Turnstile :siteKey="data.captcha" />
+                <div v-if="captcha" class="mt-2 mb-2">
+                    <Turnstile ref="turnstile" :key="turnstileKey" :siteKey="captcha" />
                 </div>
                 <p v-if="!userStore.isLoggedIn">
                     <span class="text-danger fw-bold">{{ $t('warning') }}!</span> {{ $t('ipshown') }}
@@ -104,7 +106,6 @@
     height: 30rem;
     overflow-y: scroll;
 }
-
 </style>
 
 <script setup>
@@ -116,17 +117,19 @@ definePageMeta({
 const route = useRoute()
 const { setPageHeader } = usePageHeader()
 const config = useRuntimeConfig()
-const { csrfFetch } = useCsrf()
+const { csrfFetch, getToken, invalidate, setToken } = useCsrf()
 const { store: userStore } = useAuth()
 const { t } = useI18n()
 
-const editArea = ref(null)
 const content = ref('')
 const comment = ref('')
 const savedFormState = ref({ content: '', comment: '' })
 const allowNavigationWithoutWarning = ref(false)
 const submitError = ref(null)
 const submitErrorParams = ref({})
+const captcha = ref(null)
+const turnstile = ref(null)
+const turnstileKey = ref(0)
 
 const pagename = computed(() => {
     const parts = route.params.name
@@ -143,11 +146,18 @@ const { data, error, pending } = await useAkariFetch(
         },
     }
 )
+const conflictRev = ref(-1)
+const baseRev = computed(() => Math.max(data.value?.baseRev, conflictRev.value) || 0)
+
+const editConflict = ref(null)
+const hasEditConflict = computed(() => !!editConflict.value)
+
 
 watch(data, (val) => {
     if (val?.content !== undefined) {
         content.value = val.content
         comment.value = ''
+        captcha.value = val.captcha
         savedFormState.value = { content: val.content, comment: '' }
         allowNavigationWithoutWarning.value = false
     }
@@ -201,17 +211,19 @@ useHeadSafe(computed(() => ({
     title: `${t('edit_pg', { name: data.value?.title ?? pagename.value })} - ${config.public.appname}`,
 })))
 
-setPageHeader({ title: t('edit_pg', { name: pagename.value }),
+setPageHeader({
+    title: t('edit_pg', { name: pagename.value }),
     isPage: true,
     pagename: pagename.value,
     pageMode: 'edit',
- })
-watch([data, pagename], () => {
-    setPageHeader({ title: t('edit_pg', { name: data.value?.title ?? pagename.value }),
-    isPage: true,
-    pagename: pagename.value,
-    pageMode: 'edit'
 })
+watch([data, pagename], () => {
+    setPageHeader({
+        title: t('edit_pg', { name: data.value?.title ?? pagename.value }),
+        isPage: true,
+        pagename: pagename.value,
+        pageMode: 'edit'
+    })
 })
 
 // preview
@@ -242,15 +254,47 @@ const setActiveTab = async (tab) => {
 }
 
 const saveButtonEnabled = ref(true)
+
+const refreshSubmitTokens = async (payload = {}) => {
+    if (payload.csrfToken) {
+        setToken(payload.csrfToken)
+    } else {
+        invalidate()
+        await getToken()
+    }
+
+    if (payload.captcha !== undefined) captcha.value = payload.captcha
+
+    turnstileKey.value += 1
+    await nextTick()
+    turnstile.value?.reset()
+}
+
+const handleEditConflict = async (payload = {}) => {
+    submitError.value = 'pages.edit.conflictDesc'
+    submitErrorParams.value = {}
+    editConflict.value = {
+        baseRev: payload.baseRev ?? payload.details?.baseRev ?? baseRev.value,
+        conflictRev: payload.conflictRev ?? payload.details?.conflictRev,
+        conflicts: payload.conflicts ?? [],
+        chunks: payload.chunks ?? [],
+        merged: payload.merged,
+    }
+    conflictRev.value = payload.conflictRev ?? payload.details?.conflictRev ?? conflictRev.value
+    await refreshSubmitTokens(payload)
+}
+
 // save changes
 const submitEdit = async () => {
     submitError.value = null
+    editConflict.value = null
     const captchaResponse = document.querySelector('[name="cf-turnstile-response"]')?.value ?? ''
     saveButtonEnabled.value = false
     try {
         const result = await csrfFetch(`/api/edit/${pagename.value}`, {
             method: 'POST',
             body: {
+                baseRev: baseRev.value,
                 content: content.value,
                 editPrefix: data.value?.prefix || '',
                 editSuffix: data.value?.suffix || '',
@@ -258,14 +302,26 @@ const submitEdit = async () => {
                 'cf-turnstile-response': captchaResponse,
             },
         })
+        if (result?.success === false) {
+            if (result.error === 'EditConflictError') {
+                await handleEditConflict(result)
+            }
+            return
+        }
         savedFormState.value = { content: content.value, comment: comment.value }
         if (result?.redirect) {
             allowNavigationWithoutWarning.value = true
             await navigateTo(result.redirect)
         }
     } catch (e) {
+        if (e?.data?.error === 'EditConflictError') {
+            await handleEditConflict(e.data)
+            return
+        }
+
         submitError.value = e?.data?.i18nKey || 'error'
         submitErrorParams.value = e?.data?.i18nParams || {}
+        await refreshSubmitTokens(e?.data || {})
     } finally {
         saveButtonEnabled.value = true
     }

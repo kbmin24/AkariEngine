@@ -316,6 +316,14 @@
 				"viewHistory": "이 페이지의 역사를 {link}에서 볼 수 있습니다.",
 				"viewHistoryLinkDesc": "여기"
 			}
+		},
+		"edit": {
+			"conflictDesc": "편집 중에 다른 사용자가 문서를 수정했습니다. 아래 내용을 확인하고 편집 내용을 직접 병합해 주세요.",
+			"conflictView": {
+				"conflictN": "편집 충돌 {n}",
+				"base": "원 내용",
+				"userInput": "사용자 입력"
+			}
 		}
 	},
 	"adminTools": {
@@ -415,6 +423,7 @@
 	"ipshown": "비로그인 상태로 편집하면 IP가 영구히 기록되어 공개됩니다.",
 	"preview": "미리보기",
 	"edit_max255": "최대 255자",
+	"edit_max200": "최대 200자",
 	"movepg": "{{name}} 이동",
 	"move": "이동",
 	"move_orgpage": "원 문서명",
@@ -544,5 +553,8 @@
 	"ipAddress": "IP 주소",
 	"loginHistoryRetentionNotice": "최근 12주 동안의 로그인 기록입니다.",
 	"loginHistoryAuditWarning": "관리 로그에 조회 사실이 기록됩니다.",
-	"orphaned_pages": "고립된 문서"
+	"orphaned_pages": "고립된 문서",
+	"admin_hiderev_exists": "숨기려는 리비전에 대한 규칙이 이미 존재합니다.",
+	"admin_hiderev_currentrev": "최신 리비전은 숨길 수 없습니다.",
+	"admin_hiderev_norev": "숨기려는 리비전이 존재하지 않습니다."
 }

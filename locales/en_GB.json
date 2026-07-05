@@ -315,6 +315,14 @@
 				"viewHistory": "You can view the history of this page {link}.",
 				"viewHistoryLinkDesc": "here"
 			}
+		},
+		"edit": {
+			"conflictDesc": "The page was modified by another user while you were editing. Please check the content below and merge your changes manually.",
+			"conflictView": {
+				"conflictN": "Conflict {n}",
+				"base": "Base",
+				"userInput": "Your edit"
+			}
 		}
 	},
 	"adminTools": {
@@ -413,6 +421,7 @@
 	"ipshown": "Editing without logging in results in your IP being permanently recorded and shown.",
 	"preview": "Preview",
 	"edit_max255": "Up to 255 characters",
+	"edit_max200": "Up to 200 characters",
 	"movepg": "Move {{name}}",
 	"move": "Move",
 	"move_orgpage": "Current page name",
@@ -541,5 +550,8 @@
 	"ipAddress": "IP address",
 	"loginHistoryRetentionNotice": "Following are login records for recent 12 weeks.",
 	"loginHistoryAuditWarning": "This lookup will be recorded in the admin log.",
-	"orphaned_pages": "Orphaned pages"
+	"orphaned_pages": "Orphaned pages",
+	"admin_hiderev_exists": "A rule for this revision already exists.",
+	"admin_hiderev_currentrev": "Cannot hide the current revision.",
+	"admin_hiderev_norev": "No such revision."
 }

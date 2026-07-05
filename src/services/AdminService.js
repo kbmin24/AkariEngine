@@ -38,12 +38,15 @@ class AdminService {
         }
 
         if (page.currentRev < revision) {
-            throw new ValidationError({ message: 'No such revision.' })
+            throw new ValidationError({ message: 'No such revision.', i18nKey: 'admin_hiderev_norev' })
+        }
+        if (page.currentRev === revision) {
+            throw new ValidationError({ message: 'Cannot hide the current revision.', i18nKey: 'admin_hiderev_currentrev' })
         }
 
         const existingRules = await this.protectRepository.findAllByTitleAndRevision(title, revision)
         if (existingRules.length > 0) {
-            throw new ValidationError({ message: 'A rule for this revision already exists.' })
+            throw new ValidationError({ message: 'A rule for this revision already exists.', i18nKey: 'admin_hiderev_exists' })
         }
 
         await this.protectRepository.setRevisionProtection(title, revision, level)

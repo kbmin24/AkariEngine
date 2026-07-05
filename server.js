@@ -69,7 +69,6 @@ const sess = session({
     expires: new Date(Date.now() + (30 * 86400 * 1000)), //expires after 30 days
     cookie:
     {
-        secure: config.ssl,
         samesite: 'strict',
         httpOnly: true, //so that the cookie cannot be taken away
         maxAge: 30 * 86400 * 1000,
@@ -85,7 +84,6 @@ const { generateCsrfToken, doubleCsrfProtection } = doubleCsrf({
     cookieName: 'akari-csrf-token',
     cookieOptions: {
         sameSite: 'lax',
-        secure: config.ssl,
         httpOnly: true,
     },
     getCsrfTokenFromRequest: (req) => req.headers['akari-csrf-token'] ?? req.body?._csrf,
