@@ -1,4 +1,3 @@
-import escapeHtml from '../../utils/escapeHTML.js'
 import { getOptions, showCategory } from '../../utils/wikimark/keywordHelper.js'
 import { PageNotFoundError } from '../../services/errors.js'
 
@@ -7,14 +6,12 @@ export default async (req, res) => {
     const name = req.params.name
     const rev = req.query.rev
 
-    let titleSuffix = ''
-    if (rev) titleSuffix = `(r${rev})&nbsp;`
-
+    let isUserAdminPage = false
     const usernameRegex = /User:(.*)/
     if (usernameRegex.test(name)) {
         const username = usernameRegex.exec(name)[1]
         if (username && await services.permission.hasPermission(username, 'admin')) {
-            titleSuffix += `(${res.__('admin')})`
+            isUserAdminPage = true
         }
     }
 
@@ -43,9 +40,6 @@ export default async (req, res) => {
             await services.viewcount.incrementViewCount(name)
 
             const redirect = !(req.query.redirect == 'true' || req.query.from)
-            if (req.query.from) {
-                titleSuffix = res.__("page_redirectedfrom", { page: escapeHtml(req.query.from) }) + '&nbsp;' + titleSuffix
-            }
 
             const opt = await getOptions(page.content)
             let { result, html: content } = await services.render.render(
@@ -70,8 +64,8 @@ export default async (req, res) => {
                 pagename: page.title,
                 canonical: `/w/${page.title}`,
                 updatedAt: page.updatedAt,
-                titleInfo: titleSuffix || null,
-                redirectFrom: req.query.from || null
+                redirectFrom: req.query.from || null,
+                isUserAdminPage
             })
         } else {
             if (/User:.*?/igm.test(name)) {
@@ -121,7 +115,7 @@ export default async (req, res) => {
             isPage: true,
             pageMode: 'view',
             pagename: page.title,
-            titleInfo: titleSuffix || null,
+            isUserAdminPage,
             rev
         })
     }

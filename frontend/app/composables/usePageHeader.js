@@ -1,6 +1,9 @@
 const DEFAULTS = {
     title: '',
     titleInfo: null,
+    rev: null,
+    redirectFrom: null,
+    isUserAdminPage: false,
     pagename: null,
     isPage: false,
     pageMode: 'page',

@@ -37,7 +37,16 @@
                     <NuxtLink v-if="header.isPage" :to="`/w/${header.pagename}`">{{ header.title }}</NuxtLink>
                     <template v-else>{{ header.title }}</template>
                 </h2>
-                <div v-if="header.titleInfo" class="simple-title-info" v-html="header.titleInfo"></div>
+                <div v-if="header.titleInfo || header.rev || header.redirectFrom || header.isUserAdminPage"
+                    class="simple-title-info">
+                    <span v-if="header.titleInfo">{{ header.titleInfo }}</span>
+                    <PageTitleInfo
+                        v-else
+                        :rev="header.rev"
+                        :redirect-from="header.redirectFrom"
+                        :is-user-admin-page="header.isUserAdminPage"
+                    />
+                </div>
                 <nav v-if="header.isPage" class="simple-page-tools" aria-label="Page tools">
                     <NuxtLink :to="`/w/${header.pagename}`">{{ $t('page') }}</NuxtLink>
                     <NuxtLink :to="`/edit/${header.pagename}`">{{ $t('edit') }}</NuxtLink>

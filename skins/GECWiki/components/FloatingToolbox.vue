@@ -6,7 +6,7 @@
         <button role="button" class="btn btn-primary" @click="scrollToBottom">
             <i class="fas fa-arrow-down" aria-hidden="true"></i>
         </button>
-        <button v-if="hasToc" role="button" class="btn btn-primary" @click="toggleToc">
+        <button v-if="hasToc" role="button" class="btn btn-primary" @click="scrollToToc">
             <i class="fas fa-bars" aria-hidden="true"></i>
         </button>
     </div>
@@ -53,8 +53,10 @@ watch(
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
 
-const toggleToc = () => {
-    const toc = document.getElementById('toc')
-    if (toc) toc.style.display = toc.style.display === 'none' ? '' : 'none'
+const scrollToToc = () => {
+    const tocElement = document.getElementById('toc')
+    if (tocElement) {
+        tocElement.scrollIntoView({ behavior: 'smooth' })
+    }
 }
 </script>

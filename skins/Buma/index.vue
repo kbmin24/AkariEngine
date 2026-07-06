@@ -92,14 +92,21 @@
                         </NuxtLink>
                         <template v-else>{{ header.title }}</template>
                     </h1>
-                    <h2 v-if="header.titleInfo || header.updatedAt || header.description" class="subtitle">
-                        <span v-if="header.titleInfo" v-html="header.titleInfo"></span>
+                    <h2 v-if="header.titleInfo || header.rev || header.redirectFrom || header.isUserAdminPage || header.updatedAt || header.description"
+                        class="subtitle">
+                        <span v-if="header.titleInfo">{{ header.titleInfo }}</span>
+                        <PageTitleInfo
+                            v-else-if="header.rev || header.redirectFrom || header.isUserAdminPage"
+                            :rev="header.rev"
+                            :redirect-from="header.redirectFrom"
+                            :is-user-admin-page="header.isUserAdminPage"
+                        />
                         <span v-if="header.updatedAt">
-                            <span v-if="header.titleInfo"> / </span>
+                            <span v-if="header.titleInfo || header.rev || header.redirectFrom || header.isUserAdminPage"> / </span>
                             {{ $t('recentlyEditedAt') }}: {{ $d(new Date(header.updatedAt), 'full') }}
                         </span>
                         <span v-if="header.description">
-                            <span v-if="header.titleInfo || header.updatedAt"> / </span>
+                            <span v-if="header.titleInfo || header.rev || header.redirectFrom || header.isUserAdminPage || header.updatedAt"> / </span>
                             {{ header.description }}
                         </span>
                     </h2>
@@ -368,5 +375,9 @@ onBeforeUnmount(() => {
 .buma-navbar-link:hover {
     background-color: whitesmoke;
     color: #3273dc;
+}
+
+.container {
+    overflow-x: scroll;
 }
 </style>

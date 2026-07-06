@@ -83,21 +83,21 @@ const errorI18nParams = computed(() => error.value?.data?.i18nParams ?? data.val
 const hasHistory = computed(() => !!(error.value?.data?.hasHistory ?? data.value?.hasHistory))
 const userPageEditLink = computed(() => `User:${pagename.value.split(':')[1] ?? pagename.value}`)
 const isRedirect = computed(() => route.query.redirect === 'true')
+const redirectFrom = computed(() => data.value?.redirectFrom ?? route.query.from ?? null)
 const showCategory = computed(() => data.value?.showCategory ?? true)
 const categories = computed(() =>  {
     if (!data.value?.categories) return []
     return data.value.categories.map(cat => cat.category)
 })
+const appendRedirectQuery = (redirect) => {
+    const url = new URL(redirect, 'http://akari.local') // dummy base URL to parse relative URLs
+    url.searchParams.set('redirect', 'true')
+    return `${url.pathname}${url.search}${url.hash}`
+}
 const processRedirection = async (val) => {
     if (isRedirect.value) return
     if (val?.redirect) {
-        await navigateTo({
-            path: val.redirect,
-            query: {
-                redirect: 'true',
-                from: pagename.value,
-            }
-        }, {
+        await navigateTo(appendRedirectQuery(val.redirect), {
             replace: true,
         })
     }
@@ -118,7 +118,9 @@ const applyHeader = () => {
         setPageHeader({
             title: data.value.title,
             pagename: data.value.pagename,
-            titleInfo: data.value.titleInfo ?? null,
+            rev: data.value.rev ?? null,
+            redirectFrom: redirectFrom.value,
+            isUserAdminPage: data.value.isUserAdminPage ?? false,
             isPage: true,
             pageMode: 'page',
             updatedAt: data.value.updatedAt ?? null,

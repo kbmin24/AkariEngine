@@ -10,8 +10,16 @@
                                 {{ header.title }}
                             </NuxtLink>
                             <template v-else>{{ header.title }}</template>
-                            <h5 v-if="header.titleInfo" style="display: inline; margin-left: 10px;"
-                                v-html="header.titleInfo"></h5>
+                            <h5 v-if="header.titleInfo || header.rev || header.redirectFrom || header.isUserAdminPage"
+                                style="display: inline; margin-left: 10px;">
+                                <span v-if="header.titleInfo">{{ header.titleInfo }}</span>
+                                <PageTitleInfo
+                                    v-else
+                                    :rev="header.rev"
+                                    :redirect-from="header.redirectFrom"
+                                    :is-user-admin-page="header.isUserAdminPage"
+                                />
+                            </h5>
                         </h1>
                         <PageTools v-if="header.isPage" :pagename="header.pagename" :pageMode="header.pageMode" />
                         <template v-if="header.updatedAt">
