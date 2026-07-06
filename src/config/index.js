@@ -37,7 +37,7 @@ class Config {
                 'ruby', 'rp', 'rt'],
 
             allowedAttributes: {
-                a: ['href', 'name', 'id', 'target', 'rel', 'class', 'title', 'style'],
+                a: ['href', 'name', 'id', 'target', 'rel', 'class', 'title', 'style', 'data-is-external'],
                 code: ['class', 'id', 'style'],
                 i: ['class', 'id', 'aria-hidden', 'style'],
                 font: ['class', 'id', 'size', 'color', 'face', 'style'],
@@ -66,6 +66,25 @@ class Config {
                 iframe: ['class', 'width', 'height', 'style', 'src', 'frameborder', 'allow', 'allowfullscreen'],
                 img: ['class', 'id', 'style', 'height', 'width', 'src', 'srcset', 'alt', 'title'],
                 blockquote: ['class', 'id', 'style']
+            },
+            transformTags: {
+                a: (tagName, attribs) => {
+                    const href = attribs.href || ''
+                    const isExternal = /^https?:\/\//i.test(href)
+                    if (isExternal) {
+                        return {
+                            tagName,
+                            attribs: {
+                                ...attribs,
+                                'data-is-external': 'true'
+                            }
+                        }
+                    }
+
+                    const rest = { ...attribs }
+                    delete rest['data-is-external']
+                    return { tagName, attribs: rest }
+                }
             },
             allowedStyles: {
                 '*': {

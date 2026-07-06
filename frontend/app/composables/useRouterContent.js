@@ -5,11 +5,17 @@ export function useRouterContent(elRef) {
         const a = e.target.closest('a[href]')
         if (!a) return
         const href = a.getAttribute('href')
-        // External links have target="_blank" set by HTMLVisitor; let them through.
-        // Also skip fragment-only links and anything with an explicit target.
-        if (!href || a.target || href.startsWith('#')) return
+        if (!href || href.startsWith('#')) return
+
+        const isExternal = a.dataset.isExternal === 'true'
+        if (isExternal || a.target) return
+
+        const origin = globalThis.location.origin
+        const url = new URL(href, origin)
+        if (url.origin !== origin) return
+
         e.preventDefault()
-        router.push(href)
+        router.push(url.pathname + url.search + url.hash)
     }
 
     onMounted(() => elRef.value?.addEventListener('click', onClick))

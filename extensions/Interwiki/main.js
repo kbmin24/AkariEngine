@@ -21,7 +21,7 @@ let onCall = (input, renderOptions, repositories, canRedirect) =>
         {
             p1 = linkfix(p1)
             let p1Tooltip = i + p1.replace(/'/g,`&apos;`)
-            return `<a href='${mapping[i] + p1}' rel='nofollow noopener noreferrer' title='${p1Tooltip}'>${i}:${p1}</a>`
+            return `<a href='${mapping[i] + p1}' rel='nofollow noopener noreferrer' data-is-external='true' title='${p1Tooltip}'>${i}:${p1}</a>`
         })
 
         let r2 = new RegExp(`\\[\\[${i}:(.*?)\\|(.*?)\\]\\]`, 'igm')
@@ -29,7 +29,7 @@ let onCall = (input, renderOptions, repositories, canRedirect) =>
         {
             p1 = linkfix(p1)
             let p1Tooltip = i + p1.replace(/'/g,`&apos;`)
-            return `<a href='${mapping[i] + p1}' rel='nofollow noopener noreferrer' title='${p1Tooltip}'>${p2}</a>`
+            return `<a href='${mapping[i] + p1}' rel='nofollow noopener noreferrer' data-is-external='true' title='${p1Tooltip}'>${p2}</a>`
         })
     }
     return {input, renderOptions, repositories, canRedirect}

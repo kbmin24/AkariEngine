@@ -610,6 +610,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (target.startsWith('http:') || target.startsWith('https:')) {
             return dedent`<a href='${this.#encodeTargetExternal(target)}'
             target='_blank'
+            data-is-external='true'
             rel='nofollow noopener noreferrer'
             title='${titleAttr}'
             class='ren-extlink'>
