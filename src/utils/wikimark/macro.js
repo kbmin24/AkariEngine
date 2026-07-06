@@ -107,7 +107,7 @@ const macroRegistry = {
             if (!isString(args)) {
                 return { result: 'error', output: errMessage('COLOR Macro Error', 'Illegal arguments') }
             }
-            const lastComma = args.lastIndexOf('|')
+            const lastComma = args.lastIndexOf(',')
             const color = args.substring(lastComma + 1, args.length)
             const text = args.substring(0, lastComma)
             return {
