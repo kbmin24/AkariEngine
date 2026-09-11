@@ -43,6 +43,33 @@ const createService = ({
     }
 }
 
+describe('PageService.getEditViewModel', () => {
+    test('allows recreating a deleted page from its next revision', async () => {
+        const existingPage = {
+            title: 'DeletedPage',
+            content: 'old deleted content\n',
+            currentRev: 2,
+            deleted: true,
+        }
+        const { service } = createService({ existingPage })
+
+        const editModel = await service.getEditViewModel({
+            title: 'DeletedPage',
+            aclState: { allowed: true },
+            username: 'Alice',
+        })
+
+        expect(editModel).toMatchObject({
+            title: 'DeletedPage',
+            baseRev: 2,
+            content: '',
+            prefix: '',
+            suffix: '',
+            disabled: false,
+        })
+    })
+})
+
 describe('PageService.editPage', () => {
     test('continues revision numbers when recreating a deleted page', async () => {
         const existingPage = {

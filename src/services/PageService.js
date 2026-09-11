@@ -108,7 +108,6 @@ class PageService {
         title = title.trim()
 
         const page = await this.pageRepo.findByTitle(title)
-        if (page && page.deleted) throw new PageNotFoundError(title)
         if (!page && title.toLowerCase().startsWith('file:')) {
             throw new ValidationError({
                 i18nKey: 'pagename_illegalfile',
@@ -126,7 +125,7 @@ class PageService {
             }
             : undefined
 
-        const rawContent = page ? page.content : ''
+        const rawContent = page && !page.deleted ? page.content : ''
         const sectionResult = actionAllowed
             ? this.splitEditSection(rawContent, section)
             : { prefix: '', suffix: '', content: rawContent }
