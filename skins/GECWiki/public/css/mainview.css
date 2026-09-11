@@ -172,3 +172,9 @@ body
 {
     font-family: sans-serif;
 }
+
+.ren-table td
+{
+    /* Bootstrap may override td backrgound color */
+    background-color: inherit !important;
+}
