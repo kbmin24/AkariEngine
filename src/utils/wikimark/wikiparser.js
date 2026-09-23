@@ -31,6 +31,7 @@ export class WikiParser extends CstParser {
         const isNotOpener = (type) => () => !isOpener(type)()
         const isNotCloser = () => !$.closers.has($.LA(1))
         const isValidTableDelim = () => $.validTableDelims.has($.LA(1))
+        const mathContentTokens = allTokens.filter(tokenType => tokenType !== T.InlineMathDelim)
 
 
         $.RULE('document', () => {
@@ -231,6 +232,18 @@ export class WikiParser extends CstParser {
             })
         })
 
+        $.RULE('mathContent', () => {
+            $.OR(mathContentTokens.map(tokenType => ({
+                ALT: () => $.CONSUME(tokenType)
+            })))
+        })
+
+        $.RULE('inlineMath', () => {
+            $.CONSUME(T.InlineMathDelim)
+            $.AT_LEAST_ONE(() => $.SUBRULE($.mathContent))
+            $.CONSUME1(T.InlineMathDelim)
+        })
+
         $.RULE('inline', () => {
             $.OR([
                 // identify if this is a matched opener
@@ -250,9 +263,9 @@ export class WikiParser extends CstParser {
                 { GATE: () => isOpener(T.LinkOpen)() && hasLinkPipe($)(), ALT: () => $.SUBRULE($.namedLink) },
                 { GATE: isOpener(T.LinkOpen), ALT: () => $.SUBRULE($.simpleLink) },
                 { GATE: isOpener(T.TemplateArgOpen), ALT: () => $.SUBRULE($.templateArg) },
+                { GATE: isOpener(T.InlineMathDelim), ALT: () => $.SUBRULE($.inlineMath) },
                 { ALT: () => $.CONSUME(T.Macro) },
                 { ALT: () => $.CONSUME(T.DisplayMath) },
-                { ALT: () => $.CONSUME(T.InlineMath) },
                 { ALT: () => $.CONSUME(T.SpaceTab) },
                 { ALT: () => $.CONSUME(T.Text) },
                 { ALT: () => $.CONSUME(T.EscapeChar) },
@@ -282,6 +295,9 @@ export class WikiParser extends CstParser {
                 { GATE: isNotOpener(T.LinkOpen), ALT: () => $.CONSUME(T.LinkOpen) },
                 { GATE: isNotCloser, ALT: () => $.CONSUME(T.LinkClose) },
                 { ALT: () => $.CONSUME(T.Pipe) },
+
+                // unmatched inline-math delimiter
+                { GATE: isNotOpener(T.InlineMathDelim), ALT: () => $.CONSUME(T.InlineMathDelim) },
 
                 // orphaned table delims
                 { GATE: () => !isValidTableDelim(), ALT: () => $.CONSUME(T.TableDelim) },

@@ -194,6 +194,7 @@ export class PreprocessVisitor extends BaseCstVisitor {
         if (ctx.anonymousFootnoteFallback) return this.visit(ctx.anonymousFootnoteFallback[0])
         if (ctx.simpleLink) return this.visit(ctx.simpleLink[0])
         if (ctx.namedLink) return this.visit(ctx.namedLink[0])
+        if (ctx.inlineMath) return
         if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]

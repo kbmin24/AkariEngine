@@ -75,6 +75,43 @@ function scanInlineMatches(tokens) {
     return { openers, closers }
 }
 
+/**
+ * Pair inline-math dollar delimiters without allowing a pair to cross a
+ * structural table-cell boundary. The lexer stores the candidate closing
+ * offset and opaque source content on each possible opener.
+ */
+function scanInlineMathMatches(tokens, validTableDelims) {
+    const openers = new Set()
+    const closers = new Set()
+    let pendingOpener = null
+
+    for (const tok of tokens) {
+        if (validTableDelims.has(tok)) {
+            pendingOpener = null
+            continue
+        }
+
+        if (tok.tokenType === T.LF) {
+            // The legacy inline-math syntax permits an escaped newline.
+            if (pendingOpener?.payload?.closingOffset > tok.startOffset) continue
+            pendingOpener = null
+            continue
+        }
+
+        if (tok.tokenType !== T.InlineMathDelim) continue
+
+        if (pendingOpener?.payload?.closingOffset === tok.startOffset) {
+            openers.add(pendingOpener)
+            closers.add(tok)
+            pendingOpener = null
+        } else {
+            pendingOpener = tok
+        }
+    }
+
+    return { openers, closers }
+}
+
 function scanHeadingMatches(tokens) {
     const matchedHeadingOpens = new Set()
     let pendingHeading = null  // { token, level }
@@ -179,16 +216,20 @@ function scanValidTableDelims(tokens) {
  * @returns {{openers: Set<Token>, closers: Set<Token>, matchedHeadingOpens: Set<Token>, matchedFenceOpens: Set<Token>, validTableDelims: Set<Token>}} sets of matched openers and closers
  */
 export function scanTokenMatches(tokens) {
+    // Tables must be identified first so inline math cannot pair dollars from
+    // different cells.
+    const validTableDelims = scanValidTableDelims(tokens)
+
     const { openers, closers } = scanInlineMatches(tokens)
+    const inlineMathMatches = scanInlineMathMatches(tokens, validTableDelims)
+    for (const opener of inlineMathMatches.openers) openers.add(opener)
+    for (const closer of inlineMathMatches.closers) closers.add(closer)
 
     // scan for matched heading open/close pairs (line-scoped, asymmetric)
     const matchedHeadingOpens = scanHeadingMatches(tokens)
 
     // scan for matched FencedCode pairs (block-scoped, symmetric)
     const matchedFenceOpens = scanMatchedFencedCode(tokens)
-
-    // scan for valid TableDelims
-    const validTableDelims = scanValidTableDelims(tokens)
 
     return { openers, closers, matchedHeadingOpens, matchedFenceOpens, validTableDelims }
 }

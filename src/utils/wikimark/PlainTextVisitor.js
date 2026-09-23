@@ -107,11 +107,11 @@ export class PlainTextVisitor extends BaseCstVisitor {
         if (ctx.anonymousFootnoteFallback) return ''
         if (ctx.simpleLink) return this.visit(ctx.simpleLink[0])
         if (ctx.namedLink) return this.visit(ctx.namedLink[0])
+        if (ctx.inlineMath) return this.visit(ctx.inlineMath[0])
         if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
         if (ctx.DisplayMath) return ctx.DisplayMath[0].payload.content
-        if (ctx.InlineMath) return ctx.InlineMath[0].payload.content
 
         // orphaned tokens — render as their literal characters
         for (const tokenName of orphanableTokens) {
@@ -119,6 +119,10 @@ export class PlainTextVisitor extends BaseCstVisitor {
         }
 
         return ''
+    }
+
+    inlineMath(ctx) {
+        return ctx.InlineMathDelim[0].payload.content
     }
 
     #visitInlines(ctx) {

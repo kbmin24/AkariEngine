@@ -421,6 +421,7 @@ export class HTMLVisitor extends BaseCstVisitor {
         if (ctx.anonymousFootnoteFallback) return this.visit(ctx.anonymousFootnoteFallback[0])
         if (ctx.simpleLink) return this.visit(ctx.simpleLink[0])
         if (ctx.namedLink) return this.visit(ctx.namedLink[0])
+        if (ctx.inlineMath) return this.visit(ctx.inlineMath[0])
         if (ctx.SpaceTab) return ctx.SpaceTab[0].image
         if (ctx.Text) return ctx.Text[0].image
         if (ctx.EscapeChar) return ctx.EscapeChar[0].image[1]
@@ -430,17 +431,17 @@ export class HTMLVisitor extends BaseCstVisitor {
             return `<span class='mathd'>${content}</span>`
         }
 
-        if (ctx.InlineMath) {
-            const content = ctx.InlineMath[0].payload.content
-            return `<span class='math'>${content}</span>`
-        }
-
         // unmatched delimiters, render as their literal characters
         for (const tokenName of orphanableTokens) {
             if (ctx[tokenName]) return ctx[tokenName][0].image
         }
 
         return ''
+    }
+
+    inlineMath(ctx) {
+        const content = ctx.InlineMathDelim[0].payload.content
+        return `<span class='math'>${content}</span>`
     }
 
     bold(ctx) {

@@ -11,6 +11,20 @@ function scan(input) {
 
 describe('scanTokenMatches', () => {
     describe('Symmetric tokens', () => {
+        test('matches inline-math delimiters within one cell', () => {
+            const tokens = lex('$x$')
+            const { openers, closers } = scanTokenMatches(tokens)
+            expect(openers.has(tokens[0])).toBe(true)
+            expect(closers.has(tokens[2])).toBe(true)
+        })
+
+        test('does not match inline-math delimiters across table cells', () => {
+            const { openers, closers, validTableDelims } = scan('|| $150 || $130 ||')
+            expect(openers.size).toBe(0)
+            expect(closers.size).toBe(0)
+            expect(validTableDelims.size).toBe(3)
+        })
+
         test('matched bold delimiters produce one opener and one closer', () => {
             const tokens = lex("'''bold'''")
             const { openers, closers } = scanTokenMatches(tokens)

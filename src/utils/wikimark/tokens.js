@@ -3,7 +3,7 @@ import { createToken, Lexer } from "chevrotain"
 // we need four slashes to bc it is escaped twice...
 const BSLASH = '\\\\'
 
-const SPECIAL_CHARS = `_'^,"/[\\](){}:=\\-${BSLASH}\\*#\\r\\n|>`
+const SPECIAL_CHARS = `_'^,"/[\\](){}:=\\-${BSLASH}\\*#\\r\\n|>$`
 
 const EscapeChar = createToken({
     name: 'EscapeChar',
@@ -129,14 +129,23 @@ const DisplayMath = createToken({
     line_breaks: false,
 })
 
-const inlineMathPattern = /\$((?:[^$\\]|\\.|\\\n)+)\$/y
-const InlineMath = createToken({
-    name: 'InlineMath',
+const inlineMathCandidatePattern = /\$((?:[^$\\]|\\.|\\\n)+)\$/y
+const inlineMathDelimPattern = /\$/y
+const InlineMathDelim = createToken({
+    name: 'InlineMathDelim',
     pattern: (text, offset) => {
-        inlineMathPattern.lastIndex = offset
-        const match = inlineMathPattern.exec(text)
+        inlineMathDelimPattern.lastIndex = offset
+        const match = inlineMathDelimPattern.exec(text)
         if (!match) return null
-        match.payload = { content: match[1] }
+
+        // Preserve the exact opaque content for a possible matching delimiter.
+        // scanTokenMatches decides whether the candidate is valid after table
+        // cell boundaries are known.
+        inlineMathCandidatePattern.lastIndex = offset
+        const candidate = inlineMathCandidatePattern.exec(text)
+        match.payload = candidate
+            ? { content: candidate[1], closingOffset: offset + candidate[0].length - 1 }
+            : {}
         return match
     },
     line_breaks: false,
@@ -347,7 +356,7 @@ export const T = {
     MultilineMacro,
     FencedCode,
     DisplayMath,
-    InlineMath,
+    InlineMathDelim,
     EscapeChar,
     LeftAlignOpen,
     CenterAlignOpen,
@@ -389,7 +398,7 @@ export const allTokens = Object.values(T)
 
 export const inlineTokens = new Set([
     DisplayMath,
-    InlineMath,
+    InlineMathDelim,
     EscapeChar,
     UnderlineDelim,
     BoldDelim,
@@ -459,6 +468,6 @@ export const orphanableTokens = [
     "H6Open",           "H6Close",          "FootnoteCloser",   "MacroCloser",
     "FootnoteOpener",   "TOC",              "Footnote",         "LinkOpen",
     "LinkClose",        "Pipe",             "TemplateArgOpen",  "TemplateArgClose",
-    "TableDelim",      "TableDelimStart",
+    "TableDelim",      "TableDelimStart", "InlineMathDelim",
 ]
 /* @formatter:on */

@@ -399,6 +399,19 @@ describe('Lexer', () => {
         })
     }),
 
+    describe('InlineMathDelim', () => {
+        test('tokenizes inline math as separate delimiters and content', () => {
+            expect(tokenNames('$x$')).toEqual(['InlineMathDelim', 'Text', 'InlineMathDelim'])
+        })
+
+        test('does not swallow a table-cell delimiter', () => {
+            expect(tokenNames('|| $150 || $130 ||')).toEqual([
+                'TableDelimStart', 'SpaceTab', 'InlineMathDelim', 'Text', 'SpaceTab',
+                'TableDelim', 'SpaceTab', 'InlineMathDelim', 'Text', 'SpaceTab', 'TableDelim'
+            ])
+        })
+    }),
+
     describe('Table', () => {
         test('Correctly identifies delimeters', () => {
             expect(tokenNames('||')).toEqual(['TableDelimStart'])

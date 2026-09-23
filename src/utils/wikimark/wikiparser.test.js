@@ -461,6 +461,10 @@ describe('WikiParser', () => {
                 expect(parse('|| a || b ||').errors).toHaveLength(0)
             })
 
+            test('currency values do not form inline math across cells', () => {
+                expect(parse('|| $150 || $130 ||').errors).toHaveLength(0)
+            })
+
             test('single row, 3 columns', () => {
                 expect(parse('|| a || b || c ||').errors).toHaveLength(0)
             })
@@ -513,6 +517,12 @@ describe('WikiParser', () => {
 
             test('single row, 2 columns: row has 2 lines', () => {
                 const { cst } = parse('|| a || b ||')
+                const row = cst.children.block[0].children.table[0].children.tableRow[0]
+                expect(row.children.line).toHaveLength(2)
+            })
+
+            test('currency values produce two cells', () => {
+                const { cst } = parse('|| $150 || $130 ||')
                 const row = cst.children.block[0].children.table[0].children.tableRow[0]
                 expect(row.children.line).toHaveLength(2)
             })
