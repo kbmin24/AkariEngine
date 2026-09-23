@@ -4,11 +4,7 @@ This file provides guidance to AI agents when working with code in this reposito
 
 ## Project Overview
 
-AkariEngine is a Node.js wiki engine (ESM, `"type": "module"`) built on Express 4, Sequelize ORM, and Socket.IO. It supports SQLite and MariaDB. The UI and content are primarily in Korean, but is undergoing a shift to i18n support.
-
-**The backend refactor is largely complete.** When style conflicts arise, follow the conventions in `src/routes/pages.routes.js` and its dependencies.
-
-**The frontend is being migrated from EJS to Nuxt.** EJS templates currently live in `skins/` (e.g. `skins/GECWiki/*.ejs`). Scripts in `public/js/` will be transitioned into Nuxt incrementally. No frontend conventions are established yet — do not introduce new EJS templates or new files in `public/js/` unless explicitly asked.
+AkariEngine is a Node.js wiki engine (ESM, `"type": "module"`) built on Express 4, Sequelize ORM, and Socket.IO. It supports SQLite and MariaDB. The UI and content are primarily i18n-compatible, but some server-side messages are given out in plain english.
 
 ## Commands
 

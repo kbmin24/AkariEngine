@@ -115,11 +115,12 @@ db.sqlite
 uploads/*
 !uploads/.gitkeep
 public/boarduploads/*
+public/uploads/*
 
 LocalSettings.json
 extensions/Board/LocalSettings.json
-google3cb516e66b73224c.html 
-naver3e0ac11747bec50c1fe96401d179952c.html 
+google3cb516e66b73224c.html
+naver3e0ac11747bec50c1fe96401d179952c.html
 favicon.ico
 robots.txt
 

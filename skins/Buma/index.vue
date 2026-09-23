@@ -144,7 +144,7 @@
         </section>
 
         <section class="section buma-content-section">
-            <div class="container">
+            <div class="container container-main">
                 <Satobox />
                 <article class="wiki-article">
                     <slot />
@@ -377,7 +377,7 @@ onBeforeUnmount(() => {
     color: #3273dc;
 }
 
-.container {
+.container-main {
     overflow-x: scroll;
 }
 </style>
