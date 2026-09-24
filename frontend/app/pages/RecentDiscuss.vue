@@ -1,7 +1,9 @@
 <template>
     <div v-if="isError" class="p-3">
-        <LocalizedMessage :keypath="errorMessageKey" :params="errorMessageParams" :message="errorMessageFallback"
-            tag="p" />
+        <div class="alert alert-danger" role="alert">
+            <LocalizedMessage :keypath="errorMessageKey" :params="errorMessageParams" :message="errorMessageFallback"
+            tag="span" />
+        </div>
     </div>
     <div v-else>
         <div class="recent-discuss-toolbar">
@@ -30,10 +32,10 @@
                 <tbody>
                     <tr v-for="discussion in discussions" :key="discussion.id ?? discussion.threadID">
                         <th scope="row" class="recent-discuss-cell">
-                            <NuxtLink :to="threadLink(discussion.dataValues.threadID)">{{ discussion.dataValues.threadname }}</NuxtLink>
+                            <NuxtLink :to="threadLink(discussion.threadID)">{{ discussion.threadname }}</NuxtLink>
                         </th>
                         <td class="recent-discuss-cell">
-                            <NuxtLink :to="pageLink(discussion.dataValues.pagename)">{{ discussion.dataValues.pagename }}</NuxtLink>
+                            <NuxtLink :to="pageLink(discussion.pagename)">{{ discussion.pagename }}</NuxtLink>
                         </td>
                         <td>{{ formatDate(discussion) }}</td>
                     </tr>
@@ -121,8 +123,8 @@ const formatDate = discussion => {
     }).format(date)
 }
 
-const pageLink = page => `/w/${page}`
-const threadLink = threadID => `/thread/${threadID}`
+const pageLink = page => `/w/${encodeURIComponent(page)}`
+const threadLink = threadID => `/thread/${encodeURIComponent(threadID)}`
 const statusLink = nextIsOpen => ({
     path: route.path,
     query: {
