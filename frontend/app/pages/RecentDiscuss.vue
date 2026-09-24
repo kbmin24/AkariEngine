@@ -30,10 +30,10 @@
                 <tbody>
                     <tr v-for="discussion in discussions" :key="discussion.id ?? discussion.threadID">
                         <th scope="row" class="recent-discuss-cell">
-                            <NuxtLink :to="threadLink(discussion.threadID)">{{ discussion.dataValues.threadname }}</NuxtLink>
+                            <NuxtLink :to="threadLink(discussion.dataValues.threadID)">{{ discussion.dataValues.threadname }}</NuxtLink>
                         </th>
                         <td class="recent-discuss-cell">
-                            <NuxtLink :to="pageLink(discussion.pagename)">{{ discussion.dataValues.pagename }}</NuxtLink>
+                            <NuxtLink :to="pageLink(discussion.dataValues.pagename)">{{ discussion.dataValues.pagename }}</NuxtLink>
                         </td>
                         <td>{{ formatDate(discussion) }}</td>
                     </tr>
