@@ -23,6 +23,9 @@
             "storage": "/db.sqlite"
         }
     },
+    "redis": {
+        "enabled": true,
+    }
     "meilisearch": {
         "enabled": true,
         "host": "http://127.0.0.1:7700",

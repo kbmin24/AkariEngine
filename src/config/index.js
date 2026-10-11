@@ -13,7 +13,7 @@ class Config {
     get port() { return this.settings.port }
     get appName() { return this.settings.appname }
     get license() { return this.settings.licence }
-    get dateTimeFormat() { return this.settings.dateTimeFormat }
+    get dateTimeFormat() { return this.settings.dateTimeFormat || 'YYYY/MM/DD HH:mm:ss' }
     get database() { return this.settings.database }
     get sessionSecret() { return this.settings.session_secret }
     get isPrivate() { return this.settings.isPrivate || false }
