@@ -6,7 +6,6 @@ AkariEngine is a Node.js based wiki engine, built with customizability in mind. 
 ## Key Features
 * Simple and powerful markup (grammar) with features such as tables, videos and maps
 * Blazing fast wikitext rendering using [Chevrotain](https://chevrotain.io/docs/)
-* To-the-point, no hassle configuration with a single .json file
 * Real time, thread-like discussion with Socket.IO
 * Flexible database choice supporting MySQL/MariaDB and SQLite
 * Built in permission/ACL management
@@ -14,6 +13,7 @@ AkariEngine is a Node.js based wiki engine, built with customizability in mind. 
 * Full text search via Meilisearch
 * Available scalability with Redis caching
 * Server side extension system for routes, models and custom rendering behavior
+* Internationalization with English and Korean support
 
 ### Use cases
 * [GECWiki](https://gecwiki.kr) (website retired)
