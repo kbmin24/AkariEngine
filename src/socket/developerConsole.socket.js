@@ -37,6 +37,6 @@ export default function registerDeveloperConsoleSocketHandlers(socket, context) 
     })
 
     socket.on('input', async data => {
-        await adminCommand(socket, data.command)
+        await adminCommand(socket, data.command, services)
     })
 }

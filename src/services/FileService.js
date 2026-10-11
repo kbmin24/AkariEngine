@@ -6,13 +6,15 @@ import {
 } from "./errors.js"
 import paths from "../utils/paths.js"
 import logger from '../utils/logger.js'
+import { withPageChanges } from './RenderCacheService.js'
 
 class FileService {
-    constructor(pageService, permissionService, fileRepository, pageRepository) {
+    constructor(pageService, permissionService, fileRepository, pageRepository, renderCache = null) {
         this.pageService = pageService
         this.permissionService = permissionService
         this.fileRepository = fileRepository
         this.pageRepository = pageRepository
+        this.renderCache = renderCache
     }
 
     defaultFileTypes = ['jpeg', 'jpg', 'jfif', 'png', 'gif', 'webp', 'svg']
@@ -44,15 +46,17 @@ class FileService {
             })
         }
 
-        await this.fileRepository.create(filename, filenameOnDisk, username, fileExplanation)
-        await this.pageService.editPage({
-            title: filePageName,
-            content: fileExplanation,
-            user: username,
-            comment: changeDescription,
-            type: 'upload',
-            ipAddress,
-            iscreatingFile: true
+        await withPageChanges(this.renderCache, [{ title: `File:${filename}`, existenceChanged: true }], async () => {
+            await this.fileRepository.create(filename, filenameOnDisk, username, fileExplanation)
+            await this.pageService.editPage({
+                title: filePageName,
+                content: fileExplanation,
+                user: username,
+                comment: changeDescription,
+                type: 'upload',
+                ipAddress,
+                iscreatingFile: true
+            })
         })
     }
 
@@ -61,11 +65,11 @@ class FileService {
         if (!user) throw new AuthenticationRequiredError()
         await this.permissionService.requirePermission(user, 'purgepage')
 
-        const result = await this.pageRepository.purgePage({
+        const result = await withPageChanges(this.renderCache, [{ title: `File:${filename}`, existenceChanged: true }], () => this.pageRepository.purgePage({
             title: `File:${filename}`,
             doneBy: user,
             comment
-        })
+        }))
 
         if (!result.purged) throw new ValidationError('File not found')
 

@@ -207,8 +207,10 @@
 		},
 		"xref": {
 			"dataLoadError": "역링크를 불러오는 도중 오류가 발생했습니다.",
-			"resultCount": "총 {count}개의 역링크가 있습니다.",
-			"noResults": "역링크가 없습니다."
+			"resultCount": "링크와 포함을 합해 총 {count}개의 역링크가 있습니다.",
+			"noResults": "링크하거나 포함하는 문서가 없습니다.",
+			"normalLink": "링크",
+			"include": "포함"
 		},
 		"pageList": {
 			"dataLoadError": "문서 목록을 불러오는 도중 오류가 발생했습니다.",

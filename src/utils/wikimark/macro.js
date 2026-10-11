@@ -12,6 +12,7 @@ import dateandtime from 'date-and-time'
 import dedent from 'dedent'
 import escapeHTML from '../escapeHTML.js'
 import hljs from 'highlight.js'
+import { parseIncludeArgs } from './includeArgs.js'
 
 // helper functions
 function errMessage(name, reason) {
@@ -52,7 +53,7 @@ const macroRegistry = {
     include: {
         getRequest: (args) => {
             if (!isString(args)) return null
-            const { default: pagename } = findMacroArgs(args)
+            const { title: pagename } = parseIncludeArgs(args)
             if (!pagename) return null
             return { repo: 'includes', query: { args } }
         },
@@ -134,6 +135,7 @@ const macroRegistry = {
         }
     },
     dday: {
+        timeDependent: true,
         render: (args) => {
             if (!isString(args)) {
                 return { result: 'error', output: errMessage('DDAY Macro Error', 'No argument provided') }
@@ -151,6 +153,7 @@ const macroRegistry = {
         }
     },
     agek: {
+        timeDependent: true,
         render: (args) => {
             if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) {
                 return { result: 'error', output: errMessage('AGEK Macro Error', 'Illegal argument') }
@@ -161,6 +164,7 @@ const macroRegistry = {
         }
     },
     age: {
+        timeDependent: true,
         render: (args) => {
             if (!(/^\d\d\d\d-\d\d-\d\d$/.test(args))) {
                 return { result: 'error', output: errMessage('AGE Macro Error', 'Illegal argument') }
@@ -249,6 +253,10 @@ const macroRegistry = {
 
 export function getMacroRequest(fn, args) {
     return macroRegistry[fn.toLowerCase()]?.getRequest?.(args) ?? null
+}
+
+export function isTimeDependentMacro(name) {
+    return macroRegistry[name.toLowerCase()]?.timeDependent === true
 }
 
 

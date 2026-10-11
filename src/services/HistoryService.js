@@ -1,6 +1,7 @@
 import diff2html from 'diff2html'
 import { createTwoFilesPatch } from 'diff'
 import logger from '../utils/logger.js'
+import { withPageChanges } from './RenderCacheService.js'
 
 import {
     PageNotFoundError,
@@ -9,10 +10,11 @@ import {
 } from './errors.js'
 
 class HistoryService {
-    constructor(historyRepo, pageRepo, permissionService) {
+    constructor(historyRepo, pageRepo, permissionService, renderCache = null) {
         this.historyRepo = historyRepo
         this.pageRepo = pageRepo
         this.permissionService = permissionService
+        this.renderCache = renderCache
     }
 
     async getHistoryViewModel({ title, from, to, user, ipAddress }) {
@@ -127,12 +129,12 @@ class HistoryService {
 
         const doneBy = user || ipAddress
         const mergedComment = `Revert to r${revertRev} - ${comment || ''}`
-        const result = await this.pageRepo.revertPageToRevision({
+        const result = await withPageChanges(this.renderCache, [{ title, existenceChanged: true }], () => this.pageRepo.revertPageToRevision({
             title,
             revertRev,
             comment: mergedComment,
             doneBy
-        })
+        }))
 
         if (!result.reverted && result.reason === 'not_found') {
             throw new PageNotFoundError(title)

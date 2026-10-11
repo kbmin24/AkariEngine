@@ -1,10 +1,12 @@
 import sanitizeHtml from 'sanitize-html'
+import { createHash } from 'node:crypto'
 import { WikiParser } from '../utils/wikimark/wikiparser.js'
 import { HTMLVisitor } from '../utils/wikimark/HTMLVisitor.js'
 import { PreprocessVisitor } from '../utils/wikimark/PreprocessVisitor.js'
 import { lexer } from '../utils/wikimark/lexer.js'
-import { findMacroArgs } from '../utils/wikimark/macro.js'
+import { parseIncludeArgs } from '../utils/wikimark/includeArgs.js'
 import logger from '../utils/logger.js'
+import { cacheExpiresAt } from './RenderCacheService.js'
 
 const parser = new WikiParser()
 const errString = '<span style="color:red;font-weight:bold;">Parser crashed</span>'
@@ -24,9 +26,10 @@ const errString = '<span style="color:red;font-weight:bold;">Parser crashed</spa
  * 8. sanitize-html sanitises the output.
  */
 class RenderService {
-    constructor(pageRepository, fileRepository) {
+    constructor(pageRepository, fileRepository, renderCache = null) {
         this.pageRepository = pageRepository
         this.fileRepository = fileRepository
+        this.renderCache = renderCache
     }
 
     // applies extension hooks
@@ -90,20 +93,20 @@ class RenderService {
     async resolveIncludesRepo(requests, renderFunction, renderOptions, macroQueryResult) {
         macroQueryResult.includes = {}
         if (renderOptions?.isTemplate) return
-        const parsedRequests = requests.map(r => ({ r, args: findMacroArgs(r.query.args) }))
-        const pagenames = [...new Set(parsedRequests.map(p => p.args.default).filter(Boolean))]
+        const parsedRequests = requests.map(r => ({ r, args: parseIncludeArgs(r.query.args) }))
+        const pagenames = [...new Set(parsedRequests.map(p => p.args.title).filter(Boolean))]
         const foundIncludePages = pagenames.length > 0
             ? await this.pageRepository.findManyByTitles(pagenames)
             : []
         const includePagesByTitle = Object.fromEntries(foundIncludePages.map(p => [p.title, p]))
         await Promise.all(parsedRequests.map(async ({ r, args }) => {
-            const { default: pagename, ...rawArgs } = args
+            const { title: pagename, options: rawArgs } = args
             const page = pagename ? (includePagesByTitle[pagename] ?? null) : null
             if (!page) { macroQueryResult.includes[r.query.args] = null; return }
             const renderedArgs = Object.fromEntries(
                 await Promise.all(
                     Object.entries(rawArgs).map(async ([k, v]) => {
-                        const rendered = await this.render(v, renderFunction, { isTemplate: true })
+                        const rendered = await this.render(v, renderFunction, { isTemplate: true, cacheContext: renderOptions?.cacheContext })
                         return [k, rendered.html ?? '']
                     })
                 )
@@ -111,7 +114,7 @@ class RenderService {
             macroQueryResult.includes[r.query.args] = await this.render(
                 page.content,
                 renderFunction,
-                { isTemplate: true, args: renderedArgs }
+                { isTemplate: true, args: renderedArgs, cacheContext: renderOptions?.cacheContext }
             )
         }))
     }
@@ -173,10 +176,17 @@ class RenderService {
         const parsed = this.parseAndPreprocess(input)
         if (!parsed) return { result: 'error', html: errString }
         const { cst, manifest } = parsed
+        if (manifest.timeDependent && renderOptions?.cacheContext) renderOptions.cacheContext.timeDependent = true
 
         const { missingPages, macroQueryResult } = await this.resolvePageRefsAndMacros(
             manifest.pageRefs, manifest.macroRequests, renderFunction, renderOptions)
 
+        const result = this.renderResolved({ cst, manifest }, { missingPages, macroQueryResult }, renderFunction, renderOptions)
+        this.applyHooks(global.hooks.endRender, input, renderOptions, canRedirect)
+        return result
+    }
+
+    renderResolved({ cst, manifest }, { missingPages, macroQueryResult }, renderFunction, renderOptions) {
         const visitor = new HTMLVisitor(manifest, {
             edit: renderFunction('edit'),
             toc: renderFunction('toc'),
@@ -192,10 +202,49 @@ class RenderService {
             return { result: 'error', html: errString }
         }
 
-        this.applyHooks(global.hooks.endRender, input, renderOptions, canRedirect)
-
         html = sanitizeHtml(html, global.sanitiseOptions)
         return { result: 'ok', html }
+    }
+
+    async renderPage(page, input, renderFunction, renderOptions, canRedirect, locale) {
+        const hooks = global.hooks
+        if (!this.renderCache?.client || !locale || [...hooks.beginRender, ...hooks.endRender].some(hook => hook.cacheSafe !== true)) {
+            return this.render(input, renderFunction, renderOptions, canRedirect)
+        }
+        const live = await this.pageRepository.findByTitle(page.title)
+        if (!live || live.deleted || live.currentRev !== page.currentRev || live.content !== page.content) {
+            return this.render(input, renderFunction, renderOptions, canRedirect)
+        }
+        const begin = this.applyHooks(hooks.beginRender, input, renderOptions, canRedirect)
+        input = begin.input
+        renderOptions = begin.renderOptions
+        canRedirect = begin.canRedirect
+        const { renderSectionEditButton: _buttons, ...sharedOptions } = renderOptions
+        const identity = createHash('sha256').update(JSON.stringify([live.id, live.currentRev, input, sharedOptions])).digest('hex')
+        const startedAt = new Date()
+        const snapshot = await this.renderCache.get(page.title, locale, identity)
+        const select = bundle => canRedirect && bundle.redirectTarget
+            ? { result: 'redirect', html: bundle.redirectTarget }
+            : { result: 'ok', html: renderOptions.renderSectionEditButton ? bundle.withEdits : bundle.withoutEdits }
+        if (snapshot?.bundle) return select(snapshot.bundle)
+
+        const parsed = this.parseAndPreprocess(input)
+        if (!parsed) return { result: 'error', html: errString }
+        const cacheContext = { timeDependent: parsed.manifest.timeDependent }
+        const options = { ...renderOptions, cacheContext }
+        const resolved = await this.resolvePageRefsAndMacros(parsed.manifest.pageRefs, parsed.manifest.macroRequests, renderFunction, options)
+        const withEdits = this.renderResolved(parsed, resolved, renderFunction, { ...options, renderSectionEditButton: true })
+        const withoutEdits = this.renderResolved(parsed, resolved, renderFunction, { ...options, renderSectionEditButton: false })
+        this.applyHooks(hooks.endRender, input, renderOptions, canRedirect)
+        if (withEdits.result !== 'ok' || withoutEdits.result !== 'ok') {
+            return renderOptions.renderSectionEditButton ? withEdits : withoutEdits
+        }
+        const bundle = { withEdits: withEdits.html, withoutEdits: withoutEdits.html, redirectTarget: this.checkRedirect(input, true) }
+        const current = await this.pageRepository.findByTitle(page.title)
+        if (current && !current.deleted && current.id === live.id && current.currentRev === live.currentRev && current.content === live.content) {
+            await this.renderCache.putIfUnchanged(snapshot, identity, bundle, cacheExpiresAt(startedAt, cacheContext.timeDependent))
+        }
+        return select(bundle)
     }
 }
 

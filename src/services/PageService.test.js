@@ -70,6 +70,22 @@ describe('PageService.getEditViewModel', () => {
     })
 })
 
+describe('PageService.getPage revision access', () => {
+    test('normalizes explicit latest revision and still checks revision permissions and history', async () => {
+        const { service, permissionService } = createService({
+            existingPage: { title: 'Page', currentRev: 2, content: 'latest' },
+            historyRevision: { page: 'Page', rev: 2, content: 'latest' }
+        })
+        expect(await service.getPage('Page', { rev: '2', user: 'Alice', ipAddress: '127.0.0.1' })).toMatchObject({ currentRev: 2, content: 'latest', fromHistory: true })
+        expect(permissionService.requireReadAccess).toHaveBeenCalledWith('Alice', 'Page', { revision: 2, ipAddress: '127.0.0.1' })
+    })
+
+    test.each([0, '', null, -1, 1.5, 'invalid'])('rejects invalid explicit revision %j', async rev => {
+        const { service } = createService()
+        await expect(service.getPage('Page', { rev, ipAddress: '127.0.0.1' })).rejects.toThrow('Illegal revision')
+    })
+})
+
 describe('PageService.editPage', () => {
     test('continues revision numbers when recreating a deleted page', async () => {
         const existingPage = {

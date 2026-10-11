@@ -1,5 +1,6 @@
 import { Op } from 'sequelize'
 import BaseRepository from './BaseRepository.js'
+import extractLinks from '../utils/extractLinks.js'
 
 class PageRepository extends BaseRepository {
     constructor(pageModel, deps = {}) {
@@ -21,11 +22,14 @@ class PageRepository extends BaseRepository {
     }
 
     async findByTitleBatch(titles) {
-        return this.findByFieldBatch('title', titles)
+        return this.model.findAll({
+            where: { title: { [Op.in]: titles }, deleted: { [Op.or]: [false, null] } },
+            attributes: ['title']
+        })
     }
 
     async findManyByTitles(titles) {
-        return this.model.findAll({ where: { title: { [Op.in]: titles } } })
+        return this.model.findAll({ where: { title: { [Op.in]: titles }, deleted: { [Op.or]: [false, null] } } })
     }
 
     async searchByTitle(query, limit = 10, offset = 0) {
@@ -104,10 +108,39 @@ class PageRepository extends BaseRepository {
         return this.linkModel.findAndCountAll({
             where: { dest: title },
             order: [
-                ['source', 'ASC']
+                ['source', 'ASC'],
+                ['isInclude', 'ASC']
             ],
             limit,
             offset
+        })
+    }
+
+    async findIncomingLinks(titles, includeOnly = false) {
+        if (!this.linkModel || !titles.length) return []
+        return this.linkModel.findAll({
+            attributes: ['source'],
+            where: {
+                dest: { [Op.in]: titles },
+                ...(includeOnly ? { isInclude: true } : {})
+            }
+        })
+    }
+
+    async ensureLinkIndex(settingsModel) {
+        const key = 'internal:link-index-version'
+        const marker = await settingsModel.findOne({ where: { user: null, key } })
+        if (marker?.value === '2') return
+        await this.model.sequelize.transaction(async (transaction) => {
+            const pages = await this.model.findAll({
+                where: { deleted: { [Op.or]: [false, null] } },
+                transaction
+            })
+            const links = pages.flatMap(page => this.extractLinks(page.title, page.content))
+            await this.linkModel.destroy({ where: {}, transaction })
+            if (links.length) await this.linkModel.bulkCreate(links, { transaction })
+            await settingsModel.destroy({ where: { user: null, key }, transaction })
+            await settingsModel.create({ user: null, key, value: '2' }, { transaction })
         })
     }
 
@@ -202,28 +235,7 @@ class PageRepository extends BaseRepository {
     }
 
     extractLinks(title, content) {
-        const found = new Set()
-        const res = []
-        const shouldSkip = (text) => {
-            const v = (text || '').toLowerCase()
-            return v.startsWith('category') || v.startsWith('분류') || v.startsWith('http://') || v.startsWith('https://')
-        }
-
-        content.replace(/\[\[([^|\r\n]*?)\]\]/igm, (_match, p1) => {
-            if (shouldSkip(p1) || found.has(p1)) return ''
-            found.add(p1)
-            res.push({ source: title, dest: p1 })
-            return ''
-        })
-
-        content.replace(/\[\[(.*?)\|(.*?)\]\]/igm, (_match, p1) => {
-            if (shouldSkip(p1) || found.has(p1)) return ''
-            found.add(p1)
-            res.push({ source: title, dest: p1 })
-            return ''
-        })
-
-        return res
+        return extractLinks(title, content)
     }
 
     async replaceLinksForPage(title, content) {
@@ -235,28 +247,28 @@ class PageRepository extends BaseRepository {
             const oldLinks = await this.linkModel.findAll({ where: { source: title }, transaction })
             const newLinks = this.extractLinks(title, content)
 
-            const oldDests = new Set(oldLinks.map(link => link.dest))
-            const newDests = new Set(newLinks.map(link => link.dest))
-
-            const linksToAdd = newLinks.filter(link => !oldDests.has(link.dest))
-            const destsToRemove = oldDests.difference(newDests)
+            const key = (link) => JSON.stringify([link.dest, Boolean(link.isInclude)])
+            const oldKeys = new Set(oldLinks.map(key))
+            const newKeys = new Set(newLinks.map(key))
+            const linksToAdd = newLinks.filter(link => !oldKeys.has(key(link)))
+            const linksToRemove = oldLinks.filter(link => !newKeys.has(key(link)))
 
             if (linksToAdd.length > 0) {
                 await this.linkModel.bulkCreate(linksToAdd, { transaction })
             }
 
-            if (destsToRemove.size > 0) {
+            if (linksToRemove.length > 0) {
                 await this.linkModel.destroy({
                     where:
                     {
                         source: title,
-                        dest: { [Op.in]: Array.from(destsToRemove) }
+                        [Op.or]: linksToRemove.map(link => ({ dest: link.dest, isInclude: Boolean(link.isInclude) }))
                     },
                     transaction
                 })
             }
 
-            transaction.commit()
+            await transaction.commit()
 
         } catch (err) {
             await transaction.rollback()
@@ -485,6 +497,11 @@ class PageRepository extends BaseRepository {
 
         if (this.threadModel) {
             await this.threadModel.update({ pagename: newTitle }, { where: { pagename: oldTitle } })
+        }
+
+        if (this.linkModel) {
+            await this.replaceLinksForPage(oldTitle, redirectContent)
+            await this.replaceLinksForPage(newTitle, oldContent)
         }
 
         return { moved: true, rev: movedRev }

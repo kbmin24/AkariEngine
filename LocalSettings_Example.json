@@ -25,7 +25,9 @@
     },
     "redis": {
         "enabled": true,
-    }
+        "host": "redis://127.0.0.1:6379",
+        "password": "(insert password here)"
+    },
     "meilisearch": {
         "enabled": true,
         "host": "http://127.0.0.1:7700",

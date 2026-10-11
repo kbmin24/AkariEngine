@@ -15,6 +15,7 @@ class Config {
     get license() { return this.settings.licence }
     get dateTimeFormat() { return this.settings.dateTimeFormat || 'YYYY/MM/DD HH:mm:ss' }
     get database() { return this.settings.database }
+    get redis() { return this.settings.redis || {} }
     get sessionSecret() { return this.settings.session_secret }
     get isPrivate() { return this.settings.isPrivate || false }
     get defaultLocale() { return this.settings.defaultLocale || 'en_GB' }

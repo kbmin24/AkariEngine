@@ -12,6 +12,11 @@ export default (sequelize) => {
             {
                 allowNull: false,
                 type: DataTypes.STRING
+            },
+            isInclude: {
+                allowNull: false,
+                type: DataTypes.BOOLEAN,
+                defaultValue: false
             }
         }, {
         indexes: [
@@ -26,3 +31,17 @@ export default (sequelize) => {
         ]
     })
 };
+
+// Plain sync creates new tables but does not add columns to existing ones.
+export async function ensureLinksIncludeColumn(links) {
+    const queryInterface = links.sequelize.getQueryInterface();
+    const table = links.getTableName();
+    const columns = await queryInterface.describeTable(table);
+    if (!columns.isInclude) {
+        await queryInterface.addColumn(table, 'isInclude', {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+        });
+    }
+}

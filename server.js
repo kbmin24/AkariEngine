@@ -8,7 +8,6 @@ import RepositoryFactory from './src/repositories/index.js'
 import ServiceFactory from './src/services/index.js'
 import session from 'express-session'
 import cookieParser from 'cookie-parser'
-import sessionStoreFactory from 'express-session-sequelize'
 import { doubleCsrf } from 'csrf-csrf'
 import i18n from 'i18n'
 import taskScheduler from './src/taskScheduler.js'
@@ -19,6 +18,8 @@ import registerRoutes from './src/routes/index.js'
 import { initMeilisearch } from './src/utils/meilisearchClient.js'
 import { createRateLimiter } from './src/utils/rateLimit.js'
 import registerSocketServer from './src/socket/index.js'
+import { initRedis } from './src/utils/redisClient.js'
+import { createSessionStore } from './src/utils/sessionStore.js'
 
 
 global.path = config.basePath
@@ -56,15 +57,25 @@ try {
 
 //session
 const secret = config.sessionSecret
-const sessionStore = sessionStoreFactory(session.Store);
-const sequelizeSessionStore = new sessionStore({ db: sequelize })
+let redisClient = null
+let redisSubscriber = null
+try {
+    redisClient = await initRedis(config.redis, logger)
+    redisSubscriber = await initRedis(config.redis, logger)
+} catch (error) {
+    redisClient?.destroy()
+    logger.error('Unable to initialize Redis; server startup aborted', error)
+    process.exit(1)
+}
+const sessionStore = createSessionStore(sequelize, redisClient)
+app.locals.redisClient = redisClient
 app.use(cookieParser(secret))
 const sess = session({
     proxy: true,
     resave: false,
     saveUninitialized: false,
     secret: secret,
-    store: sequelizeSessionStore,
+    store: sessionStore,
     name: 'akari',
     expires: new Date(Date.now() + (30 * 86400 * 1000)), //expires after 30 days
     cookie:
@@ -154,9 +165,10 @@ import threadcommentFactory from './src/models/threadcomment.model.js'
 const threadcomment = threadcommentFactory(sequelize);
 import recentdiscussFactory from './src/models/recentdiscuss.model.js'
 const recentdiscuss = recentdiscussFactory(sequelize);
-import linksFactory from './src/models/links.model.js'
+import linksFactory, { ensureLinksIncludeColumn } from './src/models/links.model.js'
 const links = linksFactory(sequelize);
 await sequelize.sync()
+await ensureLinksIncludeColumn(links)
 
 global.db =
 {
@@ -181,10 +193,12 @@ global.db =
 }
 
 const repositories = new RepositoryFactory(global.db)
+if (redisClient) await repositories.pages.ensureLinkIndex(settings)
 const msIndex = config.settings.meilisearch?.enabled
     ? await initMeilisearch(config.settings.meilisearch)
     : null
-const services = new ServiceFactory(repositories, { msIndex })
+const services = new ServiceFactory(repositories, { msIndex, redisClient })
+await services.renderCache.invalidateAll()
 app.locals.repositories = repositories
 app.locals.services = services
 
@@ -353,10 +367,40 @@ const server = app.listen(port, '0.0.0.0', () => {
     logger.info(`App listening at http://${host}:${port}`)
 })
 
-registerSocketServer({
+const io = registerSocketServer({
     server,
     app,
     sessionMiddleware: sess,
     services,
-    logger
+    logger,
+    redisClient,
+    redisSubscriber
 })
+
+if (redisClient) {
+    let shuttingDown = false
+    const shutdown = async () => {
+        if (shuttingDown) return
+        shuttingDown = true
+        const timeout = setTimeout(() => {
+            redisSubscriber.destroy()
+            redisClient.destroy()
+            process.exit(1)
+        }, 10000)
+        try {
+            await new Promise((resolve) => io.close(resolve))
+            if (redisSubscriber.isOpen) await redisSubscriber.close()
+            if (redisClient.isOpen) await redisClient.close()
+            await sequelize.close()
+            clearTimeout(timeout)
+            process.exit(0)
+        } catch (error) {
+            logger.error('Error shutting down Redis server', error)
+            redisSubscriber.destroy()
+            redisClient.destroy()
+            process.exit(1)
+        }
+    }
+    process.once('SIGTERM', shutdown)
+    process.once('SIGINT', shutdown)
+}

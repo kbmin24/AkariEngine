@@ -35,6 +35,9 @@ let onCall = (input, renderOptions, repositories, canRedirect) =>
     return {input, renderOptions, repositories, canRedirect}
 }
 
+// This hook is deterministic and introduces only external links.
+onCall.cacheSafe = true
+
 export default async (app, registerHook, _registerDB) =>
 {
     registerHook('beginRender', onCall)

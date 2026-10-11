@@ -14,10 +14,12 @@ import UserService from './UserService.js'
 import RecentDiscussService from './RecentDiscussService.js'
 import FileService from './FileService.js'
 import MeilisearchRepository from '../repositories/MeilisearchRepository.js'
+import RenderCacheService from './RenderCacheService.js'
 
 class ServiceFactory {
-    constructor(repositories, { msIndex = null } = {}) {
+    constructor(repositories, { msIndex = null, redisClient = null } = {}) {
         const msRepo = msIndex ? new MeilisearchRepository(msIndex) : null
+        this.renderCache = new RenderCacheService(redisClient, repositories.pages)
         this.category = new CategoryService(repositories.categories)
         this.block = new BlockService(
             repositories.blocks,
@@ -37,12 +39,14 @@ class ServiceFactory {
             this.permission,
             repositories.protections,
             repositories.recentchanges,
-            msRepo
+            msRepo,
+            this.renderCache
         )
         this.history = new HistoryService(
             repositories.history,
             repositories.pages,
-            this.permission
+            this.permission,
+            this.renderCache
         )
         this.search = new SearchService(repositories.pages, msRepo)
         this.viewcount = new ViewcountService(repositories.viewcounts)
@@ -53,7 +57,7 @@ class ServiceFactory {
             repositories.pages,
             repositories.recentdiscuss,
             this.permission)
-        this.render = new RenderService(repositories.pages, repositories.files)
+        this.render = new RenderService(repositories.pages, repositories.files, this.renderCache)
         this.admin = new AdminService(
             repositories.adminlog,
             repositories.permissions,
@@ -64,7 +68,7 @@ class ServiceFactory {
         this.loginHistory = new LoginHistoryService(repositories.loginHistory, repositories.adminlog)
         this.user = new UserService(this.permission, repositories.users, repositories.settings)
         this.recentDiscuss = new RecentDiscussService(repositories.recentdiscuss, repositories.threads)
-        this.file = new FileService(this.page, this.permission, repositories.files, repositories.pages)
+        this.file = new FileService(this.page, this.permission, repositories.files, repositories.pages, this.renderCache)
     }
 }
 

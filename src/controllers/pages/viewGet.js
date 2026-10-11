@@ -42,11 +42,13 @@ export default async (req, res) => {
             const redirect = !(req.query.redirect == 'true' || req.query.from)
 
             const opt = await getOptions(page.content)
-            let { result, html: content } = await services.render.render(
+            let { result, html: content } = await services.render.renderPage(
+                page,
                 contentPrefix + page.content,
                 res.__,
                 { pagename: name, renderSectionEditButton: true },
-                redirect
+                redirect,
+                req.getLocale()
             )
 
             if (result === 'redirect') {
@@ -97,11 +99,13 @@ export default async (req, res) => {
         })
 
         const opt = await getOptions(page.content)
-        let { html: content } = await services.render.render(
+        let { html: content } = await services.render.renderPage(
+            page,
             contentPrefix + page.content,
             res.__,
             { pagename: name, renderSectionEditButton: false },
-            false
+            false,
+            req.getLocale()
         )
 
         const categories = await req.app.locals.services.category.getCategoriesForPage(name)

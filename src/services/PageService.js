@@ -1,6 +1,7 @@
 import logger from '../utils/logger.js'
 import { PROTECTION_TASKS } from '../utils/acl.js'
 import mergeDiff from '../utils/mergeDiff.js'
+import { withPageChanges } from './RenderCacheService.js'
 
 import {
     PageNotFoundError,
@@ -12,7 +13,7 @@ import {
 } from './errors.js'
 
 class PageService {
-    constructor(pageRepo, historyRepo, categoryService, permissionService, protectRepo = null, recentChangeRepo = null, msRepo = null) {
+    constructor(pageRepo, historyRepo, categoryService, permissionService, protectRepo = null, recentChangeRepo = null, msRepo = null, renderCache = null) {
         this.pageRepo = pageRepo
         this.historyRepo = historyRepo
         this.categoryService = categoryService
@@ -20,6 +21,7 @@ class PageService {
         this.protectRepo = protectRepo
         this.recentChangeRepo = recentChangeRepo
         this.msRepo = msRepo
+        this.renderCache = renderCache
     }
 
     /**
@@ -35,10 +37,9 @@ class PageService {
      * @throws {PermissionDeniedError} If the user/ip does not have sufficient READ permission.
      */
     async getPage(title, options = {}) {
-        const { rev, user, ipAddress } = options
-        if (rev) {
-            if (!Number.isInteger(rev)) throw new ValidationError('Illlegal revision')
-        }
+        const { user, ipAddress } = options
+        const rev = options.rev === undefined ? undefined : Number(options.rev)
+        if (rev !== undefined && (!Number.isInteger(rev) || rev < 1)) throw new ValidationError('Illegal revision')
         if (ipAddress === undefined) {
             throw new ValidationError('ip Address is required')
         }
@@ -51,7 +52,7 @@ class PageService {
 
         page = await this.pageRepo.findByTitle(title)
         if (!page) throw new PageNotFoundError(title)
-        if (rev) {
+        if (rev !== undefined) {
             page = await this.historyRepo.findByPageAndRev(title, rev)
             if (!page) throw new RevisionNotFoundError(title, rev)
             return {
@@ -373,25 +374,28 @@ class PageService {
             : await this.historyRepo.findLatestRevByPage(title)
         const nextRev = (latestRev || 0) + 1
 
-        const { page } = await this.pageRepo.upsertPage(title, normalizedContent, nextRev, false, {
-            doneBy,
-            bytechange: isNewPage ? normalizedContent.length : byteChange,
-            comment,
-            type: isNewPage ? 'create' : 'edit'
-        })
+        const page = await withPageChanges(this.renderCache, [{ title, existenceChanged: isNewPage }], async () => {
+            const { page } = await this.pageRepo.upsertPage(title, normalizedContent, nextRev, false, {
+                doneBy,
+                bytechange: isNewPage ? normalizedContent.length : byteChange,
+                comment,
+                type: isNewPage ? 'create' : 'edit'
+            })
 
-        const categories = this.categoryService.extractFromContent(normalizedContent)
-        await this.categoryService.registerForPage(title, categories)
-        await this.pageRepo.replaceLinksForPage(title, normalizedContent)
+            const categories = this.categoryService.extractFromContent(normalizedContent)
+            await this.categoryService.registerForPage(title, categories)
+            await this.pageRepo.replaceLinksForPage(title, normalizedContent)
 
-        await this.historyRepo.create({
-            page: title,
-            rev: nextRev,
-            content: normalizedContent,
-            bytechange: isNewPage ? normalizedContent.length : byteChange,
-            editedby: doneBy,
-            comment: comment || '',
-            type: isNewPage ? 'create' : 'edit'
+            await this.historyRepo.create({
+                page: title,
+                rev: nextRev,
+                content: normalizedContent,
+                bytechange: isNewPage ? normalizedContent.length : byteChange,
+                editedby: doneBy,
+                comment: comment || '',
+                type: isNewPage ? 'create' : 'edit'
+            })
+            return page
         })
 
         if (this.msRepo) {
@@ -419,11 +423,11 @@ class PageService {
         const page = await this.pageRepo.findByTitle(title)
         if (!page || page.deleted) throw new PageNotFoundError(title)
 
-        await this.pageRepo.softDeletePageWithHistory({
+        await withPageChanges(this.renderCache, [{ title, existenceChanged: true }], () => this.pageRepo.softDeletePageWithHistory({
             title,
             doneBy: user,
             comment
-        })
+        }))
 
         if (this.msRepo) {
             try {
@@ -445,11 +449,11 @@ class PageService {
         if (!page) throw new PageNotFoundError(title)
         await this.permissionService.requirePermission(user, 'purgepage')
 
-        const result = await this.pageRepo.purgePage({
+        const result = await withPageChanges(this.renderCache, [{ title, existenceChanged: true }], () => this.pageRepo.purgePage({
             title,
             doneBy: user,
             comment
-        })
+        }))
 
         if (!result.purged && result.reason === 'not_found') {
             throw new PageNotFoundError(title)
@@ -488,12 +492,15 @@ class PageService {
 
         const categories = this.categoryService.extractFromContent(sourcePage.content || '')
         const doneBy = actor || ipAddress
-        const result = await this.pageRepo.movePageWithRedirect({
+        const result = await withPageChanges(this.renderCache, [
+            { title: sourceTitle, existenceChanged: true },
+            { title: targetTitle, existenceChanged: true }
+        ], () => this.pageRepo.movePageWithRedirect({
             oldTitle: sourceTitle,
             newTitle: targetTitle,
             doneBy,
             categories
-        })
+        }))
 
         if (!result.moved && result.reason === 'target_exists') {
             throw new PageExistsError(targetTitle)

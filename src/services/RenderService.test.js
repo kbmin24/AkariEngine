@@ -68,4 +68,19 @@ describe('RenderService link metadata', () => {
         expect(internal).not.toContain('data-is-external')
         expect(external).toContain('data-is-external="true"')
     })
+
+    test.each([
+        '[InClUdE(Template:공무원헤드라인)]',
+        '[include]{{\nTemplate:공무원헤드라인\n}}',
+        '[INCLUDE]{{\r\n Template:공무원헤드라인 ,name=Alice,ignored\r\n}}',
+        '[include(Template:공무원헤드라인,name=Alice,ignored)]'
+    ])('include rendering resolves the first title field: %s', async (content) => {
+        const service = createService()
+        service.pageRepository.findManyByTitles = jest.fn(async () => [
+            { title: 'Template:공무원헤드라인', content: 'Included content' }
+        ])
+        const result = await service.render(content, renderFunction, {}, false)
+        expect(result.html).toContain('Included content')
+        expect(service.pageRepository.findManyByTitles).toHaveBeenCalledWith(['Template:공무원헤드라인'])
+    })
 })

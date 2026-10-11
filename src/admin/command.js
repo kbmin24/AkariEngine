@@ -12,7 +12,7 @@ const commands = new Map(
         .map(cmd => [cmd.name.toUpperCase(), cmd])
 )
 
-export default async (socket, command) => {
+export default async (socket, command, services = null) => {
     const stdout = (data) => socket.emit('output', data)
     try {
         const username = socket.handshake.session.username
@@ -24,7 +24,7 @@ export default async (socket, command) => {
         const cmdName = command.split(' ')[0].toUpperCase()
         const cmd = commands.get(cmdName)
         if (cmd) {
-            await cmd.f(command, stdout, username, ipAddress, { commands })
+            await cmd.f(command, stdout, username, ipAddress, { commands, services })
         } else {
             stdout('Illegal Command\n')
         }

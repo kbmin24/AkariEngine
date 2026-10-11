@@ -1,6 +1,6 @@
 import dedent from 'dedent'
 import { WikiParser } from './wikiparser.js'
-import { getMacroRequest } from './macro.js'
+import { getMacroRequest, isTimeDependentMacro } from './macro.js'
 import { orphanableTokens } from './tokens.js'
 
 const parserInstance = new WikiParser()
@@ -68,6 +68,7 @@ export class PreprocessVisitor extends BaseCstVisitor {
 
             // {repo, query}
             macroRequests: [],
+            timeDependent: false,
 
         }
         this.headingCounts = [0, 0, 0, 0, 0, 0, 0] // 1-based indexing, so [0..6]
@@ -100,9 +101,17 @@ export class PreprocessVisitor extends BaseCstVisitor {
         if (ctx.unorderedList) this.visit(ctx.unorderedList[0])
         if (ctx.orderedList) this.visit(ctx.orderedList[0])
         if (ctx.fencedCode) this.visit(ctx.fencedCode[0])
+        if (ctx.multilineMacro) this.visit(ctx.multilineMacro[0])
         if (ctx.table) this.visit(ctx.table[0])
         if (!ctx.paragraph) return
         this.visit(ctx.paragraph[0])
+    }
+
+    multilineMacro(ctx) {
+        const { name, content } = ctx.MultilineMacro[0].payload
+        if (isTimeDependentMacro(name)) this.manifest.timeDependent = true
+        const request = getMacroRequest(name, content)
+        if (request) this.manifest.macroRequests.push(request)
     }
 
     heading(ctx) {
@@ -180,6 +189,7 @@ export class PreprocessVisitor extends BaseCstVisitor {
 
     inline(ctx) {
         if (ctx.Macro) {
+            if (isTimeDependentMacro(ctx.Macro[0].payload.name)) this.manifest.timeDependent = true
             const req = getMacroRequest(ctx.Macro[0].payload.name, ctx.Macro[0].payload.option)
             if (req) this.manifest.macroRequests.push(req)
         }

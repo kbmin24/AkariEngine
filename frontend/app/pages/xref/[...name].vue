@@ -3,12 +3,16 @@
         <LocalizedMessage :keypath="errorMessageKey" :params="errorMessageParams" :message="errorMessageFallback"
             tag="p" />
     </div>
+    <p v-else-if="pending" class="text-secondary" role="status">{{ $t('loading') }}</p>
     <div v-else class="xref-page">
         <p>{{ $t('pages.xref.resultCount', { count }) }}</p>
 
         <ul v-if="entries.length > 0" class="list-group list-group-flush xref-page-list">
-            <li v-for="entry in entries" :key="entry.source" class="list-group-item">
+            <li v-for="entry in entries" :key="JSON.stringify([entry.source, !!entry.isInclude])" class="list-group-item">
                 <NuxtLink :to="pageLink(entry.source)">{{ entry.source }}</NuxtLink>
+                <span v-if="entry.isInclude" class="xref-page-type text-secondary">
+                    (Include)
+                </span>
             </li>
         </ul>
         <p v-else class="text-secondary">{{ $t('pages.xref.noResults') }}</p>
@@ -16,12 +20,12 @@
         <div v-if="count > 0" class="xref-page-pagination">
             <ul class="pagination">
                 <li v-if="from > 1" class="page-item">
-                    <NuxtLink class="page-link" :to="paginationLink(from - pgSize, from - 1)" aria-label="Previous">
+                    <NuxtLink class="page-link" :to="paginationLink(Math.max(1, from - pgSize), from - 1)" :aria-label="$t('previous')">
                         {{ $t('previous') }}
                     </NuxtLink>
                 </li>
-                <li v-if="currentPage < totalPages" class="page-item">
-                    <NuxtLink class="page-link" :to="paginationLink(to + 1, to + pgSize)" aria-label="Next">
+                <li v-if="entries.length > 0 && to < count" class="page-item">
+                    <NuxtLink class="page-link" :to="paginationLink(to + 1, to + pgSize)" :aria-label="$t('next')">
                         {{ $t('next') }}
                     </NuxtLink>
                 </li>
@@ -79,8 +83,9 @@ const currentPage = computed(() => Math.max(1, Math.ceil(from.value / pgSize.val
 
 const pageLink = page => `/w/${page}`
 const paginationLink = (linkFrom, linkTo) => ({
-    path: `/xref/${pagename.value}`,
+    path: route.path,
     query: {
+        ...route.query,
         from: linkFrom,
         to: linkTo,
     },
@@ -115,5 +120,10 @@ watch([data, error, pagename, headerTitle], applyHeader)
 
 .xref-page-pagination {
     margin-top: 1rem;
+}
+
+.xref-page-type {
+    margin-inline-start: 0.75rem;
+    font-size: 0.875em;
 }
 </style>

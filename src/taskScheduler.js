@@ -2,7 +2,7 @@ import schedule from 'node-schedule'
 import Dequeue from 'dequeue'
 import logger from './utils/logger.js'
 
-async function updateOrphaned()
+export async function updateOrphaned()
 {
     //BFS is used.
     //We find the set of entire pages
@@ -14,7 +14,7 @@ async function updateOrphaned()
 
     //compute the universal set, initialise graph
     let U = new Set()
-    let graph = {}
+    let graph = Object.create(null)
     let pgquery = await global.db.pages.findAll({attributes: ['title']})
     for (let i = 0; i < pgquery.length; i++)
     {
@@ -33,14 +33,16 @@ async function updateOrphaned()
         links[i].dest.toLowerCase().startsWith('user') ||
         links[i].dest.toLowerCase().startsWith('file'))
             continue
-        graph[links[i].source].push(links[i].dest)
+        if (graph[links[i].source] && graph[links[i].dest]) {
+            graph[links[i].source].push(links[i].dest)
+        }
     }
 
     let q = new Dequeue()
     let visited = new Set()
     
     // the wiki might be empty
-    if (graph.hasOwnProperty('FrontPage'))
+    if (Object.hasOwn(graph, 'FrontPage'))
     {
         q.push('FrontPage')
         visited.add('FrontPage')

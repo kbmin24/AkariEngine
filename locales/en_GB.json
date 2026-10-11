@@ -206,8 +206,10 @@
 		},
 		"xref": {
 			"dataLoadError": "Could not load backlinks.",
-			"resultCount": "There are {count} backlinks.",
-			"noResults": "There are no backlinks."
+			"resultCount": "There are {count} backlinks (links and includes).",
+			"noResults": "There are no links or includes.",
+			"normalLink": "Link",
+			"include": "Include"
 		},
 		"pageList": {
 			"dataLoadError": "Could not load the page list.",
