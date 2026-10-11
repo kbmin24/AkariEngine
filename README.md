@@ -18,7 +18,7 @@ AkariEngine is a Node.js based wiki engine, built with customizability in mind. 
 ### Use cases
 * [GECWiki](https://gecwiki.kr) (website retired)
 
-## Getting Started
+## Quick start
 **Disclaimer**: Note that this is for testing puposes only. For more information on how to deploy, please refer to the wiki's [installation page](https://github.com/kbmin24/AkariEngine/wiki/Installation).
 
 1. Make sure Node.js v24 is installed, then install Sqlite:
