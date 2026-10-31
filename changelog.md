@@ -1,5 +1,5 @@
 v4.1 (2026-07-05)
-* Ported backend to Nuxt.js
+* Ported frontend to Nuxt.js
 * Automerge feature
 * Supports ipv6
 
